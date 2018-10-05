@@ -1,0 +1,119 @@
+
+./src/EvolIO/Fasta.hs,268
+module EvolIO.FastaEvolIO.Fasta15,16
+allowed allowed30,31
+sequenceName sequenceName33,34
+sequenceLine sequenceLine36,37
+parseNamedSequence parseNamedSequence39,40
+fasta fasta44,45
+fastaNucleotide fastaNucleotide51,52
+fastaAminoAcid fastaAminoAcid54,55
+
+./src/Base/MultiSequenceAlignment.hs,438
+module Base.MultiSequenceAlignmentBase.MultiSequenceAlignment15,16
+data MultiSequenceAlignment MultiSequenceAlignment24,25
+data MultiSequenceAlignment a = MSA MSA24,25
+data MultiSequenceAlignment a = MSA { sequences sequences24,25
+                                    , nSequences nSequences25,26
+instance Show Show a => Show (MultiSequenceAlignment a)27,28
+  show show28,29
+join join30,31
+equalNrSites equalNrSites33,34
+
+./src/Base/Sequence.hs,579
+module Base.SequenceBase.Sequence17,18
+newtype Sequence Sequence29,30
+newtype Sequence a = Sequence { fromSequence fromSequence29,30
+instance Show Show a => Show (Sequence a)32,33
+  show show33,34
+parseSequence parseSequence35,36
+data NamedSequence NamedSequence38,39
+data NamedSequence a = NamedSequence NamedSequence38,39
+data NamedSequence a = NamedSequence { name name38,39
+                                     , sequ sequ39,40
+nameLength nameLength41,42
+instance Show Show a => Show (NamedSequence a)44,45
+  show show45,46
+lengthNS lengthNS47,48
+
+./src/Base/Nucleotide.hs,387
+module Base.NucleotideBase.Nucleotide15,16
+data Nucleotide Nucleotide26,27
+data Nucleotide = A A26,27
+data Nucleotide = A | C C26,27
+data Nucleotide = A | C | G G26,27
+data Nucleotide = A | C | G | T T26,27
+parseNucleotide parseNucleotide28,29
+instance Alphabet Alphabet Nucleotide34,35
+  parseChar parseChar35,36
+parseNucleotideSequence parseNucleotideSequence37,38
+
+./src/Base/Codon.hs,35
+module Base.CodonBase.Codon14,15
+
+./src/Base/Alphabet.hs,204
+module Base.AlphabetBase.Alphabet15,16
+data AlphabetID AlphabetID22,23
+data AlphabetID = DNA DNA22,23
+data AlphabetID = DNA | AAAA22,23
+class Alphabet Alphabet25,26
+  parseChar parseChar26,27
+
+./src/Base/AminoAcid.hs,1557
+module Base.AminoAcidBase.AminoAcid15,16
+data AminoAcid AminoAcid27,28
+data AminoAcid = A A27,28
+data AminoAcid = A | C C27,28
+data AminoAcid = A | C | D D27,28
+data AminoAcid = A | C | D | E E27,28
+data AminoAcid = A | C | D | E | F F27,28
+data AminoAcid = A | C | D | E | F | G G27,28
+data AminoAcid = A | C | D | E | F | G | H H27,28
+data AminoAcid = A | C | D | E | F | G | H | I I27,28
+data AminoAcid = A | C | D | E | F | G | H | I | K K27,28
+data AminoAcid = A | C | D | E | F | G | H | I | K | L L27,28
+data AminoAcid = A | C | D | E | F | G | H | I | K | L | M M27,28
+data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N N27,28
+data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P P27,28
+data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q Q27,28
+data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R R27,28
+data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S S27,28
+data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T T27,28
+data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V V27,28
+data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W W27,28
+data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | YY27,28
+parseAminoAcid parseAminoAcid30,31
+instance Alphabet Alphabet AminoAcid52,53
+  parseChar parseChar53,54
+parseAminoAcidSequence parseAminoAcidSequence55,56
+
+./src/Tools.hs,106
+module ToolsTools15,16
+alignRight alignRight21,22
+alignLeft alignLeft26,27
+allEqual allEqual31,32
+
+./Setup.hs,15
+main main1,2
+
+./app/Main.hs,466
+module Main Main18,19
+data EvolIOArgs EvolIOArgs30,31
+data EvolIOArgs = EvolIOArgsEvolIOArgs30,31
+                  { fileName fileName31,32
+                  , alphabet alphabet32,33
+evolIOOpts evolIOOpts34,35
+fileNameOpt fileNameOpt39,40
+alphabetOpt alphabetOpt47,48
+parseEvolIOArgs parseEvolIOArgs56,57
+analyzeNucleotideMSA analyzeNucleotideMSA73,74
+analyzeAminoAcidMSA analyzeAminoAcidMSA76,77
+parseInput parseInput79,80
+main main82,83
+
+./test/Spec.hs,166
+module Main Main15,16
+fastaNucleotideFN fastaNucleotideFN27,28
+fastaAminoAcidFN fastaAminoAcidFN30,31
+fastaErroneousFN fastaErroneousFN33,34
+main main36,37
