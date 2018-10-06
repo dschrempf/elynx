@@ -14,9 +14,16 @@ Creation date: Fri Oct  5 23:00:17 2018.
 
 
 module Base.Defaults
-  ( sequenceNameLength
+  ( Parser
+  , sequenceNameLength
   , sequenceSummaryLength
   ) where
+
+import           Data.Text
+import           Data.Void
+import           Text.Megaparsec
+
+type Parser = Parsec Void Text
 
 -- | Space reserved for sequence names when printing them.
 sequenceNameLength :: Int

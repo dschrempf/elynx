@@ -15,11 +15,12 @@ Creation date: Fri Oct  5 08:41:05 2018.
 
 module Main where
 
-import qualified Data.Attoparsec.Text            as A
 import qualified Data.Text                       as T
 import qualified Data.Text.IO                    as T
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
+import           Text.Megaparsec                 hiding (option)
+import           Text.Megaparsec.Error
 
 import           Base.Alphabet
 import           Base.AminoAcid
@@ -76,14 +77,18 @@ analyzeNucleotideMSA = showSummaryMSA
 analyzeAminoAcidMSA :: MultiSequenceAlignment AminoAcid -> String
 analyzeAminoAcidMSA = showSummaryMSA
 
-parseInput :: Alphabet a => T.Text -> MultiSequenceAlignment a
-parseInput input = either error id (A.parseOnly fasta input)
+parseFile :: Alphabet a => String -> IO (MultiSequenceAlignment a)
+parseFile fn = do res <- parse fastaMSA fn <$> T.readFile fn
+                  case res of
+                    Left  err -> error $ parseErrorPretty err
+                    Right msa -> return msa
 
 main :: IO ()
 main = do (EvolIOArgs fn al) <- parseEvolIOArgs
-          input <-  T.readFile fn
           case al of
             DNA -> do putStrLn "Read nucleotide multisequence alignment."
-                      putStrLn $ analyzeNucleotideMSA $ parseInput input
+                      msa <- parseFile fn
+                      putStrLn $ analyzeNucleotideMSA msa
             AA  -> do putStrLn "Read amino acid multisequence alignment."
-                      putStrLn $ analyzeAminoAcidMSA $ parseInput input
+                      msa <- parseFile fn
+                      putStrLn $ analyzeAminoAcidMSA msa

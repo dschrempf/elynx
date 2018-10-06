@@ -20,18 +20,19 @@ module Base.Nucleotide
   ) where
 
 import           Control.Applicative
-import           Data.Attoparsec.Text (Parser, char)
+import           Text.Megaparsec.Char (char')
 
 import           Base.Alphabet
+import           Base.Defaults        (Parser)
 import           Base.Sequence
 
 data Nucleotide = A | C | G | T deriving (Show, Read, Eq, Ord)
 
 parseNucleotide :: Parser Nucleotide
-parseNucleotide = (char 'A' >> pure A) <|>
-                  (char 'C' >> pure C) <|>
-                  (char 'G' >> pure C) <|>
-                  (char 'T' >> pure C)
+parseNucleotide = (char' 'A' >> pure A) <|>
+                  (char' 'C' >> pure C) <|>
+                  (char' 'G' >> pure C) <|>
+                  (char' 'T' >> pure C)
 
 instance Alphabet Nucleotide where
   parseChar = parseNucleotide

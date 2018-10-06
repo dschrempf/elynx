@@ -18,7 +18,7 @@ module Base.Alphabet
   , AlphabetName (..)
   ) where
 
-import           Data.Attoparsec.Text (Parser)
+import           Base.Defaults (Parser)
 
 data AlphabetName = DNA | AA
   deriving (Read, Eq, Ord)

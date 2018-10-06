@@ -17,16 +17,15 @@ module Base.MultiSequenceAlignment
   ( MultiSequenceAlignment (..)
   , showSummaryMSA
   , join
-  , equalNrSites
-  , lengthMSA
   ) where
 
 import           Base.Alphabet
 import           Base.Sequence
-import           Tools         (allEqual)
 
+-- | A collection of names sequences with a specific number of sites.
 data MultiSequenceAlignment a = MSA { sequences  :: [NamedSequence a]
-                                    , nSequences :: Int }
+                                    , nSequences :: Int
+                                    , nSites     :: Int}
 
 instance Show a => Show (MultiSequenceAlignment a) where
   show MSA{sequences=xs} = unlines $ (showSequenceName "Name" ++ "Sequence") : map show xs
@@ -38,12 +37,7 @@ showSummaryMSA MSA{sequences=xs, nSequences=n} = unlines $
   ++ map summarizeNamedSequence xs
   where a = alphabetName . head . fromSequence . sequ . head $ xs
 
-join :: MultiSequenceAlignment a -> MultiSequenceAlignment a -> MultiSequenceAlignment a
-join (MSA xs nsx) (MSA ys nsy) = MSA (xs ++ ys) (nsx + nsy)
-
-equalNrSites :: MultiSequenceAlignment a -> Bool
-equalNrSites MSA{sequences=xs} = allEqual $ map lengthNamedSequence xs
-
-lengthMSA :: MultiSequenceAlignment a -> Maybe Int
-lengthMSA msa@MSA{sequences=xs} | equalNrSites msa = Just $ lengthNamedSequence (head xs)
-                                | otherwise        = Nothing
+join :: MultiSequenceAlignment a -> MultiSequenceAlignment a -> Maybe (MultiSequenceAlignment a)
+join MSA{sequences=xs, nSequences=nex, nSites=nix} MSA{sequences=ys, nSequences=ney, nSites=niy}
+  | nix == niy = Just $ MSA (xs ++ ys) (nex + ney) nix
+  | otherwise  = Nothing

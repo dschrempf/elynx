@@ -19,18 +19,25 @@ module Base.Sequence
   ( Sequence (..)
   , parseSequence
   , summarizeSequence
+  , nSitesSequence
+  , equalNumberOfSites
+  , mostSites
+  , filterMoreSitesThan
   , NamedSequence (..)
   , showSequenceName
   , summarizeNamedSequence
-  , lengthNamedSequence
+  , nSitesNamedSequence
+  , equalNumberOfSitesNamedSequence
   ) where
 
-import           Data.Attoparsec.Text (Parser, many1)
+import           Data.List       (maximumBy)
+import           Data.Ord        (comparing)
+import           Text.Megaparsec
 
 import           Base.Alphabet
-import           Base.Defaults        (sequenceNameLength,
-                                       sequenceSummaryLength)
-import           Tools                (alignLeft)
+import           Base.Defaults   (Parser, sequenceNameLength,
+                                  sequenceSummaryLength)
+import           Tools           (alignLeft, allEqual)
 
 newtype Sequence a = Sequence { fromSequence :: [a] }
   deriving (Semigroup, Monoid, Foldable)
@@ -39,10 +46,25 @@ instance Show a => Show (Sequence a) where
   show (Sequence xs) = concatMap show xs
 
 parseSequence :: Alphabet a => Parser (Sequence a)
-parseSequence = Sequence <$> many1 parseChar
+parseSequence = Sequence <$> some parseChar
 
 summarizeSequence :: Show a => Sequence a -> String
 summarizeSequence s = (show . take sequenceSummaryLength . fromSequence $ s) ++ "..."
+
+nSitesSequence :: Sequence a -> Int
+nSitesSequence = length
+
+equalNumberOfSites :: [Sequence a] -> Bool
+equalNumberOfSites = allEqual . map nSitesSequence
+
+-- TODO: Check if this really gets the longest (i.e., if the direction of
+-- comparing is as expected); use test suite.
+mostSites :: [Sequence a] -> Sequence a
+mostSites = maximumBy (comparing nSitesSequence)
+
+-- TODO: Test this in test suite.
+filterMoreSitesThan :: Int -> [Sequence a] -> [Sequence a]
+filterMoreSitesThan n = filter (\x -> nSitesSequence x > n)
 
 data NamedSequence a = NamedSequence { name :: String
                                      , sequ :: Sequence a }
@@ -54,8 +76,11 @@ instance Show a => Show (NamedSequence a) where
   show (NamedSequence n s) = showSequenceName n ++ show s
 
 summarizeNamedSequence :: Show a => NamedSequence a -> String
-summarizeNamedSequence NamedSequence{sequ=s, name=n} = showSequenceName n ++ summarizeSequence p
-  where p = Sequence $ take sequenceSummaryLength $ fromSequence s
+summarizeNamedSequence NamedSequence{sequ=s, name=n} =
+  showSequenceName n ++ summarizeSequence s
 
-lengthNamedSequence :: NamedSequence a -> Int
-lengthNamedSequence NamedSequence {sequ=x} = length x
+nSitesNamedSequence :: NamedSequence a -> Int
+nSitesNamedSequence = nSitesSequence . sequ
+
+equalNumberOfSitesNamedSequence :: [NamedSequence a] -> Bool
+equalNumberOfSitesNamedSequence = equalNumberOfSites . map sequ

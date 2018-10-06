@@ -15,10 +15,11 @@ Creation date: Fri Oct  5 14:25:42 2018.
 
 module Main where
 
-import           Data.Attoparsec.Text        (parseOnly)
 import           Data.Either
+import qualified Data.Text                   as T
 import qualified Data.Text.IO                as T
 import           Test.Hspec
+import           Text.Megaparsec
 
 import           Base.MultiSequenceAlignment
 import           EvolIO.Fasta
@@ -32,31 +33,30 @@ fastaAminoAcidFN = "test/Data/AminoAcid.fasta"
 fastaErroneousFN :: String
 fastaErroneousFN = "test/Data/Erroneous.fasta"
 
+
+runParserOnFile :: Parsec e T.Text a -> String -> IO (Either (ParseError Char e) a)
+runParserOnFile p f = parse p f <$> T.readFile f
+
 main :: IO ()
 main = hspec $ do
   describe "EvolIO.Fasta.fastaNucleotide" $ do
     it "parses a fasta file containing nucleotides" $ do
-      input <- T.readFile fastaNucleotideFN
-      let emsa = parseOnly fastaNucleotide input
+      emsa <- runParserOnFile fastaMSANucleotide fastaNucleotideFN
       emsa  `shouldSatisfy` isRight
       nSequences <$> emsa `shouldBe` Right (3 ::Int)
-      lengthMSA <$> emsa `shouldBe` Right (Just 40)
+      nSites <$> emsa `shouldBe` Right 40
 
     it "should not parse erroneous files" $ do
-      input <- T.readFile fastaErroneousFN
-      let emsa = parseOnly fastaNucleotide input
+      emsa <- runParserOnFile fastaNucleotide fastaErroneousFN
       emsa  `shouldSatisfy` isLeft
-      print emsa
 
   describe "EvolIO.Fasta.fastaAminoAcid" $ do
     it "parses a fasta file containing amino acids" $ do
-      input <- T.readFile fastaAminoAcidFN
-      let emsa = parseOnly fastaAminoAcid input
+      emsa <- runParserOnFile fastaMSAAminoAcid fastaAminoAcidFN
       emsa  `shouldSatisfy` isRight
       nSequences <$> emsa `shouldBe` Right (2 ::Int)
-      lengthMSA <$> emsa `shouldBe` Right (Just 237)
+      nSites <$> emsa `shouldBe` Right 237
 
     it "should not parse erroneous files" $ do
-      input <- T.readFile fastaErroneousFN
-      let emsa = parseOnly fastaAminoAcid input
+      emsa <- runParserOnFile fastaAminoAcid fastaErroneousFN
       emsa  `shouldSatisfy` isLeft
