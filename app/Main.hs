@@ -15,59 +15,15 @@ Creation date: Fri Oct  5 08:41:05 2018.
 
 module Main where
 
-import qualified Data.Text.IO                    as T
-import           Options.Applicative
-import           Options.Applicative.Help.Pretty
-import           Text.Megaparsec                 hiding (option)
+import qualified Data.Text.IO                as T
+import           Text.Megaparsec
 
+import           ArgParse
 import           Base.Alphabet
 import           Base.AminoAcid
 import           Base.MultiSequenceAlignment
 import           Base.Nucleotide
 import           EvolIO.Fasta
-
-data EvolIOArgs = EvolIOArgs
-                  { fileName :: String
-                  , alphabet :: AlphabetName }
-
-evolIOOpts :: Parser EvolIOArgs
-evolIOOpts = EvolIOArgs
-  <$> fileNameOpt
-  <*> alphabetOpt
-
-fileNameOpt :: Parser String
-fileNameOpt = option str
-  ( long "input-file"
-    <> short 'i'
-    <> metavar "NAME"
-    <> showDefault
-    <> help "Read sequences from NAME." )
-
-alphabetOpt :: Parser AlphabetName
-alphabetOpt = option auto
-  ( long "alphabet"
-    <> short 'a'
-    <> metavar "NAME"
-    <> showDefault
-    <> help "Alphabet type; DNA or AA." )
-
--- | Read the arguments and prints out help if needed.
-parseEvolIOArgs :: IO EvolIOArgs
-parseEvolIOArgs = execParser $
-  info (helper <*> evolIOOpts)
-  (fullDesc
-    <> progDesc "Parse sequence file formats and analyze them."
-    <> header "Evolutionary sequences."
-    <> footerDoc formats )
-  where
-    formats = Just $ vcat $ map pretty strs
-    strs   = [ "File formats:"
-             , "  - FASTA"
-             , ""
-             , "Alphabet types:"
-             , "  - DNA: Nucleotides"
-             , "  - AA:  Amino acids"
-             ]
 
 analyzeNucleotideMSA :: MultiSequenceAlignment Nucleotide -> String
 analyzeNucleotideMSA = showSummaryMSA

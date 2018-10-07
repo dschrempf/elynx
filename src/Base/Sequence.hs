@@ -44,6 +44,7 @@ import           Base.Defaults   (Parser, sequenceNameLength,
                                   sequenceSummaryLength)
 import           Tools           (alignLeft, allEqual)
 
+-- Do I even need an unnamed sequence?
 newtype Sequence a = Sequence { fromSequence :: [a] }
   deriving (Read, Eq, Semigroup, Monoid, Foldable)
 
