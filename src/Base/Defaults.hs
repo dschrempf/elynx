@@ -32,5 +32,5 @@ sequenceNameLength = 20
 
 -- | The length shown when summarizing sequences.
 sequenceSummaryLength :: Int
-sequenceSummaryLength = 70
+sequenceSummaryLength = 60
 

@@ -15,12 +15,10 @@ Creation date: Fri Oct  5 08:41:05 2018.
 
 module Main where
 
-import qualified Data.Text                       as T
 import qualified Data.Text.IO                    as T
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
 import           Text.Megaparsec                 hiding (option)
-import           Text.Megaparsec.Error
 
 import           Base.Alphabet
 import           Base.AminoAcid

@@ -19,15 +19,20 @@ module Base.Sequence
   ( Sequence (..)
   , parseSequence
   , summarizeSequence
-  , nSitesSequence
-  , equalNumberOfSites
-  , mostSites
-  , filterMoreSitesThan
+  , lengthSequence
+  , equalLength
+  , longest
+  , filterLongerThan
   , NamedSequence (..)
   , showSequenceName
   , summarizeNamedSequence
-  , nSitesNamedSequence
-  , equalNumberOfSitesNamedSequence
+  , summarizeNamedSequenceList
+  , summarizeNamedSequenceListHeader
+  , summarizeNamedSequenceListBody
+  , lengthNamedSequence
+  , equalLengthNamedSequence
+  , longestNamedSequence
+  , filterLongerThanNamedSequence
   ) where
 
 import           Data.List       (maximumBy)
@@ -40,7 +45,7 @@ import           Base.Defaults   (Parser, sequenceNameLength,
 import           Tools           (alignLeft, allEqual)
 
 newtype Sequence a = Sequence { fromSequence :: [a] }
-  deriving (Semigroup, Monoid, Foldable)
+  deriving (Read, Eq, Semigroup, Monoid, Foldable)
 
 instance Show a => Show (Sequence a) where
   show (Sequence xs) = concatMap show xs
@@ -49,25 +54,25 @@ parseSequence :: Alphabet a => Parser (Sequence a)
 parseSequence = Sequence <$> some parseChar
 
 summarizeSequence :: Show a => Sequence a -> String
-summarizeSequence s = (show . take sequenceSummaryLength . fromSequence $ s) ++ "..."
+summarizeSequence s = if length s <= sequenceSummaryLength
+                      then concatMap show . fromSequence $ s
+                      else (concatMap show . take sequenceSummaryLength . fromSequence) s ++ "..."
 
-nSitesSequence :: Sequence a -> Int
-nSitesSequence = length
+lengthSequence :: Sequence a -> Int
+lengthSequence = length
 
-equalNumberOfSites :: [Sequence a] -> Bool
-equalNumberOfSites = allEqual . map nSitesSequence
+equalLength :: [Sequence a] -> Bool
+equalLength = allEqual . map lengthSequence
 
--- TODO: Check if this really gets the longest (i.e., if the direction of
--- comparing is as expected); use test suite.
-mostSites :: [Sequence a] -> Sequence a
-mostSites = maximumBy (comparing nSitesSequence)
+longest :: [Sequence a] -> Sequence a
+longest = maximumBy (comparing lengthSequence)
 
--- TODO: Test this in test suite.
-filterMoreSitesThan :: Int -> [Sequence a] -> [Sequence a]
-filterMoreSitesThan n = filter (\x -> nSitesSequence x > n)
+filterLongerThan :: Int -> [Sequence a] -> [Sequence a]
+filterLongerThan n = filter (\x -> lengthSequence x > n)
 
 data NamedSequence a = NamedSequence { name :: String
                                      , sequ :: Sequence a }
+  deriving (Eq)
 
 showSequenceName :: String -> String
 showSequenceName = alignLeft sequenceNameLength
@@ -79,8 +84,27 @@ summarizeNamedSequence :: Show a => NamedSequence a -> String
 summarizeNamedSequence NamedSequence{sequ=s, name=n} =
   showSequenceName n ++ summarizeSequence s
 
-nSitesNamedSequence :: NamedSequence a -> Int
-nSitesNamedSequence = nSitesSequence . sequ
+summarizeNamedSequenceList :: (Show a, Alphabet a) => [NamedSequence a] -> String
+summarizeNamedSequenceList ns = summarizeNamedSequenceListHeader "List" ns ++ "\n" ++ summarizeNamedSequenceListBody ns
 
-equalNumberOfSitesNamedSequence :: [NamedSequence a] -> Bool
-equalNumberOfSitesNamedSequence = equalNumberOfSites . map sequ
+summarizeNamedSequenceListHeader :: (Show a, Alphabet a) => String -> [NamedSequence a] -> String
+summarizeNamedSequenceListHeader h ns = unlines
+  [ h ++ " contains " ++ show (length ns) ++ " sequences."
+  , "Alphabet: " ++ show a ++ "."
+  , "Showing first " ++ show sequenceSummaryLength ++ " bases." ]
+  where a = alphabetName . head . fromSequence . sequ . head $ ns
+
+summarizeNamedSequenceListBody :: Show a => [NamedSequence a] -> String
+summarizeNamedSequenceListBody ns = unlines $ map summarizeNamedSequence ns
+
+lengthNamedSequence :: NamedSequence a -> Int
+lengthNamedSequence = lengthSequence . sequ
+
+equalLengthNamedSequence :: [NamedSequence a] -> Bool
+equalLengthNamedSequence = equalLength . map sequ
+
+longestNamedSequence :: [NamedSequence a] -> NamedSequence a
+longestNamedSequence = maximumBy (comparing $ lengthSequence . sequ)
+
+filterLongerThanNamedSequence :: Int -> [NamedSequence a] -> [NamedSequence a]
+filterLongerThanNamedSequence n = filter (\x -> lengthNamedSequence x > n)

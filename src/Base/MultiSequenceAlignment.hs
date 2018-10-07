@@ -22,22 +22,20 @@ module Base.MultiSequenceAlignment
 import           Base.Alphabet
 import           Base.Sequence
 
--- | A collection of names sequences with a specific number of sites.
-data MultiSequenceAlignment a = MSA { sequences  :: [NamedSequence a]
-                                    , nSequences :: Int
-                                    , nSites     :: Int}
+-- | A collection of names sequences with a specific length (i.e., the number of sites).
+data MultiSequenceAlignment a = MSA { msaSequences  :: [NamedSequence a]
+                                    , msaNSequences :: Int
+                                    , msaLength     :: Int}
 
 instance Show a => Show (MultiSequenceAlignment a) where
-  show MSA{sequences=xs} = unlines $ (showSequenceName "Name" ++ "Sequence") : map show xs
+  show MSA{msaSequences=xs} = unlines $ (showSequenceName "Name" ++ "Sequence") : map show xs
 
 showSummaryMSA :: (Show a, Alphabet a) => MultiSequenceAlignment a -> String
-showSummaryMSA MSA{sequences=xs, nSequences=n} = unlines $
-  [ "Multiple sequence alignment contains " ++ show n ++ " sequences."
-  , "Alphabet: " ++ show a ++ "." ]
-  ++ map summarizeNamedSequence xs
-  where a = alphabetName . head . fromSequence . sequ . head $ xs
+showSummaryMSA MSA{msaSequences=xs} = summarizeNamedSequenceListHeader "List" xs ++ "\n" ++ summarizeNamedSequenceListBody xs
 
 join :: MultiSequenceAlignment a -> MultiSequenceAlignment a -> Maybe (MultiSequenceAlignment a)
-join MSA{sequences=xs, nSequences=nex, nSites=nix} MSA{sequences=ys, nSequences=ney, nSites=niy}
+join
+  MSA{msaSequences=xs, msaNSequences=nex, msaLength=nix}
+  MSA{msaSequences=ys, msaNSequences=ney, msaLength=niy}
   | nix == niy = Just $ MSA (xs ++ ys) (nex + ney) nix
   | otherwise  = Nothing

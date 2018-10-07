@@ -10,6 +10,11 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:29:26 2018.
 
+Parse FASTA files.
+
+[NCBI file specifications](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp).
+
+For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/package/megaparsec-7.0.1/docs/Text-Megaparsec-Char-Lexer.html).
 -}
 
 
@@ -45,7 +50,7 @@ sequenceLine :: Alphabet a => Parser (Sequence a)
 -- Make sure that both 'eol' and 'eof' are accepted. The function 'void' is
 -- needed so that the type check succeeds. Since the value is thrown away
 -- anyways it should not make a difference.
-sequenceLine = parseSequence <* (eof <|> void eol)
+sequenceLine = parseSequence <* (void eol <|> eof)
 
 parseNamedSequence :: Alphabet a => Parser (NamedSequence a)
 parseNamedSequence = do n  <- sequenceName
@@ -63,8 +68,8 @@ fastaAminoAcid = fasta
 
 fastaMSA :: Alphabet a => Parser (MultiSequenceAlignment a)
 fastaMSA = do nss <- fasta
-              if equalNumberOfSitesNamedSequence nss
-                then return $ MSA nss (length nss) (nSitesNamedSequence $ head nss)
+              if equalLengthNamedSequence nss
+                then return $ MSA nss (length nss) (lengthNamedSequence $ head nss)
                 else error "Sequences do not have equal length."
 
 fastaMSANucleotide :: Parser (MultiSequenceAlignment Nucleotide)
