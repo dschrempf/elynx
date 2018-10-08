@@ -1,5 +1,5 @@
 {- |
-Module      :  AminoAcid
+Module      :  Evol.Data.AminoAcid
 Description :  Amino acid related types and functions.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -13,7 +13,7 @@ Creation date: Thu Oct  4 18:26:35 2018.
 -}
 
 
-module Base.AminoAcid
+module Evol.Data.AminoAcid
   ( AminoAcid (..)
   , parseAminoAcid
   , parseAminoAcidSequence
@@ -22,9 +22,9 @@ module Base.AminoAcid
 import           Control.Applicative
 import           Text.Megaparsec.Char (char')
 
-import           Base.Alphabet
-import           Base.Defaults        (Parser)
-import           Base.Sequence
+import           Evol.Data.Alphabet
+import           Evol.Data.Defaults        (Parser)
+import           Evol.Data.Sequence
 
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
   deriving (Show, Read, Eq, Ord)

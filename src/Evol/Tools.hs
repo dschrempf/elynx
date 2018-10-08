@@ -1,5 +1,5 @@
 {- |
-Module      :  Tools
+Module      :  Evol.Tools
 Description :  Auxiliary tools.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -13,7 +13,7 @@ Creation date: Fri Oct  5 13:27:56 2018.
 -}
 
 
-module Tools
+module Evol.Tools
   ( alignRight
   , alignLeft
   , allEqual

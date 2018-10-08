@@ -1,5 +1,5 @@
 {- |
-Module      :  Nucleotide
+Module      :  Evol.Data.Nucleotide
 Description :  Nucleotide related types and functions.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -13,7 +13,7 @@ Creation date: Thu Oct  4 18:26:35 2018.
 -}
 
 
-module Base.Nucleotide
+module Evol.Data.Nucleotide
   ( Nucleotide (..)
   , parseNucleotide
   , parseNucleotideSequence
@@ -22,9 +22,9 @@ module Base.Nucleotide
 import           Control.Applicative
 import           Text.Megaparsec.Char (char')
 
-import           Base.Alphabet
-import           Base.Defaults        (Parser)
-import           Base.Sequence
+import           Evol.Data.Alphabet
+import           Evol.Data.Defaults        (Parser)
+import           Evol.Data.Sequence
 
 data Nucleotide = A | C | G | T deriving (Show, Read, Eq, Ord)
 

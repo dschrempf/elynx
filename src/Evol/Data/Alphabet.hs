@@ -1,5 +1,5 @@
 {- |
-Module      :  Alphabet
+Module      :  Evol.Data.Alphabet
 Description :  Alphabets store hereditary information.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -13,12 +13,12 @@ Creation date: Thu Oct  4 18:57:08 2018.
 -}
 
 
-module Base.Alphabet
+module Evol.Data.Alphabet
   ( Alphabet (..)
   , AlphabetName (..)
   ) where
 
-import           Base.Defaults (Parser)
+import           Evol.Data.Defaults (Parser)
 
 data AlphabetName = DNA | AA
   deriving (Read, Eq, Ord)

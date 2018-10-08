@@ -10,6 +10,10 @@ Portability :  portable
 
 Creation date: Fri Oct  5 08:41:05 2018.
 
+TODO: Remve Sequence. NamedSequence -> Sequence with seqId :: i, seqCs :: [a].
+
+TODO: Check if all records have correct name.
+
 -}
 
 
@@ -18,12 +22,12 @@ module Main where
 import qualified Data.Text.IO                as T
 import           Text.Megaparsec
 
-import           ArgParse
-import           Base.Alphabet
-import           Base.AminoAcid
-import           Base.MultiSequenceAlignment
-import           Base.Nucleotide
-import           EvolIO.Fasta
+import           Evol.ArgParse
+import           Evol.Data.Alphabet
+import           Evol.Data.AminoAcid
+import           Evol.Data.MultiSequenceAlignment
+import           Evol.Data.Nucleotide
+import           Evol.IO.Fasta
 
 analyzeNucleotideMSA :: MultiSequenceAlignment Nucleotide -> String
 analyzeNucleotideMSA = showSummaryMSA

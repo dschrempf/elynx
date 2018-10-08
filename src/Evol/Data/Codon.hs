@@ -1,5 +1,5 @@
 {- |
-Module      :  Codon
+Module      :  Evol.Data.Codon
 Description :  Codon related types and functions.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -12,7 +12,7 @@ Creation date: Thu Oct  4 18:26:35 2018.
 
 -}
 
-module Base.Codon
+module Evol.Data.Codon
   (
   ) where
 

@@ -1,6 +1,6 @@
-name:                EvolIO
+name:                Evolution
 version:             0.1.0.0
-github:              "dschrempf/EvolIO"
+github:              "dschrempf/Evolution"
 license:             BSD3
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/dschrempf/EvolIO#readme>
+description:         Please see the README on GitHub at <https://github.com/dschrempf/Evolution#readme>
 
 ghc-options:
   - -Wall
@@ -34,7 +34,7 @@ library:
   source-dirs: src
 
 executables:
-  EvolIO:
+  evolution-modify:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -42,10 +42,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - EvolIO
+    - Evolution
 
 tests:
-  EvolIOTest:
+  evolution-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -53,4 +53,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - EvolIO
+    - Evolution

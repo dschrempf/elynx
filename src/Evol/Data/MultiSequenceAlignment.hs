@@ -1,5 +1,5 @@
 {- |
-Module      :  MultiSequenceAlignment
+Module      :  Evol.Data.MultiSequenceAlignment
 Description :  Multi sequence alignment related types and functions.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -13,14 +13,14 @@ Creation date: Thu Oct  4 18:40:18 2018.
 -}
 
 
-module Base.MultiSequenceAlignment
+module Evol.Data.MultiSequenceAlignment
   ( MultiSequenceAlignment (..)
   , showSummaryMSA
   , join
   ) where
 
-import           Base.Alphabet
-import           Base.Sequence
+import           Evol.Data.Alphabet
+import           Evol.Data.Sequence
 
 -- | A collection of names sequences with a specific length (i.e., the number of sites).
 data MultiSequenceAlignment a = MSA { msaSequences  :: [NamedSequence a]

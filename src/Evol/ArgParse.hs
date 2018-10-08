@@ -13,7 +13,7 @@ Creation date: Sun Oct  7 17:29:45 2018.
 -}
 
 
-module ArgParse
+module Evol.ArgParse
   ( EvolIOArgs (..)
   , parseEvolIOArgs
   ) where
@@ -21,7 +21,7 @@ module ArgParse
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
 
-import           Base.Alphabet
+import           Evol.Data.Alphabet
 
 data EvolIOArgs = EvolIOArgs
                   { argsFileName :: String

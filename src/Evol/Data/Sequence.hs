@@ -1,7 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 {- |
-Module      :  Sequence
+Module      :  Evol.Data.Sequence
 Description :  Hereditary sequences.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -15,7 +15,7 @@ Creation date: Thu Oct  4 18:54:51 2018.
 -}
 
 
-module Base.Sequence
+module Evol.Data.Sequence
   ( Sequence (..)
   , parseSequence
   , summarizeSequence
@@ -35,14 +35,14 @@ module Base.Sequence
   , filterLongerThanNamedSequence
   ) where
 
-import           Data.List       (maximumBy)
-import           Data.Ord        (comparing)
+import           Data.List          (maximumBy)
+import           Data.Ord           (comparing)
 import           Text.Megaparsec
 
-import           Base.Alphabet
-import           Base.Defaults   (Parser, sequenceNameLength,
-                                  sequenceSummaryLength)
-import           Tools           (alignLeft, allEqual)
+import           Evol.Data.Alphabet
+import           Evol.Data.Defaults (Parser, sequenceNameLength,
+                                     sequenceSummaryLength)
+import           Evol.Tools         (alignLeft, allEqual)
 
 -- Do I even need an unnamed sequence?
 newtype Sequence a = Sequence { fromSequence :: [a] }

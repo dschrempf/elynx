@@ -1,5 +1,5 @@
 {- |
-Module      :  Fasta
+Module      :  Evol.IO.Fasta
 Description :  Fasta sequences.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -18,7 +18,7 @@ For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/p
 -}
 
 
-module EvolIO.Fasta
+module Evol.IO.Fasta
   ( fasta
   , fastaNucleotide
   , fastaAminoAcid
@@ -32,12 +32,12 @@ import           Control.Monad
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
-import           Base.Alphabet
-import           Base.AminoAcid
-import           Base.Defaults
-import           Base.MultiSequenceAlignment
-import           Base.Nucleotide
-import           Base.Sequence
+import           Evol.Data.Alphabet
+import           Evol.Data.AminoAcid
+import           Evol.Data.Defaults
+import           Evol.Data.MultiSequenceAlignment
+import           Evol.Data.Nucleotide
+import           Evol.Data.Sequence
 
 
 allowedChar :: Parser Char
