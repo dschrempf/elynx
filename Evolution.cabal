@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f1292bcded2b19297873e08f6b286d1df5ad0648f15ac1a74d2da31bc89ec89e
+-- hash: 272a5e916b80163f6066998ef26272c1282bf5225193144d2f2ee9940775f22c
 
 name:           Evolution
 version:        0.1.0.0
@@ -31,10 +31,10 @@ library
       Evol.Data.Alphabet
       Evol.Data.AminoAcid
       Evol.Data.Codon
-      Evol.Data.Defaults
       Evol.Data.MultiSequenceAlignment
       Evol.Data.Nucleotide
       Evol.Data.Sequence
+      Evol.Defaults
       Evol.IO.Fasta
       Evol.Tools
   other-modules:
@@ -44,10 +44,10 @@ library
   ghc-options: -Wall -Werror
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , hspec
     , megaparsec
     , optparse-applicative
-    , text
   default-language: Haskell2010
 
 executable evolution-modify
@@ -60,10 +60,10 @@ executable evolution-modify
   build-depends:
       Evolution
     , base >=4.7 && <5
+    , bytestring
     , hspec
     , megaparsec
     , optparse-applicative
-    , text
   default-language: Haskell2010
 
 test-suite evolution-test
@@ -77,8 +77,8 @@ test-suite evolution-test
   build-depends:
       Evolution
     , base >=4.7 && <5
+    , bytestring
     , hspec
     , megaparsec
     , optparse-applicative
-    , text
   default-language: Haskell2010

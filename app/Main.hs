@@ -10,14 +10,11 @@ Portability :  portable
 
 Creation date: Fri Oct  5 08:41:05 2018.
 
-TODO: Check if all records have correct name.
-
 -}
-
 
 module Main where
 
-import qualified Data.Text.IO                as T
+import qualified Data.ByteString                  as B (readFile)
 import           Text.Megaparsec
 
 import           Evol.ArgParse
@@ -34,7 +31,7 @@ analyzeAminoAcidMSA :: MultiSequenceAlignment String AminoAcid -> String
 analyzeAminoAcidMSA = showSummaryMSA
 
 parseFile :: Alphabet a => String -> IO (MultiSequenceAlignment String a)
-parseFile fn = do res <- parse fastaMSA fn <$> T.readFile fn
+parseFile fn = do res <- parse fastaMSA fn <$> B.readFile fn
                   case res of
                     Left  err -> error $ parseErrorPretty err
                     Right msa -> return msa

@@ -1,5 +1,5 @@
 {- |
-Module      :  Evol.Data.Defaults
+Module      :  Evol.Defaults
 Description :  Various default values.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -13,24 +13,24 @@ Creation date: Fri Oct  5 23:00:17 2018.
 -}
 
 
-module Evol.Data.Defaults
+module Evol.Defaults
   ( Parser
-  , sequenceNameLength
-  , sequenceSummaryLength
+  , defSequenceNameLength
+  , defSequenceSummaryLength
   ) where
 
-import           Data.Text
+import           Data.ByteString.Char8 (ByteString)
 import           Data.Void
 import           Text.Megaparsec
 
-type Parser = Parsec Void Text
+type Parser = Parsec Void ByteString
 
 -- | Space reserved for sequence names when printing them.
-sequenceNameLength :: Int
-sequenceNameLength = 20
+defSequenceNameLength :: Int
+defSequenceNameLength = 20
 
 
 -- | The length shown when summarizing sequences.
-sequenceSummaryLength :: Int
-sequenceSummaryLength = 60
+defSequenceSummaryLength :: Int
+defSequenceSummaryLength = 60
 

@@ -28,22 +28,24 @@ module Evol.IO.Fasta
   ) where
 
 import           Control.Monad
+import           Data.Char                        (chr)
+import           Data.Word                        (Word8)
 import           Text.Megaparsec
-import           Text.Megaparsec.Char
+import           Text.Megaparsec.Byte
 
 import           Evol.Data.Alphabet
 import           Evol.Data.AminoAcid
-import           Evol.Data.Defaults
 import           Evol.Data.MultiSequenceAlignment
 import           Evol.Data.Nucleotide
 import           Evol.Data.Sequence
+import           Evol.Defaults
 
 
-allowedChar :: Parser Char
-allowedChar = alphaNumChar <|> char '_'
+allowedChar :: Parser Word8
+allowedChar = alphaNumChar <|> char (fromIntegral $ fromEnum '_')
 
-sequenceId :: Parser String
-sequenceId = char '>' *> some allowedChar <* eol
+sequenceId :: Parser [Word8]
+sequenceId = char (fromIntegral $ fromEnum '>') *> some allowedChar <* eol
 
 sequenceLine :: Alphabet a => Parser [a]
 -- Make sure that both 'eol' and 'eof' are accepted. The function 'void' is
@@ -54,7 +56,7 @@ sequenceLine = some parseChar <* (void eol <|> eof)
 parseSequence :: Alphabet a => Parser (Sequence String a)
 parseSequence = do i  <- sequenceId
                    cs <- some sequenceLine
-                   return (Sequence i (mconcat cs))
+                   return (Sequence (map (chr . fromIntegral) i) (mconcat cs))
 
 fasta :: Alphabet a => Parser [Sequence String a]
 fasta = some parseSequence <* eof

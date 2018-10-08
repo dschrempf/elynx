@@ -15,9 +15,10 @@ Creation date: Fri Oct  5 14:25:42 2018.
 
 module Main where
 
+import qualified Data.ByteString.Char8            as B (ByteString, pack,
+                                                        readFile)
 import           Data.Either
-import qualified Data.Text                        as T
-import qualified Data.Text.IO                     as T
+import           Data.Word                        (Word8)
 import           Test.Hspec
 import           Text.Megaparsec
 
@@ -41,15 +42,15 @@ fastaDifferentLengthFN = "test/Data/NucleotideDifferentLength.fasta"
 
 longestSequenceInFile :: Sequence String Nucleotide
 longestSequenceInFile =
-  case parse (some parseChar) "" $ T.pack "ATTTAAAAAAACCCAAAACCCGGGCCCCGGGTTTTTTTA" of
+  case parse (some parseChar) "" $ B.pack "ATTTAAAAAAACCCAAAACCCGGGCCCCGGGTTTTTTTA" of
     Left _  -> error "BAD. Basic sequence parser error."
     Right x -> Sequence "SEQUENCE_3" x
 
 fastaDifferentLengthTrimmedFN :: String
 fastaDifferentLengthTrimmedFN = "test/Data/NucleotideDifferentLengthTrimmed.fasta"
 
-runParserOnFile :: Parsec e T.Text a -> String -> IO (Either (ParseError Char e) a)
-runParserOnFile p f = parse p f <$> T.readFile f
+runParserOnFile :: Parsec e B.ByteString a -> String -> IO (Either (ParseError Word8 e) a)
+runParserOnFile p f = parse p f <$> B.readFile f
 
 main :: IO ()
 main = hspec $ do

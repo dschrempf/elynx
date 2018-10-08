@@ -19,35 +19,37 @@ module Evol.Data.AminoAcid
   ) where
 
 import           Control.Applicative
-import           Text.Megaparsec.Char (char')
+import           Text.Megaparsec.Byte (char')
 
 import           Evol.Data.Alphabet
-import           Evol.Data.Defaults        (Parser)
+import           Evol.Defaults        (Parser)
 
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
   deriving (Show, Read, Eq, Ord)
 
+-- | Parse an amino acid.
+-- XXX: Is there a better way to convert Char to Word8?
 parseAminoAcid :: Parser AminoAcid
-parseAminoAcid = (char' 'A' >> pure A) <|>
-                 (char' 'C' >> pure C) <|>
-                 (char' 'D' >> pure D) <|>
-                 (char' 'E' >> pure E) <|>
-                 (char' 'F' >> pure F) <|>
-                 (char' 'G' >> pure G) <|>
-                 (char' 'H' >> pure H) <|>
-                 (char' 'I' >> pure I) <|>
-                 (char' 'K' >> pure K) <|>
-                 (char' 'L' >> pure L) <|>
-                 (char' 'M' >> pure M) <|>
-                 (char' 'N' >> pure N) <|>
-                 (char' 'P' >> pure P) <|>
-                 (char' 'Q' >> pure Q) <|>
-                 (char' 'R' >> pure R) <|>
-                 (char' 'S' >> pure S) <|>
-                 (char' 'T' >> pure T) <|>
-                 (char' 'V' >> pure V) <|>
-                 (char' 'W' >> pure W) <|>
-                 (char' 'Y' >> pure Y)
+parseAminoAcid = (char' (fromIntegral $ fromEnum 'A') >> pure A) <|>
+                 (char' (fromIntegral $ fromEnum 'C') >> pure C) <|>
+                 (char' (fromIntegral $ fromEnum 'D') >> pure D) <|>
+                 (char' (fromIntegral $ fromEnum 'E') >> pure E) <|>
+                 (char' (fromIntegral $ fromEnum 'F') >> pure F) <|>
+                 (char' (fromIntegral $ fromEnum 'G') >> pure G) <|>
+                 (char' (fromIntegral $ fromEnum 'H') >> pure H) <|>
+                 (char' (fromIntegral $ fromEnum 'I') >> pure I) <|>
+                 (char' (fromIntegral $ fromEnum 'K') >> pure K) <|>
+                 (char' (fromIntegral $ fromEnum 'L') >> pure L) <|>
+                 (char' (fromIntegral $ fromEnum 'M') >> pure M) <|>
+                 (char' (fromIntegral $ fromEnum 'N') >> pure N) <|>
+                 (char' (fromIntegral $ fromEnum 'P') >> pure P) <|>
+                 (char' (fromIntegral $ fromEnum 'Q') >> pure Q) <|>
+                 (char' (fromIntegral $ fromEnum 'R') >> pure R) <|>
+                 (char' (fromIntegral $ fromEnum 'S') >> pure S) <|>
+                 (char' (fromIntegral $ fromEnum 'T') >> pure T) <|>
+                 (char' (fromIntegral $ fromEnum 'V') >> pure V) <|>
+                 (char' (fromIntegral $ fromEnum 'W') >> pure W) <|>
+                 (char' (fromIntegral $ fromEnum 'Y') >> pure Y)
 
 instance Alphabet AminoAcid where
   parseChar = parseAminoAcid

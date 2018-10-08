@@ -19,18 +19,21 @@ module Evol.Data.Nucleotide
   ) where
 
 import           Control.Applicative
-import           Text.Megaparsec.Char (char')
+import           Text.Megaparsec.Byte (char')
 
 import           Evol.Data.Alphabet
-import           Evol.Data.Defaults        (Parser)
+import           Evol.Defaults        (Parser)
 
 data Nucleotide = A | C | G | T deriving (Show, Read, Eq, Ord)
 
+
+-- | Parse a nucleotide.
+-- XXX: Is there a better way to convert Char to Word8?
 parseNucleotide :: Parser Nucleotide
-parseNucleotide = (char' 'A' >> pure A) <|>
-                  (char' 'C' >> pure C) <|>
-                  (char' 'G' >> pure C) <|>
-                  (char' 'T' >> pure C)
+parseNucleotide = (char' (fromIntegral $ fromEnum 'A') >> pure A) <|>
+                  (char' (fromIntegral $ fromEnum 'C') >> pure C) <|>
+                  (char' (fromIntegral $ fromEnum 'G') >> pure G) <|>
+                  (char' (fromIntegral $ fromEnum 'T') >> pure T)
 
 instance Alphabet Nucleotide where
   parseChar = parseNucleotide

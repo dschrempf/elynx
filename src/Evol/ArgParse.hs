@@ -33,20 +33,19 @@ evolIOOpts = EvolIOArgs
   <*> alphabetOpt
 
 fileNameOpt :: Parser String
-fileNameOpt = option str
-  ( long "input-file"
-    <> short 'i'
-    <> metavar "NAME"
+fileNameOpt = argument str
+  ( metavar "INPUT-FILE-NAME"
     <> showDefault
-    <> help "Read sequences from NAME." )
+    <> help "Read sequences from INPUT-FILE-NAME" )
 
 alphabetOpt :: Parser AlphabetName
 alphabetOpt = option auto
   ( long "alphabet"
     <> short 'a'
     <> metavar "NAME"
+    <> value DNA
     <> showDefault
-    <> help "Alphabet type; DNA or AA." )
+    <> help "Specify alphabet type NAME" )
 
 -- | Read the arguments and prints out help if needed.
 parseEvolIOArgs :: IO EvolIOArgs
@@ -57,7 +56,7 @@ parseEvolIOArgs = execParser $
     <> header "Evolutionary sequences."
     <> footerDoc formats )
   where
-    formats = Just $ vcat $ map pretty strs
+    formats = Just . vcat $ map pretty strs
     strs   = [ "File formats:"
              , "  - FASTA"
              , ""

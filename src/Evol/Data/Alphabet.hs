@@ -18,7 +18,7 @@ module Evol.Data.Alphabet
   , AlphabetName (..)
   ) where
 
-import           Evol.Data.Defaults (Parser)
+import           Evol.Defaults (Parser)
 
 data AlphabetName = DNA | AA
   deriving (Read, Eq, Ord)

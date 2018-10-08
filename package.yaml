@@ -28,7 +28,7 @@ dependencies:
 - megaparsec
 - optparse-applicative
 - hspec
-- text
+- bytestring
 
 library:
   source-dirs: src
