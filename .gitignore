@@ -3,3 +3,6 @@ EvolIO.cabal
 *~
 /test/Data/ensembl_Mouse_cDNA.fa.gz
 /test/Data/ensembl_Mouse_cDNA.fa.fai
+/GPATH
+/GRTAGS
+/GTAGS

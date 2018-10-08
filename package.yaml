@@ -30,6 +30,7 @@ dependencies:
 - megaparsec >= 7.0.1
 - optparse-applicative
 - word8
+- zlib
 
 library:
   source-dirs: src

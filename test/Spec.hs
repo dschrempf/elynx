@@ -15,8 +15,8 @@ Creation date: Fri Oct  5 14:25:42 2018.
 
 module Main where
 
-import qualified Data.ByteString.Char8            as B (ByteString, pack,
-                                                        readFile)
+import qualified Data.ByteString.Lazy.Char8            as B (ByteString, pack,
+                                                             readFile)
 import           Data.Either
 import           Test.Hspec
 import           Text.Megaparsec

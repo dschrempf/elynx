@@ -17,6 +17,7 @@ module Evol.Data.Nucleotide
   ( Nucleotide (..)
   , parseNucleotide
   , parseNucleotideWord8
+  , NucleotideIUPAC (..)
   ) where
 
 import           Data.Word8           (Word8, toUpper)
@@ -53,4 +54,11 @@ instance Alphabet Nucleotide where
   parseChar = parseNucleotide
   alphabetName _ = DNA
 
--- data NucleotideIUPAC = ...
+-- A  adenosine          C  cytidine             G  guanine
+-- T  thymidine          N  A/G/C/T (any)        U  uridine
+-- K  G/T (keto)         S  G/C (strong)         Y  T/C (pyrimidine)
+-- M  A/C (amino)        W  A/T (weak)           R  G/A (purine)
+-- B  G/T/C              D  G/A/T                H  A/C/T
+-- V  G/C/A              -  gap of indeterminate length
+data NucleotideIUPAC = AIupac | CIupac | GIupac | TIupac
+                     | N | U | K | S | Y | M | W | R | B | D | H | V | Gap

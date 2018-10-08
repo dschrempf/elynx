@@ -14,7 +14,6 @@ Creation date: Fri Oct  5 08:41:05 2018.
 
 module Main where
 
-import qualified Data.ByteString                  as B (readFile)
 import           Text.Megaparsec
 
 import           Evol.ArgParse
@@ -23,6 +22,7 @@ import           Evol.Data.AminoAcid
 import           Evol.Data.MultiSequenceAlignment
 import           Evol.Data.Nucleotide
 import           Evol.IO.Fasta
+import           Evol.Tools                       (readGZFile)
 
 analyzeNucleotideMSA :: MultiSequenceAlignment String Nucleotide -> String
 analyzeNucleotideMSA = showSummaryMSA
@@ -31,7 +31,7 @@ analyzeAminoAcidMSA :: MultiSequenceAlignment String AminoAcid -> String
 analyzeAminoAcidMSA = showSummaryMSA
 
 parseFile :: Alphabet a => String -> IO (MultiSequenceAlignment String a)
-parseFile fn = do res <- parse fastaMSA fn <$> B.readFile fn
+parseFile fn = do res <- parse fastaMSA fn <$> readGZFile fn
                   case res of
                     Left  err -> error $ errorBundlePretty err
                     Right msa -> return msa

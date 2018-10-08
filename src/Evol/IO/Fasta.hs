@@ -42,7 +42,7 @@ import           Evol.Tools                       (c2w, w2c)
 
 
 allowedChar :: Parser Word8
-allowedChar = alphaNumChar <|> char (c2w '_')
+allowedChar = alphaNumChar <|> oneOf (map c2w ['_', '|', '.'])
 
 sequenceId :: Parser [Word8]
 sequenceId = char (c2w '>') *> some allowedChar <* eol
@@ -56,6 +56,7 @@ sequenceLine = some parseChar <* (void eol <|> eof)
 parseSequence :: Alphabet a => Parser (Sequence String a)
 parseSequence = do i  <- sequenceId
                    cs <- some sequenceLine
+                   _  <- many eol
                    return (Sequence (map w2c i) (mconcat cs))
 
 fasta :: Alphabet a => Parser [Sequence String a]

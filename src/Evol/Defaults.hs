@@ -19,7 +19,7 @@ module Evol.Defaults
   , defSequenceSummaryLength
   ) where
 
-import           Data.ByteString (ByteString)
+import           Data.ByteString.Lazy (ByteString)
 import           Data.Void
 import           Text.Megaparsec
 
