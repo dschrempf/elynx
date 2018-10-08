@@ -25,10 +25,11 @@ ghc-options:
 
 dependencies:
 - base >= 4.7 && < 5
-- megaparsec
-- optparse-applicative
-- hspec
 - bytestring
+- hspec
+- megaparsec >= 7.0.1
+- optparse-applicative
+- word8
 
 library:
   source-dirs: src

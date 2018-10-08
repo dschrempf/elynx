@@ -17,7 +17,11 @@ module Evol.Tools
   ( alignRight
   , alignLeft
   , allEqual
+  , c2w
+  , w2c
   ) where
+
+import           Data.ByteString.Internal (c2w, w2c)
 
 alignRight :: Int -> String -> String
 alignRight n s | l > n     = take n s

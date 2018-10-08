@@ -23,6 +23,7 @@ import           Text.Megaparsec.Byte (char')
 
 import           Evol.Data.Alphabet
 import           Evol.Defaults        (Parser)
+import           Evol.Tools           (c2w)
 
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
   deriving (Show, Read, Eq, Ord)
@@ -30,26 +31,26 @@ data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S |
 -- | Parse an amino acid.
 -- XXX: Is there a better way to convert Char to Word8?
 parseAminoAcid :: Parser AminoAcid
-parseAminoAcid = (char' (fromIntegral $ fromEnum 'A') >> pure A) <|>
-                 (char' (fromIntegral $ fromEnum 'C') >> pure C) <|>
-                 (char' (fromIntegral $ fromEnum 'D') >> pure D) <|>
-                 (char' (fromIntegral $ fromEnum 'E') >> pure E) <|>
-                 (char' (fromIntegral $ fromEnum 'F') >> pure F) <|>
-                 (char' (fromIntegral $ fromEnum 'G') >> pure G) <|>
-                 (char' (fromIntegral $ fromEnum 'H') >> pure H) <|>
-                 (char' (fromIntegral $ fromEnum 'I') >> pure I) <|>
-                 (char' (fromIntegral $ fromEnum 'K') >> pure K) <|>
-                 (char' (fromIntegral $ fromEnum 'L') >> pure L) <|>
-                 (char' (fromIntegral $ fromEnum 'M') >> pure M) <|>
-                 (char' (fromIntegral $ fromEnum 'N') >> pure N) <|>
-                 (char' (fromIntegral $ fromEnum 'P') >> pure P) <|>
-                 (char' (fromIntegral $ fromEnum 'Q') >> pure Q) <|>
-                 (char' (fromIntegral $ fromEnum 'R') >> pure R) <|>
-                 (char' (fromIntegral $ fromEnum 'S') >> pure S) <|>
-                 (char' (fromIntegral $ fromEnum 'T') >> pure T) <|>
-                 (char' (fromIntegral $ fromEnum 'V') >> pure V) <|>
-                 (char' (fromIntegral $ fromEnum 'W') >> pure W) <|>
-                 (char' (fromIntegral $ fromEnum 'Y') >> pure Y)
+parseAminoAcid = (char' (c2w 'A') >> pure A) <|>
+                 (char' (c2w 'C') >> pure C) <|>
+                 (char' (c2w 'D') >> pure D) <|>
+                 (char' (c2w 'E') >> pure E) <|>
+                 (char' (c2w 'F') >> pure F) <|>
+                 (char' (c2w 'G') >> pure G) <|>
+                 (char' (c2w 'H') >> pure H) <|>
+                 (char' (c2w 'I') >> pure I) <|>
+                 (char' (c2w 'K') >> pure K) <|>
+                 (char' (c2w 'L') >> pure L) <|>
+                 (char' (c2w 'M') >> pure M) <|>
+                 (char' (c2w 'N') >> pure N) <|>
+                 (char' (c2w 'P') >> pure P) <|>
+                 (char' (c2w 'Q') >> pure Q) <|>
+                 (char' (c2w 'R') >> pure R) <|>
+                 (char' (c2w 'S') >> pure S) <|>
+                 (char' (c2w 'T') >> pure T) <|>
+                 (char' (c2w 'V') >> pure V) <|>
+                 (char' (c2w 'W') >> pure W) <|>
+                 (char' (c2w 'Y') >> pure Y)
 
 instance Alphabet AminoAcid where
   parseChar = parseAminoAcid

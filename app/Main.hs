@@ -33,7 +33,7 @@ analyzeAminoAcidMSA = showSummaryMSA
 parseFile :: Alphabet a => String -> IO (MultiSequenceAlignment String a)
 parseFile fn = do res <- parse fastaMSA fn <$> B.readFile fn
                   case res of
-                    Left  err -> error $ parseErrorPretty err
+                    Left  err -> error $ errorBundlePretty err
                     Right msa -> return msa
 
 main :: IO ()

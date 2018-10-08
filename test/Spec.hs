@@ -18,7 +18,6 @@ module Main where
 import qualified Data.ByteString.Char8            as B (ByteString, pack,
                                                         readFile)
 import           Data.Either
-import           Data.Word                        (Word8)
 import           Test.Hspec
 import           Text.Megaparsec
 
@@ -49,7 +48,7 @@ longestSequenceInFile =
 fastaDifferentLengthTrimmedFN :: String
 fastaDifferentLengthTrimmedFN = "test/Data/NucleotideDifferentLengthTrimmed.fasta"
 
-runParserOnFile :: Parsec e B.ByteString a -> String -> IO (Either (ParseError Word8 e) a)
+runParserOnFile :: Parsec e B.ByteString a -> String -> IO (Either (ParseErrorBundle B.ByteString e) a)
 runParserOnFile p f = parse p f <$> B.readFile f
 
 main :: IO ()
