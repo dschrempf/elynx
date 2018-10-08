@@ -23,17 +23,18 @@ import           Evol.Data.Alphabet
 import           Evol.Data.Sequence
 
 -- | A collection of names sequences with a specific length (i.e., the number of sites).
-data MultiSequenceAlignment a = MSA { msaSequences  :: [NamedSequence a]
-                                    , msaNSequences :: Int
-                                    , msaLength     :: Int}
+data MultiSequenceAlignment i a = MSA { msaSequences  :: [Sequence i a]
+                                      , msaNSequences :: Int
+                                      , msaLength     :: Int}
 
-instance Show a => Show (MultiSequenceAlignment a) where
-  show MSA{msaSequences=xs} = unlines $ (showSequenceName "Name" ++ "Sequence") : map show xs
+instance (Show i, Show a) => Show (MultiSequenceAlignment i a) where
+  show MSA{msaSequences=xs} = unlines $ (showSequenceId "Name" ++ "Sequence") : map show xs
 
-showSummaryMSA :: (Show a, Alphabet a) => MultiSequenceAlignment a -> String
-showSummaryMSA MSA{msaSequences=xs} = summarizeNamedSequenceListHeader "List" xs ++ "\n" ++ summarizeNamedSequenceListBody xs
+showSummaryMSA :: (Show i, Show a, Alphabet a) => MultiSequenceAlignment i a -> String
+showSummaryMSA MSA{msaSequences=xs} = summarizeSequenceListHeader "List" xs ++
+                                      "\n" ++ summarizeSequenceListBody xs
 
-join :: MultiSequenceAlignment a -> MultiSequenceAlignment a -> Maybe (MultiSequenceAlignment a)
+join :: MultiSequenceAlignment i a -> MultiSequenceAlignment i a -> Maybe (MultiSequenceAlignment i a)
 join
   MSA{msaSequences=xs, msaNSequences=nex, msaLength=nix}
   MSA{msaSequences=ys, msaNSequences=ney, msaLength=niy}

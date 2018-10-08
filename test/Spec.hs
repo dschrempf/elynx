@@ -16,15 +16,16 @@ Creation date: Fri Oct  5 14:25:42 2018.
 module Main where
 
 import           Data.Either
-import qualified Data.Text                   as T
-import qualified Data.Text.IO                as T
+import qualified Data.Text                        as T
+import qualified Data.Text.IO                     as T
 import           Test.Hspec
 import           Text.Megaparsec
 
-import           Base.MultiSequenceAlignment
-import           Base.Nucleotide
-import           Base.Sequence
-import           EvolIO.Fasta
+import           Evol.Data.Alphabet
+import           Evol.Data.MultiSequenceAlignment
+import           Evol.Data.Nucleotide
+import           Evol.Data.Sequence
+import           Evol.IO.Fasta
 
 fastaNucleotideFN :: String
 fastaNucleotideFN = "test/Data/Nucleotide.fasta"
@@ -38,11 +39,11 @@ fastaErroneousFN = "test/Data/Erroneous.fasta"
 fastaDifferentLengthFN :: String
 fastaDifferentLengthFN = "test/Data/NucleotideDifferentLength.fasta"
 
-longestNamedSequenceInFile :: NamedSequence Nucleotide
-longestNamedSequenceInFile =
-  case parse parseSequence "" $ T.pack "ATTTAAAAAAACCCAAAACCCGGGCCCCGGGTTTTTTTA" of
-    Left _ -> error "BAD. Basic sequence parser error."
-    Right x -> NamedSequence "SEQUENCE_3" x
+longestSequenceInFile :: Sequence String Nucleotide
+longestSequenceInFile =
+  case parse (some parseChar) "" $ T.pack "ATTTAAAAAAACCCAAAACCCGGGCCCCGGGTTTTTTTA" of
+    Left _  -> error "BAD. Basic sequence parser error."
+    Right x -> Sequence "SEQUENCE_3" x
 
 fastaDifferentLengthTrimmedFN :: String
 fastaDifferentLengthTrimmedFN = "test/Data/NucleotideDifferentLengthTrimmed.fasta"
@@ -56,13 +57,13 @@ main = hspec $ do
     it "finds the longest sequence"$ do
     enss <- runParserOnFile fastaNucleotide fastaDifferentLengthFN
     enss `shouldSatisfy` isRight
-    longestNamedSequence <$> enss `shouldBe` Right longestNamedSequenceInFile
+    longest <$> enss `shouldBe` Right longestSequenceInFile
 
   describe "Base.Sequence.filterLongerThan" $
     it "filters sequences that are longer than a specified length" $ do
     ens <- runParserOnFile fastaNucleotide fastaDifferentLengthFN
     ems <- runParserOnFile fastaNucleotide fastaDifferentLengthTrimmedFN
-    filterLongerThanNamedSequence 10 <$> ens `shouldBe` ems
+    filterLongerThan 10 <$> ens `shouldBe` ems
 
   describe "EvolIO.Fasta.fastaMSANucleotide" $ do
     it "parses a fasta file with nucleotide sequences with equal length" $ do

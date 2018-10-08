@@ -10,8 +10,6 @@ Portability :  portable
 
 Creation date: Fri Oct  5 08:41:05 2018.
 
-TODO: Remve Sequence. NamedSequence -> Sequence with seqId :: i, seqCs :: [a].
-
 TODO: Check if all records have correct name.
 
 -}
@@ -29,13 +27,13 @@ import           Evol.Data.MultiSequenceAlignment
 import           Evol.Data.Nucleotide
 import           Evol.IO.Fasta
 
-analyzeNucleotideMSA :: MultiSequenceAlignment Nucleotide -> String
+analyzeNucleotideMSA :: MultiSequenceAlignment String Nucleotide -> String
 analyzeNucleotideMSA = showSummaryMSA
 
-analyzeAminoAcidMSA :: MultiSequenceAlignment AminoAcid -> String
+analyzeAminoAcidMSA :: MultiSequenceAlignment String AminoAcid -> String
 analyzeAminoAcidMSA = showSummaryMSA
 
-parseFile :: Alphabet a => String -> IO (MultiSequenceAlignment a)
+parseFile :: Alphabet a => String -> IO (MultiSequenceAlignment String a)
 parseFile fn = do res <- parse fastaMSA fn <$> T.readFile fn
                   case res of
                     Left  err -> error $ parseErrorPretty err

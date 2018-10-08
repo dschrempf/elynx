@@ -16,7 +16,6 @@ Creation date: Thu Oct  4 18:26:35 2018.
 module Evol.Data.AminoAcid
   ( AminoAcid (..)
   , parseAminoAcid
-  , parseAminoAcidSequence
   ) where
 
 import           Control.Applicative
@@ -24,7 +23,6 @@ import           Text.Megaparsec.Char (char')
 
 import           Evol.Data.Alphabet
 import           Evol.Data.Defaults        (Parser)
-import           Evol.Data.Sequence
 
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
   deriving (Show, Read, Eq, Ord)
@@ -54,6 +52,3 @@ parseAminoAcid = (char' 'A' >> pure A) <|>
 instance Alphabet AminoAcid where
   parseChar = parseAminoAcid
   alphabetName _ = AA
-
-parseAminoAcidSequence :: Parser (Sequence AminoAcid)
-parseAminoAcidSequence = parseSequence

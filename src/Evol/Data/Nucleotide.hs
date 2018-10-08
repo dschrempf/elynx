@@ -16,7 +16,6 @@ Creation date: Thu Oct  4 18:26:35 2018.
 module Evol.Data.Nucleotide
   ( Nucleotide (..)
   , parseNucleotide
-  , parseNucleotideSequence
   ) where
 
 import           Control.Applicative
@@ -24,7 +23,6 @@ import           Text.Megaparsec.Char (char')
 
 import           Evol.Data.Alphabet
 import           Evol.Data.Defaults        (Parser)
-import           Evol.Data.Sequence
 
 data Nucleotide = A | C | G | T deriving (Show, Read, Eq, Ord)
 
@@ -37,8 +35,5 @@ parseNucleotide = (char' 'A' >> pure A) <|>
 instance Alphabet Nucleotide where
   parseChar = parseNucleotide
   alphabetName _ = DNA
-
-parseNucleotideSequence :: Parser (Sequence Nucleotide)
-parseNucleotideSequence = parseSequence
 
 -- data NucleotideIUPAC = ...

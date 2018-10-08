@@ -25,7 +25,6 @@ module Evol.IO.Fasta
   , fastaMSA
   , fastaMSANucleotide
   , fastaMSAAminoAcid
-  , sequenceName
   ) where
 
 import           Control.Monad
@@ -43,37 +42,37 @@ import           Evol.Data.Sequence
 allowedChar :: Parser Char
 allowedChar = alphaNumChar <|> char '_'
 
-sequenceName :: Parser String
-sequenceName = char '>' *> some allowedChar <* eol
+sequenceId :: Parser String
+sequenceId = char '>' *> some allowedChar <* eol
 
-sequenceLine :: Alphabet a => Parser (Sequence a)
+sequenceLine :: Alphabet a => Parser [a]
 -- Make sure that both 'eol' and 'eof' are accepted. The function 'void' is
 -- needed so that the type check succeeds. Since the value is thrown away
 -- anyways it should not make a difference.
-sequenceLine = parseSequence <* (void eol <|> eof)
+sequenceLine = some parseChar <* (void eol <|> eof)
 
-parseNamedSequence :: Alphabet a => Parser (NamedSequence a)
-parseNamedSequence = do n  <- sequenceName
-                        ss <- some sequenceLine
-                        return (NamedSequence n (mconcat ss))
+parseSequence :: Alphabet a => Parser (Sequence String a)
+parseSequence = do i  <- sequenceId
+                   cs <- some sequenceLine
+                   return (Sequence i (mconcat cs))
 
-fasta :: Alphabet a => Parser [NamedSequence a]
-fasta = some parseNamedSequence <* eof
+fasta :: Alphabet a => Parser [Sequence String a]
+fasta = some parseSequence <* eof
 
-fastaNucleotide :: Parser [NamedSequence Nucleotide]
+fastaNucleotide :: Parser [Sequence String Nucleotide]
 fastaNucleotide = fasta
 
-fastaAminoAcid :: Parser [NamedSequence AminoAcid]
+fastaAminoAcid :: Parser [Sequence String AminoAcid]
 fastaAminoAcid = fasta
 
-fastaMSA :: Alphabet a => Parser (MultiSequenceAlignment a)
-fastaMSA = do nss <- fasta
-              if equalLengthNamedSequence nss
-                then return $ MSA nss (length nss) (lengthNamedSequence $ head nss)
+fastaMSA :: Alphabet a => Parser (MultiSequenceAlignment String a)
+fastaMSA = do ss <- fasta
+              if equalLength ss
+                then return $ MSA ss (length ss) (lengthSequence $ head ss)
                 else error "Sequences do not have equal length."
 
-fastaMSANucleotide :: Parser (MultiSequenceAlignment Nucleotide)
+fastaMSANucleotide :: Parser (MultiSequenceAlignment String Nucleotide)
 fastaMSANucleotide = fastaMSA
 
-fastaMSAAminoAcid :: Parser (MultiSequenceAlignment AminoAcid)
+fastaMSAAminoAcid :: Parser (MultiSequenceAlignment String AminoAcid)
 fastaMSAAminoAcid = fastaMSA

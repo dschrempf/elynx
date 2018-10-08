@@ -1,5 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-
 {- |
 Module      :  Evol.Data.Sequence
 Description :  Hereditary sequences.
@@ -17,95 +15,70 @@ Creation date: Thu Oct  4 18:54:51 2018.
 
 module Evol.Data.Sequence
   ( Sequence (..)
-  , parseSequence
+  -- , parseSequence
+  , showSequenceId
+  , summarizeCharacters
   , summarizeSequence
   , lengthSequence
   , equalLength
   , longest
   , filterLongerThan
-  , NamedSequence (..)
-  , showSequenceName
-  , summarizeNamedSequence
-  , summarizeNamedSequenceList
-  , summarizeNamedSequenceListHeader
-  , summarizeNamedSequenceListBody
-  , lengthNamedSequence
-  , equalLengthNamedSequence
-  , longestNamedSequence
-  , filterLongerThanNamedSequence
+  , summarizeSequenceList
+  , summarizeSequenceListHeader
+  , summarizeSequenceListBody
   ) where
 
 import           Data.List          (maximumBy)
 import           Data.Ord           (comparing)
-import           Text.Megaparsec
+-- import           Text.Megaparsec
 
 import           Evol.Data.Alphabet
-import           Evol.Data.Defaults (Parser, sequenceNameLength,
-                                     sequenceSummaryLength)
+import           Evol.Data.Defaults (sequenceNameLength, sequenceSummaryLength)
 import           Evol.Tools         (alignLeft, allEqual)
 
 -- Do I even need an unnamed sequence?
-newtype Sequence a = Sequence { fromSequence :: [a] }
-  deriving (Read, Eq, Semigroup, Monoid, Foldable)
+data Sequence i a = Sequence { seqId :: i
+                             , seqCs :: [a] }
+  deriving (Read, Eq)
 
-instance Show a => Show (Sequence a) where
-  show (Sequence xs) = concatMap show xs
+showSequenceId :: Show i => i -> String
+showSequenceId = alignLeft sequenceNameLength . show
 
-parseSequence :: Alphabet a => Parser (Sequence a)
-parseSequence = Sequence <$> some parseChar
+instance (Show i, Show a) => Show (Sequence i a) where
+  show (Sequence i cs) = showSequenceId i ++ concatMap show cs
 
-summarizeSequence :: Show a => Sequence a -> String
-summarizeSequence s = if length s <= sequenceSummaryLength
-                      then concatMap show . fromSequence $ s
-                      else (concatMap show . take sequenceSummaryLength . fromSequence) s ++ "..."
+summarizeCharacters :: Show a => [a] -> String
+summarizeCharacters cs = if length cs <= sequenceSummaryLength
+                         then concatMap show cs
+                         else (concatMap show . take sequenceSummaryLength) cs ++ "..."
 
-lengthSequence :: Sequence a -> Int
-lengthSequence = length
+summarizeSequence :: (Show i, Show a) => Sequence i a -> String
+summarizeSequence Sequence{seqId=i, seqCs=cs} =
+  showSequenceId i ++ summarizeCharacters cs
 
-equalLength :: [Sequence a] -> Bool
+lengthSequence :: Sequence i a -> Int
+lengthSequence = length . seqCs
+
+equalLength :: [Sequence i a] -> Bool
 equalLength = allEqual . map lengthSequence
 
-longest :: [Sequence a] -> Sequence a
+longest :: [Sequence i a] -> Sequence i a
 longest = maximumBy (comparing lengthSequence)
 
-filterLongerThan :: Int -> [Sequence a] -> [Sequence a]
+filterLongerThan :: Int -> [Sequence i a] -> [Sequence i a]
 filterLongerThan n = filter (\x -> lengthSequence x > n)
 
-data NamedSequence a = NamedSequence { name :: String
-                                     , sequ :: Sequence a }
-  deriving (Eq)
+summarizeSequenceList :: (Show i, Show a, Alphabet a) => [Sequence i a] -> String
+summarizeSequenceList ss = summarizeSequenceListHeader "List" ss ++
+                           "\n" ++ summarizeSequenceListBody ss
 
-showSequenceName :: String -> String
-showSequenceName = alignLeft sequenceNameLength
-
-instance Show a => Show (NamedSequence a) where
-  show (NamedSequence n s) = showSequenceName n ++ show s
-
-summarizeNamedSequence :: Show a => NamedSequence a -> String
-summarizeNamedSequence NamedSequence{sequ=s, name=n} =
-  showSequenceName n ++ summarizeSequence s
-
-summarizeNamedSequenceList :: (Show a, Alphabet a) => [NamedSequence a] -> String
-summarizeNamedSequenceList ns = summarizeNamedSequenceListHeader "List" ns ++ "\n" ++ summarizeNamedSequenceListBody ns
-
-summarizeNamedSequenceListHeader :: (Show a, Alphabet a) => String -> [NamedSequence a] -> String
-summarizeNamedSequenceListHeader h ns = unlines
-  [ h ++ " contains " ++ show (length ns) ++ " sequences."
+summarizeSequenceListHeader :: (Show a, Alphabet a) => String -> [Sequence i a] -> String
+summarizeSequenceListHeader h ss = unlines
+  [ h ++ " contains " ++ show (length ss) ++ " sequences."
   , "Alphabet: " ++ show a ++ "."
   , "Showing first " ++ show sequenceSummaryLength ++ " bases." ]
-  where a = alphabetName . head . fromSequence . sequ . head $ ns
+  where a = alphabetName . head . seqCs . head $ ss
 
-summarizeNamedSequenceListBody :: Show a => [NamedSequence a] -> String
-summarizeNamedSequenceListBody ns = unlines $ map summarizeNamedSequence ns
+summarizeSequenceListBody :: (Show i, Show a) => [Sequence i a] -> String
+summarizeSequenceListBody ss = unlines $ map summarizeSequence ss
 
-lengthNamedSequence :: NamedSequence a -> Int
-lengthNamedSequence = lengthSequence . sequ
-
-equalLengthNamedSequence :: [NamedSequence a] -> Bool
-equalLengthNamedSequence = equalLength . map sequ
-
-longestNamedSequence :: [NamedSequence a] -> NamedSequence a
-longestNamedSequence = maximumBy (comparing $ lengthSequence . sequ)
-
-filterLongerThanNamedSequence :: Int -> [NamedSequence a] -> [NamedSequence a]
-filterLongerThanNamedSequence n = filter (\x -> lengthNamedSequence x > n)
