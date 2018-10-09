@@ -30,7 +30,8 @@ import           Data.List          (maximumBy)
 import           Data.Ord           (comparing)
 
 import           Evol.Data.Alphabet
-import           Evol.Defaults      (defSequenceNameLength,
+import           Evol.Defaults      (defSequenceListSummaryNumber,
+                                     defSequenceNameLength,
                                      defSequenceSummaryLength)
 import           Evol.Tools         (alignLeft, allEqual)
 
@@ -79,16 +80,22 @@ filterLongerThan :: Int -> [Sequence i a] -> [Sequence i a]
 filterLongerThan n = filter (\x -> lengthSequence x > n)
 
 summarizeSequenceList :: (Show i, Show a, Alphabet a) => [Sequence i a] -> String
-summarizeSequenceList ss = summarizeSequenceListHeader "List" ss ++ summarizeSequenceListBody ss
+summarizeSequenceList ss = summarizeSequenceListHeader "List" ss ++ summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
 
 summarizeSequenceListHeader :: (Show a, Alphabet a) => String -> [Sequence i a] -> String
-summarizeSequenceListHeader h ss = unlines
+summarizeSequenceListHeader h ss = unlines $
   [ h ++ " contains " ++ show (length ss) ++ " sequences."
   , "Alphabet: " ++ show a ++ "."
-  , "Showing first " ++ show defSequenceSummaryLength ++ " bases."
-  , ""
+  , "Showing first " ++ show defSequenceSummaryLength ++ " bases." ]
+  ++ reportIfSubsetIsShown ++
+  [ ""
   , showSequenceId "Identifier" ++ "Sequence" ]
   where a = alphabetName . head . seqCs . head $ ss
+        reportIfSubsetIsShown
+          | length ss > defSequenceListSummaryNumber =
+              [ "Showing " ++ show defSequenceListSummaryNumber ++
+              " out of " ++ show (length ss) ++ " sequences."]
+          | otherwise = []
 
 summarizeSequenceListBody :: (Show i, Show a) => [Sequence i a] -> String
 summarizeSequenceListBody ss = unlines $ map summarizeSequence ss

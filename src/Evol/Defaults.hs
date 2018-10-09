@@ -17,6 +17,7 @@ module Evol.Defaults
   ( Parser
   , defSequenceNameLength
   , defSequenceSummaryLength
+  , defSequenceListSummaryNumber
   ) where
 
 import           Data.ByteString.Lazy (ByteString)
@@ -27,10 +28,13 @@ type Parser = Parsec Void ByteString
 
 -- | Space reserved for sequence names when printing them.
 defSequenceNameLength :: Int
-defSequenceNameLength = 20
+defSequenceNameLength = 25
 
 
 -- | The length shown when summarizing sequences.
 defSequenceSummaryLength :: Int
 defSequenceSummaryLength = 60
 
+-- | How many sequences are shown in summary.
+defSequenceListSummaryNumber :: Int
+defSequenceListSummaryNumber = 100

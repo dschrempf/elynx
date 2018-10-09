@@ -21,9 +21,11 @@ For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/p
 module Evol.IO.Fasta
   ( fasta
   , fastaNucleotide
+  , fastaNucleotideIUPAC
   , fastaAminoAcid
   , fastaMSA
   , fastaMSANucleotide
+  , fastaMSANucleotideIUPAC
   , fastaMSAAminoAcid
   ) where
 
@@ -53,22 +55,26 @@ sequenceLine :: Alphabet a => Parser [a]
 -- anyways it should not make a difference.
 sequenceLine = some parseChar <* (void eol <|> eof)
 
-parseSequence :: Alphabet a => Parser (Sequence String a)
+parseSequence :: (Alphabet a) => Parser (Sequence String a)
 parseSequence = do i  <- sequenceId
                    cs <- some sequenceLine
                    _  <- many eol
-                   return (Sequence (map w2c i) (mconcat cs))
+                   let s = Sequence (map w2c i) (mconcat cs)
+                   return s
 
-fasta :: Alphabet a => Parser [Sequence String a]
+fasta :: (Alphabet a) => Parser [Sequence String a]
 fasta = some parseSequence <* eof
 
 fastaNucleotide :: Parser [Sequence String Nucleotide]
 fastaNucleotide = fasta
 
+fastaNucleotideIUPAC :: Parser [Sequence String NucleotideIUPAC]
+fastaNucleotideIUPAC = fasta
+
 fastaAminoAcid :: Parser [Sequence String AminoAcid]
 fastaAminoAcid = fasta
 
-fastaMSA :: Alphabet a => Parser (MultiSequenceAlignment String a)
+fastaMSA :: (Alphabet a) => Parser (MultiSequenceAlignment String a)
 fastaMSA = do ss <- fasta
               if equalLength ss
                 then return $ MSA ss (length ss) (lengthSequence $ head ss)
@@ -76,6 +82,9 @@ fastaMSA = do ss <- fasta
 
 fastaMSANucleotide :: Parser (MultiSequenceAlignment String Nucleotide)
 fastaMSANucleotide = fastaMSA
+
+fastaMSANucleotideIUPAC :: Parser (MultiSequenceAlignment String NucleotideIUPAC)
+fastaMSANucleotideIUPAC = fastaMSA
 
 fastaMSAAminoAcid :: Parser (MultiSequenceAlignment String AminoAcid)
 fastaMSAAminoAcid = fastaMSA

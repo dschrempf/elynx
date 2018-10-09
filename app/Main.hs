@@ -14,34 +14,34 @@ Creation date: Fri Oct  5 08:41:05 2018.
 
 module Main where
 
-import           Text.Megaparsec
-
 import           Evol.ArgParse
 import           Evol.Data.Alphabet
 import           Evol.Data.AminoAcid
 import           Evol.Data.MultiSequenceAlignment
 import           Evol.Data.Nucleotide
+import           Evol.Data.Sequence
 import           Evol.IO.Fasta
-import           Evol.Tools                       (readGZFile)
+import           Evol.Tools                       (parseFileWith)
 
 analyzeNucleotideMSA :: MultiSequenceAlignment String Nucleotide -> String
-analyzeNucleotideMSA = showSummaryMSA
+analyzeNucleotideMSA = summarizeMSA
+
+analyzeNucleotideIUPAC :: [Sequence String NucleotideIUPAC] -> String
+analyzeNucleotideIUPAC = summarizeSequenceList
 
 analyzeAminoAcidMSA :: MultiSequenceAlignment String AminoAcid -> String
-analyzeAminoAcidMSA = showSummaryMSA
-
-parseFile :: Alphabet a => String -> IO (MultiSequenceAlignment String a)
-parseFile fn = do res <- parse fastaMSA fn <$> readGZFile fn
-                  case res of
-                    Left  err -> error $ errorBundlePretty err
-                    Right msa -> return msa
+analyzeAminoAcidMSA = summarizeMSA
 
 main :: IO ()
 main = do (EvolIOArgs fn al) <- parseEvolIOArgs
           case al of
+            -- XXX: Does different stuff for now!
             DNA -> do putStrLn "Read nucleotide multisequence alignment."
-                      msa <- parseFile fn
+                      msa <- parseFileWith fastaMSANucleotide fn
                       putStrLn $ analyzeNucleotideMSA msa
+            DNA_IUPAC -> do putStrLn "Read nucleotide multisequence alignment (with IUPAC codes)."
+                            msa <- parseFileWith fastaNucleotideIUPAC fn
+                            putStrLn $ analyzeNucleotideIUPAC msa
             AA  -> do putStrLn "Read amino acid multisequence alignment."
-                      msa <- parseFile fn
+                      msa <- parseFileWith fastaMSAAminoAcid fn
                       putStrLn $ analyzeAminoAcidMSA msa

@@ -15,7 +15,7 @@ Creation date: Thu Oct  4 18:40:18 2018.
 
 module Evol.Data.MultiSequenceAlignment
   ( MultiSequenceAlignment (..)
-  , showSummaryMSA
+  , summarizeMSA
   , join
   ) where
 
@@ -30,8 +30,8 @@ data MultiSequenceAlignment i a = MSA { msaSequences  :: [Sequence i a]
 instance (Show i, Show a) => Show (MultiSequenceAlignment i a) where
   show MSA{msaSequences=xs} = unlines $ (showSequenceId "Name" ++ "Sequence") : map show xs
 
-showSummaryMSA :: (Show i, Show a, Alphabet a) => MultiSequenceAlignment i a -> String
-showSummaryMSA MSA{msaSequences=xs} = summarizeSequenceListHeader "List" xs ++ summarizeSequenceListBody xs
+summarizeMSA :: (Show i, Show a, Alphabet a) => MultiSequenceAlignment i a -> String
+summarizeMSA MSA{msaSequences=xs} = summarizeSequenceListHeader "List" xs ++ summarizeSequenceListBody xs
 
 join :: MultiSequenceAlignment i a -> MultiSequenceAlignment i a -> Maybe (MultiSequenceAlignment i a)
 join

@@ -31,6 +31,7 @@ dependencies:
 - optparse-applicative
 - word8
 - zlib
+- deepseq
 
 library:
   source-dirs: src
@@ -43,6 +44,7 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -eventlog
     dependencies:
     - Evolution
 

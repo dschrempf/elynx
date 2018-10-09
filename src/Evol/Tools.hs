@@ -21,12 +21,15 @@ module Evol.Tools
   , w2c
   , readGZFile
   , writeGZFile
+  , runParserOnFile
+  , parseFileWith
   ) where
 
 import           Codec.Compression.GZip   (compress, decompress)
 import           Data.ByteString.Internal (c2w, w2c)
 import qualified Data.ByteString.Lazy     as B (ByteString, readFile, writeFile)
 import           Data.List                (isSuffixOf)
+import           Text.Megaparsec
 
 alignRight :: Int -> String -> String
 alignRight n s | l > n     = take n s
@@ -48,3 +51,12 @@ readGZFile f | ".gz" `isSuffixOf` f = decompress <$> B.readFile f
 writeGZFile :: FilePath -> B.ByteString -> IO ()
 writeGZFile f | ".gz" `isSuffixOf` f = B.writeFile f . compress
               | otherwise            = B.writeFile f
+
+runParserOnFile :: Parsec e B.ByteString a -> String -> IO (Either (ParseErrorBundle B.ByteString e) a)
+runParserOnFile p f = parse p f <$> readGZFile f
+
+parseFileWith :: (ShowErrorComponent e) => Parsec e B.ByteString a -> String -> IO a
+parseFileWith p f = do res <- runParserOnFile p f
+                       case res of
+                         Left  err -> error $ errorBundlePretty err
+                         Right val -> return val

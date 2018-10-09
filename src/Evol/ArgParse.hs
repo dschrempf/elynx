@@ -61,6 +61,7 @@ parseEvolIOArgs = execParser $
              , "  - FASTA"
              , ""
              , "Alphabet types:"
-             , "  - DNA: Nucleotides"
-             , "  - AA:  Amino acids"
+             , "  - " ++ show DNA
+             , "  - " ++ show DNA_IUPAC
+             , "  - " ++ show AA
              ]

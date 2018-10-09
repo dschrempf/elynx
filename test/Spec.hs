@@ -15,8 +15,7 @@ Creation date: Fri Oct  5 14:25:42 2018.
 
 module Main where
 
-import qualified Data.ByteString.Lazy.Char8            as B (ByteString, pack,
-                                                             readFile)
+import qualified Data.ByteString.Lazy.Char8       as B (pack)
 import           Data.Either
 import           Test.Hspec
 import           Text.Megaparsec
@@ -26,9 +25,13 @@ import           Evol.Data.MultiSequenceAlignment
 import           Evol.Data.Nucleotide
 import           Evol.Data.Sequence
 import           Evol.IO.Fasta
+import           Evol.Tools                       (runParserOnFile)
 
 fastaNucleotideFN :: String
 fastaNucleotideFN = "test/Data/Nucleotide.fasta"
+
+fastaNucleotideIUPACFN :: String
+fastaNucleotideIUPACFN = "test/Data/NucleotideIUPAC.fasta"
 
 fastaAminoAcidFN :: String
 fastaAminoAcidFN = "test/Data/AminoAcid.fasta"
@@ -48,9 +51,6 @@ longestSequenceInFile =
 fastaDifferentLengthTrimmedFN :: String
 fastaDifferentLengthTrimmedFN = "test/Data/NucleotideDifferentLengthTrimmed.fasta"
 
-runParserOnFile :: Parsec e B.ByteString a -> String -> IO (Either (ParseErrorBundle B.ByteString e) a)
-runParserOnFile p f = parse p f <$> B.readFile f
-
 main :: IO ()
 main = hspec $ do
   describe "Base.Sequence.longest" $
@@ -68,6 +68,12 @@ main = hspec $ do
   describe "EvolIO.Fasta.fastaMSANucleotide" $ do
     it "parses a fasta file with nucleotide sequences with equal length" $ do
       emsa <- runParserOnFile fastaMSANucleotide fastaNucleotideFN
+      emsa  `shouldSatisfy` isRight
+      msaNSequences <$> emsa `shouldBe` Right (3 ::Int)
+      msaLength <$> emsa `shouldBe` Right 40
+
+    it "parses a fasta file with nucleotide IUPAC sequences with equal length" $ do
+      emsa <- runParserOnFile fastaMSANucleotideIUPAC fastaNucleotideIUPACFN
       emsa  `shouldSatisfy` isRight
       msaNSequences <$> emsa `shouldBe` Right (3 ::Int)
       msaLength <$> emsa `shouldBe` Right 40

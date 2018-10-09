@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 69a0f1bb52fcc606fb49d65819b216bcd297f424677039ed30daa6d2dbe6765a
+-- hash: 429fc6f2025776a6112e0977c789844a837637f847b58cedbca9fcb46440b284
 
 name:           Evolution
 version:        0.1.0.0
@@ -45,6 +45,7 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , deepseq
     , hspec
     , megaparsec >=7.0.1
     , optparse-applicative
@@ -58,11 +59,12 @@ executable evolution-modify
       Paths_Evolution
   hs-source-dirs:
       app
-  ghc-options: -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Werror -threaded -rtsopts -with-rtsopts=-N -eventlog
   build-depends:
       Evolution
     , base >=4.7 && <5
     , bytestring
+    , deepseq
     , hspec
     , megaparsec >=7.0.1
     , optparse-applicative
@@ -82,6 +84,7 @@ test-suite evolution-test
       Evolution
     , base >=4.7 && <5
     , bytestring
+    , deepseq
     , hspec
     , megaparsec >=7.0.1
     , optparse-applicative
