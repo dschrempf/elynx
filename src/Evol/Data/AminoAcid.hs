@@ -1,3 +1,7 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeFamilies          #-}
+
 {- |
 Module      :  Evol.Data.AminoAcid
 Description :  Amino acid related types and functions.
@@ -18,40 +22,52 @@ module Evol.Data.AminoAcid
   , parseAminoAcid
   ) where
 
-import           Control.Applicative
-import           Text.Megaparsec.Byte (char')
+import           Data.Vector.Unboxed.Deriving
+import           Data.Word8                   (Word8, toLower, toUpper)
+import           Text.Megaparsec              (oneOf)
 
 import           Evol.Data.Alphabet
-import           Evol.Defaults        (Parser)
-import           Evol.Tools           (c2w)
+import           Evol.Defaults                (Parser)
+import           Evol.Tools                   (c2w, w2c)
 
-data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
-  deriving (Show, Read, Eq, Ord)
+newtype AminoAcid = AminoAcid { fromAA :: Word8 }
+  deriving (Eq)
+
+instance Show AminoAcid where
+  show (AminoAcid w) = [w2c w]
+
+-- | Weird derivation of Unbox.
+-- - [Question on Stack Overflow](https://stackoverflow.com/questions/10866676/how-do-i-write-a-data-vector-unboxed-instance-in-haskell)
+-- - [GitHub issue](https://github.com/haskell/vector/issues/16)
+-- - [Template Haskell deriving](http://hackage.haskell.org/package/vector-th-unbox)
+derivingUnbox "AminoAcid"
+    [t| AminoAcid -> Word8 |]
+    [| \(AminoAcid x) -> x  |]
+    [| AminoAcid |]
+
+aminoAcids :: [Word8]
+aminoAcids = map c2w [ 'A', 'C', 'D', 'E', 'F'
+                     , 'G', 'H', 'I', 'K', 'L'
+                     , 'M', 'N', 'P', 'Q', 'R'
+                     , 'S', 'T', 'V', 'W', 'Y' ]
+
+aminoAcids' :: [Word8]
+aminoAcids' = aminoAcids ++ map toLower aminoAcids
+
+word8ToAminoAcid :: Word8 -> AminoAcid
+word8ToAminoAcid w = if w' `elem` aminoAcids
+                      then AminoAcid w'
+                      else error $ "Cannot read amino acid " ++ show w
+  where w' = toUpper w
+
+parseAminoAcidWord8 :: Parser Word8
+parseAminoAcidWord8 = oneOf aminoAcids'
 
 -- | Parse an amino acid.
--- XXX: Is there a better way to convert Char to Word8?
 parseAminoAcid :: Parser AminoAcid
-parseAminoAcid = (char' (c2w 'A') >> pure A) <|>
-                 (char' (c2w 'C') >> pure C) <|>
-                 (char' (c2w 'D') >> pure D) <|>
-                 (char' (c2w 'E') >> pure E) <|>
-                 (char' (c2w 'F') >> pure F) <|>
-                 (char' (c2w 'G') >> pure G) <|>
-                 (char' (c2w 'H') >> pure H) <|>
-                 (char' (c2w 'I') >> pure I) <|>
-                 (char' (c2w 'K') >> pure K) <|>
-                 (char' (c2w 'L') >> pure L) <|>
-                 (char' (c2w 'M') >> pure M) <|>
-                 (char' (c2w 'N') >> pure N) <|>
-                 (char' (c2w 'P') >> pure P) <|>
-                 (char' (c2w 'Q') >> pure Q) <|>
-                 (char' (c2w 'R') >> pure R) <|>
-                 (char' (c2w 'S') >> pure S) <|>
-                 (char' (c2w 'T') >> pure T) <|>
-                 (char' (c2w 'V') >> pure V) <|>
-                 (char' (c2w 'W') >> pure W) <|>
-                 (char' (c2w 'Y') >> pure Y)
+parseAminoAcid = word8ToAminoAcid <$> parseAminoAcidWord8
 
 instance Alphabet AminoAcid where
-  parseChar = parseAminoAcid
+  word8ToChar    = word8ToAminoAcid
+  alphabet _     = aminoAcids'
   alphabetName _ = AA

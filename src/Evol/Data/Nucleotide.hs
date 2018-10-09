@@ -1,3 +1,7 @@
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
+
 {- |
 Module      :  Evol.Data.Nucleotide
 Description :  Nucleotide related types and functions.
@@ -18,14 +22,16 @@ module Evol.Data.Nucleotide
   , parseNucleotide
   , NucleotideIUPAC (..)
   , parseNucleotideIUPAC
+  , nucleotidesIUPAC'
   ) where
 
-import           Data.Word8         (Word8, toLower, toUpper)
-import           Text.Megaparsec    (oneOf)
+import           Data.Vector.Unboxed.Deriving
+import           Data.Word8                   (Word8, toLower, toUpper)
+import           Text.Megaparsec              (oneOf)
 
 import           Evol.Data.Alphabet
-import           Evol.Defaults      (Parser)
-import           Evol.Tools         (c2w, w2c)
+import           Evol.Defaults                (Parser)
+import           Evol.Tools                   (c2w, w2c)
 
 -- | Nucleotide data type. Actually, only two bits are needed, but 'Word8' is
 -- the smallest available data type. One could use a 'pack' function like it is
@@ -37,8 +43,20 @@ newtype Nucleotide = Nucleotide { fromNuc :: Word8 }
 instance Show Nucleotide where
   show (Nucleotide w) = [w2c w]
 
+-- | Weird derivation of Unbox.
+-- - [Question on Stack Overflow](https://stackoverflow.com/questions/10866676/how-do-i-write-a-data-vector-unboxed-instance-in-haskell)
+-- - [GitHub issue](https://github.com/haskell/vector/issues/16)
+-- - [Template Haskell deriving](http://hackage.haskell.org/package/vector-th-unbox)
+derivingUnbox "Nucleotide"
+    [t| Nucleotide -> Word8 |]
+    [| \(Nucleotide x) -> x  |]
+    [| Nucleotide |]
+
 nucleotides :: [Word8]
 nucleotides = map c2w ['A', 'C', 'G', 'T']
+
+nucleotides' :: [Word8]
+nucleotides' = nucleotides ++ map toLower nucleotides
 
 word8ToNucleotide :: Word8 -> Nucleotide
 word8ToNucleotide w = if w' `elem` nucleotides
@@ -47,14 +65,15 @@ word8ToNucleotide w = if w' `elem` nucleotides
   where w' = toUpper w
 
 parseNucleotideWord8 :: Parser Word8
-parseNucleotideWord8 = oneOf $ nucleotides ++ map toLower nucleotides
+parseNucleotideWord8 = oneOf nucleotides'
 
 -- | Parse a nucleotide.
 parseNucleotide :: Parser Nucleotide
 parseNucleotide = word8ToNucleotide <$> parseNucleotideWord8
 
 instance Alphabet Nucleotide where
-  parseChar = parseNucleotide
+  word8ToChar    = word8ToNucleotide
+  alphabet _     = nucleotides'
   alphabetName _ = DNA
 
 -- A  adenosine          C  cytidine             G  guanine
@@ -69,6 +88,15 @@ newtype NucleotideIUPAC = NucleotideIUPAC { fromNucIUPAC :: Word8 }
 instance Show NucleotideIUPAC where
   show (NucleotideIUPAC w) = [w2c w]
 
+-- | Weird derivation of Unbox.
+-- - [Question on Stack Overflow](https://stackoverflow.com/questions/10866676/how-do-i-write-a-data-vector-unboxed-instance-in-haskell)
+-- - [GitHub issue](https://github.com/haskell/vector/issues/16)
+-- - [Template Haskell deriving](http://hackage.haskell.org/package/vector-th-unbox)
+derivingUnbox "NucleotideIUPAC"
+    [t| NucleotideIUPAC -> Word8 |]
+    [| \(NucleotideIUPAC x) -> x  |]
+    [| NucleotideIUPAC |]
+
 nucleotidesIUPAC :: [Word8]
 nucleotidesIUPAC = map c2w [ 'A', 'C', 'G'
                            , 'T', 'N', 'U'
@@ -77,6 +105,10 @@ nucleotidesIUPAC = map c2w [ 'A', 'C', 'G'
                            , 'B', 'D', 'H'
                            , 'V', '-']
 
+nucleotidesIUPAC' :: [Word8]
+nucleotidesIUPAC' = nucleotidesIUPAC ++ map toLower nucleotidesIUPAC
+
+
 word8ToNucleotideIUPAC :: Word8 -> NucleotideIUPAC
 word8ToNucleotideIUPAC w = if w' `elem` nucleotidesIUPAC
                            then NucleotideIUPAC w'
@@ -84,13 +116,14 @@ word8ToNucleotideIUPAC w = if w' `elem` nucleotidesIUPAC
   where w' = toUpper w
 
 parseNucleotideIUPACWord8 :: Parser Word8
-parseNucleotideIUPACWord8 = oneOf $ nucleotidesIUPAC ++ map toLower nucleotidesIUPAC
+parseNucleotideIUPACWord8 = oneOf nucleotidesIUPAC'
 
 -- | Parse a nucleotide.
 parseNucleotideIUPAC :: Parser NucleotideIUPAC
 parseNucleotideIUPAC = word8ToNucleotideIUPAC <$> parseNucleotideIUPACWord8
 
 instance Alphabet NucleotideIUPAC where
-  parseChar = parseNucleotideIUPAC
+  word8ToChar    = word8ToNucleotideIUPAC
+  alphabet _     = nucleotidesIUPAC'
   alphabetName _ = DNA
 

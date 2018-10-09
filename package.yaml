@@ -32,6 +32,8 @@ dependencies:
 - word8
 - zlib
 - deepseq
+- vector
+- vector-th-unbox
 
 library:
   source-dirs: src

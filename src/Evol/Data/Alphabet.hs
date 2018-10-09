@@ -18,7 +18,7 @@ module Evol.Data.Alphabet
   , AlphabetName (..)
   ) where
 
-import           Evol.Defaults (Parser)
+import           Data.Word8    (Word8)
 
 data AlphabetName = DNA | DNA_IUPAC | AA
   deriving (Read, Eq, Ord)
@@ -28,6 +28,8 @@ instance Show AlphabetName where
   show DNA_IUPAC = "Nucleotides including IUPAC code (DNA_IUPAC)"
   show AA        = "Amino acids (AA)"
 
+-- TODO: REMOVE TYPE CLASS. Use algebraic data type. data Alphabet = DNA | DNA_IUPAC | ...
 class Show a => Alphabet a where
-  parseChar    :: Parser a
-  alphabetName :: a -> AlphabetName
+  alphabet      :: a -> [Word8]
+  word8ToChar   :: Word8 -> a
+  alphabetName  :: a -> AlphabetName

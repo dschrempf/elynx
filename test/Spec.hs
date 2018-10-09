@@ -17,6 +17,7 @@ module Main where
 
 import qualified Data.ByteString.Lazy.Char8       as B (pack)
 import           Data.Either
+import           Data.Vector.Unboxed              as V
 import           Test.Hspec
 import           Text.Megaparsec
 
@@ -46,7 +47,7 @@ longestSequenceInFile :: Sequence String Nucleotide
 longestSequenceInFile =
   case parse (some parseChar) "" $ B.pack "ATTTAAAAAAACCCAAAACCCGGGCCCCGGGTTTTTTTA" of
     Left _  -> error "BAD. Basic sequence parser error."
-    Right x -> Sequence "SEQUENCE_3" x
+    Right x -> Sequence "SEQUENCE_3" (V.fromList x)
 
 fastaDifferentLengthTrimmedFN :: String
 fastaDifferentLengthTrimmedFN = "test/Data/NucleotideDifferentLengthTrimmed.fasta"

@@ -19,6 +19,8 @@ module Evol.Data.MultiSequenceAlignment
   , join
   ) where
 
+import qualified Data.Vector.Unboxed as V
+
 import           Evol.Data.Alphabet
 import           Evol.Data.Sequence
 
@@ -27,10 +29,10 @@ data MultiSequenceAlignment i a = MSA { msaSequences  :: [Sequence i a]
                                       , msaNSequences :: Int
                                       , msaLength     :: Int}
 
-instance (Show i, Show a) => Show (MultiSequenceAlignment i a) where
+instance (Show i, Show a, V.Unbox a) => Show (MultiSequenceAlignment i a) where
   show MSA{msaSequences=xs} = unlines $ (showSequenceId "Name" ++ "Sequence") : map show xs
 
-summarizeMSA :: (Show i, Show a, Alphabet a) => MultiSequenceAlignment i a -> String
+summarizeMSA :: (Show i, Show a, Alphabet a, V.Unbox a) => MultiSequenceAlignment i a -> String
 summarizeMSA MSA{msaSequences=xs} = summarizeSequenceListHeader "List" xs ++ summarizeSequenceListBody xs
 
 join :: MultiSequenceAlignment i a -> MultiSequenceAlignment i a -> Maybe (MultiSequenceAlignment i a)

@@ -26,17 +26,18 @@ module Evol.Data.Sequence
   , summarizeSequenceListBody
   ) where
 
-import           Data.List          (maximumBy)
-import           Data.Ord           (comparing)
+import           Data.List           (maximumBy)
+import           Data.Ord            (comparing)
+import qualified Data.Vector.Unboxed as V
 
 import           Evol.Data.Alphabet
-import           Evol.Defaults      (defSequenceListSummaryNumber,
-                                     defSequenceNameLength,
-                                     defSequenceSummaryLength)
-import           Evol.Tools         (alignLeft, allEqual)
+import           Evol.Defaults       (defSequenceListSummaryNumber,
+                                      defSequenceNameLength,
+                                      defSequenceSummaryLength)
+import           Evol.Tools          (alignLeft, allEqual)
 
 data Sequence i a = Sequence { seqId :: i
-                             , seqCs :: [a] }
+                             , seqCs :: V.Vector a }
   deriving (Read, Eq)
 
 rmFirstQuote :: String -> String
@@ -55,34 +56,35 @@ showSequenceId = alignLeft defSequenceNameLength . show'
 -- XXX: Remove double quotes in case i is of type 'String'.
   where show' = rmDoubleQuotes . show
 
-instance (Show i, Show a) => Show (Sequence i a) where
-  show (Sequence i cs) = showSequenceId i ++ concatMap show cs
+instance (Show i, Show a, V.Unbox a) => Show (Sequence i a) where
+  show (Sequence i cs) = showSequenceId i ++ (concatMap show . V.toList $ cs)
 
-summarizeCharacters :: Show a => [a] -> String
-summarizeCharacters cs = if length cs <= defSequenceSummaryLength
-                         then concatMap show cs
-                         else (concatMap show . take defSequenceSummaryLength) cs ++ "..."
+summarizeCharacters :: (Show a, V.Unbox a) => V.Vector a -> String
+summarizeCharacters cs = if V.length cs <= defSequenceSummaryLength
+                         then concatMap show . V.toList $ cs
+                         else (concatMap show . V.toList . V.take defSequenceSummaryLength $ cs)
+                              ++ "..."
 
-summarizeSequence :: (Show i, Show a) => Sequence i a -> String
+summarizeSequence :: (Show i, Show a, V.Unbox a) => Sequence i a -> String
 summarizeSequence Sequence{seqId=i, seqCs=cs} =
   showSequenceId i ++ summarizeCharacters cs
 
-lengthSequence :: Sequence i a -> Int
-lengthSequence = length . seqCs
+lengthSequence :: (V.Unbox a) => Sequence i a -> Int
+lengthSequence = V.length . seqCs
 
-equalLength :: [Sequence i a] -> Bool
+equalLength :: (V.Unbox a) => [Sequence i a] -> Bool
 equalLength = allEqual . map lengthSequence
 
-longest :: [Sequence i a] -> Sequence i a
+longest :: (V.Unbox a) => [Sequence i a] -> Sequence i a
 longest = maximumBy (comparing lengthSequence)
 
-filterLongerThan :: Int -> [Sequence i a] -> [Sequence i a]
+filterLongerThan :: (V.Unbox a) => Int -> [Sequence i a] -> [Sequence i a]
 filterLongerThan n = filter (\x -> lengthSequence x > n)
 
-summarizeSequenceList :: (Show i, Show a, Alphabet a) => [Sequence i a] -> String
+summarizeSequenceList :: (Show i, Show a, Alphabet a, V.Unbox a) => [Sequence i a] -> String
 summarizeSequenceList ss = summarizeSequenceListHeader "List" ss ++ summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
 
-summarizeSequenceListHeader :: (Show a, Alphabet a) => String -> [Sequence i a] -> String
+summarizeSequenceListHeader :: (Show a, Alphabet a, V.Unbox a) => String -> [Sequence i a] -> String
 summarizeSequenceListHeader h ss = unlines $
   [ h ++ " contains " ++ show (length ss) ++ " sequences."
   , "Alphabet: " ++ show a ++ "."
@@ -90,12 +92,12 @@ summarizeSequenceListHeader h ss = unlines $
   ++ reportIfSubsetIsShown ++
   [ ""
   , showSequenceId "Identifier" ++ "Sequence" ]
-  where a = alphabetName . head . seqCs . head $ ss
+  where a = alphabetName . V.head . seqCs . head $ ss
         reportIfSubsetIsShown
           | length ss > defSequenceListSummaryNumber =
               [ "Showing " ++ show defSequenceListSummaryNumber ++
               " out of " ++ show (length ss) ++ " sequences."]
           | otherwise = []
 
-summarizeSequenceListBody :: (Show i, Show a) => [Sequence i a] -> String
+summarizeSequenceListBody :: (Show i, Show a, V.Unbox a) => [Sequence i a] -> String
 summarizeSequenceListBody ss = unlines $ map summarizeSequence ss

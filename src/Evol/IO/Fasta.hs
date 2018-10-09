@@ -4,6 +4,7 @@ Description :  Fasta sequences.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 
+
 Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
 Portability :  portable
@@ -30,6 +31,9 @@ module Evol.IO.Fasta
   ) where
 
 import           Control.Monad
+import qualified Data.ByteString.Lazy             as B (ByteString, concat,
+                                                        unpack)
+import qualified Data.Vector.Unboxed              as V
 import           Data.Word                        (Word8)
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
@@ -49,21 +53,21 @@ allowedChar = alphaNumChar <|> oneOf (map c2w ['_', '|', '.'])
 sequenceId :: Parser [Word8]
 sequenceId = char (c2w '>') *> some allowedChar <* eol
 
-sequenceLine :: Alphabet a => Parser [a]
--- Make sure that both 'eol' and 'eof' are accepted. The function 'void' is
--- needed so that the type check succeeds. Since the value is thrown away
--- anyways it should not make a difference.
-sequenceLine = some parseChar <* (void eol <|> eof)
+sequenceLine :: [Word8] -> Parser B.ByteString
+sequenceLine a = do xs <- takeWhile1P (Just "Sequence characters") (`elem` a)
+                    _  <- void eol <|> eof
+                    return xs
 
-parseSequence :: (Alphabet a) => Parser (Sequence String a)
+-- TODO: How can I get the alphabet here? This is all fishy.
+parseSequence :: (Alphabet a, V.Unbox a) => Parser (Sequence String a)
 parseSequence = do i  <- sequenceId
-                   cs <- some sequenceLine
-                   _  <- many eol
-                   let s = Sequence (map w2c i) (mconcat cs)
-                   return s
+                   cs <- some (sequenceLine nucleotidesIUPAC')
+                   let da = V.force . V.fromList . map word8ToChar .B.unpack .  B.concat $ cs
+                       i' = map w2c i
+                   return $ Sequence i' da
 
-fasta :: (Alphabet a) => Parser [Sequence String a]
-fasta = some parseSequence <* eof
+fasta :: (Alphabet a, V.Unbox a) => Parser [Sequence String a]
+fasta = parseSequence `sepBy` many eol <* eof
 
 fastaNucleotide :: Parser [Sequence String Nucleotide]
 fastaNucleotide = fasta
@@ -74,7 +78,7 @@ fastaNucleotideIUPAC = fasta
 fastaAminoAcid :: Parser [Sequence String AminoAcid]
 fastaAminoAcid = fasta
 
-fastaMSA :: (Alphabet a) => Parser (MultiSequenceAlignment String a)
+fastaMSA :: (Alphabet a, V.Unbox a) => Parser (MultiSequenceAlignment String a)
 fastaMSA = do ss <- fasta
               if equalLength ss
                 then return $ MSA ss (length ss) (lengthSequence $ head ss)
