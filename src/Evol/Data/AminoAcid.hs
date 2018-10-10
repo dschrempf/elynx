@@ -19,15 +19,12 @@ Creation date: Thu Oct  4 18:26:35 2018.
 
 module Evol.Data.AminoAcid
   ( AminoAcid (..)
-  , parseAminoAcid
   ) where
 
 import           Data.Vector.Unboxed.Deriving
 import           Data.Word8                   (Word8, toLower, toUpper)
-import           Text.Megaparsec              (oneOf)
 
 import           Evol.Data.Alphabet
-import           Evol.Defaults                (Parser)
 import           Evol.Tools                   (c2w, w2c)
 
 newtype AminoAcid = AminoAcid { fromAA :: Word8 }
@@ -45,29 +42,31 @@ derivingUnbox "AminoAcid"
     [| \(AminoAcid x) -> x  |]
     [| AminoAcid |]
 
-aminoAcids :: [Word8]
-aminoAcids = map c2w [ 'A', 'C', 'D', 'E', 'F'
-                     , 'G', 'H', 'I', 'K', 'L'
-                     , 'M', 'N', 'P', 'Q', 'R'
-                     , 'S', 'T', 'V', 'W', 'Y' ]
+aminoAcids :: Alphabet
+aminoAcids = Alphabet $ map c2w [ 'A', 'C', 'D', 'E', 'F'
+                                , 'G', 'H', 'I', 'K', 'L'
+                                , 'M', 'N', 'P', 'Q', 'R'
+                                , 'S', 'T', 'V', 'W', 'Y' ]
 
-aminoAcids' :: [Word8]
-aminoAcids' = aminoAcids ++ map toLower aminoAcids
+aminoAcids' :: Alphabet
+aminoAcids' = Alphabet $ as ++ map toLower as
+  where as = fromAlphabet aminoAcids
 
 word8ToAminoAcid :: Word8 -> AminoAcid
-word8ToAminoAcid w = if w' `elem` aminoAcids
+word8ToAminoAcid w = if w' `elem` fromAlphabet aminoAcids
                       then AminoAcid w'
                       else error $ "Cannot read amino acid " ++ show w
   where w' = toUpper w
 
-parseAminoAcidWord8 :: Parser Word8
-parseAminoAcidWord8 = oneOf aminoAcids'
+-- parseAminoAcidWord8 :: Parser Word8
+-- parseAminoAcidWord8 = oneOf aminoAcids'
 
--- | Parse an amino acid.
-parseAminoAcid :: Parser AminoAcid
-parseAminoAcid = word8ToAminoAcid <$> parseAminoAcidWord8
+-- -- | Parse an amino acid.
+-- parseAminoAcid :: Parser AminoAcid
+-- parseAminoAcid = word8ToAminoAcid <$> parseAminoAcidWord8
 
-instance Alphabet AminoAcid where
-  word8ToChar    = word8ToAminoAcid
-  alphabet _     = aminoAcids'
-  alphabetName _ = AA
+instance Character AminoAcid where
+  word8ToChar  = word8ToAminoAcid
+  alphabet     = aminoAcids
+  alphabet'    = aminoAcids'
+  alphabetName = AA

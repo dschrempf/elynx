@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications #-}
+
 {- |
 Module      :  Main
 Description :  Parse sequence file formats and analyze them.
@@ -37,11 +39,11 @@ main = do (EvolIOArgs fn al) <- parseEvolIOArgs
           case al of
             -- XXX: Does different stuff for now!
             DNA -> do putStrLn "Read nucleotide multisequence alignment."
-                      msa <- parseFileWith fastaMSANucleotide fn
+                      msa <- parseFileWith (fastaFileMSA @Nucleotide) fn
                       putStrLn $ analyzeNucleotideMSA msa
             DNA_IUPAC -> do putStrLn "Read nucleotide multisequence alignment (with IUPAC codes)."
-                            msa <- parseFileWith fastaNucleotideIUPAC fn
+                            msa <- parseFileWith (fastaFile @NucleotideIUPAC) fn
                             putStrLn $ analyzeNucleotideIUPAC msa
             AA  -> do putStrLn "Read amino acid multisequence alignment."
-                      msa <- parseFileWith fastaMSAAminoAcid fn
+                      msa <- parseFileWith (fastaFileMSA @AminoAcid) fn
                       putStrLn $ analyzeAminoAcidMSA msa

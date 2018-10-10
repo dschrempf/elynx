@@ -1,3 +1,6 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
+
 {- |
 Module      :  Evol.Data.Sequence
 Description :  Hereditary sequences.
@@ -81,10 +84,10 @@ longest = maximumBy (comparing lengthSequence)
 filterLongerThan :: (V.Unbox a) => Int -> [Sequence i a] -> [Sequence i a]
 filterLongerThan n = filter (\x -> lengthSequence x > n)
 
-summarizeSequenceList :: (Show i, Show a, Alphabet a, V.Unbox a) => [Sequence i a] -> String
+summarizeSequenceList :: (Show i, Show a, Character a, V.Unbox a) => [Sequence i a] -> String
 summarizeSequenceList ss = summarizeSequenceListHeader "List" ss ++ summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
 
-summarizeSequenceListHeader :: (Show a, Alphabet a, V.Unbox a) => String -> [Sequence i a] -> String
+summarizeSequenceListHeader :: forall a i . (Show a, Character a, V.Unbox a) => String -> [Sequence i a] -> String
 summarizeSequenceListHeader h ss = unlines $
   [ h ++ " contains " ++ show (length ss) ++ " sequences."
   , "Alphabet: " ++ show a ++ "."
@@ -92,7 +95,7 @@ summarizeSequenceListHeader h ss = unlines $
   ++ reportIfSubsetIsShown ++
   [ ""
   , showSequenceId "Identifier" ++ "Sequence" ]
-  where a = alphabetName . V.head . seqCs . head $ ss
+  where a = alphabetName @a
         reportIfSubsetIsShown
           | length ss > defSequenceListSummaryNumber =
               [ "Showing " ++ show defSequenceListSummaryNumber ++

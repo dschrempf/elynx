@@ -1,3 +1,5 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+
 {- |
 Module      :  Evol.Data.Alphabet
 Description :  Alphabets store hereditary information.
@@ -16,10 +18,15 @@ Creation date: Thu Oct  4 18:57:08 2018.
 module Evol.Data.Alphabet
   ( Alphabet (..)
   , AlphabetName (..)
+  , Character (..)
   ) where
 
 import           Data.Word8    (Word8)
 
+
+newtype Alphabet = Alphabet { fromAlphabet :: [Word8] }
+
+-- XXX: Maybe remove this type.
 data AlphabetName = DNA | DNA_IUPAC | AA
   deriving (Read, Eq, Ord)
 
@@ -28,8 +35,13 @@ instance Show AlphabetName where
   show DNA_IUPAC = "Nucleotides including IUPAC code (DNA_IUPAC)"
   show AA        = "Amino acids (AA)"
 
--- TODO: REMOVE TYPE CLASS. Use algebraic data type. data Alphabet = DNA | DNA_IUPAC | ...
-class Show a => Alphabet a where
-  alphabet      :: a -> [Word8]
-  word8ToChar   :: Word8 -> a
-  alphabetName  :: a -> AlphabetName
+-- | The extension @AllowAmbiguousTypes@ is helping a lot here. In conjunction
+-- with @ScopedTypeVariables@ and @TypeApplications@. See
+-- [StackOverflow](https://stackoverflow.com/questions/41272806/haskell-ambiguous-class-function).
+class Show a => Character a where
+  word8ToChar  :: Word8 -> a
+  -- | Alphabet, uppercase characters only.
+  alphabet     :: Alphabet
+  -- | Alphabet including lowercase and uppercase character.
+  alphabet'    :: Alphabet
+  alphabetName :: AlphabetName

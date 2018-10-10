@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications #-}
+
 {- |
 Module      :  Spec
 Description :  Test EvolIO.
@@ -15,13 +17,12 @@ Creation date: Fri Oct  5 14:25:42 2018.
 
 module Main where
 
-import qualified Data.ByteString.Lazy.Char8       as B (pack)
+import qualified Data.ByteString.Lazy.Char8       as B
 import           Data.Either
-import           Data.Vector.Unboxed              as V
 import           Test.Hspec
 import           Text.Megaparsec
 
-import           Evol.Data.Alphabet
+import           Evol.Data.AminoAcid
 import           Evol.Data.MultiSequenceAlignment
 import           Evol.Data.Nucleotide
 import           Evol.Data.Sequence
@@ -43,11 +44,15 @@ fastaErroneousFN = "test/Data/Erroneous.fasta"
 fastaDifferentLengthFN :: String
 fastaDifferentLengthFN = "test/Data/NucleotideDifferentLength.fasta"
 
+longestSequenceInFileBS :: B.ByteString
+longestSequenceInFileBS = B.unlines $ map B.pack [ ">SEQUENCE_3"
+                                                 , "ATTTAAAAAAACCCAAAACCCGGGCCCCGGGTTTTTTTA" ]
+
 longestSequenceInFile :: Sequence String Nucleotide
 longestSequenceInFile =
-  case parse (some parseChar) "" $ B.pack "ATTTAAAAAAACCCAAAACCCGGGCCCCGGGTTTTTTTA" of
+  case parse (fastaSequence @Nucleotide) "" longestSequenceInFileBS  of
     Left _  -> error "BAD. Basic sequence parser error."
-    Right x -> Sequence "SEQUENCE_3" (V.fromList x)
+    Right x -> x
 
 fastaDifferentLengthTrimmedFN :: String
 fastaDifferentLengthTrimmedFN = "test/Data/NucleotideDifferentLengthTrimmed.fasta"
@@ -56,40 +61,40 @@ main :: IO ()
 main = hspec $ do
   describe "Base.Sequence.longest" $
     it "finds the longest sequence"$ do
-    enss <- runParserOnFile fastaNucleotide fastaDifferentLengthFN
+    enss <- runParserOnFile (fastaFile @Nucleotide) fastaDifferentLengthFN
     enss `shouldSatisfy` isRight
     longest <$> enss `shouldBe` Right longestSequenceInFile
 
   describe "Base.Sequence.filterLongerThan" $
     it "filters sequences that are longer than a specified length" $ do
-    ens <- runParserOnFile fastaNucleotide fastaDifferentLengthFN
-    ems <- runParserOnFile fastaNucleotide fastaDifferentLengthTrimmedFN
+    ens <- runParserOnFile (fastaFile @Nucleotide) fastaDifferentLengthFN
+    ems <- runParserOnFile (fastaFile @Nucleotide) fastaDifferentLengthTrimmedFN
     filterLongerThan 10 <$> ens `shouldBe` ems
 
   describe "EvolIO.Fasta.fastaMSANucleotide" $ do
     it "parses a fasta file with nucleotide sequences with equal length" $ do
-      emsa <- runParserOnFile fastaMSANucleotide fastaNucleotideFN
+      emsa <- runParserOnFile (fastaFileMSA @Nucleotide) fastaNucleotideFN
       emsa  `shouldSatisfy` isRight
       msaNSequences <$> emsa `shouldBe` Right (3 ::Int)
       msaLength <$> emsa `shouldBe` Right 40
 
     it "parses a fasta file with nucleotide IUPAC sequences with equal length" $ do
-      emsa <- runParserOnFile fastaMSANucleotideIUPAC fastaNucleotideIUPACFN
+      emsa <- runParserOnFile (fastaFileMSA @NucleotideIUPAC) fastaNucleotideIUPACFN
       emsa  `shouldSatisfy` isRight
       msaNSequences <$> emsa `shouldBe` Right (3 ::Int)
       msaLength <$> emsa `shouldBe` Right 40
 
     it "should not parse erroneous files" $ do
-      emsa <- runParserOnFile fastaNucleotide fastaErroneousFN
+      emsa <- runParserOnFile (fastaFile @Nucleotide) fastaErroneousFN
       emsa  `shouldSatisfy` isLeft
 
   describe "EvolIO.Fasta.fastaMSAAminoAcid" $ do
     it "parses a fasta file with amino acid sequences with equal length" $ do
-      emsa <- runParserOnFile fastaMSAAminoAcid fastaAminoAcidFN
+      emsa <- runParserOnFile (fastaFileMSA @AminoAcid) fastaAminoAcidFN
       emsa  `shouldSatisfy` isRight
       msaNSequences <$> emsa `shouldBe` Right (2 ::Int)
       msaLength <$> emsa `shouldBe` Right 237
 
     it "should not parse erroneous files" $ do
-      emsa <- runParserOnFile fastaAminoAcid fastaErroneousFN
+      emsa <- runParserOnFile (fastaFile @AminoAcid) fastaErroneousFN
       emsa  `shouldSatisfy` isLeft
