@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
 
+prog_name=evolution-modify
+
+file_DNA=test/Data/Nucleotide.fasta
+file_AA=test/Data/AminoAcid.fasta
+
 stack build || exit 1
-stack exec evolution-modify -- -a DNA test/Data/Nucleotide.fasta
+stack exec $prog_name -- -a DNA $file_DNA || exit 1
+stack exec $prog_name -- -a AA $file_AA || exit 1

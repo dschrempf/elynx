@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
 
+prog_name=evolution-modify
+file_name=test/Data/BenchmarkEnsemblMouse.fa.gz
+
 stack build || exit 1
-stack exec evolution-modify -- -a DNA_IUPAC test/Data/BenchmarkEnsemblMouse.fa.gz
+stack exec $prog_name -- -a DNA_IUPAC $file_name  +RTS -s
