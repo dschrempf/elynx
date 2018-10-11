@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeApplications    #-}
 
 {- |
 Module      :  Evol.IO.Fasta
@@ -26,11 +26,13 @@ module Evol.IO.Fasta
   ( fastaSequence
   , fastaFile
   , fastaFileMSA
+  , sequenceToFasta
+  , sequencesToFasta
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy             as B (ByteString, concat,
-                                                        unpack)
+import qualified Data.ByteString.Lazy.Char8       as B
+import qualified Data.Set                         as S
 import qualified Data.Vector.Unboxed              as V
 import           Data.Word                        (Word8)
 import           Text.Megaparsec
@@ -40,32 +42,45 @@ import           Evol.Data.Alphabet
 import           Evol.Data.MultiSequenceAlignment
 import           Evol.Data.Sequence
 import           Evol.Defaults
-import           Evol.Tools                       (c2w, w2c)
+import           Evol.Tools
 
 
-allowedChar :: Parser Word8
-allowedChar = alphaNumChar <|> oneOf (map c2w ['_', '|', '.'])
+allowedHeaderChar :: Parser Word8
+allowedHeaderChar = alphaNumChar <|> oneOf (map c2w ['_', '|', '.'])
 
-sequenceId :: Parser [Word8]
-sequenceId = char (c2w '>') *> some allowedChar <* eol
+sequenceHeader :: Parser [Word8]
+sequenceHeader = char (c2w '>') *> some allowedHeaderChar <* eol
 
 sequenceLine :: Alphabet -> Parser B.ByteString
-sequenceLine a = do xs <- takeWhile1P (Just "Sequence characters") (`elem` fromAlphabet a)
+sequenceLine a = do xs <- takeWhile1P (Just "Alphabet characters") (\x -> w2c x `S.member` fromAlphabet a)
                     _  <- void eol <|> eof
                     return xs
 
 fastaSequence :: forall a . (Character a, V.Unbox a) => Parser (Sequence String a)
-fastaSequence = do i  <- sequenceId
+fastaSequence = do i  <- sequenceHeader
                    cs <- some (sequenceLine $ alphabet' @a)
-                   let da = V.force . V.fromList . map word8ToChar .B.unpack .  B.concat $ cs
+                   _  <- many eol
+                   let da = V.force . V.fromList . map fromCharToAChar . B.unpack .  B.concat $ cs
                        i' = map w2c i
                    return $ Sequence i' da
 
 fastaFile :: (Character a, V.Unbox a) => Parser [Sequence String a]
-fastaFile = fastaSequence `sepBy` many eol <* eof
+fastaFile = some fastaSequence <* eof
 
 fastaFileMSA :: (Character a, V.Unbox a) => Parser (MultiSequenceAlignment String a)
 fastaFileMSA = do ss <- fastaFile
                   if equalLength ss
                     then return $ MSA ss (length ss) (lengthSequence $ head ss)
                     else error "Sequences do not have equal length."
+
+fastaHeader :: (Show i) => Sequence i a -> B.ByteString
+fastaHeader s = B.pack $ '>' : showWithoutQuotes (seqId s)
+
+fastaBody :: (Show a, Character a, V.Unbox a) => Sequence i a -> B.ByteString
+fastaBody s = B.pack . V.toList . V.map fromACharToChar $ seqCs s
+
+sequenceToFasta :: (Show i, Show a, Character a, V.Unbox a) => Sequence i a -> B.ByteString
+sequenceToFasta s = B.unlines [fastaHeader s, fastaBody s]
+
+sequencesToFasta :: (Show i, Show a, Character a, V.Unbox a) => [Sequence i a] -> B.ByteString
+sequencesToFasta ss = B.unlines $ map sequenceToFasta ss

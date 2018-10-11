@@ -12,7 +12,7 @@ stack build --profile --work-dir .stack-work-profiling || exit 1
 # -H: set heap size
 # -K: set stack size
 # -l: event log (compile option is necessary)
-stack exec $prog_name -- -a DNA_IUPAC $file_name +RTS -p -hy -K100M -l -s
+stack exec $prog_name --work-dir .stack-work-profiling -- -a DNA_IUPAC $file_name +RTS -p -hy -K100M -l -s
 
 # Create a graph of the memory heap profile.
 hp2ps -e10in -c ${prog_name}.hp

@@ -37,27 +37,14 @@ import           Evol.Data.Alphabet
 import           Evol.Defaults       (defSequenceListSummaryNumber,
                                       defSequenceNameLength,
                                       defSequenceSummaryLength)
-import           Evol.Tools          (alignLeft, allEqual)
+import           Evol.Tools          (alignLeft, allEqual, showWithoutQuotes)
 
 data Sequence i a = Sequence { seqId :: i
                              , seqCs :: V.Vector a }
   deriving (Read, Eq)
 
-rmFirstQuote :: String -> String
-rmFirstQuote ('\"':xs) = xs
-rmFirstQuote xs        = xs
-
-rmLastQuote :: String -> String
-rmLastQuote = reverse . rmFirstQuote . reverse
-
-rmDoubleQuotes :: String -> String
-rmDoubleQuotes = rmFirstQuote . rmLastQuote
-
-
 showSequenceId :: Show i => i -> String
-showSequenceId = alignLeft defSequenceNameLength . show'
--- XXX: Remove double quotes in case i is of type 'String'.
-  where show' = rmDoubleQuotes . show
+showSequenceId = alignLeft defSequenceNameLength . showWithoutQuotes
 
 instance (Show i, Show a, V.Unbox a) => Show (Sequence i a) where
   show (Sequence i cs) = showSequenceId i ++ (concatMap show . V.toList $ cs)

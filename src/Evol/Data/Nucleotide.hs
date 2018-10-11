@@ -1,6 +1,6 @@
-{-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeFamilies          #-}
 
 {- |
 Module      :  Evol.Data.Nucleotide
@@ -22,8 +22,10 @@ module Evol.Data.Nucleotide
   , NucleotideIUPAC (..)
   ) where
 
+import qualified Data.Char                    as C
+import qualified Data.Set                     as S
 import           Data.Vector.Unboxed.Deriving
-import           Data.Word8                   (Word8, toLower, toUpper)
+import           Data.Word8                   (Word8)
 
 import           Evol.Data.Alphabet
 import           Evol.Tools                   (c2w, w2c)
@@ -48,17 +50,17 @@ derivingUnbox "Nucleotide"
     [| Nucleotide |]
 
 nucleotides :: Alphabet
-nucleotides = Alphabet $ map c2w ['A', 'C', 'G', 'T']
+nucleotides = Alphabet $ S.fromList ['A', 'C', 'G', 'T']
 
 nucleotides' :: Alphabet
-nucleotides' = Alphabet $ ns ++ map toLower ns
+nucleotides' = Alphabet $ ns `S.union` S.map C.toLower ns
   where ns = fromAlphabet nucleotides
 
-word8ToNucleotide :: Word8 -> Nucleotide
-word8ToNucleotide w = if w' `elem` fromAlphabet nucleotides
-                      then Nucleotide w'
+charToNucleotide :: Char -> Nucleotide
+charToNucleotide w = if w' `elem` fromAlphabet nucleotides
+                      then Nucleotide $ c2w w'
                       else error $ "Cannot read nucleotide " ++ show w
-  where w' = toUpper w
+  where w' = C.toUpper w
 
 -- parseNucleotideWord8 :: Parser Word8
 -- parseNucleotideWord8 = oneOf nucleotides'
@@ -68,10 +70,11 @@ word8ToNucleotide w = if w' `elem` fromAlphabet nucleotides
 -- parseNucleotide = word8ToNucleotide <$> parseNucleotideWord8
 
 instance Character Nucleotide where
-  word8ToChar  = word8ToNucleotide
-  alphabet     = nucleotides
-  alphabet'    = nucleotides'
-  alphabetName = DNA
+  fromCharToAChar = charToNucleotide
+  fromACharToChar = w2c . fromNuc
+  alphabet        = nucleotides
+  alphabet'       = nucleotides'
+  alphabetName    = DNA
 
 -- A  adenosine          C  cytidine             G  guanine
 -- T  thymidine          N  A/G/C/T (any)        U  uridine
@@ -95,23 +98,24 @@ derivingUnbox "NucleotideIUPAC"
     [| NucleotideIUPAC |]
 
 nucleotidesIUPAC :: Alphabet
-nucleotidesIUPAC = Alphabet $ map c2w [ 'A', 'C', 'G'
-                                      , 'T', 'N', 'U'
-                                      , 'K', 'S', 'Y'
-                                      , 'M', 'W', 'R'
-                                      , 'B', 'D', 'H'
-                                      , 'V', '-']
+nucleotidesIUPAC = Alphabet $ S.fromList [ 'A', 'C', 'G'
+                                         , 'T', 'N', 'U'
+                                         , 'K', 'S', 'Y'
+                                         , 'M', 'W', 'R'
+                                         , 'B', 'D', 'H'
+                                         , 'V', '-']
 
 nucleotidesIUPAC' :: Alphabet
-nucleotidesIUPAC' = Alphabet $ ns ++ map toLower ns
+nucleotidesIUPAC' = Alphabet $ ns `S.union` S.map C.toLower ns
   where ns = fromAlphabet nucleotidesIUPAC
 
 
-word8ToNucleotideIUPAC :: Word8 -> NucleotideIUPAC
-word8ToNucleotideIUPAC w = if w' `elem` fromAlphabet nucleotidesIUPAC
-                           then NucleotideIUPAC w'
-                           else error $ "Cannot read nucleotide IUPAC code " ++ show w
-  where w' = toUpper w
+-- | XXX: This is checked various times. E.g., during parsing.
+charToNucleotideIUPAC :: Char -> NucleotideIUPAC
+charToNucleotideIUPAC c = if c' `S.member` fromAlphabet nucleotidesIUPAC
+                           then NucleotideIUPAC $ c2w c'
+                           else error $ "Cannot read nucleotide IUPAC code " ++ show c
+  where c' = C.toUpper c
 
 -- parseNucleotideIUPACWord8 :: Parser Word8
 -- parseNucleotideIUPACWord8 = oneOf nucleotidesIUPAC'
@@ -121,8 +125,9 @@ word8ToNucleotideIUPAC w = if w' `elem` fromAlphabet nucleotidesIUPAC
 -- parseNucleotideIUPAC = word8ToNucleotideIUPAC <$> parseNucleotideIUPACWord8
 
 instance Character NucleotideIUPAC where
-  word8ToChar  = word8ToNucleotideIUPAC
-  alphabet     = nucleotidesIUPAC
-  alphabet'    = nucleotidesIUPAC'
-  alphabetName = DNA
+  fromCharToAChar = charToNucleotideIUPAC
+  fromACharToChar = w2c . fromNucIUPAC
+  alphabet        = nucleotidesIUPAC
+  alphabet'       = nucleotidesIUPAC'
+  alphabetName    = DNA
 

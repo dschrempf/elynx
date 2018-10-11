@@ -21,10 +21,10 @@ module Evol.Data.Alphabet
   , Character (..)
   ) where
 
-import           Data.Word8    (Word8)
+import qualified Data.Set   as S
 
-
-newtype Alphabet = Alphabet { fromAlphabet :: [Word8] }
+-- | List of characters that are accepted. 'Data.Set' is used because it has fast queries.
+newtype Alphabet = Alphabet { fromAlphabet :: S.Set Char }
 
 -- XXX: Maybe remove this type.
 data AlphabetName = DNA | DNA_IUPAC | AA
@@ -39,9 +39,10 @@ instance Show AlphabetName where
 -- with @ScopedTypeVariables@ and @TypeApplications@. See
 -- [StackOverflow](https://stackoverflow.com/questions/41272806/haskell-ambiguous-class-function).
 class Show a => Character a where
-  word8ToChar  :: Word8 -> a
+  fromCharToAChar :: Char -> a
+  fromACharToChar :: a -> Char
   -- | Alphabet, uppercase characters only.
-  alphabet     :: Alphabet
-  -- | Alphabet including lowercase and uppercase character.
-  alphabet'    :: Alphabet
-  alphabetName :: AlphabetName
+  alphabet        :: Alphabet
+  -- | Alphabet including lowercase and uppercase characters.
+  alphabet'       :: Alphabet
+  alphabetName    :: AlphabetName

@@ -23,6 +23,8 @@ module Evol.Tools
   , writeGZFile
   , runParserOnFile
   , parseFileWith
+  , parseByteStringWith
+  , showWithoutQuotes
   ) where
 
 import           Codec.Compression.GZip   (compress, decompress)
@@ -60,3 +62,21 @@ parseFileWith p f = do res <- runParserOnFile p f
                        case res of
                          Left  err -> error $ errorBundlePretty err
                          Right val -> return val
+
+parseByteStringWith :: (ShowErrorComponent e) => Parsec e B.ByteString a -> B.ByteString -> a
+parseByteStringWith p f = case parse p "" f of
+                            Left  err -> error $ errorBundlePretty err
+                            Right val -> val
+
+rmFirstQuote :: String -> String
+rmFirstQuote ('\"':xs) = xs
+rmFirstQuote xs        = xs
+
+rmLastQuote :: String -> String
+rmLastQuote = reverse . rmFirstQuote . reverse
+
+rmDoubleQuotes :: String -> String
+rmDoubleQuotes = rmFirstQuote . rmLastQuote
+
+showWithoutQuotes :: Show a => a -> String
+showWithoutQuotes = rmDoubleQuotes . show

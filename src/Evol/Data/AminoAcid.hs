@@ -21,8 +21,10 @@ module Evol.Data.AminoAcid
   ( AminoAcid (..)
   ) where
 
+import qualified Data.Char                    as C
+import qualified Data.Set                     as S
 import           Data.Vector.Unboxed.Deriving
-import           Data.Word8                   (Word8, toLower, toUpper)
+import           Data.Word8                   (Word8)
 
 import           Evol.Data.Alphabet
 import           Evol.Tools                   (c2w, w2c)
@@ -43,20 +45,21 @@ derivingUnbox "AminoAcid"
     [| AminoAcid |]
 
 aminoAcids :: Alphabet
-aminoAcids = Alphabet $ map c2w [ 'A', 'C', 'D', 'E', 'F'
-                                , 'G', 'H', 'I', 'K', 'L'
-                                , 'M', 'N', 'P', 'Q', 'R'
-                                , 'S', 'T', 'V', 'W', 'Y' ]
+aminoAcids = Alphabet $ S.fromList [ 'A', 'C', 'D', 'E', 'F'
+                                   , 'G', 'H', 'I', 'K', 'L'
+                                   , 'M', 'N', 'P', 'Q', 'R'
+                                   , 'S', 'T', 'V', 'W', 'Y' ]
 
 aminoAcids' :: Alphabet
-aminoAcids' = Alphabet $ as ++ map toLower as
+aminoAcids' = Alphabet $ as `S.union` S.map C.toLower as
   where as = fromAlphabet aminoAcids
 
-word8ToAminoAcid :: Word8 -> AminoAcid
-word8ToAminoAcid w = if w' `elem` fromAlphabet aminoAcids
-                      then AminoAcid w'
-                      else error $ "Cannot read amino acid " ++ show w
-  where w' = toUpper w
+-- | XXX: This is checked various times. E.g., during parsing.
+charToAminoAcid :: Char -> AminoAcid
+charToAminoAcid c = if c' `elem` fromAlphabet aminoAcids
+                      then AminoAcid $ c2w c'
+                      else error $ "Cannot read amino acid " ++ show c
+  where c' = C.toUpper c
 
 -- parseAminoAcidWord8 :: Parser Word8
 -- parseAminoAcidWord8 = oneOf aminoAcids'
@@ -66,7 +69,8 @@ word8ToAminoAcid w = if w' `elem` fromAlphabet aminoAcids
 -- parseAminoAcid = word8ToAminoAcid <$> parseAminoAcidWord8
 
 instance Character AminoAcid where
-  word8ToChar  = word8ToAminoAcid
-  alphabet     = aminoAcids
-  alphabet'    = aminoAcids'
-  alphabetName = AA
+  fromCharToAChar = charToAminoAcid
+  fromACharToChar = w2c . fromAA
+  alphabet        = aminoAcids
+  alphabet'       = aminoAcids'
+  alphabetName    = AA
