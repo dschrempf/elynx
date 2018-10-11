@@ -26,6 +26,11 @@ import qualified Data.Set   as S
 -- | List of characters that are accepted. 'Data.Set' is used because it has fast queries.
 newtype Alphabet = Alphabet { fromAlphabet :: S.Set Char }
 
+-- | Implemented alphabets.
+--
+-- XXX: There is a circular dependency here. The different instances of the
+-- 'Character' type class depend on the module 'Evol.Data.Alphabet' but this
+-- data structure allows is needed to read in the used alphabet.
 data AlphabetName = DNA | DNA_IUPAC | AA
   deriving (Read, Eq, Ord)
 
@@ -37,6 +42,9 @@ instance Show AlphabetName where
 -- | The extension @AllowAmbiguousTypes@ is helping a lot here. In conjunction
 -- with @ScopedTypeVariables@ and @TypeApplications@. See
 -- [StackOverflow](https://stackoverflow.com/questions/41272806/haskell-ambiguous-class-function).
+--
+-- XXX: The 'Character' type class is a little too close CPP classes with
+-- inheritance and virtual functions.
 class Show a => Character a where
   fromCharToAChar :: Char -> a
   fromACharToChar :: a -> Char
