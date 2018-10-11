@@ -19,31 +19,29 @@ module Main where
 import           Evol.ArgParse
 import           Evol.Data.Alphabet
 import           Evol.Data.AminoAcid
-import           Evol.Data.MultiSequenceAlignment
 import           Evol.Data.Nucleotide
 import           Evol.Data.Sequence
 import           Evol.IO.Fasta
 import           Evol.Tools                       (parseFileWith)
 
-analyzeNucleotideMSA :: MultiSequenceAlignment String Nucleotide -> String
-analyzeNucleotideMSA = summarizeMSA
+analyzeNucleotide :: [Sequence String Nucleotide] -> String
+analyzeNucleotide = summarizeSequenceList
 
 analyzeNucleotideIUPAC :: [Sequence String NucleotideIUPAC] -> String
 analyzeNucleotideIUPAC = summarizeSequenceList
 
-analyzeAminoAcidMSA :: MultiSequenceAlignment String AminoAcid -> String
-analyzeAminoAcidMSA = summarizeMSA
+analyzeAminoAcid :: [Sequence String AminoAcid] -> String
+analyzeAminoAcid = summarizeSequenceList
 
 main :: IO ()
 main = do (EvolIOArgs fn al) <- parseEvolIOArgs
           case al of
-            -- XXX: Does different stuff for now!
-            DNA -> do putStrLn "Read nucleotide multisequence alignment."
-                      msa <- parseFileWith (fastaFileMSA @Nucleotide) fn
-                      putStrLn $ analyzeNucleotideMSA msa
+            DNA       -> do putStrLn "Read nucleotide multisequence alignment."
+                            ss <- parseFileWith (fastaFile @Nucleotide) fn
+                            putStrLn $ analyzeNucleotide ss
             DNA_IUPAC -> do putStrLn "Read nucleotide multisequence alignment (with IUPAC codes)."
                             msa <- parseFileWith (fastaFile @NucleotideIUPAC) fn
                             putStrLn $ analyzeNucleotideIUPAC msa
-            AA  -> do putStrLn "Read amino acid multisequence alignment."
-                      msa <- parseFileWith (fastaFileMSA @AminoAcid) fn
-                      putStrLn $ analyzeAminoAcidMSA msa
+            AA        -> do putStrLn "Read amino acid multisequence alignment."
+                            ss <- parseFileWith (fastaFile @AminoAcid) fn
+                            putStrLn $ analyzeAminoAcid ss
