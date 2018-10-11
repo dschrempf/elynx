@@ -56,11 +56,15 @@ nucleotides' :: Alphabet
 nucleotides' = Alphabet $ ns `S.union` S.map C.toLower ns
   where ns = fromAlphabet nucleotides
 
+-- charToNucleotideUnsafe :: Char -> Nucleotide
+-- charToNucleotideUnsafe c = Nucleotide $ c2w $ C.toUpper c
+
+-- | XXX: This is checked various times. E.g., during parsing.
 charToNucleotide :: Char -> Nucleotide
-charToNucleotide w = if w' `elem` fromAlphabet nucleotides
-                      then Nucleotide $ c2w w'
-                      else error $ "Cannot read nucleotide " ++ show w
-  where w' = C.toUpper w
+charToNucleotide c = if c' `S.member` fromAlphabet nucleotides
+                      then Nucleotide $ c2w c'
+                      else error $ "Cannot read nucleotide " ++ show c
+  where c' = C.toUpper c
 
 -- parseNucleotideWord8 :: Parser Word8
 -- parseNucleotideWord8 = oneOf nucleotides'
@@ -109,6 +113,8 @@ nucleotidesIUPAC' :: Alphabet
 nucleotidesIUPAC' = Alphabet $ ns `S.union` S.map C.toLower ns
   where ns = fromAlphabet nucleotidesIUPAC
 
+-- charToNucleotideIUPACUnsafe :: Char -> NucleotideIUPAC
+-- charToNucleotideIUPACUnsafe c = NucleotideIUPAC $ c2w $ C.toUpper c
 
 -- | XXX: This is checked various times. E.g., during parsing.
 charToNucleotideIUPAC :: Char -> NucleotideIUPAC

@@ -54,9 +54,12 @@ aminoAcids' :: Alphabet
 aminoAcids' = Alphabet $ as `S.union` S.map C.toLower as
   where as = fromAlphabet aminoAcids
 
+-- charToAminoAcidUnsafe :: Char -> AminoAcid
+-- charToAminoAcidUnsafe c = AminoAcid $ c2w $ C.toUpper c
+
 -- | XXX: This is checked various times. E.g., during parsing.
 charToAminoAcid :: Char -> AminoAcid
-charToAminoAcid c = if c' `elem` fromAlphabet aminoAcids
+charToAminoAcid c = if c' `S.member` fromAlphabet aminoAcids
                       then AminoAcid $ c2w c'
                       else error $ "Cannot read amino acid " ++ show c
   where c' = C.toUpper c
