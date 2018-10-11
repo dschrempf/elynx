@@ -44,7 +44,8 @@ instance Show AlphabetName where
 -- [StackOverflow](https://stackoverflow.com/questions/41272806/haskell-ambiguous-class-function).
 --
 -- XXX: The 'Character' type class is a little too close CPP classes with
--- inheritance and virtual functions.
+-- inheritance and virtual functions. On the other hand, in order to define a
+-- new type of alphabet character, these functions need to be implemented.
 class Show a => ACharacter a where
   fromCharToAChar :: Char -> a
   fromACharToChar :: a -> Char
