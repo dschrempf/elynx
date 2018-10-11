@@ -60,7 +60,11 @@ fastaSequence :: forall a . (Character a, V.Unbox a) => Parser (Sequence String 
 fastaSequence = do i  <- sequenceHeader
                    cs <- some (sequenceLine $ alphabet' @a)
                    _  <- many eol
-                   let da = V.force . V.fromList . map fromCharToAChar . B.unpack .  B.concat $ cs
+                   let bs = B.concat cs
+                       -- TODO: Use V.generate. But Int cs. Int64?
+                       -- l  = fromIntegral $ B.length bs :: Int
+                       -- v  = V.generate (l) $ \i -> fromCharToAChar (bs `B.index` i)
+                       da = V.force . V.fromList . map fromCharToAChar . B.unpack $ bs
                        i' = map w2c i
                    return $ Sequence i' da
 
