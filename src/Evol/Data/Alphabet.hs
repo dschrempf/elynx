@@ -18,7 +18,7 @@ Creation date: Thu Oct  4 18:57:08 2018.
 module Evol.Data.Alphabet
   ( Alphabet (..)
   , AlphabetName (..)
-  , Character (..)
+  , ACharacter (..)
   ) where
 
 import qualified Data.Set   as S
@@ -45,7 +45,7 @@ instance Show AlphabetName where
 --
 -- XXX: The 'Character' type class is a little too close CPP classes with
 -- inheritance and virtual functions.
-class Show a => Character a where
+class Show a => ACharacter a where
   fromCharToAChar :: Char -> a
   fromACharToChar :: a -> Char
   -- | Alphabet, uppercase characters only.

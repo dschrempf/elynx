@@ -32,7 +32,7 @@ data MultiSequenceAlignment i a = MSA { msaSequences  :: [Sequence i a]
 instance (Show i, Show a, V.Unbox a) => Show (MultiSequenceAlignment i a) where
   show MSA{msaSequences=xs} = unlines $ (showSequenceId "Name" ++ "Sequence") : map show xs
 
-summarizeMSA :: (Show i, Show a, Character a, V.Unbox a) => MultiSequenceAlignment i a -> String
+summarizeMSA :: (Show i, Show a, ACharacter a, V.Unbox a) => MultiSequenceAlignment i a -> String
 summarizeMSA MSA{msaSequences=xs} = summarizeSequenceListHeader "List" xs ++ summarizeSequenceListBody xs
 
 join :: MultiSequenceAlignment i a -> MultiSequenceAlignment i a -> Maybe (MultiSequenceAlignment i a)

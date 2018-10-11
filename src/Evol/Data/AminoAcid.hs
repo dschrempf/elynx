@@ -72,7 +72,7 @@ charToAminoAcid c = if c' `S.member` fromAlphabet aminoAcids
 -- parseAminoAcid :: Parser AminoAcid
 -- parseAminoAcid = word8ToAminoAcid <$> parseAminoAcidWord8
 
-instance Character AminoAcid where
+instance ACharacter AminoAcid where
   fromCharToAChar = charToAminoAcid
   fromACharToChar = w2c . fromAA
   alphabet        = aminoAcids

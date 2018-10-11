@@ -18,7 +18,7 @@ Creation date: Thu Oct  4 18:54:51 2018.
 module Evol.Data.Sequence
   ( Sequence (..)
   , showSequenceId
-  , summarizeCharacters
+  , summarizeACharacters
   , summarizeSequence
   , lengthSequence
   , equalLength
@@ -49,15 +49,15 @@ showSequenceId = alignLeft defSequenceNameLength . showWithoutQuotes
 instance (Show i, Show a, V.Unbox a) => Show (Sequence i a) where
   show (Sequence i cs) = showSequenceId i ++ (concatMap show . V.toList $ cs)
 
-summarizeCharacters :: (Show a, V.Unbox a) => V.Vector a -> String
-summarizeCharacters cs = if V.length cs <= defSequenceSummaryLength
+summarizeACharacters :: (Show a, V.Unbox a) => V.Vector a -> String
+summarizeACharacters cs = if V.length cs <= defSequenceSummaryLength
                          then concatMap show . V.toList $ cs
                          else (concatMap show . V.toList . V.take defSequenceSummaryLength $ cs)
                               ++ "..."
 
 summarizeSequence :: (Show i, Show a, V.Unbox a) => Sequence i a -> String
 summarizeSequence Sequence{seqId=i, seqCs=cs} =
-  showSequenceId i ++ summarizeCharacters cs
+  showSequenceId i ++ summarizeACharacters cs
 
 lengthSequence :: (V.Unbox a) => Sequence i a -> Int
 lengthSequence = V.length . seqCs
@@ -71,10 +71,10 @@ longest = maximumBy (comparing lengthSequence)
 filterLongerThan :: (V.Unbox a) => Int -> [Sequence i a] -> [Sequence i a]
 filterLongerThan n = filter (\x -> lengthSequence x > n)
 
-summarizeSequenceList :: (Show i, Show a, Character a, V.Unbox a) => [Sequence i a] -> String
+summarizeSequenceList :: (Show i, Show a, ACharacter a, V.Unbox a) => [Sequence i a] -> String
 summarizeSequenceList ss = summarizeSequenceListHeader "List" ss ++ summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
 
-summarizeSequenceListHeader :: forall a i . (Show a, Character a, V.Unbox a) => String -> [Sequence i a] -> String
+summarizeSequenceListHeader :: forall a i . (Show a, ACharacter a, V.Unbox a) => String -> [Sequence i a] -> String
 summarizeSequenceListHeader h ss = unlines $
   [ h ++ " contains " ++ show (length ss) ++ " sequences."
   , "Alphabet: " ++ show a ++ "."

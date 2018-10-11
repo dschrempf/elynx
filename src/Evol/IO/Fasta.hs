@@ -56,7 +56,7 @@ sequenceLine a = do xs <- takeWhile1P (Just "Alphabet characters") (\x -> w2c x 
                     _  <- void eol <|> eof
                     return xs
 
-fastaSequence :: forall a . (Character a, V.Unbox a) => Parser (Sequence String a)
+fastaSequence :: forall a . (ACharacter a, V.Unbox a) => Parser (Sequence String a)
 fastaSequence = do hd <- sequenceHeader
                    cs <- some (sequenceLine $ alphabet' @a)
                    _  <- many eol
@@ -68,10 +68,10 @@ fastaSequence = do hd <- sequenceHeader
                        hd' = map w2c hd
                    return $ Sequence hd' v
 
-fastaFile :: (Character a, V.Unbox a) => Parser [Sequence String a]
+fastaFile :: (ACharacter a, V.Unbox a) => Parser [Sequence String a]
 fastaFile = some fastaSequence <* eof
 
-fastaFileMSA :: (Character a, V.Unbox a) => Parser (MultiSequenceAlignment String a)
+fastaFileMSA :: (ACharacter a, V.Unbox a) => Parser (MultiSequenceAlignment String a)
 fastaFileMSA = do ss <- fastaFile
                   if equalLength ss
                     then return $ MSA ss (length ss) (lengthSequence $ head ss)
@@ -80,11 +80,11 @@ fastaFileMSA = do ss <- fastaFile
 fastaHeader :: (Show i) => Sequence i a -> B.ByteString
 fastaHeader s = B.pack $ '>' : showWithoutQuotes (seqId s)
 
-fastaBody :: (Show a, Character a, V.Unbox a) => Sequence i a -> B.ByteString
+fastaBody :: (Show a, ACharacter a, V.Unbox a) => Sequence i a -> B.ByteString
 fastaBody s = B.pack . V.toList . V.map fromACharToChar $ seqCs s
 
-sequenceToFasta :: (Show i, Show a, Character a, V.Unbox a) => Sequence i a -> B.ByteString
+sequenceToFasta :: (Show i, Show a, ACharacter a, V.Unbox a) => Sequence i a -> B.ByteString
 sequenceToFasta s = B.unlines [fastaHeader s, fastaBody s]
 
-sequencesToFasta :: (Show i, Show a, Character a, V.Unbox a) => [Sequence i a] -> B.ByteString
+sequencesToFasta :: (Show i, Show a, ACharacter a, V.Unbox a) => [Sequence i a] -> B.ByteString
 sequencesToFasta ss = B.unlines $ map sequenceToFasta ss

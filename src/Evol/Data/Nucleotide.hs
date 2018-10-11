@@ -74,7 +74,7 @@ charToNucleotide c = if c' `S.member` fromAlphabet nucleotides
 -- parseNucleotide :: Parser Nucleotide
 -- parseNucleotide = word8ToNucleotide <$> parseNucleotideWord8
 
-instance Character Nucleotide where
+instance ACharacter Nucleotide where
   fromCharToAChar = charToNucleotide
   fromACharToChar = w2c . fromNuc
   alphabet        = nucleotides
@@ -133,7 +133,7 @@ charToNucleotideIUPAC c = if c' `S.member` fromAlphabet nucleotidesIUPAC
 -- parseNucleotideIUPAC :: Parser NucleotideIUPAC
 -- parseNucleotideIUPAC = word8ToNucleotideIUPAC <$> parseNucleotideIUPACWord8
 
-instance Character NucleotideIUPAC where
+instance ACharacter NucleotideIUPAC where
   fromCharToAChar = charToNucleotideIUPAC
   fromACharToChar = w2c . fromNucIUPAC
   alphabet        = nucleotidesIUPAC
