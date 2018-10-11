@@ -78,3 +78,30 @@ instance Character AminoAcid where
   alphabet        = aminoAcids
   alphabet'       = aminoAcids'
   alphabetName    = AA
+
+-- AA_IUPAC
+-- Amino Acid Code:  Three letter Code:  Amino Acid:
+-- ----------------  ------------------  -----------
+-- A.................Ala.................Alanine
+-- B.................Asx.................Aspartic acid or Asparagine
+-- C.................Cys.................Cysteine
+-- D.................Asp.................Aspartic Acid
+-- E.................Glu.................Glutamic Acid
+-- F.................Phe.................Phenylalanine
+-- G.................Gly.................Glycine
+-- H.................His.................Histidine
+-- I.................Ile.................Isoleucine
+-- K.................Lys.................Lysine
+-- L.................Leu.................Leucine
+-- M.................Met.................Methionine
+-- N.................Asn.................Asparagine
+-- P.................Pro.................Proline
+-- Q.................Gln.................Glutamine
+-- R.................Arg.................Arginine
+-- S.................Ser.................Serine
+-- T.................Thr.................Threonine
+-- V.................Val.................Valine
+-- W.................Trp.................Tryptophan
+-- X.................Xaa.................Any amino acid
+-- Y.................Tyr.................Tyrosine
+-- Z.................Glx.................Glutamine or Glutamic acid
