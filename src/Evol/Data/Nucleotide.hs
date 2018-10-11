@@ -18,9 +18,9 @@ Creation date: Thu Oct  4 18:26:35 2018.
 
 
 module Evol.Data.Nucleotide
-  ( Nucleotide (..)
-  , NucleotideIUPAC (..)
-  ) where
+  ( Nucleotide
+  , NucleotideIUPAC )
+where
 
 import qualified Data.Char                    as C
 import qualified Data.Set                     as S
@@ -56,15 +56,16 @@ nucleotides' :: Alphabet
 nucleotides' = Alphabet $ ns `S.union` S.map C.toLower ns
   where ns = fromAlphabet nucleotides
 
--- charToNucleotideUnsafe :: Char -> Nucleotide
--- charToNucleotideUnsafe c = Nucleotide $ c2w $ C.toUpper c
-
 -- | XXX: This is checked various times. E.g., during parsing.
 charToNucleotide :: Char -> Nucleotide
 charToNucleotide c = if c' `S.member` fromAlphabet nucleotides
                       then Nucleotide $ c2w c'
                       else error $ "Cannot read nucleotide " ++ show c
   where c' = C.toUpper c
+
+-- | XXX: But unsafe conversion is not faster.
+-- charToNucleotideUnsafe :: Char -> Nucleotide
+-- charToNucleotideUnsafe c = Nucleotide $ c2w $ C.toUpper c
 
 -- parseNucleotideWord8 :: Parser Word8
 -- parseNucleotideWord8 = oneOf nucleotides'
@@ -113,8 +114,6 @@ nucleotidesIUPAC' :: Alphabet
 nucleotidesIUPAC' = Alphabet $ ns `S.union` S.map C.toLower ns
   where ns = fromAlphabet nucleotidesIUPAC
 
--- charToNucleotideIUPACUnsafe :: Char -> NucleotideIUPAC
--- charToNucleotideIUPACUnsafe c = NucleotideIUPAC $ c2w $ C.toUpper c
 
 -- | XXX: This is checked various times. E.g., during parsing.
 charToNucleotideIUPAC :: Char -> NucleotideIUPAC
@@ -122,6 +121,10 @@ charToNucleotideIUPAC c = if c' `S.member` fromAlphabet nucleotidesIUPAC
                            then NucleotideIUPAC $ c2w c'
                            else error $ "Cannot read nucleotide IUPAC code " ++ show c
   where c' = C.toUpper c
+
+-- | XXX: But unsafe conversion is not faster.
+-- charToNucleotideIUPACUnsafe :: Char -> NucleotideIUPAC
+-- charToNucleotideIUPACUnsafe c = NucleotideIUPAC $ c2w $ C.toUpper c
 
 -- parseNucleotideIUPACWord8 :: Parser Word8
 -- parseNucleotideIUPACWord8 = oneOf nucleotidesIUPAC'
@@ -135,5 +138,4 @@ instance Character NucleotideIUPAC where
   fromACharToChar = w2c . fromNucIUPAC
   alphabet        = nucleotidesIUPAC
   alphabet'       = nucleotidesIUPAC'
-  alphabetName    = DNA
-
+  alphabetName    = DNA_IUPAC

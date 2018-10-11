@@ -26,7 +26,6 @@ import qualified Data.Set   as S
 -- | List of characters that are accepted. 'Data.Set' is used because it has fast queries.
 newtype Alphabet = Alphabet { fromAlphabet :: S.Set Char }
 
--- XXX: Maybe remove this type.
 data AlphabetName = DNA | DNA_IUPAC | AA
   deriving (Read, Eq, Ord)
 

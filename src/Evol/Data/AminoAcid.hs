@@ -18,7 +18,7 @@ Creation date: Thu Oct  4 18:26:35 2018.
 
 
 module Evol.Data.AminoAcid
-  ( AminoAcid (..)
+  ( AminoAcid
   ) where
 
 import qualified Data.Char                    as C
@@ -54,15 +54,16 @@ aminoAcids' :: Alphabet
 aminoAcids' = Alphabet $ as `S.union` S.map C.toLower as
   where as = fromAlphabet aminoAcids
 
--- charToAminoAcidUnsafe :: Char -> AminoAcid
--- charToAminoAcidUnsafe c = AminoAcid $ c2w $ C.toUpper c
-
 -- | XXX: This is checked various times. E.g., during parsing.
 charToAminoAcid :: Char -> AminoAcid
 charToAminoAcid c = if c' `S.member` fromAlphabet aminoAcids
                       then AminoAcid $ c2w c'
                       else error $ "Cannot read amino acid " ++ show c
   where c' = C.toUpper c
+
+-- | XXX: But unsafe conversion is not faster.
+-- charToAminoAcidUnsafe :: Char -> AminoAcid
+-- charToAminoAcidUnsafe c = AminoAcid $ c2w $ C.toUpper c
 
 -- parseAminoAcidWord8 :: Parser Word8
 -- parseAminoAcidWord8 = oneOf aminoAcids'
