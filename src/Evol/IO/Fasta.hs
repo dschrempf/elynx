@@ -57,16 +57,16 @@ sequenceLine a = do xs <- takeWhile1P (Just "Alphabet characters") (\x -> w2c x 
                     return xs
 
 fastaSequence :: forall a . (Character a, V.Unbox a) => Parser (Sequence String a)
-fastaSequence = do i  <- sequenceHeader
+fastaSequence = do hd <- sequenceHeader
                    cs <- some (sequenceLine $ alphabet' @a)
                    _  <- many eol
-                   let bs = B.concat cs
-                       -- TODO: Use V.generate. But Int cs. Int64?
-                       -- l  = fromIntegral $ B.length bs :: Int
-                       -- v  = V.generate (l) $ \i -> fromCharToAChar (bs `B.index` i)
-                       da = V.force . V.fromList . map fromCharToAChar . B.unpack $ bs
-                       i' = map w2c i
-                   return $ Sequence i' da
+                   -- This does not improve anything.
+                   -- let bs = B.concat cs
+                   --     l  = B.length bs
+                   --     v  = V.force $ V.generate (fromIntegral l) $ \i -> fromCharToAChar @a (bs `B.index` fromIntegral i)
+                   let v   = V.force . V.fromList . map fromCharToAChar . B.unpack . B.concat $ cs
+                       hd' = map w2c hd
+                   return $ Sequence hd' v
 
 fastaFile :: (Character a, V.Unbox a) => Parser [Sequence String a]
 fastaFile = some fastaSequence <* eof
