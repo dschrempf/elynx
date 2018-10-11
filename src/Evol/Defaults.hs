@@ -20,11 +20,11 @@ module Evol.Defaults
   , defSequenceListSummaryNumber
   ) where
 
-import           Data.ByteString.Lazy (ByteString)
+import qualified Data.ByteString.Lazy as B
 import           Data.Void
 import           Text.Megaparsec
 
-type Parser = Parsec Void ByteString
+type Parser = Parsec Void B.ByteString
 
 -- | Space reserved for sequence names when printing them.
 defSequenceNameLength :: Int
