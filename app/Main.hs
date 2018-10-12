@@ -1,5 +1,3 @@
-{-# LANGUAGE TypeApplications #-}
-
 {- |
 Module      :  Main
 Description :  Parse sequence file formats and analyze them.
