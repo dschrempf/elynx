@@ -10,8 +10,6 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:54:51 2018.
 
-TODO: Clean this module, document it.
-
 -}
 
 module Evol.Data.Sequence
