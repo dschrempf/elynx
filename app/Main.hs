@@ -27,6 +27,7 @@ analyzeSequenceList = summarizeMSA . fromSequenceList
 
 main :: IO ()
 main = do (EvolIOArgs fn an) <- parseEvolIOArgs
+          putStrLn ""
           putStrLn "Read fasta file."
           putStrLn $ "Alphabet name: " ++ show an ++ "."
           let a = alphabet an

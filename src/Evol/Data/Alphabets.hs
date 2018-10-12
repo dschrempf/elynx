@@ -19,18 +19,18 @@ module Evol.Data.Alphabets
   ) where
 
 import           Evol.Data.Alphabet
-import qualified Evol.Data.AminoAcid  as AA
-import qualified Evol.Data.Nucleotide as DNA
+import           Evol.Data.AminoAcid
+import           Evol.Data.Nucleotide
 
-data AlphabetName = DNA | DNA_IUPAC | AA
+data AlphabetName = DNA | DNA_IUPAC | Protein
   deriving (Read, Eq, Ord)
 
 instance Show AlphabetName where
-  show DNA       = "Nucleotides (DNA)"
-  show DNA_IUPAC = "Nucleotides including IUPAC code (DNA_IUPAC)"
-  show AA        = "Amino acids (AA)"
+  show DNA       = "DNA (nucleotides)"
+  show DNA_IUPAC = "DNA_IUPAC (nucleotides including IUPAC code)"
+  show Protein   = "Protein (amino acids)"
 
 alphabet :: AlphabetName -> Alphabet
-alphabet DNA       = DNA.alphabet
-alphabet DNA_IUPAC = DNA.alphabetIUPAC
-alphabet AA        = AA.alphabet
+alphabet DNA       = nucleotides
+alphabet DNA_IUPAC = nucleotidesIUPAC
+alphabet Protein   = aminoAcids

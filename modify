@@ -7,4 +7,4 @@ file_AA=test/Data/AminoAcid.fasta
 
 stack build || exit 1
 stack exec $prog_name -- -a DNA $file_DNA || exit 1
-stack exec $prog_name -- -a AA $file_AA || exit 1
+stack exec $prog_name -- -a Protein $file_AA || exit 1
