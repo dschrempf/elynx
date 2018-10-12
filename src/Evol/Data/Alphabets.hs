@@ -18,9 +18,9 @@ module Evol.Data.Alphabets
   , alphabet
   ) where
 
-import Evol.Data.Alphabet
-import Evol.Data.Nucleotide
-import Evol.Data.AminoAcid
+import           Evol.Data.Alphabet
+import qualified Evol.Data.AminoAcid  as AA
+import qualified Evol.Data.Nucleotide as DNA
 
 data AlphabetName = DNA | DNA_IUPAC | AA
   deriving (Read, Eq, Ord)
@@ -31,6 +31,6 @@ instance Show AlphabetName where
   show AA        = "Amino acids (AA)"
 
 alphabet :: AlphabetName -> Alphabet
-alphabet DNA       = nucleotides
-alphabet DNA_IUPAC = nucleotidesIUPAC
-alphabet AA        = aminoAcids
+alphabet DNA       = DNA.alphabet
+alphabet DNA_IUPAC = DNA.alphabetIUPAC
+alphabet AA        = AA.alphabet

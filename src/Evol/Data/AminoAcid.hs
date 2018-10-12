@@ -1,4 +1,3 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
 {- |
 Module      :  Evol.Data.AminoAcid
 Description :  Amino acid related types and functions.
@@ -11,54 +10,75 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:26:35 2018.
 
+This module should be imported qualified.
+
 -}
 
-
 module Evol.Data.AminoAcid
-  -- ( AminoAcid
-  ( aminoAcids
+  ( AminoAcid
+  , fromWord
+  , toWord
+  , alphabet
   ) where
 
 import qualified Data.Set                     as S
--- import           Data.Vector.Unboxed.Deriving
--- import           Data.Word8                   (Word8, toUpper)
+import           Data.Word8                   (Word8, toUpper)
 
 import           Evol.Data.Alphabet
--- import           Evol.Tools                   (c2w, w2c)
 import           Evol.Tools                   (c2w)
 
--- newtype AminoAcid = AminoAcid { fromAA :: Word8 }
---   deriving (Eq)
+-- | Amino acids.
+data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
+  deriving (Show, Eq, Ord, Enum)
 
--- instance Show AminoAcid where
---   show (AminoAcid w) = [w2c w]
+fromWord :: Word8 -> AminoAcid
+fromWord w | w' == c2w 'A' = A
+           | w' == c2w 'C' = C
+           | w' == c2w 'D' = D
+           | w' == c2w 'E' = E
+           | w' == c2w 'F' = F
+           | w' == c2w 'G' = G
+           | w' == c2w 'H' = H
+           | w' == c2w 'I' = I
+           | w' == c2w 'K' = K
+           | w' == c2w 'L' = L
+           | w' == c2w 'M' = M
+           | w' == c2w 'N' = N
+           | w' == c2w 'P' = P
+           | w' == c2w 'Q' = Q
+           | w' == c2w 'R' = R
+           | w' == c2w 'S' = S
+           | w' == c2w 'T' = T
+           | w' == c2w 'V' = V
+           | w' == c2w 'W' = W
+           | w' == c2w 'Y' = Y
+           | otherwise     = error $ "Cannot read nucleotide: " ++ show w ++ "."
+  where w' = toUpper w
 
--- -- | Weird derivation of Unbox.
--- -- - [Question on Stack Overflow](https://stackoverflow.com/questions/10866676/how-do-i-write-a-data-vector-unboxed-instance-in-haskell)
--- -- - [GitHub issue](https://github.com/haskell/vector/issues/16)
--- -- - [Template Haskell deriving](http://hackage.haskell.org/package/vector-th-unbox)
--- derivingUnbox "AminoAcid"
---     [t| AminoAcid -> Word8 |]
---     [| \(AminoAcid x) -> x  |]
---     [| AminoAcid |]
+toWord :: AminoAcid-> Word8
+toWord  A = c2w 'A'
+toWord  C = c2w 'C'
+toWord  D = c2w 'D'
+toWord  E = c2w 'E'
+toWord  F = c2w 'F'
+toWord  G = c2w 'G'
+toWord  H = c2w 'H'
+toWord  I = c2w 'I'
+toWord  K = c2w 'K'
+toWord  L = c2w 'L'
+toWord  M = c2w 'M'
+toWord  N = c2w 'N'
+toWord  P = c2w 'P'
+toWord  Q = c2w 'Q'
+toWord  R = c2w 'R'
+toWord  S = c2w 'S'
+toWord  T = c2w 'T'
+toWord  V = c2w 'V'
+toWord  W = c2w 'W'
+toWord  Y = c2w 'Y'
 
-aminoAcids :: Alphabet
-aminoAcids = Alphabet . S.fromList $
-  map c2w [ 'A', 'C', 'D', 'E', 'F'
-          , 'G', 'H', 'I', 'K', 'L'
-          , 'M', 'N', 'P', 'Q', 'R'
-          , 'S', 'T', 'V', 'W', 'Y' ]
-
--- word8ToAminoAcid :: Word8 -> AminoAcid
--- word8ToAminoAcid w = if w' `S.member` fromAlphabet aminoAcids
---                       then AminoAcid w'
---                       else error $ "Cannot read amino acid " ++ show w
---   where w' = toUpper w
-
--- instance ACharacter AminoAcid where
---   fromWord8ToAChar = word8ToAminoAcid
---   fromACharToWord8 = fromAA
---   alphabetName    = AA
+alphabet :: Alphabet
+alphabet = Alphabet . S.fromList . map toWord . enumFrom $ A
 
 -- AA_IUPAC
 -- Amino Acid Code:  Three letter Code:  Amino Acid:
