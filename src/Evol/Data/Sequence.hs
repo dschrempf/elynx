@@ -36,8 +36,8 @@ import qualified Data.ByteString.Lazy as B
 import           Data.List            (maximumBy)
 import           Data.Ord             (comparing)
 import qualified Data.Vector.Unboxed  as V
+import           Data.Word8           (Word8)
 
-import           Evol.Data.Alphabet
 import           Evol.Defaults        (defSequenceListSummaryNumber,
                                        defSequenceNameLength,
                                        defSequenceSummaryLength)
@@ -48,7 +48,7 @@ type SequenceId = String
 -- | By choosing specific types for the identifier and the characters is of
 -- course limiting but also eases handling of types a lot.
 data Sequence = Sequence { seqId :: SequenceId
-                         , seqCs :: V.Vector ACharacter }
+                         , seqCs :: V.Vector Word8 }
   deriving (Eq)
 
 -- | Conversion from ByteString.
