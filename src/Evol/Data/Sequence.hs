@@ -1,6 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
-
 {- |
 Module      :  Evol.Data.Sequence
 Description :  Hereditary sequences.
@@ -13,81 +10,114 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:54:51 2018.
 
+TODO: Clean this module, document it.
+
 -}
 
 module Evol.Data.Sequence
-  ( Sequence (..)
-  , showSequenceId
-  , summarizeACharacters
+  ( Sequence
+  -- | * Input
+  , toSequence
+  -- | * Output
+  , fromSequence
+  , showSequenceList
+  , sequenceListHeader
   , summarizeSequence
+  , summarizeSequenceList
+  , summarizeSequenceListBody
+  -- | * Analysis
   , lengthSequence
   , equalLength
   , longest
+  -- | * Manipulation
   , filterLongerThan
-  , summarizeSequenceList
-  , summarizeSequenceListHeader
-  , summarizeSequenceListBody
+  , trimSequence
   ) where
 
-import           Data.List           (maximumBy)
-import           Data.Ord            (comparing)
-import qualified Data.Vector.Unboxed as V
+import qualified Data.ByteString.Lazy as B
+import           Data.List            (maximumBy)
+import           Data.Ord             (comparing)
+import qualified Data.Vector.Unboxed  as V
 
 import           Evol.Data.Alphabet
-import           Evol.Defaults       (defSequenceListSummaryNumber,
-                                      defSequenceNameLength,
-                                      defSequenceSummaryLength)
-import           Evol.Tools          (alignLeft, allEqual, showWithoutQuotes)
+import           Evol.Defaults        (defSequenceListSummaryNumber,
+                                       defSequenceNameLength,
+                                       defSequenceSummaryLength)
+import           Evol.Tools           (alignLeft, allEqual, showWithoutQuotes)
 
-data Sequence i a = Sequence { seqId :: i
-                             , seqCs :: V.Vector a }
-  deriving (Read, Eq)
+type SequenceId = String
 
-showSequenceId :: Show i => i -> String
-showSequenceId = alignLeft defSequenceNameLength . showWithoutQuotes
+-- | By choosing specific types for the identifier and the characters is of
+-- course limiting but also eases handling of types a lot.
+data Sequence = Sequence { seqId :: SequenceId
+                         , seqCs :: V.Vector ACharacter }
+  deriving (Eq)
 
-instance (Show i, Show a, V.Unbox a) => Show (Sequence i a) where
-  show (Sequence i cs) = showSequenceId i ++ (concatMap show . V.toList $ cs)
+-- | Conversion from ByteString.
+toSequence :: String -> B.ByteString -> Sequence
+toSequence i cs = Sequence i v
+  where v = V.force . V.fromList . B.unpack $ cs
 
-summarizeACharacters :: (Show a, V.Unbox a) => V.Vector a -> String
-summarizeACharacters cs = if V.length cs <= defSequenceSummaryLength
-                         then concatMap show . V.toList $ cs
-                         else (concatMap show . V.toList . V.take defSequenceSummaryLength $ cs)
-                              ++ "..."
+-- | Conversion of data to 'ByteString'.
+seqToCsByteString :: Sequence -> B.ByteString
+seqToCsByteString = B.pack . V.toList . seqCs
 
-summarizeSequence :: (Show i, Show a, V.Unbox a) => Sequence i a -> String
-summarizeSequence Sequence{seqId=i, seqCs=cs} =
-  showSequenceId i ++ summarizeACharacters cs
+fromSequence :: Sequence -> (String, B.ByteString)
+fromSequence s = (seqId s, seqToCsByteString s)
 
-lengthSequence :: (V.Unbox a) => Sequence i a -> Int
-lengthSequence = V.length . seqCs
+showCharacters :: Sequence -> String
+showCharacters = showWithoutQuotes . seqToCsByteString
 
-equalLength :: (V.Unbox a) => [Sequence i a] -> Bool
-equalLength = allEqual . map lengthSequence
+fixedWidth :: String -> String
+fixedWidth = alignLeft defSequenceNameLength
 
-longest :: (V.Unbox a) => [Sequence i a] -> Sequence i a
-longest = maximumBy (comparing lengthSequence)
+instance Show Sequence where
+  show s = fixedWidth (seqId s) ++ showCharacters s
 
-filterLongerThan :: (V.Unbox a) => Int -> [Sequence i a] -> [Sequence i a]
-filterLongerThan n = filter (\x -> lengthSequence x > n)
+showSequenceList :: [Sequence] -> String
+showSequenceList = unlines . map show
 
-summarizeSequenceList :: (Show i, Show a, ACharacter a, V.Unbox a) => [Sequence i a] -> String
-summarizeSequenceList ss = summarizeSequenceListHeader "List" ss ++ summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
+summarizeSequence :: Sequence -> String
+summarizeSequence s = if lengthSequence s > defSequenceSummaryLength
+                      then show (trimSequence defSequenceSummaryLength s) ++ "..."
+                      else show s
 
-summarizeSequenceListHeader :: forall a i . (Show a, ACharacter a, V.Unbox a) => String -> [Sequence i a] -> String
-summarizeSequenceListHeader h ss = unlines $
-  [ h ++ " contains " ++ show (length ss) ++ " sequences."
-  , "Alphabet: " ++ show a ++ "."
-  , "Showing first " ++ show defSequenceSummaryLength ++ " bases." ]
-  ++ reportIfSubsetIsShown ++
-  [ ""
-  , showSequenceId "Identifier" ++ "Sequence" ]
-  where a = alphabetName @a
+summarizeSequenceList :: [Sequence] -> String
+summarizeSequenceList ss = summarizeSequenceListHeader ss ++
+                           summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
+
+sequenceListHeader :: [Sequence] -> [String]
+sequenceListHeader ss =
+  [ "List contains " ++ show (length ss) ++ " sequences."
+  , ""
+  , fixedWidth "Identifier" ++ "Sequence" ]
+
+summarizeSequenceListHeader :: [Sequence] -> String
+summarizeSequenceListHeader ss = unlines $
+  reportIfSubsetIsShown ++
+  [ "For each sequence the " ++ show defSequenceSummaryLength ++ " first bases are shown." ]
+  ++ sequenceListHeader ss
+  where l = length ss
+        s = show defSequenceListSummaryNumber ++ " out of " ++
+            show (length ss) ++ " sequences are shown."
         reportIfSubsetIsShown
-          | length ss > defSequenceListSummaryNumber =
-              [ "Showing " ++ show defSequenceListSummaryNumber ++
-              " out of " ++ show (length ss) ++ " sequences."]
+          | l > defSequenceListSummaryNumber = [s]
           | otherwise = []
 
-summarizeSequenceListBody :: (Show i, Show a, V.Unbox a) => [Sequence i a] -> String
+summarizeSequenceListBody :: [Sequence] -> String
 summarizeSequenceListBody ss = unlines $ map summarizeSequence ss
+
+lengthSequence :: Sequence -> Int
+lengthSequence = V.length . seqCs
+
+equalLength :: [Sequence] -> Bool
+equalLength = allEqual . map lengthSequence
+
+longest :: [Sequence] -> Sequence
+longest = maximumBy (comparing lengthSequence)
+
+filterLongerThan :: Int -> [Sequence] -> [Sequence]
+filterLongerThan n = filter (\x -> lengthSequence x > n)
+
+trimSequence :: Int -> Sequence -> Sequence
+trimSequence n s@Sequence{seqCs=cs} = s {seqCs = V.take n cs}

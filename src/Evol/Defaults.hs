@@ -14,22 +14,14 @@ Creation date: Fri Oct  5 23:00:17 2018.
 
 
 module Evol.Defaults
-  ( Parser
-  , defSequenceNameLength
+  ( defSequenceNameLength
   , defSequenceSummaryLength
   , defSequenceListSummaryNumber
   ) where
 
-import qualified Data.ByteString.Lazy as B
-import           Data.Void
-import           Text.Megaparsec
-
-type Parser = Parsec Void B.ByteString
-
 -- | Space reserved for sequence names when printing them.
 defSequenceNameLength :: Int
 defSequenceNameLength = 25
-
 
 -- | The length shown when summarizing sequences.
 defSequenceSummaryLength :: Int

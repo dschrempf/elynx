@@ -21,7 +21,7 @@ module Evol.ArgParse
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
 
-import           Evol.Data.Alphabet
+import           Evol.Data.Alphabets
 
 data EvolIOArgs = EvolIOArgs
                   { argsFileName :: String

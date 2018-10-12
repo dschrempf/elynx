@@ -15,29 +15,43 @@ Creation date: Thu Oct  4 18:40:18 2018.
 
 module Evol.Data.MultiSequenceAlignment
   ( MultiSequenceAlignment (..)
+  -- | * Input
+  , fromSequenceList
+  -- | * Output
   , summarizeMSA
-  , join
+  -- | * Analysis
+  , msaNSequences
+  -- | * Manipulation
+  , msaJoin
   ) where
 
-import qualified Data.Vector.Unboxed as V
-
-import           Evol.Data.Alphabet
 import           Evol.Data.Sequence
 
 -- | A collection of names sequences with a specific length (i.e., the number of sites).
-data MultiSequenceAlignment i a = MSA { msaSequences  :: [Sequence i a]
-                                      , msaNSequences :: Int
-                                      , msaLength     :: Int}
+data MultiSequenceAlignment = MSA { msaSequences  :: [Sequence]
+                                  , msaLength     :: Int}
 
-instance (Show i, Show a, V.Unbox a) => Show (MultiSequenceAlignment i a) where
-  show MSA{msaSequences=xs} = unlines $ (showSequenceId "Name" ++ "Sequence") : map show xs
+fromSequenceList :: [Sequence] -> MultiSequenceAlignment
+fromSequenceList ss | equalLength ss = MSA ss (lengthSequence $ head ss)
+                    | otherwise      = error "Sequences do not have equal length."
 
-summarizeMSA :: (Show i, Show a, ACharacter a, V.Unbox a) => MultiSequenceAlignment i a -> String
-summarizeMSA MSA{msaSequences=xs} = summarizeSequenceListHeader "List" xs ++ summarizeSequenceListBody xs
 
-join :: MultiSequenceAlignment i a -> MultiSequenceAlignment i a -> Maybe (MultiSequenceAlignment i a)
-join
-  MSA{msaSequences=xs, msaNSequences=nex, msaLength=nix}
-  MSA{msaSequences=ys, msaNSequences=ney, msaLength=niy}
-  | nix == niy = Just $ MSA (xs ++ ys) (nex + ney) nix
+msaHeader :: MultiSequenceAlignment -> String
+msaHeader (MSA ss l) = unlines $
+    [ "Multi sequence alignment."
+    , "Length: " ++ show l ++ "." ]
+    ++ sequenceListHeader ss
+
+instance Show MultiSequenceAlignment where
+  show msa = msaHeader msa ++ showSequenceList (msaSequences msa)
+
+summarizeMSA :: MultiSequenceAlignment -> String
+summarizeMSA msa = msaHeader msa ++ summarizeSequenceListBody (msaSequences msa)
+
+msaNSequences :: MultiSequenceAlignment -> Int
+msaNSequences = length . msaSequences
+
+msaJoin :: MultiSequenceAlignment -> MultiSequenceAlignment -> Maybe MultiSequenceAlignment
+msaJoin (MSA xs lx) (MSA ys ly)
+  | lx == ly = Just $ MSA (xs ++ ys) lx
   | otherwise  = Nothing

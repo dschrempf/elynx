@@ -1,5 +1,3 @@
-{-# LANGUAGE TypeApplications #-}
-
 {- |
 Module      :  Spec
 Description :  Test EvolIO.
@@ -47,8 +45,8 @@ longestSequenceInFileBS :: B.ByteString
 longestSequenceInFileBS = B.unlines $ map B.pack [ ">SEQUENCE_3"
                                                  , "ATTTAAAAAAACCCAAAACCCGGGCCCCGGGTTTTTTTA" ]
 
-longestSequenceInFile :: Sequence String Nucleotide
-longestSequenceInFile = parseByteStringWith (fastaSequence @Nucleotide) longestSequenceInFileBS
+longestSequenceInFile :: Sequence
+longestSequenceInFile = parseByteStringWith (fastaSequence nucleotides) longestSequenceInFileBS
 
 fastaDifferentLengthTrimmedFN :: String
 fastaDifferentLengthTrimmedFN = "test/Data/NucleotideDifferentLengthTrimmed.fasta"
@@ -57,44 +55,44 @@ main :: IO ()
 main = hspec $ do
   describe "Base.Sequence.longest" $
     it "finds the longest sequence"$ do
-    ss <- parseFileWith (fastaFile @Nucleotide) fastaDifferentLengthFN
+    ss <- parseFileWith (fastaFile nucleotides) fastaDifferentLengthFN
     longest ss `shouldBe` longestSequenceInFile
 
   describe "Base.Sequence.filterLongerThan" $
     it "filters sequences that are longer than a specified length" $ do
-    ss  <- parseFileWith (fastaFile @Nucleotide) fastaDifferentLengthFN
-    ss' <- parseFileWith (fastaFile @Nucleotide) fastaDifferentLengthTrimmedFN
+    ss  <- parseFileWith (fastaFile nucleotides) fastaDifferentLengthFN
+    ss' <- parseFileWith (fastaFile nucleotides) fastaDifferentLengthTrimmedFN
     filterLongerThan 10 ss `shouldBe` ss'
 
   describe "EvolIO.Fasta.fastaMSANucleotide" $ do
     it "parses a fasta file with nucleotide sequences with equal length" $ do
-      msa <- parseFileWith (fastaFileMSA @Nucleotide) fastaNucleotideFN
+      msa <- parseFileWith (fastaFileMSA nucleotides) fastaNucleotideFN
       msaNSequences msa `shouldBe` 3
       msaLength msa `shouldBe` 40
 
     it "parses a fasta file with nucleotide IUPAC sequences with equal length" $ do
-      msa <- parseFileWith (fastaFileMSA @NucleotideIUPAC) fastaNucleotideIUPACFN
+      msa <- parseFileWith (fastaFileMSA nucleotidesIUPAC) fastaNucleotideIUPACFN
       msaNSequences msa `shouldBe` 3
       msaLength msa `shouldBe` 40
 
     it "should not parse erroneous files" $ do
-      emsa <- runParserOnFile (fastaFile @Nucleotide) fastaErroneousFN
+      emsa <- runParserOnFile (fastaFile nucleotides) fastaErroneousFN
       emsa  `shouldSatisfy` isLeft
 
   describe "EvolIO.Fasta.fastaMSAAminoAcid" $ do
     it "parses a fasta file with amino acid sequences with equal length" $ do
-      msa <- parseFileWith (fastaFileMSA @AminoAcid) fastaAminoAcidFN
+      msa <- parseFileWith (fastaFileMSA aminoAcids) fastaAminoAcidFN
       msaNSequences msa `shouldBe` 2
       msaLength msa `shouldBe` 237
 
     it "should not parse erroneous files" $ do
-      msa <- runParserOnFile (fastaFile @AminoAcid) fastaErroneousFN
+      msa <- runParserOnFile (fastaFile aminoAcids) fastaErroneousFN
       msa  `shouldSatisfy` isLeft
 
   describe "EvolIO.Fasta.sequencesToFasta" $
     it "should create a fasta bytestring that, when parsed again, is the original sequence" $ do
-      ss <- parseFileWith (fastaFile @NucleotideIUPAC) fastaNucleotideIUPACFN
+      ss <- parseFileWith (fastaFile nucleotidesIUPAC) fastaNucleotideIUPACFN
       let f   = sequencesToFasta ss
-          ss' = parseByteStringWith (fastaFile @NucleotideIUPAC) f
+          ss' = parseByteStringWith (fastaFile nucleotidesIUPAC) f
       ss `shouldBe` ss'
 
