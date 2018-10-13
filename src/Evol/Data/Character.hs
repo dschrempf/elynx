@@ -10,7 +10,7 @@ Portability :  portable
 
 Creation date: Fri Oct 12 16:24:02 2018.
 
-A set of characters forms an alphabet.
+See header of 'Evol.Data.Alphabet'.
 
 -}
 
@@ -21,6 +21,9 @@ module Evol.Data.Character
 
 import           Data.Word8 (Word8)
 
+-- | A set of characters forms an alphabet. Characters need to support some form
+-- of IO. Characters need to support some form of IO. At the moment, I use
+-- 'Word8's, since none of my alphabets has more characters than 255.
 class (Enum a, Bounded a) => Character a where
   fromWord :: Word8 -> a
   toWord   :: a -> Word8

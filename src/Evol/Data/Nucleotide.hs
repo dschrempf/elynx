@@ -10,6 +10,8 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:26:35 2018.
 
+See header of 'Evol.Data.Alphabet'.
+
 -}
 
 module Evol.Data.Nucleotide
