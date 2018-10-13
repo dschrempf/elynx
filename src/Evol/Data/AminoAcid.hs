@@ -16,18 +16,16 @@ module Evol.Data.AminoAcid
   ( AminoAcid
   , wordToAminoAcid
   , aminoAcidToWord
-  , aminoAcids
   ) where
 
-import qualified Data.Set                     as S
-import           Data.Word8                   (Word8, toUpper)
+import           Data.Word8          (Word8, toUpper)
 
-import           Evol.Data.Alphabet
-import           Evol.Tools                   (c2w)
+import           Evol.Data.Character
+import           Evol.Tools          (c2w)
 
 -- | Amino acids.
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
-  deriving (Show, Eq, Ord, Enum)
+  deriving (Show, Eq, Ord, Enum, Bounded)
 
 wordToAminoAcid :: Word8 -> AminoAcid
 wordToAminoAcid w | w' == c2w 'A' = A
@@ -75,8 +73,9 @@ aminoAcidToWord  V = c2w 'V'
 aminoAcidToWord  W = c2w 'W'
 aminoAcidToWord  Y = c2w 'Y'
 
-aminoAcids :: Alphabet
-aminoAcids = Alphabet . S.fromList . map aminoAcidToWord . enumFrom $ A
+instance Character AminoAcid where
+  fromWord = wordToAminoAcid
+  toWord   = aminoAcidToWord
 
 -- AA_IUPAC
 -- Amino Acid Code:  Three letter Code:  Amino Acid:
@@ -104,7 +103,3 @@ aminoAcids = Alphabet . S.fromList . map aminoAcidToWord . enumFrom $ A
 -- X.................Xaa.................Any amino acid
 -- Y.................Tyr.................Tyrosine
 -- Z.................Glx.................Glutamine or Glutamic acid
-
-instance Code AminoAcid where
-  fromWord = wordToAminoAcid
-  toWord   = aminoAcidToWord

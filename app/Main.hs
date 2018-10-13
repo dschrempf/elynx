@@ -15,7 +15,6 @@ Creation date: Fri Oct  5 08:41:05 2018.
 module Main where
 
 import           Evol.ArgParse
-import           Evol.Data.Alphabets
 import           Evol.Data.MultiSequenceAlignment
 import           Evol.Data.Sequence
 import           Evol.IO.Fasta
@@ -26,10 +25,9 @@ analyzeSequenceList :: [Sequence] -> String
 analyzeSequenceList = summarizeMSA . fromSequenceList
 
 main :: IO ()
-main = do (EvolIOArgs fn an) <- parseEvolIOArgs
+main = do (EvolIOArgs fn c) <- parseEvolIOArgs
           putStrLn ""
           putStrLn "Read fasta file."
-          putStrLn $ "Alphabet name: " ++ show an ++ "."
-          let a = alphabet an
-          ss <- parseFileWith (fastaFile a) fn
+          putStrLn $ "Alphabet name: " ++ show c ++ "."
+          ss <- parseFileWith (fastaFile c) fn
           putStr $ analyzeSequenceList ss

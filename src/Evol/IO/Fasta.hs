@@ -63,11 +63,11 @@ fastaSequence a = do hd <- sequenceHeader
                      let hd' = map w2c hd
                      return $ toSequence hd' (B.concat cs)
 
-fastaFile :: Alphabet -> Parser [Sequence]
-fastaFile a = some (fastaSequence a) <* eof
+fastaFile :: Code -> Parser [Sequence]
+fastaFile c = some (fastaSequence (alphabet c)) <* eof
 
-fastaFileMSA :: Alphabet -> Parser MultiSequenceAlignment
-fastaFileMSA a = fromSequenceList <$> fastaFile a
+fastaFileMSA :: Code -> Parser MultiSequenceAlignment
+fastaFileMSA c = fromSequenceList <$> fastaFile c
 
 fastaHeader :: String -> B.ByteString
 fastaHeader i = B.pack $ '>' : i

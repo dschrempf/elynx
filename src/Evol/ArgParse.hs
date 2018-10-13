@@ -21,11 +21,11 @@ module Evol.ArgParse
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
 
-import           Evol.Data.Alphabets
+import           Evol.Data.Alphabet
 
 data EvolIOArgs = EvolIOArgs
                   { argsFileName :: String
-                  , argsAlphabet :: AlphabetName }
+                  , argsAlphabet :: Code }
 
 evolIOOpts :: Parser EvolIOArgs
 evolIOOpts = EvolIOArgs
@@ -38,7 +38,7 @@ fileNameOpt = argument str
     <> showDefault
     <> help "Read sequences from INPUT-FILE-NAME" )
 
-alphabetOpt :: Parser AlphabetName
+alphabetOpt :: Parser Code
 alphabetOpt = option auto
   ( long "alphabet"
     <> short 'a'
