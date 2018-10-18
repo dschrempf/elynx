@@ -23,6 +23,7 @@ Hierarchy:
 
 module Evol.Data.Alphabet
   ( Code (..)
+  , codeNameVerbose
   , Alphabet (..)
   , alphabet
   )
@@ -38,12 +39,12 @@ import           Evol.Data.Nucleotide
 -- | The used genetic code. Could include Protein_IUPAC, CountsFile for
 -- population data and so on.
 data Code = DNA | DNA_IUPAC | Protein
-  deriving (Read, Eq, Ord)
+  deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
-instance Show Code where
-  show DNA       = "DNA (nucleotides)"
-  show DNA_IUPAC = "DNA_IUPAC (nucleotides including IUPAC code)"
-  show Protein   = "Protein (amino acids)"
+codeNameVerbose :: Code -> String
+codeNameVerbose DNA       = "DNA (nucleotides)"
+codeNameVerbose DNA_IUPAC = "DNA_IUPAC (nucleotides including IUPAC code)"
+codeNameVerbose Protein   = "Protein (amino acids)"
 
 -- | 'Data.Set' is used because it uses an ordered, tree-like structure with
 -- fast queries. When parsing characters, they have to be checked for validity

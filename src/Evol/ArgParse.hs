@@ -54,14 +54,11 @@ parseEvolIOArgs = execParser $
   (fullDesc
     <> progDesc "Parse sequence file formats and analyze them."
     <> header "Evolutionary sequences."
-    <> footerDoc formats )
+    <> footerDoc fo )
   where
-    formats = Just . vcat $ map pretty strs
-    strs   = [ "File formats:"
-             , "  - FASTA"
-             , ""
-             , "Alphabet types:"
-             , "  - " ++ show DNA
-             , "  - " ++ show DNA_IUPAC
-             , "  - " ++ show Protein
-             ]
+    fo = Just . vcat $ map pretty strs
+    toListItem = (" - " ++)
+    fs = map toListItem ["FASTA"]
+    as = map (toListItem . codeNameVerbose) [(minBound :: Code) ..]
+    strs   = [ "File formats:" ] ++ fs ++
+             [ "", "Alphabet types:" ] ++ as
