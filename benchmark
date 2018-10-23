@@ -4,4 +4,4 @@ prog_name=evolution-modify
 file_name=test/Data/BenchmarkEnsemblMouse.fa.gz
 
 stack build || exit 1
-stack exec $prog_name -- -a DNA_IUPAC $file_name  +RTS -s
+stack exec $prog_name -- summarize -a DNA_IUPAC $file_name  +RTS -s

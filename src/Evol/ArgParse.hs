@@ -15,6 +15,7 @@ Creation date: Sun Oct  7 17:29:45 2018.
 
 module Evol.ArgParse
   ( EvolIOArgs (..)
+  , Command (..)
   , parseEvolIOArgs
   ) where
 
@@ -23,20 +24,38 @@ import           Options.Applicative.Help.Pretty
 
 import           Evol.Data.Alphabet
 
+data Command = Summarize | Concatenate
+
 data EvolIOArgs = EvolIOArgs
-                  { argsFileName :: String
-                  , argsAlphabet :: Code }
+                  {
+                    argsCommand   :: Command
+                  , argsAlphabet  :: Code
+                  , argsFileNames :: [String]
+                  }
 
 evolIOOpts :: Parser EvolIOArgs
 evolIOOpts = EvolIOArgs
-  <$> fileNameOpt
+  <$> commandArg
   <*> alphabetOpt
+  <*> some fileNameArg
 
-fileNameOpt :: Parser String
-fileNameOpt = argument str
-  ( metavar "INPUT-FILE-NAME"
-    <> showDefault
-    <> help "Read sequences from INPUT-FILE-NAME" )
+commandArg :: Parser Command
+commandArg = hsubparser $
+  summarizeCommand <>
+  concatenateCommand
+
+summarizeCommand :: Mod CommandFields Command
+summarizeCommand = command "summarize" $
+  info (pure Summarize) (progDesc "Summarize sequences found in input files")
+
+concatenateCommand :: Mod CommandFields Command
+concatenateCommand = command "concatenate" $
+  info (pure Concatenate) (progDesc "Concatenate sequences found in input files")
+
+fileNameArg :: Parser String
+fileNameArg = argument str
+  ( metavar "INPUT-FILE-NAMES"
+    <> help "Read sequences from INPUT-FILE-NAMES" )
 
 alphabetOpt :: Parser Code
 alphabetOpt = option auto

@@ -13,7 +13,7 @@ Creation date: Thu Oct  4 18:54:51 2018.
 -}
 
 module Evol.Data.Sequence
-  ( Sequence
+  ( Sequence (..)
   -- | * Input
   , toSequence
   -- | * Output
@@ -30,6 +30,7 @@ module Evol.Data.Sequence
   -- | * Manipulation
   , filterLongerThan
   , trimSequence
+  , concatenate
   ) where
 
 import qualified Data.ByteString.Lazy as B
@@ -119,3 +120,8 @@ filterLongerThan n = filter (\x -> lengthSequence x > n)
 
 trimSequence :: Int -> Sequence -> Sequence
 trimSequence n s@Sequence{seqCs=cs} = s {seqCs = V.take n cs}
+
+concatenate :: Sequence -> Sequence -> Either String Sequence
+concatenate (Sequence i cs) (Sequence j ks)
+  | i == j     = Right $ Sequence i (cs V.++ ks)
+  | otherwise  = Left $ "concatenate: Sequences do not have equal IDs: " ++ i ++ ", " ++ j ++ "."

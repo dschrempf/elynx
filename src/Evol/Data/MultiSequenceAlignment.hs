@@ -23,13 +23,16 @@ module Evol.Data.MultiSequenceAlignment
   , msaNSequences
   -- | * Manipulation
   , msaJoin
+  , msaConcatenate
   ) where
+
+import           Control.Monad
 
 import           Evol.Data.Sequence
 
 -- | A collection of names sequences with a specific length (i.e., the number of sites).
-data MultiSequenceAlignment = MSA { msaSequences  :: [Sequence]
-                                  , msaLength     :: Int}
+data MultiSequenceAlignment = MSA { msaSequences :: [Sequence]
+                                  , msaLength    :: Int}
 
 fromSequenceList :: [Sequence] -> MultiSequenceAlignment
 fromSequenceList ss | equalLength ss = MSA ss (lengthSequence $ head ss)
@@ -51,7 +54,21 @@ summarizeMSA msa = msaHeader msa ++ summarizeSequenceListBody (msaSequences msa)
 msaNSequences :: MultiSequenceAlignment -> Int
 msaNSequences = length . msaSequences
 
-msaJoin :: MultiSequenceAlignment -> MultiSequenceAlignment -> Maybe MultiSequenceAlignment
+-- | Join two 'MultiSequenceAlignment's vertically. That is, add more sequences
+-- to an alignment. See also 'msaConcatenate'.
+msaJoin :: MultiSequenceAlignment
+        -> MultiSequenceAlignment
+        -> Either String MultiSequenceAlignment
 msaJoin (MSA xs lx) (MSA ys ly)
-  | lx == ly = Just $ MSA (xs ++ ys) lx
-  | otherwise  = Nothing
+  | lx == ly = Right $ MSA (xs ++ ys) lx
+  | otherwise  = Left "msaJoin: Multi sequence alignments do not have equal length."
+
+-- | Concatenate two 'MultiSequenceAlignment's horizontally. That is, add more
+-- sites to an alignment. See also 'msaJoin'.
+msaConcatenate :: MultiSequenceAlignment
+               -> MultiSequenceAlignment
+               -> Either String MultiSequenceAlignment
+msaConcatenate (MSA xs lx) (MSA ys ly)
+  | lx /= ly =
+    Left "msaConcatenate: Multi sequence alignments do not have equal length."
+  | otherwise = fromSequenceList <$> zipWithM concatenate xs ys
