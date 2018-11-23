@@ -6,5 +6,7 @@ file_DNA=test/Data/Nucleotide.fasta
 file_AA=test/Data/AminoAcid.fasta
 
 stack build || exit 1
+echo
+
 stack exec $prog_name -- summarize -a DNA $file_DNA || exit 1
 stack exec $prog_name -- summarize -a Protein $file_AA || exit 1

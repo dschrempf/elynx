@@ -19,6 +19,7 @@ module Evol.ArgParse
   , parseEvolIOArgs
   ) where
 
+import           Control.Applicative
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
 
@@ -28,15 +29,19 @@ data Command = Summarize | Concatenate
 
 data EvolIOArgs = EvolIOArgs
                   {
-                    argsCommand   :: Command
-                  , argsAlphabet  :: Code
-                  , argsFileNames :: [String]
+                    argsCommand     :: Command
+                  , argsAlphabet    :: Code
+                  , argsFileNameOut :: Maybe String
+                  , argsQuiet       :: Bool
+                  , argsFileNames   :: [String]
                   }
 
 evolIOOpts :: Parser EvolIOArgs
 evolIOOpts = EvolIOArgs
   <$> commandArg
   <*> alphabetOpt
+  <*> fileNameOutOpt
+  <*> quietOpt
   <*> some fileNameArg
 
 commandArg :: Parser Command
@@ -52,11 +57,6 @@ concatenateCommand :: Mod CommandFields Command
 concatenateCommand = command "concatenate" $
   info (pure Concatenate) (progDesc "Concatenate sequences found in input files")
 
-fileNameArg :: Parser String
-fileNameArg = argument str
-  ( metavar "INPUT-FILE-NAMES"
-    <> help "Read sequences from INPUT-FILE-NAMES" )
-
 alphabetOpt :: Parser Code
 alphabetOpt = option auto
   ( long "alphabet"
@@ -65,6 +65,24 @@ alphabetOpt = option auto
     <> value DNA
     <> showDefault
     <> help "Specify alphabet type NAME" )
+
+fileNameOutOpt :: Parser (Maybe String)
+fileNameOutOpt = optional $ strOption
+  ( long "output-file"
+    <> short 'o'
+    <> metavar "NAME"
+    <> help "Specify output file NAME" )
+
+quietOpt :: Parser Bool
+quietOpt = switch
+  ( long "quiet"
+    <> short 'q'
+    <> help "Be quiet")
+
+fileNameArg :: Parser String
+fileNameArg = argument str
+  ( metavar "INPUT-FILE-NAMES"
+    <> help "Read sequences from INPUT-FILE-NAMES" )
 
 -- | Read the arguments and prints out help if needed.
 parseEvolIOArgs :: IO EvolIOArgs

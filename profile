@@ -4,6 +4,8 @@ prog_name=evolution-modify
 file_name=test/Data/Profile.fa.gz
 
 stack build --profile --work-dir .stack-work-profiling || exit 1
+echo
+
 # See https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/profiling.html#profiling
 # Run the program with
 # -p: profiling support
