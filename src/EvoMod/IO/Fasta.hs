@@ -1,5 +1,5 @@
 {- |
-Module      :  Evol.IO.Fasta
+Module      :  EvoMod.IO.Fasta
 Description :  Fasta sequences.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -19,7 +19,7 @@ For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/p
 -}
 
 
-module Evol.IO.Fasta
+module EvoMod.IO.Fasta
   ( fastaSequence
   , fastaFile
   , fastaFileMSA
@@ -35,10 +35,10 @@ import           Data.Word8                       (Word8, toUpper)
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 
-import           Evol.Data.Alphabet
-import           Evol.Data.MultiSequenceAlignment
-import           Evol.Data.Sequence
-import           Evol.Tools
+import           EvoMod.Data.Alphabet
+import           EvoMod.Data.MultiSequenceAlignment
+import           EvoMod.Data.Sequence
+import           EvoMod.Tools
 
 type Parser = Parsec Void B.ByteString
 

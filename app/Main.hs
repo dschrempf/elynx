@@ -20,10 +20,10 @@ module Main where
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8 as B
 
-import           Evol.ArgParse
-import           Evol.Data.Sequence
-import           Evol.IO.Fasta
-import           Evol.Tools                       (parseFileWith)
+import           EvoMod.ArgParse
+import           EvoMod.Data.Sequence
+import           EvoMod.IO.Fasta
+import           EvoMod.Tools                       (parseFileWith)
 
 concatenateSeqs :: [[Sequence]] -> Either String [Sequence]
 concatenateSeqs []   = Left "Nothing to concatenate."
@@ -40,7 +40,7 @@ io Nothing  (Right b) = B.putStr b
 io (Just f) (Right b) = B.writeFile f b
 
 main :: IO ()
-main = do (EvolIOArgs cmd c mofn q fns) <- parseEvolIOArgs
+main = do (EvoModIOArgs cmd c mofn q fns) <- parseEvoModIOArgs
           unless q $ do
             putStrLn "Read fasta file."
             putStrLn $ "Code: " ++ show c ++ "."

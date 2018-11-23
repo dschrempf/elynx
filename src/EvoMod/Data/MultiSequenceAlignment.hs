@@ -1,5 +1,5 @@
 {- |
-Module      :  Evol.Data.MultiSequenceAlignment
+Module      :  EvoMod.Data.MultiSequenceAlignment
 Description :  Multi sequence alignment related types and functions.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -13,7 +13,7 @@ Creation date: Thu Oct  4 18:40:18 2018.
 -}
 
 
-module Evol.Data.MultiSequenceAlignment
+module EvoMod.Data.MultiSequenceAlignment
   ( MultiSequenceAlignment (..)
   -- | * Input
   , fromSequenceList
@@ -28,7 +28,7 @@ module Evol.Data.MultiSequenceAlignment
 
 import           Control.Monad
 
-import           Evol.Data.Sequence
+import           EvoMod.Data.Sequence
 
 -- | A collection of names sequences with a specific length (i.e., the number of sites).
 data MultiSequenceAlignment = MSA { msaSequences :: [Sequence]

@@ -13,21 +13,21 @@ Creation date: Sun Oct  7 17:29:45 2018.
 -}
 
 
-module Evol.ArgParse
-  ( EvolIOArgs (..)
+module EvoMod.ArgParse
+  ( EvoModIOArgs (..)
   , Command (..)
-  , parseEvolIOArgs
+  , parseEvoModIOArgs
   ) where
 
 import           Control.Applicative
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
 
-import           Evol.Data.Alphabet
+import           EvoMod.Data.Alphabet
 
 data Command = Summarize | Concatenate
 
-data EvolIOArgs = EvolIOArgs
+data EvoModIOArgs = EvoModIOArgs
                   {
                     argsCommand     :: Command
                   , argsAlphabet    :: Code
@@ -36,8 +36,8 @@ data EvolIOArgs = EvolIOArgs
                   , argsFileNames   :: [String]
                   }
 
-evolIOOpts :: Parser EvolIOArgs
-evolIOOpts = EvolIOArgs
+evolIOOpts :: Parser EvoModIOArgs
+evolIOOpts = EvoModIOArgs
   <$> commandArg
   <*> alphabetOpt
   <*> fileNameOutOpt
@@ -85,8 +85,8 @@ fileNameArg = argument str
     <> help "Read sequences from INPUT-FILE-NAMES" )
 
 -- | Read the arguments and prints out help if needed.
-parseEvolIOArgs :: IO EvolIOArgs
-parseEvolIOArgs = execParser $
+parseEvoModIOArgs :: IO EvoModIOArgs
+parseEvoModIOArgs = execParser $
   info (helper <*> evolIOOpts)
   (fullDesc
     <> progDesc "Parse sequence file formats and analyze them."

@@ -1,5 +1,5 @@
 {- |
-Module      :  Evol.Data.AminoAcid
+Module      :  EvoMod.Data.AminoAcid
 Description :  Amino acid related types and functions.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -10,11 +10,11 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:26:35 2018.
 
-See header of 'Evol.Data.Alphabet'.
+See header of 'EvoMod.Data.Alphabet'.
 
 -}
 
-module Evol.Data.AminoAcid
+module EvoMod.Data.AminoAcid
   ( AminoAcid
   , wordToAminoAcid
   , aminoAcidToWord
@@ -22,8 +22,8 @@ module Evol.Data.AminoAcid
 
 import           Data.Word8          (Word8, toUpper)
 
-import           Evol.Data.Character
-import           Evol.Tools          (c2w)
+import           EvoMod.Data.Character
+import           EvoMod.Tools          (c2w)
 
 -- | Amino acids.
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y

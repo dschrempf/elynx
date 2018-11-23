@@ -1,5 +1,5 @@
 {- |
-Module      :  Evol.Data.Sequence
+Module      :  EvoMod.Data.Sequence
 Description :  Hereditary sequences.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -12,7 +12,7 @@ Creation date: Thu Oct  4 18:54:51 2018.
 
 -}
 
-module Evol.Data.Sequence
+module EvoMod.Data.Sequence
   ( Sequence (..)
   -- | * Input
   , toSequence
@@ -39,10 +39,10 @@ import           Data.Ord             (comparing)
 import qualified Data.Vector.Unboxed  as V
 import           Data.Word8           (Word8)
 
-import           Evol.Defaults        (defSequenceListSummaryNumber,
+import           EvoMod.Defaults        (defSequenceListSummaryNumber,
                                        defSequenceNameLength,
                                        defSequenceSummaryLength)
-import           Evol.Tools           (alignLeft, allEqual, showWithoutQuotes)
+import           EvoMod.Tools           (alignLeft, allEqual, showWithoutQuotes)
 
 type SequenceId = String
 

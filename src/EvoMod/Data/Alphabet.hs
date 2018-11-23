@@ -1,5 +1,5 @@
 {- |
-Module      :  Evol.Data.Alphabet
+Module      :  EvoMod.Data.Alphabet
 Description :  Alphabets store hereditary information.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -21,7 +21,7 @@ Hierarchy:
 
 -}
 
-module Evol.Data.Alphabet
+module EvoMod.Data.Alphabet
   ( Code (..)
   , codeNameVerbose
   , Alphabet (..)
@@ -32,9 +32,9 @@ where
 import qualified Data.Set             as S
 import           Data.Word            (Word8)
 
-import           Evol.Data.AminoAcid
-import           Evol.Data.Character
-import           Evol.Data.Nucleotide
+import           EvoMod.Data.AminoAcid
+import           EvoMod.Data.Character
+import           EvoMod.Data.Nucleotide
 
 -- | The used genetic code. Could include Protein_IUPAC, CountsFile for
 -- population data and so on.

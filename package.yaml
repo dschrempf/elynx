@@ -1,4 +1,4 @@
-name:                Evolution
+name:                EvoMod
 version:             0.1.0.0
 github:              "dschrempf/Evolution"
 license:             BSD3
@@ -40,7 +40,7 @@ library:
   source-dirs: src
 
 executables:
-  evolution-modify:
+  evomod:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -49,10 +49,10 @@ executables:
     - -with-rtsopts=-N
     - -eventlog
     dependencies:
-    - Evolution
+    - EvoMod
 
 tests:
-  evolution-test:
+  evomod-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -60,4 +60,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - Evolution
+    - EvoMod

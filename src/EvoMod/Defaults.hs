@@ -1,5 +1,5 @@
 {- |
-Module      :  Evol.Defaults
+Module      :  EvoMod.Defaults
 Description :  Various default values.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -13,7 +13,7 @@ Creation date: Fri Oct  5 23:00:17 2018.
 -}
 
 
-module Evol.Defaults
+module EvoMod.Defaults
   ( defSequenceNameLength
   , defSequenceSummaryLength
   , defSequenceListSummaryNumber

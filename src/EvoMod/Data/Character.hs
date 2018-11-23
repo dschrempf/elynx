@@ -10,12 +10,12 @@ Portability :  portable
 
 Creation date: Fri Oct 12 16:24:02 2018.
 
-See header of 'Evol.Data.Alphabet'.
+See header of 'EvoMod.Data.Alphabet'.
 
 -}
 
 
-module Evol.Data.Character
+module EvoMod.Data.Character
   ( Character (..)
   ) where
 

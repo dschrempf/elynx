@@ -13,7 +13,7 @@ Creation date: Thu Oct 11 07:14:57 2018.
 -}
 
 
-module Evol.Data.StateSpace
+module EvoMod.Data.StateSpace
   ( StateSpace (..)
   ) where
 

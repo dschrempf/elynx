@@ -1,5 +1,5 @@
 {- |
-Module      :  Evol.Data.Nucleotide
+Module      :  EvoMod.Data.Nucleotide
 Description :  Nucleotide related types and functions.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -10,11 +10,11 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:26:35 2018.
 
-See header of 'Evol.Data.Alphabet'.
+See header of 'EvoMod.Data.Alphabet'.
 
 -}
 
-module Evol.Data.Nucleotide
+module EvoMod.Data.Nucleotide
   ( Nucleotide (..)
   , wordToNucleotide
   , nucleotideToWord
@@ -25,8 +25,8 @@ where
 
 import           Data.Word8          (Word8, toUpper)
 
-import           Evol.Data.Character
-import           Evol.Tools          (c2w)
+import           EvoMod.Data.Character
+import           EvoMod.Tools          (c2w)
 
 -- | Nucleotide data type. Actually, only two bits are needed, but 'Word8' is
 -- the smallest available data type. One could use a 'pack' function like it is
