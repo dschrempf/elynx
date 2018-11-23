@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-prog_name=evolution-modify
+prog_name=evomod
 file_name=test/Data/Profile.fa.gz
 
 stack build --profile --work-dir .stack-work-profiling || exit 1

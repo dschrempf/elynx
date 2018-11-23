@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-prog_name=evolution-modify
+prog_name=evomod
 file_name=test/Data/BenchmarkEnsemblMouse.fa.gz
 
 stack build || exit 1

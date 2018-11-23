@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-prog_name=evolution-modify
+prog_name=evomod
 
 stack build || exit 1
 stack exec $prog_name -- --help || exit 1
