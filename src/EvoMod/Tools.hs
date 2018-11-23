@@ -25,6 +25,7 @@ module EvoMod.Tools
   , parseFileWith
   , parseByteStringWith
   , showWithoutQuotes
+  , summarizeString
   ) where
 
 import           Codec.Compression.GZip   (compress, decompress)
@@ -32,6 +33,8 @@ import           Data.ByteString.Internal (c2w, w2c)
 import qualified Data.ByteString.Lazy     as B (ByteString, readFile, writeFile)
 import           Data.List                (isSuffixOf)
 import           Text.Megaparsec
+
+import EvoMod.Defaults (defStringSummaryLength)
 
 alignRight :: Int -> String -> String
 alignRight n s | l > n     = take n s
@@ -80,3 +83,7 @@ rmDoubleQuotes = rmFirstQuote . rmLastQuote
 
 showWithoutQuotes :: Show a => a -> String
 showWithoutQuotes = rmDoubleQuotes . show
+
+summarizeString :: String -> String
+summarizeString s | length s >= defStringSummaryLength = take 60 s ++ "..."
+                  | otherwise = s

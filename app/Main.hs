@@ -42,9 +42,11 @@ io (Just f) (Right b) = B.writeFile f b
 main :: IO ()
 main = do (EvoModIOArgs cmd c mofn q fns) <- parseEvoModIOArgs
           unless q $ do
+            putStrLn evoModHeader
             putStrLn "Read fasta file."
             putStrLn $ "Code: " ++ show c ++ "."
           -- 'sss' is a little weird, but IT IS a list of a list of sequences.
           sss <- sequence $ parseFileWith (fastaFile c) <$> fns
           let eRes = act cmd sss
           io mofn eRes
+          unless q $ putStrLn ""

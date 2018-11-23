@@ -40,10 +40,10 @@ fromSequenceList ss | equalLength ss = MSA ss (lengthSequence $ head ss)
 
 
 msaHeader :: MultiSequenceAlignment -> String
-msaHeader (MSA ss l) = unlines $
+msaHeader (MSA _ l) = unlines
     [ "Multi sequence alignment."
-    , "Length: " ++ show l ++ "." ]
-    ++ sequenceListHeader ss
+    , "Length: " ++ show l ++ "."
+    , sequenceListHeader ]
 
 instance Show MultiSequenceAlignment where
   show msa = msaHeader msa ++ showSequenceList (msaSequences msa)

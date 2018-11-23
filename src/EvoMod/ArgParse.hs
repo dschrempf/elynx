@@ -16,12 +16,15 @@ Creation date: Sun Oct  7 17:29:45 2018.
 module EvoMod.ArgParse
   ( EvoModIOArgs (..)
   , Command (..)
+  , evoModHeader
   , parseEvoModIOArgs
   ) where
 
 import           Control.Applicative
+import           Data.Version                    (showVersion)
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
+import           Paths_EvoMod                    (version)
 
 import           EvoMod.Data.Alphabet
 
@@ -62,8 +65,8 @@ alphabetOpt = option auto
   ( long "alphabet"
     <> short 'a'
     <> metavar "NAME"
-    <> value DNA
-    <> showDefault
+    -- <> value DNA
+    -- <> showDefault
     <> help "Specify alphabet type NAME" )
 
 fileNameOutOpt :: Parser (Maybe String)
@@ -79,23 +82,53 @@ quietOpt = switch
     <> short 'q'
     <> help "Be quiet")
 
+versionOpt :: Parser (a -> a)
+versionOpt = infoOption evoModHeader
+  ( long "version"
+    <> short 'v'
+    <> help "Show version")
+
 fileNameArg :: Parser String
 fileNameArg = argument str
   ( metavar "INPUT-FILE-NAMES"
     <> help "Read sequences from INPUT-FILE-NAMES" )
 
--- | Read the arguments and prints out help if needed.
-parseEvoModIOArgs :: IO EvoModIOArgs
-parseEvoModIOArgs = execParser $
-  info (helper <*> evolIOOpts)
-  (fullDesc
-    <> progDesc "Parse sequence file formats and analyze them."
-    <> header "Evolutionary sequences."
-    <> footerDoc fo )
+evoModVersion :: String
+evoModVersion = "EvoMod version " ++ showVersion version ++ "."
+
+evoModCopyright :: String
+evoModCopyright = "Developed by Dominik Schrempf."
+
+evoModDescription :: String
+evoModDescription = "Parse, view, modify and simulate evolutionary sequences and phylogenetic trees."
+
+evoModHeaders :: [String]
+evoModHeaders = [ evoModVersion
+                , evoModCopyright
+                ]
+
+evoModHeader :: String
+evoModHeader = unlines evoModHeaders
+
+evoModHeaderDoc :: Doc
+evoModHeaderDoc = vcat $ map pretty evoModHeaders
+
+evoModFooters :: [String]
+evoModFooters = [ "File formats:" ] ++ fs ++
+                [ "", "Alphabet types:" ] ++ as
   where
-    fo = Just . vcat $ map pretty strs
     toListItem = (" - " ++)
     fs = map toListItem ["FASTA"]
     as = map (toListItem . codeNameVerbose) [(minBound :: Code) ..]
-    strs   = [ "File formats:" ] ++ fs ++
-             [ "", "Alphabet types:" ] ++ as
+
+evoModFooterDoc :: Doc
+evoModFooterDoc = vcat $ map pretty evoModFooters
+
+-- | Read the arguments and prints out help if needed.
+parseEvoModIOArgs :: IO EvoModIOArgs
+parseEvoModIOArgs = execParser $
+  info (helper <*> versionOpt <*> evolIOOpts)
+  (fullDesc
+    <> progDesc evoModDescription
+    <> headerDoc (Just evoModHeaderDoc)
+    <> footerDoc (Just evoModFooterDoc))

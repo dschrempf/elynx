@@ -39,10 +39,12 @@ import           Data.Ord             (comparing)
 import qualified Data.Vector.Unboxed  as V
 import           Data.Word8           (Word8)
 
-import           EvoMod.Defaults        (defSequenceListSummaryNumber,
-                                       defSequenceNameLength,
+import           EvoMod.Defaults      (defFieldWidth,
+                                       defSequenceListSummaryNumber,
+                                       defSequenceNameWidth,
                                        defSequenceSummaryLength)
-import           EvoMod.Tools           (alignLeft, allEqual, showWithoutQuotes)
+import           EvoMod.Tools         (alignLeft, allEqual, showWithoutQuotes,
+                                       summarizeString)
 
 type SequenceId = String
 
@@ -67,35 +69,34 @@ fromSequence s = (seqId s, seqToCsByteString s)
 showCharacters :: Sequence -> String
 showCharacters = showWithoutQuotes . seqToCsByteString
 
-fixedWidth :: String -> String
-fixedWidth = alignLeft defSequenceNameLength
+showInfo :: Sequence -> String
+showInfo s = alignLeft defSequenceNameWidth (seqId s) ++
+             alignLeft defFieldWidth (show . V.length . seqCs $ s)
 
 instance Show Sequence where
-  show s = fixedWidth (seqId s) ++ showCharacters s
+  show s = showInfo s ++ showCharacters s
 
 showSequenceList :: [Sequence] -> String
 showSequenceList = unlines . map show
 
 summarizeSequence :: Sequence -> String
-summarizeSequence s = if lengthSequence s > defSequenceSummaryLength
-                      then show (trimSequence defSequenceSummaryLength s) ++ "..."
-                      else show s
+summarizeSequence s = showInfo s ++ summarizeString (showCharacters s)
 
 summarizeSequenceList :: [Sequence] -> String
 summarizeSequenceList ss = summarizeSequenceListHeader ss ++
                            summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
 
-sequenceListHeader :: [Sequence] -> [String]
-sequenceListHeader ss =
-  [ "List contains " ++ show (length ss) ++ " sequences."
-  , ""
-  , fixedWidth "Identifier" ++ "Sequence" ]
+sequenceListHeader :: String
+sequenceListHeader = alignLeft defSequenceNameWidth "Identifier" ++
+                     alignLeft defFieldWidth "Length" ++ "Sequence"
 
 summarizeSequenceListHeader :: [Sequence] -> String
 summarizeSequenceListHeader ss = unlines $
   reportIfSubsetIsShown ++
-  [ "For each sequence the " ++ show defSequenceSummaryLength ++ " first bases are shown." ]
-  ++ sequenceListHeader ss
+  [ "For each sequence the " ++ show defSequenceSummaryLength ++ " first bases are shown."
+  , "List contains " ++ show (length ss) ++ " sequences."
+  , ""
+  , sequenceListHeader ]
   where l = length ss
         s = show defSequenceListSummaryNumber ++ " out of " ++
             show (length ss) ++ " sequences are shown."

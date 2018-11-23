@@ -3,4 +3,11 @@
 prog_name=evomod
 
 stack build || exit 1
+
+echo EvoMod help.
 stack exec $prog_name -- --help || exit 1
+
+echo
+echo EvoMod version.
+stack exec $prog_name -- --version || exit 1
+

@@ -5,8 +5,8 @@ Evolution.cabal
 /GPATH
 /GRTAGS
 /GTAGS
-/evolution-modify.aux
-/evolution-modify.eventlog
-/evolution-modify.hp
-/evolution-modify.prof
-/evolution-modify.ps
+/evomod.aux
+/evomod.eventlog
+/evomod.hp
+/evomod.prof
+/evomod.ps
