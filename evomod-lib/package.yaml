@@ -1,0 +1,51 @@
+name:                evomod-lib
+version:             0.1.0.1
+github:              "dschrempf/evomod"
+license:             BSD3
+author:              "Dominik Schrempf"
+maintainer:          "dominik.schrempf@gmail.com"
+copyright:           "Dominik Schrempf (2018)"
+
+# extra-source-files:
+# - README.md
+# - ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Library to handle molecular sequence data.
+# category:            Evolutionary Biology
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/dschrempf/evomod
+
+ghc-options:
+  - -Wall
+  - -Werror
+
+dependencies:
+- base >= 4.7 && < 5
+- bytestring
+- containers
+- deepseq
+- hspec
+- megaparsec >= 7.0.1
+- optparse-applicative
+- vector
+- vector-th-unbox
+- word8
+- zlib
+
+library:
+  source-dirs: src
+
+tests:
+  evomod-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - evomod-lib

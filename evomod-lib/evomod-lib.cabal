@@ -4,30 +4,25 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2c5f70911d5c1f16df6b124839348e51f619b04e0a4f71e663c1fc568a494400
+-- hash: 2378ca85d6035ce4ce8591d7c301ca147f275c35391846ed9a5c6a78ef2aac9f
 
-name:           EvoMod
-version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/dschrempf/Evolution#readme>
-homepage:       https://github.com/dschrempf/Evolution#readme
-bug-reports:    https://github.com/dschrempf/Evolution/issues
+name:           evomod-lib
+version:        0.1.0.1
+description:    Please see the README on GitHub at <https://github.com/dschrempf/evomod
+homepage:       https://github.com/dschrempf/evomod#readme
+bug-reports:    https://github.com/dschrempf/evomod/issues
 author:         Dominik Schrempf
 maintainer:     dominik.schrempf@gmail.com
 copyright:      Dominik Schrempf (2018)
 license:        BSD3
-license-file:   LICENSE
 build-type:     Simple
-extra-source-files:
-    README.md
-    ChangeLog.md
 
 source-repository head
   type: git
-  location: https://github.com/dschrempf/Evolution
+  location: https://github.com/dschrempf/evomod
 
 library
   exposed-modules:
-      EvoMod.ArgParse
       EvoMod.Data.Alphabet
       EvoMod.Data.AminoAcid
       EvoMod.Data.Character
@@ -41,7 +36,7 @@ library
       EvoMod.IO.Fasta
       EvoMod.Tools
   other-modules:
-      Paths_EvoMod
+      Paths_evomod_lib
   hs-source-dirs:
       src
   ghc-options: -Wall -Werror
@@ -59,42 +54,20 @@ library
     , zlib
   default-language: Haskell2010
 
-executable evomod
-  main-is: Main.hs
-  other-modules:
-      Paths_EvoMod
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Werror -threaded -rtsopts -with-rtsopts=-N -eventlog
-  build-depends:
-      EvoMod
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , deepseq
-    , hspec
-    , megaparsec >=7.0.1
-    , optparse-applicative
-    , vector
-    , vector-th-unbox
-    , word8
-    , zlib
-  default-language: Haskell2010
-
 test-suite evomod-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_EvoMod
+      Paths_evomod_lib
   hs-source-dirs:
       test
   ghc-options: -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      EvoMod
-    , base >=4.7 && <5
+      base >=4.7 && <5
     , bytestring
     , containers
     , deepseq
+    , evomod-lib
     , hspec
     , megaparsec >=7.0.1
     , optparse-applicative

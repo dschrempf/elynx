@@ -1,14 +1,14 @@
-name:                EvoMod
-version:             0.1.0.0
-github:              "dschrempf/Evolution"
+name:                evomod-seq
+version:             0.1.0.1
+github:              "dschrempf/evomod"
 license:             BSD3
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
 copyright:           "Dominik Schrempf (2018)"
 
-extra-source-files:
-- README.md
-- ChangeLog.md
+# extra-source-files:
+# - README.md
+# - ChangeLog.md
 
 # Metadata used when publishing your package
 # synopsis:            Library to handle molecular sequence data.
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/dschrempf/Evolution#readme>
+description:         Please see the README on GitHub at <https://github.com/dschrempf/evomod
 
 ghc-options:
   - -Wall
@@ -25,22 +25,11 @@ ghc-options:
 
 dependencies:
 - base >= 4.7 && < 5
-- bytestring
-- hspec
-- megaparsec >= 7.0.1
 - optparse-applicative
-- word8
-- zlib
-- deepseq
-- vector
-- vector-th-unbox
-- containers
-
-library:
-  source-dirs: src
+- bytestring
 
 executables:
-  evomod:
+  evomod-seq:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -49,15 +38,6 @@ executables:
     - -with-rtsopts=-N
     - -eventlog
     dependencies:
-    - EvoMod
+    - evomod-lib
 
-tests:
-  evomod-test:
-    main:                Spec.hs
-    source-dirs:         test
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - EvoMod
+# TODO Test suite.

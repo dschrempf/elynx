@@ -13,7 +13,7 @@ Creation date: Sun Oct  7 17:29:45 2018.
 -}
 
 
-module EvoMod.ArgParse
+module ArgParse
   ( EvoModIOArgs (..)
   , Command (..)
   , evoModHeader
@@ -24,7 +24,7 @@ import           Control.Applicative
 import           Data.Version                    (showVersion)
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
-import           Paths_EvoMod                    (version)
+import           Paths_evomod_seq                (version)
 
 import           EvoMod.Data.Alphabet
 

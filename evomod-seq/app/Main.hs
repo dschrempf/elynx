@@ -22,13 +22,14 @@ module Main where
 
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8 as B
-
 import           Data.Maybe                 (fromMaybe)
-import           EvoMod.ArgParse
+
+import           ArgParse
+
 import           EvoMod.Data.Sequence
 import           EvoMod.Filter
 import           EvoMod.IO.Fasta
-import           EvoMod.Tools               (parseFileWith, compose)
+import           EvoMod.Tools               (compose, parseFileWith)
 
 concatenateSeqs :: [[Sequence]] -> Either String [Sequence]
 concatenateSeqs []   = Left "Nothing to concatenate."

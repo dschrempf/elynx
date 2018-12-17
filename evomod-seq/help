@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-prog_name=evomod
+prog_name=evomod-seq
 
 stack build || exit 1
 

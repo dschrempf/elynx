@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-prog_name=evomod
+prog_name=evomod-seq
 
-file_DNA=test/Data/Nucleotide.fasta
-file_AA=test/Data/AminoAcid.fasta
+file_DNA=../evomod-lib/test/Data/Nucleotide.fasta
+file_AA=../evomod-lib/test/Data/AminoAcid.fasta
 
 stack build || exit 1
 
