@@ -28,7 +28,10 @@ import           Paths_EvoMod                    (version)
 
 import           EvoMod.Data.Alphabet
 
-data Command = Summarize | Concatenate
+data Command = Summarize
+             | Concatenate
+             | Filter { longer  :: Maybe Int
+                      , shorter :: Maybe Int}
 
 data EvoModIOArgs = EvoModIOArgs
                   {
@@ -50,7 +53,8 @@ evolIOOpts = EvoModIOArgs
 commandArg :: Parser Command
 commandArg = hsubparser $
   summarizeCommand <>
-  concatenateCommand
+  concatenateCommand <>
+  filterCommand
 
 summarizeCommand :: Mod CommandFields Command
 summarizeCommand = command "summarize" $
@@ -60,13 +64,29 @@ concatenateCommand :: Mod CommandFields Command
 concatenateCommand = command "concatenate" $
   info (pure Concatenate) (progDesc "Concatenate sequences found in input files")
 
+filterCommand :: Mod CommandFields Command
+filterCommand = command "filter" $
+  info (Filter <$> filterLongerThanOpt
+         <*> filterShorterThanOpt)
+  (progDesc "Filter sequences found in input files")
+
+filterLongerThanOpt :: Parser (Maybe Int)
+filterLongerThanOpt = optional $ option auto
+  ( long "longer-than"
+    <> metavar "LENGTH"
+    <> help "Only keep sequences longer than LENGTH." )
+
+filterShorterThanOpt :: Parser (Maybe Int)
+filterShorterThanOpt = optional $ option auto
+  ( long "shorter-than"
+    <> metavar "LENGTH"
+    <> help "Only keep sequences shorter than LENGTH." )
+
 alphabetOpt :: Parser Code
 alphabetOpt = option auto
   ( long "alphabet"
     <> short 'a'
     <> metavar "NAME"
-    -- <> value DNA
-    -- <> showDefault
     <> help "Specify alphabet type NAME" )
 
 fileNameOutOpt :: Parser (Maybe String)
@@ -86,7 +106,8 @@ versionOpt :: Parser (a -> a)
 versionOpt = infoOption evoModHeader
   ( long "version"
     <> short 'v'
-    <> help "Show version")
+    <> help "Show version"
+    <> hidden )
 
 fileNameArg :: Parser String
 fileNameArg = argument str
@@ -100,7 +121,7 @@ evoModCopyright :: String
 evoModCopyright = "Developed by Dominik Schrempf."
 
 evoModDescription :: String
-evoModDescription = "Parse, view, modify and simulate evolutionary sequences and phylogenetic trees."
+evoModDescription = "Parse, view, modify and simulate evolutionary sequences and phylogenetic trees. The goal of EvoMod is reproducible research. Nothing is assumed about the data (e.g., the type of code), and no default values set. Everything has to be stated by the user. This leads to some work overhead in the beginning, but usually pays off in the end."
 
 evoModHeaders :: [String]
 evoModHeaders = [ evoModVersion

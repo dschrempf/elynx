@@ -26,6 +26,7 @@ module EvoMod.Tools
   , parseByteStringWith
   , showWithoutQuotes
   , summarizeString
+  , compose
   ) where
 
 import           Codec.Compression.GZip   (compress, decompress)
@@ -87,3 +88,7 @@ showWithoutQuotes = rmDoubleQuotes . show
 summarizeString :: String -> String
 summarizeString s | length s >= defStringSummaryLength = take 60 s ++ "..."
                   | otherwise = s
+
+-- | See https://wiki.haskell.org/Compose.
+compose :: [a -> a] -> a -> a
+compose fs v = foldl (flip (.)) id fs $ v

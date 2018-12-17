@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 32717e557cb3c5d434b5e67a8a38735062b62831c63a4ffa48373248aea75ed5
+-- hash: 2c5f70911d5c1f16df6b124839348e51f619b04e0a4f71e663c1fc568a494400
 
 name:           EvoMod
 version:        0.1.0.0
@@ -37,6 +37,7 @@ library
       EvoMod.Data.Sequence
       EvoMod.Data.StateSpace
       EvoMod.Defaults
+      EvoMod.Filter
       EvoMod.IO.Fasta
       EvoMod.Tools
   other-modules:

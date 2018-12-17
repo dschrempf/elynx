@@ -15,15 +15,16 @@ Creation date: Fri Oct  5 14:25:42 2018.
 
 module Main where
 
-import qualified Data.ByteString.Lazy.Char8       as B
+import qualified Data.ByteString.Lazy.Char8         as B
 import           Data.Either
 import           Test.Hspec
 
-import           Evol.Data.Alphabet
-import           Evol.Data.MultiSequenceAlignment
-import           Evol.Data.Sequence
-import           Evol.IO.Fasta
-import           Evol.Tools
+import           EvoMod.Data.Alphabet
+import           EvoMod.Data.MultiSequenceAlignment
+import           EvoMod.Data.Sequence
+import           EvoMod.Filter
+import           EvoMod.IO.Fasta
+import           EvoMod.Tools
 
 fastaNucleotideFN :: String
 fastaNucleotideFN = "test/Data/Nucleotide.fasta"
@@ -52,18 +53,18 @@ fastaDifferentLengthTrimmedFN = "test/Data/NucleotideDifferentLengthTrimmed.fast
 
 main :: IO ()
 main = hspec $ do
-  describe "Base.Sequence.longest" $
+  describe "EvoMod.Data.Sequence.longest" $
     it "finds the longest sequence"$ do
     ss <- parseFileWith (fastaFile DNA) fastaDifferentLengthFN
     longest ss `shouldBe` longestSequenceInFile
 
-  describe "Base.Sequence.filterLongerThan" $
+  describe "EvoMod.Filter.filterLongerThan" $
     it "filters sequences that are longer than a specified length" $ do
     ss  <- parseFileWith (fastaFile DNA) fastaDifferentLengthFN
     ss' <- parseFileWith (fastaFile DNA) fastaDifferentLengthTrimmedFN
     filterLongerThan 10 ss `shouldBe` ss'
 
-  describe "EvolIO.Fasta.fastaMSANucleotide" $ do
+  describe "EvoMod.IO.Fasta.fastaMSANucleotide" $ do
     it "parses a fasta file with nucleotide sequences with equal length" $ do
       msa <- parseFileWith (fastaFileMSA DNA) fastaNucleotideFN
       msaNSequences msa `shouldBe` 3
@@ -78,7 +79,7 @@ main = hspec $ do
       emsa <- runParserOnFile (fastaFile DNA) fastaErroneousFN
       emsa  `shouldSatisfy` isLeft
 
-  describe "EvolIO.Fasta.fastaMSAAminoAcid" $ do
+  describe "EvoMod.IO.Fasta.fastaMSAAminoAcid" $ do
     it "parses a fasta file with amino acid sequences with equal length" $ do
       msa <- parseFileWith (fastaFileMSA Protein) fastaAminoAcidFN
       msaNSequences msa `shouldBe` 2
@@ -88,7 +89,7 @@ main = hspec $ do
       msa <- runParserOnFile (fastaFile Protein) fastaErroneousFN
       msa  `shouldSatisfy` isLeft
 
-  describe "EvolIO.Fasta.sequencesToFasta" $
+  describe "EvoMod.IO.Fasta.sequencesToFasta" $
     it "should create a fasta bytestring that, when parsed again, is the original sequence" $ do
       ss <- parseFileWith (fastaFile DNA_IUPAC) fastaNucleotideIUPACFN
       let f   = sequencesToFasta ss

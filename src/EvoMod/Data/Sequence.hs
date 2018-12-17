@@ -28,7 +28,6 @@ module EvoMod.Data.Sequence
   , equalLength
   , longest
   -- | * Manipulation
-  , filterLongerThan
   , trimSequence
   , concatenate
   ) where
@@ -115,9 +114,6 @@ equalLength = allEqual . map lengthSequence
 
 longest :: [Sequence] -> Sequence
 longest = maximumBy (comparing lengthSequence)
-
-filterLongerThan :: Int -> [Sequence] -> [Sequence]
-filterLongerThan n = filter (\x -> lengthSequence x > n)
 
 trimSequence :: Int -> Sequence -> Sequence
 trimSequence n s@Sequence{seqCs=cs} = s {seqCs = V.take n cs}
