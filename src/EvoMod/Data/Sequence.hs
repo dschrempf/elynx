@@ -69,7 +69,7 @@ showCharacters :: Sequence -> String
 showCharacters = showWithoutQuotes . seqToCsByteString
 
 showInfo :: Sequence -> String
-showInfo s = alignLeft defSequenceNameWidth (seqId s) ++
+showInfo s = alignLeft defSequenceNameWidth (seqId s) ++ " " ++
              alignLeft defFieldWidth (show . V.length . seqCs $ s)
 
 instance Show Sequence where
@@ -79,15 +79,15 @@ showSequenceList :: [Sequence] -> String
 showSequenceList = unlines . map show
 
 summarizeSequence :: Sequence -> String
-summarizeSequence s = showInfo s ++ summarizeString (showCharacters s)
+summarizeSequence s = showInfo s ++ " " ++ summarizeString (showCharacters s)
 
 summarizeSequenceList :: [Sequence] -> String
 summarizeSequenceList ss = summarizeSequenceListHeader ss ++
                            summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
 
 sequenceListHeader :: String
-sequenceListHeader = alignLeft defSequenceNameWidth "Identifier" ++
-                     alignLeft defFieldWidth "Length" ++ "Sequence"
+sequenceListHeader = alignLeft defSequenceNameWidth "Identifier" ++ " " ++
+                     alignLeft defFieldWidth "Length" ++ " Sequence"
 
 summarizeSequenceListHeader :: [Sequence] -> String
 summarizeSequenceListHeader ss = unlines $

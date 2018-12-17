@@ -23,7 +23,7 @@ module EvoMod.Defaults
 
 -- | Space reserved for sequence names when printing them.
 defSequenceNameWidth :: Int
-defSequenceNameWidth = 15
+defSequenceNameWidth = 23
 
 -- | The length shown when summarizing sequences.
 defSequenceSummaryLength :: Int
