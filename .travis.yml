@@ -39,4 +39,4 @@ script:
 # Build the package, its tests, and its docs and run the tests
 - (cd evomod-lib && stack --no-terminal test --haddock --no-haddock-deps)
 # TODO: For now only build the application since test suite does not yet exist.
-- (cd evomod-seq && stack --no-terminal test --haddock --no-haddock-deps)
+- (cd evomod-seq && stack --no-terminal build --haddock --no-haddock-deps)
