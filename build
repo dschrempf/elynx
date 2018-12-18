@@ -7,3 +7,6 @@ stack build || exit 1
 
 msg "Profile build."
 stack build --profile --work-dir .stack-work-profiling || exit 1
+
+msg "Documentation build."
+stack build --haddock || exit 1
