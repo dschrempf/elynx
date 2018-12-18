@@ -34,6 +34,7 @@ import           EvoMod.Data.Sequence
 data MultiSequenceAlignment = MSA { msaSequences :: [Sequence]
                                   , msaLength    :: Int}
 
+-- | Create 'MultiSequenceAlignment' from a list of 'Sequence's.
 fromSequenceList :: [Sequence] -> MultiSequenceAlignment
 fromSequenceList ss | equalLength ss = MSA ss (lengthSequence $ head ss)
                     | otherwise      = error "Sequences do not have equal length."
@@ -48,9 +49,11 @@ msaHeader (MSA _ l) = unlines
 instance Show MultiSequenceAlignment where
   show msa = msaHeader msa ++ showSequenceList (msaSequences msa)
 
+-- | Similar to 'summarizeSequenceList' but with different Header.
 summarizeMSA :: MultiSequenceAlignment -> String
 summarizeMSA msa = msaHeader msa ++ summarizeSequenceListBody (msaSequences msa)
 
+-- | Number of sequences stored in 'MultiSequenceAlignment'.
 msaNSequences :: MultiSequenceAlignment -> Int
 msaNSequences = length . msaSequences
 

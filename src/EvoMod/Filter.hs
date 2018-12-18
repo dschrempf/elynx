@@ -22,9 +22,11 @@ module EvoMod.Filter
 
 import EvoMod.Data.Sequence
 
+-- | Only take 'Sequence's that are shorter than a given number.
 filterShorterThan :: Int -> [Sequence] -> [Sequence]
 filterShorterThan n = filter (\x -> lengthSequence x < n)
 
+-- | Only take 'Sequence's that are longer than a given number.
 filterLongerThan :: Int -> [Sequence] -> [Sequence]
 filterLongerThan n = filter (\x -> lengthSequence x > n)
 

@@ -9,8 +9,6 @@ Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
 Portability :  portable
 
-Creation date: Thu Oct  4 18:29:26 2018.
-
 Parse FASTA files.
 
 [NCBI file specifications](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp).
@@ -20,7 +18,8 @@ For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/p
 
 
 module EvoMod.IO.Fasta
-  ( fastaSequence
+  ( Parser
+  , fastaSequence
   , fastaFile
   , fastaFileMSA
   , sequenceToFasta
@@ -40,6 +39,7 @@ import           EvoMod.Data.MultiSequenceAlignment
 import           EvoMod.Data.Sequence
 import           EvoMod.Tools
 
+-- | A shortcut.
 type Parser = Parsec Void B.ByteString
 
 allowedHeaderChar :: Parser Word8
@@ -56,6 +56,7 @@ sequenceLine a = do xs <- takeWhile1P (Just "Alphabet character") (checkWord8 a)
                     _  <- void eol <|> eof
                     return xs
 
+-- | Parse a sequence of 'Alphabet' 'Character's.
 fastaSequence :: Alphabet -> Parser Sequence
 fastaSequence a = do hd <- sequenceHeader
                      cs <- some (sequenceLine a)
@@ -63,18 +64,23 @@ fastaSequence a = do hd <- sequenceHeader
                      let hd' = map w2c hd
                      return $ toSequence hd' (B.concat cs)
 
+-- | Parse a Fasta file assuming 'Code'.
 fastaFile :: Code -> Parser [Sequence]
 fastaFile c = some (fastaSequence (alphabet c)) <* eof
 
+-- | Parse a 'MultiSequenceAlignment' Fasta files assuming 'Code'.
 fastaFileMSA :: Code -> Parser MultiSequenceAlignment
 fastaFileMSA c = fromSequenceList <$> fastaFile c
 
 fastaHeader :: String -> B.ByteString
 fastaHeader i = B.pack $ '>' : i
 
+-- | Convert a 'Sequence' to Fasta format.
 sequenceToFasta :: Sequence -> B.ByteString
 sequenceToFasta s = B.unlines [ fastaHeader i , cs ]
   where (i, cs) = fromSequence s
 
+-- | Convert a list 'Sequence's to Fasta format. A newline is added between any
+-- two 'Sequence's.
 sequencesToFasta :: [Sequence] -> B.ByteString
 sequencesToFasta ss = B.unlines $ map sequenceToFasta ss

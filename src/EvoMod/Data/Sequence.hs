@@ -13,21 +13,22 @@ Creation date: Thu Oct  4 18:54:51 2018.
 -}
 
 module EvoMod.Data.Sequence
-  ( Sequence (..)
-  -- | * Input
+  ( SequenceId
+  , Sequence(..)
+  -- * Input
   , toSequence
-  -- | * Output
+  -- * Output
   , fromSequence
   , showSequenceList
   , sequenceListHeader
   , summarizeSequence
   , summarizeSequenceList
   , summarizeSequenceListBody
-  -- | * Analysis
+  -- * Analysis
   , lengthSequence
   , equalLength
   , longest
-  -- | * Manipulation
+  -- * Manipulation
   , trimSequence
   , concatenate
   ) where
@@ -45,6 +46,7 @@ import           EvoMod.Defaults      (defFieldWidth,
 import           EvoMod.Tools         (alignLeft, allEqual, showWithoutQuotes,
                                        summarizeString)
 
+-- | For now, 'SequenceId's are just 'String's.
 type SequenceId = String
 
 -- | By choosing specific types for the identifier and the characters is of
@@ -62,7 +64,8 @@ toSequence i cs = Sequence i v
 seqToCsByteString :: Sequence -> B.ByteString
 seqToCsByteString = B.pack . V.toList . seqCs
 
-fromSequence :: Sequence -> (String, B.ByteString)
+-- | Extract 'SequenceId' and data.
+fromSequence :: Sequence -> (SequenceId, B.ByteString)
 fromSequence s = (seqId s, seqToCsByteString s)
 
 showCharacters :: Sequence -> String
@@ -73,21 +76,25 @@ showInfo s = alignLeft defSequenceNameWidth (seqId s) ++ " " ++
              alignLeft defFieldWidth (show . V.length . seqCs $ s)
 
 instance Show Sequence where
-  show s = showInfo s ++ showCharacters s
+  show s = showInfo s ++ " " ++ showCharacters s
 
+-- | Show a list of 'Sequence's, untrimmed.
 showSequenceList :: [Sequence] -> String
 showSequenceList = unlines . map show
 
-summarizeSequence :: Sequence -> String
-summarizeSequence s = showInfo s ++ " " ++ summarizeString (showCharacters s)
-
-summarizeSequenceList :: [Sequence] -> String
-summarizeSequenceList ss = summarizeSequenceListHeader ss ++
-                           summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
-
+-- | Header printed before 'Sequence' list.
 sequenceListHeader :: String
 sequenceListHeader = alignLeft defSequenceNameWidth "Identifier" ++ " " ++
                      alignLeft defFieldWidth "Length" ++ " Sequence"
+
+-- | Trim and show a 'Sequence'.
+summarizeSequence :: Sequence -> String
+summarizeSequence s = showInfo s ++ " " ++ summarizeString (showCharacters s)
+
+-- | Trim and show a list of 'Sequence's.
+summarizeSequenceList :: [Sequence] -> String
+summarizeSequenceList ss = summarizeSequenceListHeader ss ++
+                           summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
 
 summarizeSequenceListHeader :: [Sequence] -> String
 summarizeSequenceListHeader ss = unlines $
@@ -103,21 +110,27 @@ summarizeSequenceListHeader ss = unlines $
           | l > defSequenceListSummaryNumber = [s]
           | otherwise = []
 
+-- | Trim and show a list of 'Sequence's.
 summarizeSequenceListBody :: [Sequence] -> String
 summarizeSequenceListBody ss = unlines $ map summarizeSequence ss
 
+-- | Calculate length of 'Sequence'.
 lengthSequence :: Sequence -> Int
 lengthSequence = V.length . seqCs
 
+-- | Check if all 'Sequence's have equal length.
 equalLength :: [Sequence] -> Bool
 equalLength = allEqual . map lengthSequence
 
+-- | Find the longest 'Sequence' in a list.
 longest :: [Sequence] -> Sequence
 longest = maximumBy (comparing lengthSequence)
 
+-- | Trim to given length.
 trimSequence :: Int -> Sequence -> Sequence
 trimSequence n s@Sequence{seqCs=cs} = s {seqCs = V.take n cs}
 
+-- | Concatenate two sequences. 'SequenceId's have to match.
 concatenate :: Sequence -> Sequence -> Either String Sequence
 concatenate (Sequence i cs) (Sequence j ks)
   | i == j     = Right $ Sequence i (cs V.++ ks)

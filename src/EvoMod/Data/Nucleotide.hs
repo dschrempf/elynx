@@ -33,8 +33,9 @@ import           EvoMod.Tools          (c2w)
 -- done with 'ByteString's to decrease memory usage and pack a number of
 -- 'Nucleotide's into one 'Word8'. By convention, I use uppercase letters.
 data Nucleotide = A | C | G | T
-  deriving (Show, Eq, Ord, Enum, Bounded)
+  deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
+-- | Convert a 'Word8' to a 'Nucleotide'.
 wordToNucleotide :: Word8 -> Nucleotide
 wordToNucleotide w | w' == c2w 'A' = A
                    | w' == c2w 'C' = C
@@ -43,6 +44,7 @@ wordToNucleotide w | w' == c2w 'A' = A
                    | otherwise     = error $ "Cannot read nucleotide: " ++ show w ++ "."
   where w' = toUpper w
 
+-- | Convert 'Nucleotide' to 'Word8'.
 nucleotideToWord :: Nucleotide -> Word8
 nucleotideToWord A = c2w 'A'
 nucleotideToWord C = c2w 'C'
@@ -64,6 +66,7 @@ data NucleotideIUPAC = A_IUPAC | C_IUPAC | G_IUPAC | T_IUPAC
                      | N | U | K | S | Y | M | W | R | B | D | H | V | Gap
   deriving (Show, Eq, Ord, Enum, Bounded)
 
+-- | So that we can read 'EvoMod.Data.Fasta' files.
 wordToNucleotideIUPAC :: Word8 -> NucleotideIUPAC
 wordToNucleotideIUPAC w | w' == c2w 'A' = A_IUPAC
                         | w' == c2w 'C' = C_IUPAC
@@ -85,6 +88,7 @@ wordToNucleotideIUPAC w | w' == c2w 'A' = A_IUPAC
                         | otherwise     = error $ "Cannot read nucleotide IUPAC code: " ++ show w ++ "."
   where w' = toUpper w
 
+-- | So that we can write 'NucleotideIUPAC'.
 nucleotideIUPACToWord :: NucleotideIUPAC -> Word8
 nucleotideIUPACToWord A_IUPAC = c2w 'A'
 nucleotideIUPACToWord C_IUPAC = c2w 'C'

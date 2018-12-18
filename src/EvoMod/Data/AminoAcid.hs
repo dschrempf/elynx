@@ -29,6 +29,7 @@ import           EvoMod.Tools          (c2w)
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
   deriving (Show, Eq, Ord, Enum, Bounded)
 
+-- | Doh, we want to read 'AminoAcid's.
 wordToAminoAcid :: Word8 -> AminoAcid
 wordToAminoAcid w | w' == c2w 'A' = A
                   | w' == c2w 'C' = C
@@ -53,6 +54,7 @@ wordToAminoAcid w | w' == c2w 'A' = A
                   | otherwise     = error $ "Cannot read nucleotide: " ++ show w ++ "."
   where w' = toUpper w
 
+-- | And writing is also interesting.
 aminoAcidToWord :: AminoAcid-> Word8
 aminoAcidToWord  A = c2w 'A'
 aminoAcidToWord  C = c2w 'C'

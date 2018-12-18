@@ -8,7 +8,7 @@ Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
 Portability :  portable
 
-Creation date: Fri Oct  5 13:27:56 2018.
+Indispensable tools.
 
 -}
 
@@ -27,6 +27,7 @@ module EvoMod.Tools
   , showWithoutQuotes
   , summarizeString
   , compose
+  , allValues
   ) where
 
 import           Codec.Compression.GZip   (compress, decompress)
@@ -37,36 +38,46 @@ import           Text.Megaparsec
 
 import EvoMod.Defaults (defStringSummaryLength)
 
+-- | For a given width, align string to the right.
 alignRight :: Int -> String -> String
 alignRight n s | l > n     = take n s
                | otherwise = replicate (n-l) ' ' ++ s
                where l = length s
 
+-- | For a given width, align string to the left.
 alignLeft :: Int -> String -> String
 alignLeft n s | l > n     = take n s
               | otherwise = s ++ replicate (n-l) ' '
                where l = length s
 
+-- | Test if all elements of a list are equal.
 allEqual :: Eq a => [a] -> Bool
 allEqual xs = all (== head xs) (tail xs)
 
+-- | Read file. If file path ends with ".gz", assume gzipped file and decompress
+-- before read.
 readGZFile :: FilePath -> IO B.ByteString
 readGZFile f | ".gz" `isSuffixOf` f = decompress <$> B.readFile f
              | otherwise            = B.readFile f
 
+-- | Write file. If file path ends with ".gz", assume gzipped file and compress
+-- before write.
 writeGZFile :: FilePath -> B.ByteString -> IO ()
 writeGZFile f | ".gz" `isSuffixOf` f = B.writeFile f . compress
               | otherwise            = B.writeFile f
 
-runParserOnFile :: Parsec e B.ByteString a -> String -> IO (Either (ParseErrorBundle B.ByteString e) a)
+-- | Parse a possibly gzipped file.
+runParserOnFile :: Parsec e B.ByteString a -> FilePath -> IO (Either (ParseErrorBundle B.ByteString e) a)
 runParserOnFile p f = parse p f <$> readGZFile f
 
-parseFileWith :: (ShowErrorComponent e) => Parsec e B.ByteString a -> String -> IO a
+-- | Parse a possibly gzipped file and extract the result.
+parseFileWith :: (ShowErrorComponent e) => Parsec e B.ByteString a -> FilePath -> IO a
 parseFileWith p f = do res <- runParserOnFile p f
                        case res of
                          Left  err -> error $ errorBundlePretty err
                          Right val -> return val
 
+-- | Parse a 'ByteString' and extract the result.
 parseByteStringWith :: (ShowErrorComponent e) => Parsec e B.ByteString a -> B.ByteString -> a
 parseByteStringWith p f = case parse p "" f of
                             Left  err -> error $ errorBundlePretty err
@@ -82,13 +93,19 @@ rmLastQuote = reverse . rmFirstQuote . reverse
 rmDoubleQuotes :: String -> String
 rmDoubleQuotes = rmFirstQuote . rmLastQuote
 
+-- | Show a string without quotes ... (sometimes Haskell annoys me :D).
 showWithoutQuotes :: Show a => a -> String
 showWithoutQuotes = rmDoubleQuotes . show
 
+-- | If a string is longer than 'defStringSummaryLength', trim it and add some dots.
 summarizeString :: String -> String
-summarizeString s | length s >= defStringSummaryLength = take 60 s ++ "..."
+summarizeString s | length s >= defStringSummaryLength = take defStringSummaryLength s ++ "..."
                   | otherwise = s
 
 -- | See https://wiki.haskell.org/Compose.
 compose :: [a -> a] -> a -> a
-compose fs v = foldl (flip (.)) id fs $ v
+compose = foldl (flip (.)) id
+
+-- | Get all values of a bounded enumerated type.
+allValues :: (Bounded a, Enum a) => [a]
+allValues = [minBound..]

@@ -5,4 +5,3 @@ one input file is given. When does one file end and the next one begin?
 TODO: Verbosity.
 
 TODO: Proper benchmark with 'stack build --bench'.
-

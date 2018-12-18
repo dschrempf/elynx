@@ -41,10 +41,11 @@ import           EvoMod.Data.Nucleotide
 data Code = DNA | DNA_IUPAC | Protein
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
+-- | Verbose version of code name.
 codeNameVerbose :: Code -> String
-codeNameVerbose DNA       = "DNA (nucleotides)"
-codeNameVerbose DNA_IUPAC = "DNA_IUPAC (nucleotides including IUPAC code)"
-codeNameVerbose Protein   = "Protein (amino acids)"
+codeNameVerbose DNA       = show DNA ++ " (nucleotides)"
+codeNameVerbose DNA_IUPAC = show DNA_IUPAC ++ " (nucleotides including IUPAC code)"
+codeNameVerbose Protein   = show Protein ++ " (amino acids)"
 
 -- | 'Data.Set' is used because it uses an ordered, tree-like structure with
 -- fast queries. When parsing characters, they have to be checked for validity
