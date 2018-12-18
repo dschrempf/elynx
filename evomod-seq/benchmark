@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-prog_name=evomod-seq
-file_name=test/Data/BenchmarkEnsemblMouse.fa.gz
-
-stack build || exit 1
-echo
-
-stack exec $prog_name -- summarize -a DNA_IUPAC $file_name  +RTS -s

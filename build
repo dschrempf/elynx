@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+source include
+
+msg "Normal build."
+stack build || exit 1
+
+msg "Profile build."
+stack build --profile --work-dir .stack-work-profiling || exit 1

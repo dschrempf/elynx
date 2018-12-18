@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+source include
+./build
+
+file_DNA=test/Data/Nucleotide.fasta
+file_AA=test/Data/AminoAcid.fasta
+
+msg "EvoMod-Seq DNA."
+stack exec evomod-seq -- summarize -a DNA $file_DNA || exit 1
+
+msg "EvoMod-Seq protein."
+stack exec evomod-seq -- summarize -a Protein $file_AA || exit 1
+
+msg "EvoMod-Seq; test if quiet."
+stack exec evomod-seq -- summarize -a DNA -q $file_DNA || exit 1

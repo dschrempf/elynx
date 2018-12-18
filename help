@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+source include
+./build
+
+msg "EvoMod-Seq help text."
+stack exec evomod-seq -- --help || exit 1
+
+msg "EvoMod-Seq version text."
+stack exec evomod-seq -- --version || exit 1
+

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+msg() {
+    (( QUIET )) && return
+    local mesg
+    mesg="$1"; shift
+    # printf "${GREEN}==>${ALL_OFF} ${mesg}${ALL_OFF}\n" "$@" >&1
+    printf "%s==>%s %s%s\\n" "$GREEN" "$ALL_OFF" "$mesg" "$ALL_OFF" >&1
+}
+
+# Check if messages are to be printed using color.
+unset ALL_OFF BOLD BLUE GREEN RED YELLOW
+if [[ -t 2 ]]; then
+    # Prefer terminal safe colored and bold text when tput is supported.
+    if tput setaf 0 &>/dev/null; then
+        ALL_OFF="$(tput sgr0)"
+        BLUE="$(tput setaf 27)"
+        GREEN="$(tput setaf 2)"
+        RED="$(tput setaf 1)"
+        YELLOW="$(tput setaf 3)"
+    else
+        ALL_OFF="\\e[1;0m"
+        BLUE="\\e[1;34m"
+        GREEN="\\e[1;32m"
+        RED="\\e[1;31m"
+        YELLOW="\\e[1;33m"
+    fi
+fi
+readonly ALL_OFF BOLD BLUE GREEN RED YELLOW
