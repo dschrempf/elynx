@@ -20,18 +20,14 @@ TODO: Parse Counts Files.
 -}
 
 module EvoMod.IO.CountsFile
-  ( Pos
-  , DataOneSite
-  , NSites
+  ( DataOneSite
   , PopulationNames
-  , Chrom
   , toCountsFile
   ) where
 
 import qualified Data.ByteString.Lazy.Char8              as B
+import           Data.Maybe                              (fromMaybe)
 import           EvoMod.Data.BoundaryMutationModel.State
--- import           EvoMod.Data.MultiSequenceAlignment
--- import           EvoMod.Data.Sequence
 import           EvoMod.Tools                            (alignLeft, alignRight)
 
 -- | The number of sites that will be printed.
@@ -40,18 +36,19 @@ type NSites = Int
 -- | The names of the populations.
 type PopulationNames = [String]
 
--- The column width of the counts file, take a save value. If the 'showCounts'
--- representation of a 'State' exceeds this value, there be dragons.
+-- Desired column width of the counts file.
 colW :: Int
-colW = 15
+colW = 11
 
 -- | Compose the header using the number of sites and the population names.
 header :: NSites -> PopulationNames -> B.ByteString
 header nSites popNames = B.pack $ unlines [lineOne, lineTwo]
   where nPop = length popNames
         lineOne = "COUNTSFILE NPOP " ++ show nPop ++ " NSITES " ++ show nSites
-        lineTwo = alignLeft colW "CHROM" ++ alignRight colW "POS" ++
-          unwords (map (alignRight colW) popNames)
+        lineTwo = unwords $
+          [ alignLeft colW "CHROM"
+          , alignRight colW "POS" ]
+          ++ map (alignRight colW) popNames
 
 -- | The chromosome name.
 type Chrom = String
@@ -63,18 +60,14 @@ type Pos   = Int
 type DataOneSite = [State]
 
 -- | Get a data line in the counts file.
-dataLine :: Chrom -> Pos -> DataOneSite -> B.ByteString
-dataLine chrom pos bstates = B.pack $
-  alignLeft colW chrom ++ alignRight colW (show pos) ++ bStatesString ++ "\n"
-  where bStatesString = unwords $ map (alignRight colW . showCounts) bstates
+dataLine :: Maybe Chrom -> Maybe Pos -> DataOneSite -> B.ByteString
+dataLine chrom mPos bstates = B.pack $ unwords $
+  [ alignLeft colW (fromMaybe "NA" chrom)
+  , alignRight colW (maybe "NaN" show mPos) ]
+  ++ map (alignRight colW . showCounts) bstates
 
--- -- TODO: Information is missing. E.g., chromosome name. Conversion from Word8 to
--- -- State is ambiguous (population size is not know).
--- multiSequenceAlignmentToFasta :: MultiSequenceAlignment -> B.ByteString
--- multiSequenceAlignmentToFasta msa = B.unlines $ [ header l ns ] ++ map dataLine msa
---   where l  = msaLength msa
---         ns = map seqId $ msaSequences msa
-
+-- | Convert data to a counts file.
+toCountsFile :: PopulationNames -> [DataOneSite] -> B.ByteString
 -- TODO: Chromosomal and positional information.
-toCountsFile :: NSites -> PopulationNames -> [DataOneSite] -> B.ByteString
-toCountsFile l ns d = B.unlines $ header l ns : map (dataLine "NA" 0) d
+toCountsFile ns d = B.unlines $ header l ns : map (dataLine Nothing Nothing) d
+  where l = length d

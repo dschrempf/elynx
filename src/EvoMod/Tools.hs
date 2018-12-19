@@ -16,6 +16,8 @@ Indispensable tools.
 module EvoMod.Tools
   ( alignRight
   , alignLeft
+  , alignRightTrim
+  , alignLeftTrim
   , allEqual
   , c2w
   , w2c
@@ -40,15 +42,25 @@ import EvoMod.Defaults (defStringSummaryLength)
 
 -- | For a given width, align string to the right.
 alignRight :: Int -> String -> String
-alignRight n s | l > n     = take n s
+alignRight n s | l >= n    = s
                | otherwise = replicate (n-l) ' ' ++ s
                where l = length s
 
 -- | For a given width, align string to the left.
 alignLeft :: Int -> String -> String
-alignLeft n s | l > n     = take n s
+alignLeft n s | l >= n    = s
               | otherwise = s ++ replicate (n-l) ' '
                where l = length s
+
+-- | For a given width, align string to the right; trim on the left if string is
+-- longer.
+alignRightTrim :: Int -> String -> String
+alignRightTrim n s = reverse . take n . reverse $ alignRight n s
+
+-- | For a given width, align string to the left; trim on the right if string is
+-- longer.
+alignLeftTrim :: Int -> String -> String
+alignLeftTrim n s = take n $ alignLeft n s
 
 -- | Test if all elements of a list are equal.
 allEqual :: Eq a => [a] -> Bool
