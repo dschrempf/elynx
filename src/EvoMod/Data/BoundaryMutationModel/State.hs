@@ -23,12 +23,10 @@ module EvoMod.Data.BoundaryMutationModel.State
   , nFixed
     -- * Functions
   , setPopSize
-  , toEnumWith
-  , toInt
+  , fromIndexWith
+  , toIndex
   , stateSpace
   , stateSpaceSize
-  , stateId
-  , idToState
   -- , rmStateToBMState
   , neighbors
   ) where
@@ -47,7 +45,7 @@ import           EvoMod.Tools           (allValues)
 -- | Alleles are just nucleotides at the moment. However, I want to keep the
 -- code such that it can be extended easily to codons or amino acids.
 type Allele = Nucleotide
--- TODO: Change N to D and PopSize to Discretization.
+-- XXX: Change N to D and PopSize to Discretization.
 -- | The population size; has to be larger than one, otherwise there be dragons.
 type PopSize = Int
 -- | The absolute frequency of an allele.
@@ -59,6 +57,14 @@ nAlleles = 1 + fromEnum (maxBound :: Allele)
 
 -- | A boundary mutation model state is either a boundary state or a polymorphic
 -- state. This also automatically defines a total order.
+--
+-- Another possibility would be:
+-- @
+--  data State = Bnd Allele | Ply AlleleCount Allele Allele
+--  data StateComplete = StateComplete PopSize State
+-- @
+-- But then, I think it is more important that the information is kept in one,
+-- at the cost of some overhead.
 data State = Bnd { bndN :: PopSize
                  , bndA :: Allele }
            | Ply { plyN :: PopSize
@@ -68,15 +74,19 @@ data State = Bnd { bndN :: PopSize
            deriving (Read, Eq)
 
 instance Show State where
-  show (Bnd n a) =  foldl1' (++) $ intersperse "," $ map toCounts allValues
-    where toCounts b
-            | a == b    = show n
-            | otherwise = "0"
-  show (Ply n i a b) = foldl1' (++) $ intersperse "," $ map toCounts allValues
-    where toCounts c
-            | c == a    = show i
-            | c == b    = show (n-i)
-            | otherwise = "0"
+  show (Bnd n a) = "(" ++ s ++ ")"
+    where
+      toCounts b
+        | a == b    = show n
+        | otherwise = "0"
+      s = foldl1' (++) $ intersperse "," $ map toCounts allValues
+  show (Ply n i a b) = "(" ++ s ++ ")"
+    where
+      toCounts c
+        | c == a    = show i
+        | c == b    = show (n-i)
+        | otherwise = "0"
+      s = foldl1' (++) $ intersperse "," $ map toCounts allValues
 
 -- | A total order on the boundary mutation model states. In general, Bnd < Ply.
 -- Then, sorting happens according to the order population size, first allele,
@@ -105,9 +115,9 @@ instance Ord State where
 -- | Fixed population size when converting a 'State' to or from a number. In
 -- this case, a fixed population size is necessary so that @toEnum . fromEnum ==
 -- id@. When converting from a number to 'State', the population size has to be
--- given (see 'toEnumWith'). Especially when writing to files, a number should
--- always correspond to the same 'State'. 'nFixed' has been set such that the size
--- of the state space is 256.
+-- given or assumed (see 'fromIndexWith') anyways. Especially when performing IO,
+-- the same number should always correspond to the same 'State' (bijection).
+-- 'nFixed' has been set such that the size of the state space is 256.
 nFixed :: Int
 nFixed = 43
 
@@ -121,9 +131,9 @@ unsafeSetPopSize :: Int -> State -> State
 unsafeSetPopSize n (Bnd _ s)     = Bnd n s
 unsafeSetPopSize n (Ply _ i a b) = Ply n i a b
 
--- | For a given population size, convert 'Int' to 'State'.
-toEnumWith :: PopSize -> Int -> State
-toEnumWith n i
+-- | For a given population size 'PopSize', convert a number 'Int' to 'State'.
+fromIndexWith :: PopSize -> Int -> State
+fromIndexWith n i
   | i >= stateSpaceSize n = error $
     "Index " ++ show i ++ "out of bounds when population size is " ++ show n ++ "."
   | i < nAlleles = Bnd n (toEnum i)
@@ -134,49 +144,45 @@ toEnumWith n i
             , b <- [ succ a ..]]
         p = last $ takeWhile (\e -> e^._1 <= i') l
 
--- | Convert 'State' to 'Int' for the given population size. Back conversion can
--- be done with 'toEnumWith', with the same population size.
-toInt :: State -> Int
-toInt (Bnd _ a) = fromEnum a
+-- | Convert 'State' to a number 'Int' for the given population size 'PopSize'.
+-- Back conversion can be done with 'fromIndexWith', with the same population size.
+toIndex :: State -> Int
+toIndex (Bnd _ a) = fromEnum a
 -- We also have to shift the enumeration value by the number of boundary
 -- states, which is 'nAlleles'.
-toInt (Ply n i a b) = nAlleles + enumCombination a b * (n-1) + i-1
+toIndex (Ply n i a b) = nAlleles + enumCombination a b * (n-1) + i-1
 
 -- | Enumeration only works when the population size is 'nFixed'. Only then,
 -- @toEnum . fromEnum == id@ can be guaranteed. This is because @toEnum ::
 -- State@ is only defined if the population size is known. See also
--- 'toEnumWith', and 'toInt', as well as, 'setPopSize'.
+-- 'fromIndexWith', and 'toIndex', as well as, 'setPopSize'.
 instance Enum State where
   fromEnum s = if getPopSize s /= nFixed
     then error $ "State is not enumerable: " ++ show s ++ "."
-    else toInt s
-  toEnum = toEnumWith nFixed
+    else toIndex s
+  toEnum = fromIndexWith nFixed
 
 -- The formula is a little complicated. Sketch of derivation: Order the states
 -- in the following way:
---
 -- @
 --  AC CG GT
 --  AG CT
 --  AT
 -- @
---
--- The length of the triangle is @'nAlleles' - 1@. Use Gauss's triangle equation
--- @area=binom(length+1, 2)@ twice to count the number of combinations up to,
--- e.g., C (see 'countCombinationsUpToAllele' below):
---
+-- The edge length of the triangle is @'nAlleles' - 1@. Use Gauss's triangle
+-- equation @area=binom(length+1, 2)@ twice to count the number of combinations
+-- up to a certain allele. E.g., up to, but excluding G:
 -- @
 --  AC CG
 --  AG CT
 --  AT
 -- @
--- For example, the enumeration value of @GT@ (with @fromEnum G = k = 2@ and
--- @fromEnum T = 3@) is then @enumCombinationsUpToK 2 + (3-2)@.
 countCombinationsUpToAllele :: Allele -> Int
-countCombinationsUpToAllele x = round $ nAlleles `choose` 2 - (nAlleles - fromEnum x) `choose` 2
+countCombinationsUpToAllele a = round $ nAlleles `choose` 2 - (nAlleles - fromEnum a) `choose` 2
 
 -- See 'countCombinationsUpToAllele'. The @-1@ pops up because we start counting
--- from 0.
+-- from 0. For example, the enumeration value of @GT@ (with @fromEnum G = k = 2@
+-- and @fromEnum T = 3@) is then @enumCombinationsUpToK 2 + (3-2)@.
 enumCombination :: Allele -> Allele -> Int
 enumCombination a b = countCombinationsUpToAllele a - 1 + (fromEnum b - fromEnum a)
 
@@ -185,6 +191,11 @@ instance Bounded State where
   minBound = Bnd nFixed minBound
   maxBound = Ply nFixed (nFixed-1) (pred maxBound) maxBound
 
+-- XXX: I am not sure if I should instantiate 'Character' because writing Fasta
+-- files with boundary mutation model states is not really promising anyways.
+-- However, the 'toIndex' and 'fromIndexWith' function provide a convenient way to
+-- map states to integers. This functionality is needed when working with
+-- matrices.
 -- | A fixed population size 'nFixed' is assumed.
 instance Character State where
   fromWord = toEnum . fromEnum
@@ -208,17 +219,20 @@ getPopSize :: State -> PopSize
 getPopSize (Bnd n _)     = n
 getPopSize (Ply n _ _ _) = n
 
+-- CCC: This function is a not very efficient. A better would be something like:
+-- @
 -- | Sorted list of all possible PoMo states for a specific population size.
 stateSpace :: PopSize -> [State]
-stateSpace n
-  | n <= 1    = error "The population size has to be larger than one."
-  | otherwise = sort $ filterValidStates ( allBndStates ++ allPlyStates )
-  where allBndStates = [ Bnd n a |
-                         a <- [minBound .. maxBound] :: [Allele] ]
-        allPlyStates = [ Ply n i a b |
-                         i <- [0..n],
-                         a <- [minBound .. maxBound] :: [Allele],
-                         b <- [minBound .. maxBound] :: [Allele] ]
+stateSpace n = map (fromIndexWith n) [0 .. stateSpaceSize n - 1]
+-- stateSpace n
+--   | n <= 1    = error "The population size has to be larger than one."
+--   | otherwise = sort $ filterValidStates ( allBndStates ++ allPlyStates )
+--   where allBndStates = [ Bnd n a |
+--                          a <- [minBound .. maxBound] :: [Allele] ]
+--         allPlyStates = [ Ply n i a b |
+--                          i <- [0..n],
+--                          a <- [minBound .. maxBound] :: [Allele],
+--                          b <- [minBound .. maxBound] :: [Allele] ]
 
 -- | The state space of the boundary mutation model for four alleles and a
 -- population size N is 4 + 6*(N-1).
@@ -226,18 +240,17 @@ stateSpaceSize :: PopSize -> Int
 stateSpaceSize n = k + k*(k-1) `div` 2 * (n-1)
   where k = nAlleles
 
--- | Convert a boundary state to its ID (integer). See also 'idToState'.
-stateId :: State -> Maybe Int
-stateId s = elemIndex s (stateSpace $ getPopSize s)
 
--- | Convert an ID to a boundary state. See also 'stateID'.
-idToState :: PopSize -> Int -> State
-idToState n i = stateSpace n !! i
+-- -- This is a very convenient version of toIndex, but can we always guarantee
+-- -- that the state space is sorted the same way?
+-- -- | Convert a boundary state to its ID (integer). See also 'idToState'.
+-- stateId :: State -> Maybe Int
+-- stateId s = elemIndex s (stateSpace $ getPopSize s)
 
--- -- | Type conversion; rate matrix state type to boundary mutation model state
--- -- type.
--- rmStateToBMState :: PopSize -> RM.State -> State
--- rmStateToBMState n (RM.State i) = idToState n i
+-- -- Same here.
+-- -- | Convert an ID to a boundary state. See also 'stateID'.
+-- idToState :: PopSize -> Int -> State
+-- idToState n i = stateSpace n !! i
 
 -- | Check if two states are connected. By definition, states are NOT connected
 -- with themselves.
@@ -258,17 +271,3 @@ getNeighbors (Ply n i a b)
   | i == 1            = Bnd n b : [Ply n 2 a b]
   | i == (n-1)        = Bnd n a : [Ply n (n-2) a b]
   | otherwise         = Ply n (i+1) a b : [Ply n (i-1) a b]
-
--- -- Examples and tests.
--- bndOne = Bnd 9  A
--- bndTwo = Bnd 9  C
--- bndThr = Bnd 10 T
-
--- plyOne = Ply 9  2 A C
--- plyTwo = Ply 9  3 A C
--- plyThr = Ply 9  7 C T
--- plyFou = Ply 10 8 A C
-
--- stateOne = BStatePly plyOne
--- stateTwo = BStatePly plyTwo
--- stateThr = BStateBnd bndOne
