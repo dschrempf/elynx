@@ -73,20 +73,19 @@ data State = Bnd { bndN :: PopSize
                  , plyB :: Allele }
            deriving (Read, Eq)
 
+showCounts :: State -> String
+showCounts (Bnd n a) = foldl1' (++) $ intersperse "," $ map toCounts allValues
+  where toCounts b
+          | a == b    = show n
+          | otherwise = "0"
+showCounts (Ply n i a b) = foldl1' (++) $ intersperse "," $ map toCounts allValues
+  where toCounts c
+          | c == a    = show i
+          | c == b    = show (n-i)
+          | otherwise = "0"
+
 instance Show State where
-  show (Bnd n a) = "(" ++ s ++ ")"
-    where
-      toCounts b
-        | a == b    = show n
-        | otherwise = "0"
-      s = foldl1' (++) $ intersperse "," $ map toCounts allValues
-  show (Ply n i a b) = "(" ++ s ++ ")"
-    where
-      toCounts c
-        | c == a    = show i
-        | c == b    = show (n-i)
-        | otherwise = "0"
-      s = foldl1' (++) $ intersperse "," $ map toCounts allValues
+  show s = "(" ++ showCounts s ++ ")"
 
 -- | A total order on the boundary mutation model states. In general, Bnd < Ply.
 -- Then, sorting happens according to the order population size, first allele,
