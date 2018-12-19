@@ -20,6 +20,7 @@ module EvoMod.Data.BoundaryMutationModel.State
   , PopSize
   , AlleleCount
   , State(..)
+  , showCounts
   , nFixed
     -- * Functions
   , setPopSize
@@ -73,6 +74,7 @@ data State = Bnd { bndN :: PopSize
                  , plyB :: Allele }
            deriving (Read, Eq)
 
+-- | String representation of 'State'; without surrounding brackets.
 showCounts :: State -> String
 showCounts (Bnd n a) = foldl1' (++) $ intersperse "," $ map toCounts allValues
   where toCounts b
