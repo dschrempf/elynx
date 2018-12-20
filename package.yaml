@@ -1,7 +1,7 @@
 name:                evomod
-version:             0.1.0.1
+version:             0.1.0.2
 github:              "dschrempf/evomod"
-license:             BSD3
+license:             GPL-3
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
 copyright:           "Dominik Schrempf (2018)"
@@ -24,7 +24,7 @@ ghc-options:
   # - -Werror
 
 dependencies:
-- base >= 4.7 && < 5
+- base
 - bytestring
 - containers
 - deepseq
