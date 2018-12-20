@@ -13,7 +13,7 @@ size, etc.), write the data to file using counts file format.
 TODO: Add functions such as @[Sequence] -> B.ByteString@. But what do I actually
 need? It only makes sense to do something like @[MulitSequenceAlignment] ->
 B.ByteString@. But then I need to add positional information to
-'MultiSequenceAlignment'.
+/MultiSequenceAlignment/.
 
 TODO: Parse Counts Files.
 

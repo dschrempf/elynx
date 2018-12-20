@@ -29,8 +29,8 @@ import           EvoMod.Data.Character
 import           EvoMod.Tools          (c2w)
 
 -- | Nucleotide data type. Actually, only two bits are needed, but 'Word8' is
--- the smallest available data type. One could use a 'pack' function like it is
--- done with 'ByteString's to decrease memory usage and pack a number of
+-- the smallest available data type. One could use a /pack/ function like it is
+-- done with /ByteString/s to decrease memory usage and pack a number of
 -- 'Nucleotide's into one 'Word8'. By convention, I use uppercase letters.
 data Nucleotide = A | C | G | T
   deriving (Show, Read, Eq, Ord, Enum, Bounded)

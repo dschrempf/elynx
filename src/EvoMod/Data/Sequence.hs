@@ -55,12 +55,12 @@ data Sequence = Sequence { seqId :: SequenceId
                          , seqCs :: V.Vector Word8 }
   deriving (Eq)
 
--- | Conversion from ByteString.
+-- | Conversion from 'B.ByteString'.
 toSequence :: String -> B.ByteString -> Sequence
 toSequence i cs = Sequence i v
   where v = V.force . V.fromList . B.unpack $ cs
 
--- | Conversion of data to 'ByteString'.
+-- | Conversion of data to 'B.ByteString'.
 seqToCsByteString :: Sequence -> B.ByteString
 seqToCsByteString = B.pack . V.toList . seqCs
 

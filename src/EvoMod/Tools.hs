@@ -34,7 +34,7 @@ module EvoMod.Tools
 
 import           Codec.Compression.GZip   (compress, decompress)
 import           Data.ByteString.Internal (c2w, w2c)
-import qualified Data.ByteString.Lazy     as B (ByteString, readFile, writeFile)
+import qualified Data.ByteString.Lazy     as B
 import           Data.List                (isSuffixOf)
 import           Text.Megaparsec
 
@@ -89,7 +89,7 @@ parseFileWith p f = do res <- runParserOnFile p f
                          Left  err -> error $ errorBundlePretty err
                          Right val -> return val
 
--- | Parse a 'ByteString' and extract the result.
+-- | Parse a 'B.ByteString' and extract the result.
 parseByteStringWith :: (ShowErrorComponent e) => Parsec e B.ByteString a -> B.ByteString -> a
 parseByteStringWith p f = case parse p "" f of
                             Left  err -> error $ errorBundlePretty err
