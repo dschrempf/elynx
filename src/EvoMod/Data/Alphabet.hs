@@ -29,12 +29,12 @@ module EvoMod.Data.Alphabet
   )
 where
 
-import qualified Data.Set             as S
-import           Data.Word            (Word8)
+import qualified Data.Set                        as S
+import           Data.Word                       (Word8)
 
-import           EvoMod.Data.AminoAcid
+import           EvoMod.Data.Alphabet.AminoAcid
+import           EvoMod.Data.Alphabet.Nucleotide
 import           EvoMod.Data.Character
-import           EvoMod.Data.Nucleotide
 
 -- | The used genetic code. Could include Protein_IUPAC, CountsFile for
 -- population data and so on.

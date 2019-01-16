@@ -14,7 +14,7 @@ See header of 'EvoMod.Data.Alphabet'.
 
 -}
 
-module EvoMod.Data.AminoAcid
+module EvoMod.Data.Alphabet.AminoAcid
   ( AminoAcid
   , wordToAminoAcid
   , aminoAcidToWord

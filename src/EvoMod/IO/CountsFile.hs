@@ -27,7 +27,7 @@ module EvoMod.IO.CountsFile
 
 import qualified Data.ByteString.Lazy.Char8              as B
 import           Data.Maybe                              (fromMaybe)
-import           EvoMod.Data.BoundaryMutationModel.State
+import           EvoMod.Data.Alphabet.BoundaryMutationModel
 import           EvoMod.Tools                            (alignLeft, alignRight)
 
 -- | The number of sites that will be printed.

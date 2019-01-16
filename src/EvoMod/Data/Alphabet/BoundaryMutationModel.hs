@@ -14,7 +14,7 @@ that allows mutations only when the population is monomorphic.
 
 -}
 
-module EvoMod.Data.BoundaryMutationModel.State
+module EvoMod.Data.Alphabet.BoundaryMutationModel
   ( -- * Types
     Allele
   , PopSize
@@ -28,7 +28,6 @@ module EvoMod.Data.BoundaryMutationModel.State
   , toIndex
   , stateSpace
   , stateSpaceSize
-  -- , rmStateToBMState
   , neighbors
   ) where
 
@@ -39,15 +38,13 @@ import           Control.Lens
 import           Numeric.SpecFunctions  (choose)
 
 import           EvoMod.Data.Character
-import           EvoMod.Data.Nucleotide
--- import qualified RateMatrix as RM
+import           EvoMod.Data.Alphabet.Nucleotide
 import           EvoMod.Tools           (allValues)
 
 -- | Alleles are just nucleotides at the moment. However, I want to keep the
 -- code such that it can be extended easily to codons or amino acids.
 type Allele = Nucleotide
--- XXX: Change N to D and PopSize to Discretization.
--- | The population size; has to be larger than one, otherwise there be dragons.
+-- | The population size has to be larger than one otherwise there be dragons.
 type PopSize = Int
 -- | The absolute frequency of an allele.
 type AlleleCount = Int
@@ -57,7 +54,9 @@ nAlleles :: Int
 nAlleles = 1 + fromEnum (maxBound :: Allele)
 
 -- | A boundary mutation model state is either a boundary state or a polymorphic
--- state. This also automatically defines a total order.
+-- state. The population size has to be larger than one; the allele count has to
+-- be larger than one and lower than the population size, otherwise there be
+-- dragons. See also 'valid'.
 --
 -- Another possibility would be:
 -- @
@@ -66,10 +65,10 @@ nAlleles = 1 + fromEnum (maxBound :: Allele)
 -- @
 -- But then, I think it is more important that the information is kept in one,
 -- at the cost of some overhead.
-data State = Bnd { bndN :: PopSize
+data State = Bnd { bndN :: PopSize     -- | Population size.
                  , bndA :: Allele }
-           | Ply { plyN :: PopSize
-                 , plyI :: AlleleCount
+           | Ply { plyN :: PopSize     -- | Population size.
+                 , plyI :: AlleleCount -- | Allele count.
                  , plyA :: Allele
                  , plyB :: Allele }
            deriving (Read, Eq)
@@ -192,11 +191,11 @@ instance Bounded State where
   minBound = Bnd nFixed minBound
   maxBound = Ply nFixed (nFixed-1) (pred maxBound) maxBound
 
--- XXX: I am not sure if I should instantiate 'Character' because writing Fasta
--- files with boundary mutation model states is not really promising anyways.
--- However, the 'toIndex' and 'fromIndexWith' function provide a convenient way to
--- map states to integers. This functionality is needed when working with
--- matrices.
+-- I am not sure if I should remove the 'Character' instance because writing
+-- Fasta files with boundary mutation model states is not really promising
+-- anyways. However, the 'toIndex' and 'fromIndexWith' function provide a
+-- convenient way to map states to integers. This functionality is needed when
+-- working with matrices.
 -- | A fixed population size 'nFixed' is assumed.
 instance Character State where
   fromWord = toEnum . fromEnum
@@ -225,6 +224,8 @@ getPopSize (Ply n _ _ _) = n
 -- | Sorted list of all possible PoMo states for a specific population size.
 stateSpace :: PopSize -> [State]
 stateSpace n = map (fromIndexWith n) [0 .. stateSpaceSize n - 1]
+
+-- An easier, but slower implementation.
 -- stateSpace n
 --   | n <= 1    = error "The population size has to be larger than one."
 --   | otherwise = sort $ filterValidStates ( allBndStates ++ allPlyStates )
@@ -241,12 +242,11 @@ stateSpaceSize :: PopSize -> Int
 stateSpaceSize n = k + k*(k-1) `div` 2 * (n-1)
   where k = nAlleles
 
-
 -- -- This is a very convenient version of toIndex, but can we always guarantee
 -- -- that the state space is sorted the same way?
 -- -- | Convert a boundary state to its ID (integer). See also 'idToState'.
--- stateId :: State -> Maybe Int
--- stateId s = elemIndex s (stateSpace $ getPopSize s)
+-- stateToId :: State -> Maybe Int
+-- stateToId s = elemIndex s (stateSpace $ getPopSize s)
 
 -- -- Same here.
 -- -- | Convert an ID to a boundary state. See also 'stateID'.

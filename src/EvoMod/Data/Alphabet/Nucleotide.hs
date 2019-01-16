@@ -14,7 +14,7 @@ See header of 'EvoMod.Data.Alphabet'.
 
 -}
 
-module EvoMod.Data.Nucleotide
+module EvoMod.Data.Alphabet.Nucleotide
   ( Nucleotide (..)
   , wordToNucleotide
   , nucleotideToWord
