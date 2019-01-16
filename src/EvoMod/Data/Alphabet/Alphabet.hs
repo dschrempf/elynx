@@ -53,7 +53,7 @@ codeNameVerbose Protein   = show Protein ++ " (amino acids)"
 newtype Alphabet = Alphabet { fromAlphabet :: S.Set Word8 }
   deriving (Show, Read, Eq, Ord)
 
--- | Since 'Character's are required to be enumerated and bounded, we can
+-- | Since Characters are required to be enumerated and bounded, we can
 -- calculate the corresponding alphabet.
 toAlphabet :: Character a => [a] -> Alphabet
 toAlphabet = Alphabet . S.fromList . map toWord

@@ -56,7 +56,7 @@ sequenceLine a = do xs <- takeWhile1P (Just "Alphabet character") (checkWord8 a)
                     _  <- void eol <|> eof
                     return xs
 
--- | Parse a sequence of 'Alphabet' 'Character's.
+-- | Parse a sequence of 'Alphabet' 'EvoMod.Data.Alphabet.Character's.
 fastaSequence :: Alphabet -> Parser Sequence
 fastaSequence a = do hd <- sequenceHeader
                      cs <- some (sequenceLine a)

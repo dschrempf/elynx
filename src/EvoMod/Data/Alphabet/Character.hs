@@ -10,7 +10,7 @@ Portability :  portable
 
 Creation date: Fri Oct 12 16:24:02 2018.
 
-See header of 'EvoMod.Data.Alphabet'.
+See header of 'EvoMod.Data.Alphabet.Alphabet'.
 
 -}
 

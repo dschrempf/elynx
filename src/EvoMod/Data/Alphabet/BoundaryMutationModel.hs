@@ -56,7 +56,7 @@ nAlleles = 1 + fromEnum (maxBound :: Allele)
 -- | A boundary mutation model state is either a boundary state or a polymorphic
 -- state. The population size has to be larger than one; the allele count has to
 -- be larger than one and lower than the population size, otherwise there be
--- dragons. See also 'valid'.
+-- dragons.
 --
 -- Another possibility would be:
 -- @
