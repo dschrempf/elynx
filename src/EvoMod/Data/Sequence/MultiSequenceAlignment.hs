@@ -13,7 +13,7 @@ Creation date: Thu Oct  4 18:40:18 2018.
 -}
 
 
-module EvoMod.Data.MultiSequenceAlignment
+module EvoMod.Data.Sequence.MultiSequenceAlignment
   ( MultiSequenceAlignment (..)
   -- | * Input
   , fromSequenceList
@@ -28,7 +28,7 @@ module EvoMod.Data.MultiSequenceAlignment
 
 import           Control.Monad
 
-import           EvoMod.Data.Sequence
+import           EvoMod.Data.Sequence.Sequence
 
 -- | A collection of names sequences with a specific length (i.e., the number of sites).
 data MultiSequenceAlignment = MSA { msaSequences :: [Sequence]

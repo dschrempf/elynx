@@ -22,7 +22,7 @@ module EvoMod.Data.Alphabet.AminoAcid
 
 import           Data.Word8          (Word8, toUpper)
 
-import           EvoMod.Data.Character
+import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Tools          (c2w)
 
 -- | Amino acids.

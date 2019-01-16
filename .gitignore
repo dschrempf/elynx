@@ -1,13 +1,20 @@
+# Stack
 .stack-work/
 .stack-work-profiling/
 evomod.cabal
-*~
+
+# Profile files.
+evomod-seq.aux
+evomod-seq.eventlog
+evomod-seq.hp
+evomod-seq.prof
+evomod-seq.ps
+
+# Tags.
+/TAGS
 /GPATH
 /GRTAGS
 /GTAGS
-/evomod-seq.aux
-/evomod-seq.eventlog
-/evomod-seq.hp
-/evomod-seq.prof
-/evomod-seq.ps
-/TAGS
+
+# Emacs related files.
+dist/

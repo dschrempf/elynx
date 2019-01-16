@@ -25,7 +25,7 @@ where
 
 import           Data.Word8          (Word8, toUpper)
 
-import           EvoMod.Data.Character
+import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Tools          (c2w)
 
 -- | Nucleotide data type. Actually, only two bits are needed, but 'Word8' is

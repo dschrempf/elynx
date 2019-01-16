@@ -15,7 +15,7 @@ See header of 'EvoMod.Data.Alphabet'.
 -}
 
 
-module EvoMod.Data.Character
+module EvoMod.Data.Alphabet.Character
   ( Character (..)
   ) where
 

@@ -38,8 +38,6 @@ import qualified Data.ByteString.Lazy     as B
 import           Data.List                (isSuffixOf)
 import           Text.Megaparsec
 
-import EvoMod.Defaults (defStringSummaryLength)
-
 -- | For a given width, align string to the right.
 alignRight :: Int -> String -> String
 alignRight n s | l >= n    = s
@@ -109,10 +107,10 @@ rmDoubleQuotes = rmFirstQuote . rmLastQuote
 showWithoutQuotes :: Show a => a -> String
 showWithoutQuotes = rmDoubleQuotes . show
 
--- | If a string is longer than 'defStringSummaryLength', trim it and add some dots.
-summarizeString :: String -> String
-summarizeString s | length s >= defStringSummaryLength = take defStringSummaryLength s ++ "..."
-                  | otherwise = s
+-- | If a string is longer than a given value, trim it and add some dots.
+summarizeString :: Int -> String -> String
+summarizeString l s | length s >= l = take l s ++ "..."
+                    | otherwise = s
 
 -- | See https://wiki.haskell.org/Compose.
 compose :: [a -> a] -> a -> a

@@ -20,9 +20,9 @@ import           Data.Maybe                 (fromMaybe)
 
 import           ArgParse
 
-import           EvoMod.Data.Sequence
-import           EvoMod.Filter
-import           EvoMod.IO.Fasta
+import           EvoMod.Data.Sequence.Sequence
+import           EvoMod.Data.Sequence.Filter
+import           EvoMod.Import.Fasta
 import           EvoMod.Tools               (compose, parseFileWith)
 
 concatenateSeqs :: [[Sequence]] -> Either String [Sequence]

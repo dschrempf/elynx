@@ -37,7 +37,7 @@ import           Control.Lens
 
 import           Numeric.SpecFunctions  (choose)
 
-import           EvoMod.Data.Character
+import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Nucleotide
 import           EvoMod.Tools           (allValues)
 

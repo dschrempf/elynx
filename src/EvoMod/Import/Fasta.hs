@@ -1,6 +1,6 @@
 {- |
-Module      :  EvoMod.IO.Fasta
-Description :  Fasta sequences.
+Module      :  EvoMod.Import.Fasta
+Description :  Import Fasta sequences.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 
@@ -17,7 +17,7 @@ For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/p
 -}
 
 
-module EvoMod.IO.Fasta
+module EvoMod.Import.Fasta
   ( Parser
   , fastaSequence
   , fastaFile
@@ -27,16 +27,16 @@ module EvoMod.IO.Fasta
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8       as B
-import qualified Data.Set                         as S
+import qualified Data.ByteString.Lazy.Char8                  as B
+import qualified Data.Set                                    as S
 import           Data.Void
-import           Data.Word8                       (Word8, toUpper)
+import           Data.Word8                                  (Word8, toUpper)
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 
-import           EvoMod.Data.Alphabet
-import           EvoMod.Data.MultiSequenceAlignment
-import           EvoMod.Data.Sequence
+import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Sequence.Sequence
+import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Tools
 
 -- | A shortcut.

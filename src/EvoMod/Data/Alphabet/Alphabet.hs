@@ -21,7 +21,7 @@ Hierarchy:
 
 -}
 
-module EvoMod.Data.Alphabet
+module EvoMod.Data.Alphabet.Alphabet
   ( Code (..)
   , codeNameVerbose
   , Alphabet (..)
@@ -34,7 +34,7 @@ import           Data.Word                       (Word8)
 
 import           EvoMod.Data.Alphabet.AminoAcid
 import           EvoMod.Data.Alphabet.Nucleotide
-import           EvoMod.Data.Character
+import           EvoMod.Data.Alphabet.Character
 
 -- | The used genetic code. Could include Protein_IUPAC, CountsFile for
 -- population data and so on.

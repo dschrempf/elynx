@@ -26,7 +26,7 @@ import           Options.Applicative
 import           Options.Applicative.Help.Pretty
 import           Paths_evomod                    (version)
 
-import           EvoMod.Data.Alphabet
+import           EvoMod.Data.Alphabet.Alphabet
 
 data Command = Summarize
              | Concatenate

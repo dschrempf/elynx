@@ -15,11 +15,9 @@ need? It only makes sense to do something like @[MulitSequenceAlignment] ->
 B.ByteString@. But then I need to add positional information to
 /MultiSequenceAlignment/.
 
-TODO: Parse Counts Files.
-
 -}
 
-module EvoMod.IO.CountsFile
+module EvoMod.Export.CountsFile
   ( DataOneSite
   , PopulationNames
   , toCountsFile

@@ -12,7 +12,7 @@ Creation date: Thu Oct  4 18:54:51 2018.
 
 -}
 
-module EvoMod.Data.Sequence
+module EvoMod.Data.Sequence.Sequence
   ( SequenceId
   , Sequence(..)
   -- * Input
@@ -33,18 +33,19 @@ module EvoMod.Data.Sequence
   , concatenate
   ) where
 
-import qualified Data.ByteString.Lazy as B
-import           Data.List            (maximumBy)
-import           Data.Ord             (comparing)
-import qualified Data.Vector.Unboxed  as V
-import           Data.Word8           (Word8)
+import qualified Data.ByteString.Lazy          as B
+import           Data.List                     (maximumBy)
+import           Data.Ord                      (comparing)
+import qualified Data.Vector.Unboxed           as V
+import           Data.Word8                    (Word8)
 
-import           EvoMod.Defaults      (defFieldWidth,
-                                       defSequenceListSummaryNumber,
-                                       defSequenceNameWidth,
-                                       defSequenceSummaryLength)
-import           EvoMod.Tools         (alignLeft, allEqual, showWithoutQuotes,
-                                       summarizeString)
+import           EvoMod.Data.Sequence.Defaults (defFieldWidth,
+                                                defSequenceListSummaryNumber,
+                                                defSequenceNameWidth,
+                                                defSequenceSummaryLength)
+import           EvoMod.Tools                  (alignLeft, allEqual,
+                                                showWithoutQuotes,
+                                                summarizeString)
 
 -- | For now, 'SequenceId's are just 'String's.
 type SequenceId = String
@@ -89,7 +90,7 @@ sequenceListHeader = alignLeft defSequenceNameWidth "Identifier" ++ " " ++
 
 -- | Trim and show a 'Sequence'.
 summarizeSequence :: Sequence -> String
-summarizeSequence s = showInfo s ++ " " ++ summarizeString (showCharacters s)
+summarizeSequence s = showInfo s ++ " " ++ summarizeString defSequenceSummaryLength (showCharacters s)
 
 -- | Trim and show a list of 'Sequence's.
 summarizeSequenceList :: [Sequence] -> String

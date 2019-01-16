@@ -15,12 +15,12 @@ Filter sequences that do not fulfill certain criteria such as minimum sequence l
 -}
 
 
-module EvoMod.Filter
+module EvoMod.Data.Sequence.Filter
   ( filterShorterThan
   , filterLongerThan
   ) where
 
-import EvoMod.Data.Sequence
+import EvoMod.Data.Sequence.Sequence
 
 -- | Only take 'Sequence's that are shorter than a given number.
 filterShorterThan :: Int -> [Sequence] -> [Sequence]
