@@ -36,6 +36,7 @@ import           EvoMod.Data.Tree.MeasurableTree
 -- length.
 data PhyloNode a = PhyloNode { nLabel        :: a
                              , nBranchLength :: Double }
+                 deriving (Show)
 
 instance MeasurableNode (PhyloNode a) where
   branchLength = nBranchLength
