@@ -22,8 +22,8 @@ import           ArgParse
 
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Data.Sequence.Filter
-import           EvoMod.Import.Fasta
-import           EvoMod.Export.Fasta
+import           EvoMod.Import.Sequence.Fasta
+import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Tools               (compose, parseFileWith)
 
 concatenateSeqs :: [[Sequence]] -> Either String [Sequence]

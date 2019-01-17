@@ -10,38 +10,46 @@ Portability :  portable
 
 Creation date: Thu Jan 17 09:57:29 2019.
 
-What is called /label/ in 'Data.Tree', I call /node/.
+Comment about nomenclature:
 
-Branches have /length/s, not distances.
+- Trees have /nodes/ (not labels like in 'Data.Tree').
+
+- Branches have /lengths/, not distances or times.
+
+TODO:
+
+- Export Tree (see BuilderLabel in Phylo.hs).
+
+- Separate Measurable, Phylo, if possible.
+
+- Use functional graph library for unrooted trees see also the book /Haskell
+  high performance programming from Thomasson/, p. 344.
 
 -}
 
 
 module EvoMod.Data.Tree.Tree
-  (
+  ( singleton
+  , degree
+  , rootNodesAgreeWith
   ) where
 
 import Data.Tree
-import Data.Foldable
+import qualified Data.Set as S
 
-class MeasureableNode n where
-  branchLength :: (Num b) => n -> b
+-- | The simplest tree. Usually an extant leaf with an attached branch.
+singleton :: a -> Tree a
+singleton n = Node n []
 
-class PhyloNode n where
-  internal        :: n -> Bool
-  extant          :: n -> Bool
-  extinct         :: n -> Bool
-  external        :: n -> Bool
+-- | The degree of the root node of a tree.
+degree :: Tree a -> Int
+degree = (+ 1) . length . subForest
 
-  internal n = not $ extant n || extinct n
-  external   = not . internal
-
-totalBrLn :: (Num b, MeasureableNode n) => Tree n -> b
-totalBrLn = foldl' (\acc n -> acc + branchLength n) 0
-
-distancesRootLeaves :: (Num b, MeasureableNode n) => Tree n -> [b]
-distancesRootLeaves (Node s []) = [branchLength s]
-distancesRootLeaves (Node s f ) = concatMap (map (+ branchLength s) . distancesRootLeaves) f
-
-height :: (Num b, Ord b, MeasureableNode n) => Tree n -> b
-height = maximum . distancesRootLeaves
+-- | Check if ancestor and daughters of first tree are a subset of the ancestor
+-- and daughters of the second tree. Useful to test if, e.g., speciations agree.
+rootNodesAgreeWith :: (Ord c) => (a -> c) -> Tree a -> (b -> c) -> Tree b -> Bool
+rootNodesAgreeWith f s g t =
+  f (rootLabel s) == g (rootLabel t) &&
+  S.fromList sDs `S.isSubsetOf` S.fromList tDs
+  where sDs = map (f . rootLabel) (subForest s)
+        tDs = map (g . rootLabel) (subForest t)

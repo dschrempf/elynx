@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Export.Fasta
+Module      :  EvoMod.Export.Sequence.Fasta
 Description :  Export Fasta sequences.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -17,7 +17,7 @@ For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/p
 -}
 
 
-module EvoMod.Export.Fasta
+module EvoMod.Export.Sequence.Fasta
   ( sequenceToFasta
   , sequencesToFasta
   ) where

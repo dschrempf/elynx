@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Import.Fasta
+Module      :  EvoMod.Import.Sequence.Fasta
 Description :  Import Fasta sequences.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -17,7 +17,7 @@ For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/p
 -}
 
 
-module EvoMod.Import.Fasta
+module EvoMod.Import.Sequence.Fasta
   ( Parser
   , fastaSequence
   , fastaFile
@@ -33,9 +33,9 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 
 import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
-import           EvoMod.Tools
+import           EvoMod.Data.Sequence.Sequence
+import           EvoMod.Tools                                (c2w, w2c)
 
 -- | A shortcut.
 type Parser = Parsec Void B.ByteString

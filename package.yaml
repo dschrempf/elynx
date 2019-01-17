@@ -33,6 +33,7 @@ dependencies:
 - math-functions
 - megaparsec >= 7.0.1
 - optparse-applicative
+- text
 - vector
 - vector-th-unbox
 - word8

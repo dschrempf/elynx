@@ -17,7 +17,7 @@ B.ByteString@. But then I need to add positional information to
 
 -}
 
-module EvoMod.Export.CountsFile
+module EvoMod.Export.Sequence.CountsFile
   ( DataOneSite
   , PopulationNames
   , toCountsFile
