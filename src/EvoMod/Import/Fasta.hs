@@ -22,8 +22,6 @@ module EvoMod.Import.Fasta
   , fastaSequence
   , fastaFile
   , fastaFileMSA
-  , sequenceToFasta
-  , sequencesToFasta
   ) where
 
 import           Control.Monad
@@ -71,16 +69,3 @@ fastaFile c = some (fastaSequence (alphabet c)) <* eof
 -- | Parse a 'MultiSequenceAlignment' Fasta files assuming 'Code'.
 fastaFileMSA :: Code -> Parser MultiSequenceAlignment
 fastaFileMSA c = fromSequenceList <$> fastaFile c
-
-fastaHeader :: String -> B.ByteString
-fastaHeader i = B.pack $ '>' : i
-
--- | Convert a 'Sequence' to Fasta format.
-sequenceToFasta :: Sequence -> B.ByteString
-sequenceToFasta s = B.unlines [ fastaHeader i , cs ]
-  where (i, cs) = fromSequence s
-
--- | Convert a list 'Sequence's to Fasta format. A newline is added between any
--- two 'Sequence's.
-sequencesToFasta :: [Sequence] -> B.ByteString
-sequencesToFasta ss = B.unlines $ map sequenceToFasta ss

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 source include
-./build
+./build || exit 1
 
 file_profile=test/Data/Profile.fa.gz
 
@@ -14,7 +14,7 @@ msg "EvoMode-Seq profiling run."
 # -H: set heap size
 # -K: set stack size
 # -l: event log (compile option is necessary)
-stack exec evomod-seq --work-dir .stack-work-profiling -- summarize -a DNA_IUPAC $file_profile +RTS -p -hy -l -s
+stack exec evomod-seq --work-dir .stack-work-profiling -- summarize -a DNA_IUPAC $file_profile +RTS -p -hy -l -s || exit 1
 
 # Create a graph of the memory heap profile.
 hp2ps -e10in -c evomod-seq.hp

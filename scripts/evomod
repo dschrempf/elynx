@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 source include
-./build
+./build || exit 1
 
 file_DNA=test/Data/Nucleotide.fasta
 file_AA=test/Data/AminoAcid.fasta

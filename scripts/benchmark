@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 source include
-./build
+./build || exit 1
 
 file_benchmark=test/Data/BenchmarkEnsemblMouse.fa.gz
 
 msg "EvoMod-Seq benchmark."
-stack exec evomod-seq -- summarize -a DNA_IUPAC $file_benchmark  +RTS -s
+stack exec evomod-seq -- summarize -a DNA_IUPAC $file_benchmark  +RTS -s || exit 1

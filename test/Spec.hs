@@ -19,11 +19,11 @@ import qualified Data.ByteString.Lazy.Char8         as B
 import           Data.Either
 import           Test.Hspec
 
-import           EvoMod.Data.Alphabet
-import           EvoMod.Data.MultiSequenceAlignment
-import           EvoMod.Data.Sequence
-import           EvoMod.Filter
-import           EvoMod.IO.Fasta
+import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Sequence.MultiSequenceAlignment
+import           EvoMod.Data.Sequence.Sequence
+import           EvoMod.Data.Sequence.Filter
+import           EvoMod.Import.Fasta
 import           EvoMod.Tools
 
 fastaNucleotideFN :: String
