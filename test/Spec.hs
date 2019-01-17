@@ -24,6 +24,7 @@ import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Data.Sequence.Filter
 import           EvoMod.Import.Fasta
+import           EvoMod.Export.Fasta
 import           EvoMod.Tools
 
 fastaNucleotideFN :: String
