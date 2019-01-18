@@ -1,0 +1,50 @@
+{- |
+Module      :  EvoMod.Data.Import.FastaSpec
+Copyright   :  (c) Dominik Schrempf 2019
+License     :  GPL-3
+
+Maintainer  :  dominik.schrempf@gmail.com
+Stability   :  unstable
+Portability :  portable
+
+Creation date: Fri Jan 18 09:54:38 2019.
+
+-}
+
+module EvoMod.Data.Import.FastaSpec
+  (spec) where
+
+import           Data.Either
+import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Sequence.MultiSequenceAlignment
+import           EvoMod.Import.Sequence.Fasta
+import           EvoMod.Tools
+import           Files
+import           Test.Hspec
+
+spec :: Spec
+spec =
+  describe "fastaFileMSA" $ do
+    it "parses a fasta file with nucleotide sequences with equal length" $ do
+      msa <- parseFileWith (fastaFileMSA DNA) fastaNucleotideFN
+      msaNSequences msa `shouldBe` 3
+      msaLength msa `shouldBe` 40
+
+    it "parses a fasta file with nucleotide IUPAC sequences with equal length" $ do
+      msa <- parseFileWith (fastaFileMSA DNA_IUPAC) fastaNucleotideIUPACFN
+      msaNSequences msa `shouldBe` 3
+      msaLength msa `shouldBe` 40
+
+    it "should not parse erroneous files" $ do
+      emsa <- runParserOnFile (fastaFile DNA) fastaErroneousFN
+      emsa  `shouldSatisfy` isLeft
+
+    it "parses a fasta file with amino acid sequences with equal length" $ do
+      msa <- parseFileWith (fastaFileMSA Protein) fastaAminoAcidFN
+      msaNSequences msa `shouldBe` 2
+      msaLength msa `shouldBe` 237
+
+    it "should not parse erroneous files" $ do
+      msa <- runParserOnFile (fastaFile Protein) fastaErroneousFN
+      msa  `shouldSatisfy` isLeft
+

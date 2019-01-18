@@ -62,10 +62,12 @@ fastaSequence a = do hd <- sequenceHeader
                      let hd' = map w2c hd
                      return $ toSequence hd' (B.concat cs)
 
+-- TODO: Rename this function to plain 'fasta'.
 -- | Parse a Fasta file assuming 'Code'.
 fastaFile :: Code -> Parser [Sequence]
 fastaFile c = some (fastaSequence (alphabet c)) <* eof
 
+-- TODO: Remove this function.
 -- | Parse a 'MultiSequenceAlignment' Fasta files assuming 'Code'.
 fastaFileMSA :: Code -> Parser MultiSequenceAlignment
 fastaFileMSA c = fromSequenceList <$> fastaFile c
