@@ -20,7 +20,7 @@ Also, the 'Text' label is needed often: 'PhyloTextNode'.
 
 
 module EvoMod.Data.Tree.PhyloTree
-  ( PhyloNode (..)
+  ( PhyloLabel (..)
   , PhyloIntNode
   , PhyloTextNode
   , PhyloTree
@@ -32,24 +32,24 @@ import           Data.Text
 import           Data.Tree
 import           EvoMod.Data.Tree.MeasurableTree
 
--- | A primitive phylogenetic node with an 'Int' label and a 'Double' branch
--- length.
-data PhyloNode a = PhyloNode { nLabel        :: a
-                             , nBranchLength :: Double }
-                 deriving (Show)
+-- | A primitive label type for phylogenetic trees with an 'Int' label and a
+-- 'Double' branch length.
+data PhyloLabel a = PhyloLabel { pLabel        :: a
+                               , pBranchLength :: Double }
+                 deriving (Show, Eq)
 
-instance MeasurableNode (PhyloNode a) where
-  branchLength = nBranchLength
+instance MeasurableLabel (PhyloLabel a) where
+  branchLength = pBranchLength
 
 -- | Tree node with 'Int' label.
-type PhyloIntNode = PhyloNode Int
+type PhyloIntNode = PhyloLabel Int
 
 -- | Tree node with 'Text' label. Important for parsing
 -- 'EvoMod.Import.Tree.Newick' files.
-type PhyloTextNode = PhyloNode Text
+type PhyloTextNode = PhyloLabel Text
 
 -- | A phylogenetic tree with 'Double' branch lengths arbitrary node labels.
-type PhyloTree a = Tree (PhyloNode a)
+type PhyloTree a = Tree (PhyloLabel a)
 
 -- | A phylogenetic tree with 'Double' branch lengths and 'Int' node labels.
 type PhyloIntTree = Tree PhyloIntNode

@@ -3,7 +3,7 @@
 source include
 ./build || exit 1
 
-file_profile=test/Data/Profile.fa.gz
+file_profile=../data/Profile.fa.gz
 
 msg "EvoMode-Seq profiling run."
 # See https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/profiling.html#profiling

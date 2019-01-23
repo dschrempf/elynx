@@ -18,4 +18,5 @@ evomod-seq.ps
 
 # Emacs related files.
 dist/
+dist-newstyle/
 /.dir-locals.el

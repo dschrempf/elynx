@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Data.Import.FastaSpec
+Module      :  EvoMod.Import.Sequence.FastaSpec
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -11,7 +11,7 @@ Creation date: Fri Jan 18 09:54:38 2019.
 
 -}
 
-module EvoMod.Data.Import.FastaSpec
+module EvoMod.Import.Sequence.FastaSpec
   (spec) where
 
 import           Data.Either

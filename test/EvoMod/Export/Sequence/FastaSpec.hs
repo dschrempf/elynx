@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Data.Export.FastaSpec
+Module      :  EvoMod.Export.Sequence.FastaSpec
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -11,7 +11,7 @@ Creation date: Fri Jan 18 09:59:57 2019.
 
 -}
 
-module EvoMod.Data.Export.FastaSpec
+module EvoMod.Export.Sequence.FastaSpec
   (spec) where
 
 import           EvoMod.Data.Alphabet.Alphabet

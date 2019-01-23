@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Data.Tree.Evo
+Module      :  EvoMod.Data.Tree.EvoTree
 Description :  Evolutionary nodes.
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -10,18 +10,20 @@ Portability :  portable
 
 Creation date: Thu Jan 17 14:19:26 2019.
 
+TODO.
+
 -}
 
 
-module EvoMod.Data.Tree.Evo
-  ( EvoNode (..)
+module EvoMod.Data.Tree.EvoTree
+  ( EvoLabel (..)
   ) where
 
--- | An evolutionary node has some information about where it is on the tree,
--- and if it is 'extant', 'extinct', 'internal', or 'external'. The latter two
--- could also be determined from the tree. This could be species, genes or
--- individuals; probably more.
-class EvoNode n where
+-- | An evolutionary label has some information about where the corresponding
+-- node is on the tree, and if the node is 'extant', 'extinct', 'internal', or
+-- 'external'. The latter two could also be determined from the tree. This could
+-- be species, genes or individuals; probably more.
+class EvoLabel n where
   extant          :: n -> Bool
   extinct         :: n -> Bool
 

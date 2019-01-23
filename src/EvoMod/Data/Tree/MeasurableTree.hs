@@ -14,7 +14,7 @@ Creation date: Thu Jan 17 14:16:34 2019.
 
 
 module EvoMod.Data.Tree.MeasurableTree
-  ( MeasurableNode (..)
+  ( MeasurableLabel (..)
   , totalBranchLength
   , height
   ) where
@@ -22,19 +22,19 @@ module EvoMod.Data.Tree.MeasurableTree
 import           Data.Foldable
 import           Data.Tree
 
--- | A tree node with measurable branch length.
-class MeasurableNode n where
-  branchLength :: n -> Double
+-- | A 'Node' label with measurable branch length to the parent.
+class MeasurableLabel a where
+  branchLength :: a -> Double
 
 -- | Total branch length of a tree.
-totalBranchLength :: (MeasurableNode n) => Tree n -> Double
+totalBranchLength :: (MeasurableLabel a) => Tree a -> Double
 totalBranchLength = foldl' (\acc n -> acc + branchLength n) 0
 
 -- | Distances from the root of the tree to its leafs.
-distancesRootLeaves :: (MeasurableNode n) => Tree n -> [Double]
-distancesRootLeaves (Node s []) = [branchLength s]
-distancesRootLeaves (Node s f ) = concatMap (map (+ branchLength s) . distancesRootLeaves) f
+distancesRootLeaves :: (MeasurableLabel a) => Tree a -> [Double]
+distancesRootLeaves (Node l []) = [branchLength l]
+distancesRootLeaves (Node l f ) = concatMap (map (+ branchLength l) . distancesRootLeaves) f
 
 -- | Height of a tree.
-height :: (MeasurableNode n) => Tree n -> Double
+height :: (MeasurableLabel a) => Tree a -> Double
 height = maximum . distancesRootLeaves

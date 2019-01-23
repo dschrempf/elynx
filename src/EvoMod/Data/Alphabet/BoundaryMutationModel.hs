@@ -33,7 +33,7 @@ module EvoMod.Data.Alphabet.BoundaryMutationModel
 
 import           Data.List
 
-import           Control.Lens
+-- import           Control.Lens
 
 import           Numeric.SpecFunctions  (choose)
 
@@ -141,7 +141,7 @@ fromIndexWith n i
   where i' = i - nAlleles
         l = [ (enumCombination a b * (n-1), a, b)
             | a <- [minBound .. pred maxBound]
-            , b <- [ succ a ..]]
+            , b <- [succ a ..]]
         p = last $ takeWhile (\e -> e^._1 <= i') l
 
 -- | Convert 'State' to a number 'Int' for the given population size 'PopSize'.

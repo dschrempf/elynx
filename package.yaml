@@ -21,46 +21,53 @@ description:         Please see the README on GitHub at <https://github.com/dsch
 
 ghc-options:
   - -Wall
-  # - -Werror
+  - -O2
+  - -fllvm
 
 dependencies:
-- base
-- bytestring
-- containers
-- deepseq
-- hspec
-- lens
-- math-functions
-- megaparsec >= 7.0.1
-- optparse-applicative
-- text
-- vector
-- vector-th-unbox
-- word8
-- zlib
+  - base
+  - bytestring
+  - containers
+  # - deepseq
+  - lens
+  - math-functions
+  - megaparsec
+  - optparse-applicative
+  - text
+  - vector
+  # - vector-th-unbox
+  - word8
+  - zlib
 
 library:
   source-dirs: src
 
-executables:
-  evomod-seq:
-    main:                Main.hs
-    source-dirs:         app/EvoModSeq
-    ghc-options:
+# Defaults for executables.
+_defaults: &defaults
+  # Development options.
+  ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     - -eventlog
+  # # Production options.
+  # ghc-options:
+  # - -threaded
+  
+executables:
+  evomod-seq:
+    <<: *defaults
+    main:                Main.hs
+    source-dirs:         app/EvoModSeq
     dependencies:
-    - evomod
+      - evomod
 
 tests:
   evomod-test:
+    <<: *defaults
     main:                Spec.hs
     source-dirs:         test
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
     dependencies:
     - evomod
+    - hspec
+    - hspec-megaparsec

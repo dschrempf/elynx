@@ -2,11 +2,20 @@
 
 source include
 
+# flags=("--fast")
+
+# if [[ $1 == "prod" ]]; then
+#     msg "Set flags for production build."
+#     flags=()
+# fi
+
+flags=()
+
 msg "Normal build."
-stack build || exit 1
+stack build "${flags[@]}" || exit 1
 
 msg "Profile build."
-stack build --profile --work-dir .stack-work-profiling || exit 1
+stack build "${flags[@]}" --profile --work-dir .stack-work-profiling || exit 1
 
 msg "Documentation build."
-stack build --haddock || exit 1
+stack build "${flags[@]}" --haddock || exit 1
