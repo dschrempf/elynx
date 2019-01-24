@@ -78,8 +78,8 @@ showInfo s = T.unwords [ T.justifyLeft defSequenceNameWidth ' ' (seqId s)
                        , T.justifyLeft defFieldWidth ' ' l ]
   where l = T.pack . show $ V.length . seqCs $ s
 
--- instance Show Sequence where
---   show s = showInfo s ++ " " ++ showCharacters s
+instance Show Sequence where
+  show s = T.unpack $ showSequence s
 
 showSequence :: Sequence -> T.Text
 showSequence s = T.unwords [showInfo s, showCharacters s]

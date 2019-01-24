@@ -1,6 +1,7 @@
 # Stack
 .stack-work/
 .stack-work-profiling/
+.stack-work-testing/
 evomod.cabal
 
 # Profile files.

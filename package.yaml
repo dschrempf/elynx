@@ -28,7 +28,6 @@ dependencies:
   - base
   - bytestring
   - containers
-  # - deepseq
   - hmatrix
   - lens
   - math-functions
@@ -38,7 +37,6 @@ dependencies:
   - primitive
   - text
   - vector
-  # - vector-th-unbox
   - word8
   - zlib
 

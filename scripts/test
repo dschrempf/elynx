@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-source include
-./build || exit 1
-
-msg "EvoMod test suite."
-stack test || exit 1

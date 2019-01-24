@@ -55,4 +55,4 @@ main = do (EvoModIOArgs cmd c mofn q fns) <- parseEvoModIOArgs
           sss <- sequence $ parseFileWith (fastaFile c) <$> fns
           let eRes = act cmd sss
           io mofn eRes
-          unless q $ putStrLn ""
+          -- unless q $ putStrLn ""

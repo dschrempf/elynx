@@ -3,8 +3,8 @@
 source include
 ./build || exit 1
 
-file_DNA=test/Data/Nucleotide.fasta
-file_AA=test/Data/AminoAcid.fasta
+file_DNA=../data/Nucleotide.fasta
+file_AA=../data/AminoAcid.fasta
 
 msg "EvoMod-Seq DNA."
 stack exec evomod-seq -- summarize -a DNA $file_DNA || exit 1

@@ -11,11 +11,11 @@ source include
 
 flags=()
 
-msg "Normal build."
-stack build "${flags[@]}" || exit 1
+msg "Normal build with documentation."
+stack build "${flags[@]}" --haddock || exit 1
 
 msg "Profile build."
 stack build "${flags[@]}" --profile --work-dir .stack-work-profiling || exit 1
 
-msg "Documentation build."
-stack build "${flags[@]}" --haddock || exit 1
+msg "EvoMod test suite."
+stack build "${flags[@]}" --test --work-dir .stack-work-testing || exit 1
