@@ -39,7 +39,6 @@ fromSequenceList :: [Sequence] -> MultiSequenceAlignment
 fromSequenceList ss | equalLength ss = MSA ss (lengthSequence $ head ss)
                     | otherwise      = error "Sequences do not have equal length."
 
-
 msaHeader :: MultiSequenceAlignment -> String
 msaHeader (MSA _ l) = unlines
     [ "Multi sequence alignment."

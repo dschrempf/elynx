@@ -73,12 +73,12 @@ leaf = do
   return $ Node n []
 
 -- | A 'node' has a name and a 'branchLength'.
-node :: Parser PhyloTextNode
+node :: Parser PhyloTextLabel
 node = do
   n <- name
   b <- branchLength
     <?> "node"
-  return $ PhyloNode n b
+  return $ PhyloLabel n b
 
 checkNameCharacter :: Char -> Bool
 checkNameCharacter c = c `notElem` " :;()[],"

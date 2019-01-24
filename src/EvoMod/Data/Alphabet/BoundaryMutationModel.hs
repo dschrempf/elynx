@@ -33,13 +33,13 @@ module EvoMod.Data.Alphabet.BoundaryMutationModel
 
 import           Data.List
 
--- import           Control.Lens
+import           Control.Lens
 
-import           Numeric.SpecFunctions  (choose)
+import           Numeric.SpecFunctions           (choose)
 
 import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Nucleotide
-import           EvoMod.Tools           (allValues)
+import           EvoMod.Tools                    (allValues)
 
 -- | Alleles are just nucleotides at the moment. However, I want to keep the
 -- code such that it can be extended easily to codons or amino acids.
@@ -147,7 +147,7 @@ fromIndexWith n i
 -- | Convert 'State' to a number 'Int' for the given population size 'PopSize'.
 -- Back conversion can be done with 'fromIndexWith', with the same population size.
 toIndex :: State -> Int
-toIndex (Bnd _ a) = fromEnum a
+toIndex (Bnd _ a)     = fromEnum a
 -- We also have to shift the enumeration value by the number of boundary
 -- states, which is 'nAlleles'.
 toIndex (Ply n i a b) = nAlleles + enumCombination a b * (n-1) + i-1

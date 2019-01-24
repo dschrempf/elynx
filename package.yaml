@@ -29,10 +29,13 @@ dependencies:
   - bytestring
   - containers
   # - deepseq
+  - hmatrix
   - lens
   - math-functions
   - megaparsec
+  - mwc-random
   - optparse-applicative
+  - primitive
   - text
   - vector
   # - vector-th-unbox
