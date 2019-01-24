@@ -24,6 +24,7 @@ import Numeric.LinearAlgebra
 
 import EvoMod.Data.RateMatrix.RateMatrix
 
+-- | JC model.
 jc :: Matrix R
 jc = (4><4)
      [ 0.0, 1.0, 1.0, 1.0
@@ -31,6 +32,7 @@ jc = (4><4)
      , 1.0, 1.0, 0.0, 1.0
      , 1.0, 1.0, 1.0, 0.0 ]
 
+-- | HKY model.
 hky :: Double -> StationaryDist -> RateMatrix
 hky k = fromExchMatrix em
   where em = (4><4)

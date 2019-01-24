@@ -36,6 +36,8 @@ module EvoMod.Data.Sequence.Sequence
 import qualified Data.ByteString.Lazy          as B
 import           Data.List                     (maximumBy)
 import           Data.Ord                      (comparing)
+import qualified Data.Text                     as T
+import qualified Data.Text.Encoding            as T
 import qualified Data.Vector.Unboxed           as V
 import           Data.Word8                    (Word8)
 
@@ -43,12 +45,11 @@ import           EvoMod.Data.Sequence.Defaults (defFieldWidth,
                                                 defSequenceListSummaryNumber,
                                                 defSequenceNameWidth,
                                                 defSequenceSummaryLength)
-import           EvoMod.Tools                  (alignLeft, allEqual,
-                                                showWithoutQuotes,
-                                                summarizeString)
+import           EvoMod.Tools                  (allEqual,
+                                                summarizeText)
 
 -- | For now, 'SequenceId's are just 'String's.
-type SequenceId = String
+type SequenceId = T.Text
 
 -- | By choosing specific types for the identifier and the characters is of
 -- course limiting but also eases handling of types a lot.
@@ -57,7 +58,7 @@ data Sequence = Sequence { seqId :: SequenceId
   deriving (Eq)
 
 -- | Conversion from 'B.ByteString'.
-toSequence :: String -> B.ByteString -> Sequence
+toSequence :: T.Text -> B.ByteString -> Sequence
 toSequence i cs = Sequence i v
   where v = V.force . V.fromList . B.unpack $ cs
 
@@ -69,51 +70,57 @@ seqToCsByteString = B.pack . V.toList . seqCs
 fromSequence :: Sequence -> (SequenceId, B.ByteString)
 fromSequence s = (seqId s, seqToCsByteString s)
 
-showCharacters :: Sequence -> String
-showCharacters = showWithoutQuotes . seqToCsByteString
+showCharacters :: Sequence -> T.Text
+showCharacters = T.decodeUtf8 . B.toStrict . seqToCsByteString
 
-showInfo :: Sequence -> String
-showInfo s = alignLeft defSequenceNameWidth (seqId s) ++ " " ++
-             alignLeft defFieldWidth (show . V.length . seqCs $ s)
+showInfo :: Sequence -> T.Text
+showInfo s = T.unwords [ T.justifyLeft defSequenceNameWidth ' ' (seqId s)
+                       , T.justifyLeft defFieldWidth ' ' l ]
+  where l = T.pack . show $ V.length . seqCs $ s
 
-instance Show Sequence where
-  show s = showInfo s ++ " " ++ showCharacters s
+-- instance Show Sequence where
+--   show s = showInfo s ++ " " ++ showCharacters s
+
+showSequence :: Sequence -> T.Text
+showSequence s = T.unwords [showInfo s, showCharacters s]
 
 -- | Show a list of 'Sequence's, untrimmed.
-showSequenceList :: [Sequence] -> String
-showSequenceList = unlines . map show
+showSequenceList :: [Sequence] -> T.Text
+showSequenceList = T.unlines . map showSequence
 
 -- | Header printed before 'Sequence' list.
-sequenceListHeader :: String
-sequenceListHeader = alignLeft defSequenceNameWidth "Identifier" ++ " " ++
-                     alignLeft defFieldWidth "Length" ++ " Sequence"
+sequenceListHeader :: T.Text
+sequenceListHeader = T.unwords [ T.justifyLeft defSequenceNameWidth ' ' (T.pack "Identifier")
+                               , T.justifyLeft defFieldWidth ' ' (T.pack "Length")
+                               , T.pack "Sequence" ]
 
 -- | Trim and show a 'Sequence'.
-summarizeSequence :: Sequence -> String
-summarizeSequence s = showInfo s ++ " " ++ summarizeString defSequenceSummaryLength (showCharacters s)
+summarizeSequence :: Sequence -> T.Text
+summarizeSequence s = T.unwords [ showInfo s
+                                , summarizeText defSequenceSummaryLength (showCharacters s) ]
 
 -- | Trim and show a list of 'Sequence's.
-summarizeSequenceList :: [Sequence] -> String
-summarizeSequenceList ss = summarizeSequenceListHeader ss ++
+summarizeSequenceList :: [Sequence] -> T.Text
+summarizeSequenceList ss = summarizeSequenceListHeader ss <>
                            summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
 
-summarizeSequenceListHeader :: [Sequence] -> String
-summarizeSequenceListHeader ss = unlines $
+summarizeSequenceListHeader :: [Sequence] -> T.Text
+summarizeSequenceListHeader ss = T.unlines $
   reportIfSubsetIsShown ++
-  [ "For each sequence the " ++ show defSequenceSummaryLength ++ " first bases are shown."
-  , "List contains " ++ show (length ss) ++ " sequences."
-  , ""
+  [ T.pack $ "For each sequence the " ++ show defSequenceSummaryLength ++ " first bases are shown."
+  , T.pack $ "List contains " ++ show (length ss) ++ " sequences."
+  , T.pack ""
   , sequenceListHeader ]
   where l = length ss
         s = show defSequenceListSummaryNumber ++ " out of " ++
             show (length ss) ++ " sequences are shown."
         reportIfSubsetIsShown
-          | l > defSequenceListSummaryNumber = [s]
+          | l > defSequenceListSummaryNumber = [T.pack s]
           | otherwise = []
 
 -- | Trim and show a list of 'Sequence's.
-summarizeSequenceListBody :: [Sequence] -> String
-summarizeSequenceListBody ss = unlines $ map summarizeSequence ss
+summarizeSequenceListBody :: [Sequence] -> T.Text
+summarizeSequenceListBody ss = T.unlines $ map summarizeSequence ss
 
 -- | Calculate length of 'Sequence'.
 lengthSequence :: Sequence -> Int
@@ -135,4 +142,5 @@ trimSequence n s@Sequence{seqCs=cs} = s {seqCs = V.take n cs}
 concatenate :: Sequence -> Sequence -> Either String Sequence
 concatenate (Sequence i cs) (Sequence j ks)
   | i == j     = Right $ Sequence i (cs V.++ ks)
-  | otherwise  = Left $ "concatenate: Sequences do not have equal IDs: " ++ i ++ ", " ++ j ++ "."
+  | otherwise  = Left $ "concatenate: Sequences do not have equal IDs: "
+                 ++ T.unpack i ++ ", " ++ T.unpack j ++ "."

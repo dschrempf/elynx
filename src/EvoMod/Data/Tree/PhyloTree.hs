@@ -12,9 +12,9 @@ Creation date: Thu Jan 17 16:08:54 2019.
 
 Phylogenetic nodes have a branch length and a label.
 
-The easiest label type is 'Int': 'PhyloIntNode'.
+The easiest label type is 'Int': 'PhyloIntLabel'.
 
-Also, the 'Text' label is needed often: 'PhyloTextNode'.
+Also, the 'Text' label is needed often: 'PhyloTextLabel'.
 
 -}
 

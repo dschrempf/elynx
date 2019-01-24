@@ -25,7 +25,10 @@ import           Numeric.LinearAlgebra
 import           System.Random.MWC
 import           System.Random.MWC.Distributions
 
+-- | A probability matrix, P_ij(t) = Pr (X_t = j | X_0 = i).
 type ProbMatrix = Matrix R
+
+-- | Make type signatures a little clearer.
 type State = Int
 
 -- | The important matrix that gives the probabilities to move from one state to

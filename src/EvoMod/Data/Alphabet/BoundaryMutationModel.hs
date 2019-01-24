@@ -31,7 +31,7 @@ module EvoMod.Data.Alphabet.BoundaryMutationModel
   , neighbors
   ) where
 
-import           Data.List
+import qualified Data.Text                       as T
 
 import           Control.Lens
 
@@ -74,19 +74,22 @@ data State = Bnd { bndN :: PopSize     -- | Population size.
            deriving (Read, Eq)
 
 -- | String representation of 'State'; without surrounding brackets.
-showCounts :: State -> String
-showCounts (Bnd n a) = foldl1' (++) $ intersperse "," $ map toCounts allValues
+showCounts :: State -> T.Text
+showCounts (Bnd n a) = T.intersperse ',' $ T.concat $ map (T.pack . toCounts) allValues
   where toCounts b
           | a == b    = show n
           | otherwise = "0"
-showCounts (Ply n i a b) = foldl1' (++) $ intersperse "," $ map toCounts allValues
+showCounts (Ply n i a b) = T.intersperse ',' $ T.concat $ map (T.pack . toCounts) allValues
   where toCounts c
           | c == a    = show i
           | c == b    = show (n-i)
           | otherwise = "0"
 
-instance Show State where
-  show s = "(" ++ showCounts s ++ ")"
+showState :: State -> T.Text
+showState s = T.singleton '(' <> showCounts s <> T.singleton ')'
+
+-- instance Show State where
+--   show s = "(" ++ showCounts s ++ ")"
 
 -- | A total order on the boundary mutation model states. In general, Bnd < Ply.
 -- Then, sorting happens according to the order population size, first allele,
@@ -158,7 +161,7 @@ toIndex (Ply n i a b) = nAlleles + enumCombination a b * (n-1) + i-1
 -- 'fromIndexWith', and 'toIndex', as well as, 'setPopSize'.
 instance Enum State where
   fromEnum s = if getPopSize s /= nFixed
-    then error $ "State is not enumerable: " ++ show s ++ "."
+    then error $ "State is not enumerable: " ++ (T.unpack . showState) s ++ "."
     else toIndex s
   toEnum = fromIndexWith nFixed
 

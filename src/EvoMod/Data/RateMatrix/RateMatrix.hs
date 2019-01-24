@@ -12,6 +12,8 @@ continuous-time discrete-state Markov processes.
 
 * Changelog
 
+TODO: Combine with type safety from alphabets (Int /= Word8?).
+
 -}
 
 module EvoMod.Data.RateMatrix.RateMatrix
@@ -56,5 +58,9 @@ toExchMatrix :: RateMatrix -> StationaryDist -> ExchMatrix
 toExchMatrix m f = m <> diag oneOverF
   where oneOverF = cmap (1.0/) f
 
+-- | Convert exchangeability matrix to rate matrix.
 fromExchMatrix :: ExchMatrix -> StationaryDist -> RateMatrix
 fromExchMatrix em d = normalizeRates d $ setDiagonal $ em <> diag d
+
+
+-- TODO: Extract stationary distribution from rate matrix.

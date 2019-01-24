@@ -14,11 +14,7 @@ Indispensable tools.
 
 
 module EvoMod.Tools
-  ( alignRight
-  , alignLeft
-  , alignRightTrim
-  , alignLeftTrim
-  , allEqual
+  ( allEqual
   , c2w
   , w2c
   , readGZFile
@@ -26,8 +22,8 @@ module EvoMod.Tools
   , runParserOnFile
   , parseFileWith
   , parseByteStringWith
-  , showWithoutQuotes
-  , summarizeString
+  -- , showWithoutQuotes
+  , summarizeText
   , compose
   , allValues
   , matrixSetDiagToZero
@@ -37,30 +33,19 @@ import           Codec.Compression.GZip   (compress, decompress)
 import           Data.ByteString.Internal (c2w, w2c)
 import qualified Data.ByteString.Lazy     as B
 import           Data.List                (isSuffixOf)
-import           Numeric.LinearAlgebra
+import qualified Data.Text                as T
+import           Numeric.LinearAlgebra    hiding ((<>))
 import           Text.Megaparsec
 
--- | For a given width, align string to the right.
-alignRight :: Int -> String -> String
-alignRight n s | l >= n    = s
-               | otherwise = replicate (n-l) ' ' ++ s
-               where l = length s
+-- -- | For a given width, align string to the right; trim on the left if string is
+-- -- longer.
+-- alignRightTrim :: Int -> String -> String
+-- alignRightTrim n s = reverse . take n . reverse $ alignRight n s
 
--- | For a given width, align string to the left.
-alignLeft :: Int -> String -> String
-alignLeft n s | l >= n    = s
-              | otherwise = s ++ replicate (n-l) ' '
-               where l = length s
-
--- | For a given width, align string to the right; trim on the left if string is
--- longer.
-alignRightTrim :: Int -> String -> String
-alignRightTrim n s = reverse . take n . reverse $ alignRight n s
-
--- | For a given width, align string to the left; trim on the right if string is
--- longer.
-alignLeftTrim :: Int -> String -> String
-alignLeftTrim n s = take n $ alignLeft n s
+-- -- | For a given width, align string to the left; trim on the right if string is
+-- -- longer.
+-- alignLeftTrim :: Int -> String -> String
+-- alignLeftTrim n s = take n $ alignLeft n s
 
 -- | Test if all elements of a list are equal.
 allEqual :: Eq a => [a] -> Bool
@@ -95,24 +80,24 @@ parseByteStringWith p f = case parse p "" f of
                             Left  err -> error $ errorBundlePretty err
                             Right val -> val
 
-rmFirstQuote :: String -> String
-rmFirstQuote ('\"':xs) = xs
-rmFirstQuote xs        = xs
+-- rmFirstQuote :: String -> String
+-- rmFirstQuote ('\"':xs) = xs
+-- rmFirstQuote xs        = xs
 
-rmLastQuote :: String -> String
-rmLastQuote = reverse . rmFirstQuote . reverse
+-- rmLastQuote :: String -> String
+-- rmLastQuote = reverse . rmFirstQuote . reverse
 
-rmDoubleQuotes :: String -> String
-rmDoubleQuotes = rmFirstQuote . rmLastQuote
+-- rmDoubleQuotes :: T.Text -> T.Text
+-- rmDoubleQuotes = rmFirstQuote . rmLastQuote
 
--- | Show a string without quotes ... (sometimes Haskell annoys me :D).
-showWithoutQuotes :: Show a => a -> String
-showWithoutQuotes = rmDoubleQuotes . show
+-- -- | Show a string without quotes ... (sometimes Haskell annoys me :D).
+-- showWithoutQuotes :: Show a => a -> T.Text
+-- showWithoutQuotes = rmDoubleQuotes . T.pack . show
 
 -- | If a string is longer than a given value, trim it and add some dots.
-summarizeString :: Int -> String -> String
-summarizeString l s | length s >= l = take l s ++ "..."
-                    | otherwise = s
+summarizeText :: Int -> T.Text -> T.Text
+summarizeText l s | T.length s >= l = T.take l s <> T.pack "..."
+                  | otherwise = s
 
 -- | See https://wiki.haskell.org/Compose.
 compose :: [a -> a] -> a -> a

@@ -15,24 +15,26 @@ Creation date: Fri Oct  5 08:41:05 2018.
 module Main where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8 as B
-import           Data.Maybe                 (fromMaybe)
+import qualified Data.ByteString.Lazy.Char8    as B
+import           Data.Maybe                    (fromMaybe)
+import qualified Data.Text                     as T
+import qualified Data.Text.Encoding            as T
 
 import           ArgParse
 
-import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Data.Sequence.Filter
-import           EvoMod.Import.Sequence.Fasta
+import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Export.Sequence.Fasta
-import           EvoMod.Tools               (compose, parseFileWith)
+import           EvoMod.Import.Sequence.Fasta
+import           EvoMod.Tools                  (compose, parseFileWith)
 
 concatenateSeqs :: [[Sequence]] -> Either String [Sequence]
 concatenateSeqs []   = Left "Nothing to concatenate."
-concatenateSeqs [ss] = Left $ "Got only one list of sequences: " ++ summarizeSequenceList ss
+concatenateSeqs [ss] = Left $ "Got only one list of sequences: " ++ T.unpack (summarizeSequenceList ss)
 concatenateSeqs sss  = foldM (zipWithM concatenate) (head sss) (tail sss)
 
 act :: Command -> [[Sequence]] -> Either String B.ByteString
-act Summarize sss    = Right . B.pack $ concatMap summarizeSequenceList sss
+act Summarize sss    = Right . B.fromStrict .  T.encodeUtf8 $ T.concat $ map summarizeSequenceList sss
 act Concatenate sss  = sequencesToFasta <$> concatenateSeqs sss
 act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
   where filters = map (fromMaybe id) [ filterLongerThan <$> ml

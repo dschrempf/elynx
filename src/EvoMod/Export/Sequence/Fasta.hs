@@ -22,16 +22,18 @@ module EvoMod.Export.Sequence.Fasta
   , sequencesToFasta
   ) where
 
-import qualified Data.ByteString.Lazy.Char8                  as B
+import qualified Data.ByteString.Lazy.Char8    as B
+import qualified Data.Text.Lazy                as T
+import qualified Data.Text.Lazy.Encoding       as T
 
 import           EvoMod.Data.Sequence.Sequence
 
-fastaHeader :: String -> B.ByteString
-fastaHeader i = B.pack $ '>' : i
+fastaHeader :: T.Text -> B.ByteString
+fastaHeader i = T.encodeUtf8 $ T.singleton '>' <> i
 
 -- | Convert a 'Sequence' to Fasta format.
 sequenceToFasta :: Sequence -> B.ByteString
-sequenceToFasta s = B.unlines [ fastaHeader i , cs ]
+sequenceToFasta s = B.unlines [ fastaHeader . T.fromStrict $ i , cs ]
   where (i, cs) = fromSequence s
 
 -- | Convert a list 'Sequence's to Fasta format. A newline is added between any

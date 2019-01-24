@@ -27,6 +27,7 @@ module EvoMod.Import.Sequence.Fasta
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8                  as B
 import qualified Data.Set                                    as S
+import qualified Data.Text                                   as T
 import           Data.Void
 import           Data.Word8                                  (Word8, toUpper)
 import           Text.Megaparsec
@@ -59,7 +60,7 @@ fastaSequence :: Alphabet -> Parser Sequence
 fastaSequence a = do hd <- sequenceHeader
                      cs <- some (sequenceLine a)
                      _  <- many eol
-                     let hd' = map w2c hd
+                     let hd' = T.pack $ map w2c hd
                      return $ toSequence hd' (B.concat cs)
 
 -- TODO: Rename this function to plain 'fasta'.
