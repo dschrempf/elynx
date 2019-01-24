@@ -31,7 +31,7 @@ module EvoMod.Data.Alphabet.BoundaryMutationModel
   , neighbors
   ) where
 
-import qualified Data.Text                       as T
+import qualified Data.ByteString.Lazy.Char8      as B
 
 import           Control.Lens
 
@@ -74,19 +74,19 @@ data State = Bnd { bndN :: PopSize     -- | Population size.
            deriving (Read, Eq)
 
 -- | String representation of 'State'; without surrounding brackets.
-showCounts :: State -> T.Text
-showCounts (Bnd n a) = T.intersperse ',' $ T.concat $ map (T.pack . toCounts) allValues
+showCounts :: State -> B.ByteString
+showCounts (Bnd n a) = B.intersperse ',' $ B.concat $ map (B.pack . toCounts) allValues
   where toCounts b
           | a == b    = show n
           | otherwise = "0"
-showCounts (Ply n i a b) = T.intersperse ',' $ T.concat $ map (T.pack . toCounts) allValues
+showCounts (Ply n i a b) = B.intersperse ',' $ B.concat $ map (B.pack . toCounts) allValues
   where toCounts c
           | c == a    = show i
           | c == b    = show (n-i)
           | otherwise = "0"
 
-showState :: State -> T.Text
-showState s = T.singleton '(' <> showCounts s <> T.singleton ')'
+showState :: State -> B.ByteString
+showState s = B.singleton '(' <> showCounts s <> B.singleton ')'
 
 -- instance Show State where
 --   show s = "(" ++ showCounts s ++ ")"
@@ -161,7 +161,7 @@ toIndex (Ply n i a b) = nAlleles + enumCombination a b * (n-1) + i-1
 -- 'fromIndexWith', and 'toIndex', as well as, 'setPopSize'.
 instance Enum State where
   fromEnum s = if getPopSize s /= nFixed
-    then error $ "State is not enumerable: " ++ (T.unpack . showState) s ++ "."
+    then error $ "State is not enumerable: " ++ (B.unpack . showState) s ++ "."
     else toIndex s
   toEnum = fromIndexWith nFixed
 

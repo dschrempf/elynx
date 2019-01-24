@@ -14,7 +14,9 @@ Indispensable tools.
 
 
 module EvoMod.Tools
-  ( allEqual
+  ( alignRight
+  , alignLeft
+  , allEqual
   , c2w
   , w2c
   , readGZFile
@@ -23,19 +25,30 @@ module EvoMod.Tools
   , parseFileWith
   , parseByteStringWith
   -- , showWithoutQuotes
-  , summarizeText
+  , summarizeByteString
   , compose
   , allValues
   , matrixSetDiagToZero
   ) where
 
-import           Codec.Compression.GZip   (compress, decompress)
-import           Data.ByteString.Internal (c2w, w2c)
-import qualified Data.ByteString.Lazy     as B
-import           Data.List                (isSuffixOf)
-import qualified Data.Text                as T
-import           Numeric.LinearAlgebra    hiding ((<>))
+import           Codec.Compression.GZip     (compress, decompress)
+import           Data.ByteString.Internal   (c2w, w2c)
+import qualified Data.ByteString.Lazy.Char8 as B
+import           Data.List                  (isSuffixOf)
+import           Numeric.LinearAlgebra      hiding ((<>))
 import           Text.Megaparsec
+
+-- | For a given width, align string to the right; trim on the left if string is
+-- longer.
+alignRight :: Int -> B.ByteString -> B.ByteString
+alignRight n s = B.replicate (fromIntegral n - l) ' ' <> B.take (fromIntegral n) s
+  where l = B.length s
+
+-- | For a given width, align string to the left; trim on the right if string is
+-- longer.
+alignLeft :: Int -> B.ByteString -> B.ByteString
+alignLeft n s = B.replicate (fromIntegral n - l) ' ' <> B.take (fromIntegral n) s
+  where l = B.length s
 
 -- -- | For a given width, align string to the right; trim on the left if string is
 -- -- longer.
@@ -80,24 +93,10 @@ parseByteStringWith p f = case parse p "" f of
                             Left  err -> error $ errorBundlePretty err
                             Right val -> val
 
--- rmFirstQuote :: String -> String
--- rmFirstQuote ('\"':xs) = xs
--- rmFirstQuote xs        = xs
-
--- rmLastQuote :: String -> String
--- rmLastQuote = reverse . rmFirstQuote . reverse
-
--- rmDoubleQuotes :: T.Text -> T.Text
--- rmDoubleQuotes = rmFirstQuote . rmLastQuote
-
--- -- | Show a string without quotes ... (sometimes Haskell annoys me :D).
--- showWithoutQuotes :: Show a => a -> T.Text
--- showWithoutQuotes = rmDoubleQuotes . T.pack . show
-
 -- | If a string is longer than a given value, trim it and add some dots.
-summarizeText :: Int -> T.Text -> T.Text
-summarizeText l s | T.length s >= l = T.take l s <> T.pack "..."
-                  | otherwise = s
+summarizeByteString :: Int -> B.ByteString -> B.ByteString
+summarizeByteString l s | B.length s >= fromIntegral l = B.take (fromIntegral l) s <> B.pack "..."
+                        | otherwise = s
 
 -- | See https://wiki.haskell.org/Compose.
 compose :: [a -> a] -> a -> a

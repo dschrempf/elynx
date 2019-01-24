@@ -23,18 +23,18 @@ module EvoMod.Export.Sequence.CountsFile
   , toCountsFile
   ) where
 
-import qualified Data.ByteString.Char8                      as B
+import qualified Data.ByteString.Lazy.Char8                 as B
 import           Data.Maybe                                 (fromMaybe)
-import qualified Data.Text                                  as T
-import qualified Data.Text.Encoding                         as T
 
 import           EvoMod.Data.Alphabet.BoundaryMutationModel
+import           EvoMod.Tools                               (alignLeft,
+                                                             alignRight)
 
 -- | The number of sites that will be printed.
 type NSites = Int
 
 -- | The names of the populations.
-type PopulationNames = [T.Text]
+type PopulationNames = [B.ByteString]
 
 -- Desired column width of the counts file.
 colW :: Int
@@ -42,16 +42,16 @@ colW = 11
 
 -- | Compose the header using the number of sites and the population names.
 header :: NSites -> PopulationNames -> B.ByteString
-header nSites popNames = T.encodeUtf8 $ T.unlines [lineOne, lineTwo]
+header nSites popNames = B.unlines [lineOne, lineTwo]
   where nPop = length popNames
-        lineOne = T.pack $ "COUNTSFILE NPOP " ++ show nPop ++ " NSITES " ++ show nSites
-        lineTwo = T.unwords $
-          [ T.justifyLeft colW ' ' $ T.pack "CHROM"
-          , T.justifyLeft colW ' ' $ T.pack "POS" ]
-          ++ map (T.justifyLeft colW ' ') popNames
+        lineOne = B.pack $ "COUNTSFILE NPOP " ++ show nPop ++ " NSITES " ++ show nSites
+        lineTwo = B.unwords $
+          [ alignLeft colW $ B.pack "CHROM"
+          , alignRight colW $ B.pack "POS" ]
+          ++ map (alignLeft colW) popNames
 
 -- | The chromosome name.
-type Chrom = T.Text
+type Chrom = B.ByteString
 
 -- | The position on the chromosome.
 type Pos   = Int
@@ -61,10 +61,10 @@ type DataOneSite = [State]
 
 -- | Get a data line in the counts file.
 dataLine :: Maybe Chrom -> Maybe Pos -> DataOneSite -> B.ByteString
-dataLine chrom mPos bstates = T.encodeUtf8 $ T.unwords $
-  [ T.justifyLeft colW ' ' (fromMaybe (T.pack "NA") chrom)
-  , T.justifyRight colW ' ' (T.pack (maybe "NaN" show mPos)) ]
-  ++ map (T.justifyRight colW ' ' . showCounts) bstates
+dataLine chrom mPos bstates = B.unwords $
+  [ alignLeft colW (fromMaybe (B.pack "NA") chrom)
+  , alignRight colW (B.pack (maybe "NaN" show mPos)) ]
+  ++ map (alignRight colW . showCounts) bstates
 
 -- | Convert data to a counts file.
 toCountsFile :: PopulationNames -> [DataOneSite] -> B.ByteString

@@ -23,11 +23,12 @@ module EvoMod.Export.Tree.Newick
 
 import           Data.List                  (intersperse)
 
-import qualified Data.Text                  as T
-import qualified Data.Text.Lazy             as T (toStrict)
-import qualified Data.Text.Lazy.Builder     as B
+import qualified Data.ByteString.Builder    as B
+import qualified Data.ByteString.Lazy.Char8 as B
 
 import           Data.Tree
+
+import           EvoMod.Tools               (c2w)
 
 -- -- | Extract node information and branch length information from a phylogenetic tree.
 -- class BuilderNode n where
@@ -52,16 +53,17 @@ import           Data.Tree
 -- | General conversion of a tree into a Newick string in form of a text object.
 -- Use provided functions to extract node labels and branch lengths text builder
 -- objects. See also Biobase.Newick.Export.
-toNewickWith :: (a -> B.Builder) -> (a -> B.Builder) -> Tree a -> T.Text
-toNewickWith labelBuilder branchLengthBuilder t = T.toStrict $ B.toLazyText $ go t <> B.singleton ';'
+toNewickWith :: (a -> B.Builder) -> (a -> B.Builder) -> Tree a -> B.ByteString
+toNewickWith labelBuilder branchLengthBuilder t =
+  B.toLazyByteString $ go t <> B.word8 (c2w ';')
   where
     go (Node l [])   = lbl l
-    go (Node l ts)   = B.singleton '('
-                       <> mconcat (intersperse (B.singleton ',') $ map go ts)
-                       <> B.singleton ')'
+    go (Node l ts)   = B.word8 (c2w '(')
+                       <> mconcat (intersperse (B.word8 $ c2w ',') $ map go ts)
+                       <> B.word8 (c2w ')')
                        <> lbl l
     lbl l = labelBuilder l
-            <> B.singleton ':'
+            <> B.word8 (c2w ':')
             <> branchLengthBuilder l
 
 -- -- | Convert a phylogenetic tree with integral node labels into a Newick text

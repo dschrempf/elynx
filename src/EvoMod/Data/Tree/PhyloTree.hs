@@ -14,7 +14,7 @@ Phylogenetic nodes have a branch length and a label.
 
 The easiest label type is 'Int': 'PhyloIntLabel'.
 
-Also, the 'Text' label is needed often: 'PhyloTextLabel'.
+Also, the 'ByteString' label is needed often: 'PhyloByteStringLabel'.
 
 -}
 
@@ -22,13 +22,13 @@ Also, the 'Text' label is needed often: 'PhyloTextLabel'.
 module EvoMod.Data.Tree.PhyloTree
   ( PhyloLabel (..)
   , PhyloIntLabel
-  , PhyloTextLabel
+  , PhyloByteStringLabel
   , PhyloTree
   , PhyloIntTree
-  , PhyloTextTree
+  , PhyloByteStringTree
   ) where
 
-import           Data.Text
+import           Data.ByteString.Lazy.Char8
 import           Data.Tree
 import           EvoMod.Data.Tree.MeasurableTree
 
@@ -44,9 +44,9 @@ instance MeasurableLabel (PhyloLabel a) where
 -- | Tree node with 'Int' label.
 type PhyloIntLabel = PhyloLabel Int
 
--- | Tree node with 'Text' label. Important for parsing
+-- | Tree node with 'ByteString' label. Important for parsing
 -- 'EvoMod.Import.Tree.Newick' files.
-type PhyloTextLabel = PhyloLabel Text
+type PhyloByteStringLabel = PhyloLabel ByteString
 
 -- | A phylogenetic tree with 'Double' branch lengths arbitrary node labels.
 type PhyloTree a = Tree (PhyloLabel a)
@@ -54,7 +54,7 @@ type PhyloTree a = Tree (PhyloLabel a)
 -- | A phylogenetic tree with 'Double' branch lengths and 'Int' node labels.
 type PhyloIntTree = Tree PhyloIntLabel
 
--- | Phylogenetic tree with 'Double' branch lengths and 'Text' node labels.
-type PhyloTextTree = Tree PhyloTextLabel
+-- | Phylogenetic tree with 'Double' branch lengths and 'ByteString' node labels.
+type PhyloByteStringTree = Tree PhyloByteStringLabel
 
 

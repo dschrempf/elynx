@@ -17,8 +17,6 @@ module Main where
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.Maybe                    (fromMaybe)
-import qualified Data.Text                     as T
-import qualified Data.Text.Encoding            as T
 
 import           ArgParse
 
@@ -30,11 +28,11 @@ import           EvoMod.Tools                  (compose, parseFileWith)
 
 concatenateSeqs :: [[Sequence]] -> Either String [Sequence]
 concatenateSeqs []   = Left "Nothing to concatenate."
-concatenateSeqs [ss] = Left $ "Got only one list of sequences: " ++ T.unpack (summarizeSequenceList ss)
+concatenateSeqs [ss] = Left $ "Got only one list of sequences: " ++ B.unpack (summarizeSequenceList ss)
 concatenateSeqs sss  = foldM (zipWithM concatenate) (head sss) (tail sss)
 
 act :: Command -> [[Sequence]] -> Either String B.ByteString
-act Summarize sss    = Right . B.fromStrict .  T.encodeUtf8 $ T.concat $ map summarizeSequenceList sss
+act Summarize sss    = Right . B.concat $ map summarizeSequenceList sss
 act Concatenate sss  = sequencesToFasta <$> concatenateSeqs sss
 act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
   where filters = map (fromMaybe id) [ filterLongerThan <$> ml

@@ -13,7 +13,6 @@ Write FASTA files.
 
 [NCBI file specifications](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp).
 
-For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/package/megaparsec-7.0.1/docs/Text-Megaparsec-Char-Lexer.html).
 -}
 
 
@@ -23,17 +22,15 @@ module EvoMod.Export.Sequence.Fasta
   ) where
 
 import qualified Data.ByteString.Lazy.Char8    as B
-import qualified Data.Text.Lazy                as T
-import qualified Data.Text.Lazy.Encoding       as T
 
 import           EvoMod.Data.Sequence.Sequence
 
-fastaHeader :: T.Text -> B.ByteString
-fastaHeader i = T.encodeUtf8 $ T.singleton '>' <> i
+fastaHeader :: B.ByteString -> B.ByteString
+fastaHeader i = B.singleton '>' <> i
 
 -- | Convert a 'Sequence' to Fasta format.
 sequenceToFasta :: Sequence -> B.ByteString
-sequenceToFasta s = B.unlines [ fastaHeader . T.fromStrict $ i , cs ]
+sequenceToFasta s = B.unlines [ fastaHeader i , cs ]
   where (i, cs) = fromSequence s
 
 -- | Convert a list 'Sequence's to Fasta format. A newline is added between any

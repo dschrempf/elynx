@@ -28,7 +28,7 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   ) where
 
 import           Control.Monad
-import qualified Data.Text                     as T
+import qualified Data.ByteString.Lazy.Char8    as B
 
 import           EvoMod.Data.Sequence.Sequence
 
@@ -41,21 +41,21 @@ fromSequenceList :: [Sequence] -> MultiSequenceAlignment
 fromSequenceList ss | equalLength ss = MSA ss (lengthSequence $ head ss)
                     | otherwise      = error "Sequences do not have equal length."
 
-msaHeader :: MultiSequenceAlignment -> T.Text
-msaHeader (MSA _ l) = T.unlines
-    [ T.pack "Multi sequence alignment."
-    , T.pack $ "Length: " ++ show l ++ "."
+msaHeader :: MultiSequenceAlignment -> B.ByteString
+msaHeader (MSA _ l) = B.unlines
+    [ B.pack "Multi sequence alignment."
+    , B.pack $ "Length: " ++ show l ++ "."
     , sequenceListHeader ]
 
 -- | Show a 'MultiSequenceAlignment' in text form.
-showMSA :: MultiSequenceAlignment -> T.Text
+showMSA :: MultiSequenceAlignment -> B.ByteString
 showMSA msa = msaHeader msa <> showSequenceList (msaSequences msa)
 
 -- instance Show MultiSequenceAlignment where
 --   show msa = msaHeader msa ++ showSequenceList (msaSequences msa)
 
 -- | Similar to 'summarizeSequenceList' but with different Header.
-summarizeMSA :: MultiSequenceAlignment -> T.Text
+summarizeMSA :: MultiSequenceAlignment -> B.ByteString
 summarizeMSA msa = msaHeader msa <> summarizeSequenceListBody (msaSequences msa)
 
 -- | Number of sequences stored in 'MultiSequenceAlignment'.

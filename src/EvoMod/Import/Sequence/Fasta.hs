@@ -13,7 +13,7 @@ Parse FASTA files.
 
 [NCBI file specifications](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp).
 
-For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/package/megaparsec-7.0.1/docs/Text-Megaparsec-Char-Lexer.html).
+For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/package/megaparsec-7.0.1/docs/Text-Megaparsec-Byte-Lexer.html).
 -}
 
 
@@ -27,7 +27,6 @@ module EvoMod.Import.Sequence.Fasta
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8                  as B
 import qualified Data.Set                                    as S
-import qualified Data.Text                                   as T
 import           Data.Void
 import           Data.Word8                                  (Word8, toUpper)
 import           Text.Megaparsec
@@ -60,7 +59,7 @@ fastaSequence :: Alphabet -> Parser Sequence
 fastaSequence a = do hd <- sequenceHeader
                      cs <- some (sequenceLine a)
                      _  <- many eol
-                     let hd' = T.pack $ map w2c hd
+                     let hd' = B.pack $ map w2c hd
                      return $ toSequence hd' (B.concat cs)
 
 -- TODO: Rename this function to plain 'fasta'.

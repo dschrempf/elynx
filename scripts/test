@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+source include
+./build test || exit 1
+

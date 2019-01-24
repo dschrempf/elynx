@@ -31,30 +31,32 @@ module EvoMod.Import.Tree.Newick
   ) where
 
 import           Text.Megaparsec
-import           Text.Megaparsec.Char
-import           Text.Megaparsec.Char.Lexer (decimal, float)
+import           Text.Megaparsec.Byte
+import           Text.Megaparsec.Byte.Lexer (decimal, float)
 
-import qualified Data.Text                  as T
+import qualified Data.ByteString.Lazy            as B
 import           Data.Tree
 import           Data.Void
+import           Data.Word
 
 import           EvoMod.Data.Tree.PhyloTree
+import           EvoMod.Tools               (c2w)
 
 -- | A shortcut.
-type Parser = Parsec Void T.Text
+type Parser = Parsec Void B.ByteString
 
 -- | Parse many Newick trees.
-manyNewick :: Parser [PhyloTextTree]
+manyNewick :: Parser [PhyloByteStringTree]
 manyNewick = some (newick <* space) <* eof <?> "manyNewick"
 
 -- | Parse a Newick tree.
-newick :: Parser PhyloTextTree
-newick = tree <* char ';' <?> "newick"
+newick :: Parser PhyloByteStringTree
+newick = tree <* char (c2w ';') <?> "newick"
 
-tree :: Parser PhyloTextTree
+tree :: Parser PhyloByteStringTree
 tree = space *> (branched <|> leaf) <?> "tree"
 
-branched :: Parser PhyloTextTree
+branched :: Parser PhyloByteStringTree
 branched = do
   f <- forest
   n <- node
@@ -62,35 +64,35 @@ branched = do
   return $ Node n f
 
 -- | A 'forest' is a set of trees separated by @,@ and enclosed by parentheses.
-forest :: Parser [PhyloTextTree]
-forest = char '(' *> tree `sepBy1` char ',' <* char ')' <?> "forest"
+forest :: Parser [PhyloByteStringTree]
+forest = char (c2w '(') *> tree `sepBy1` char (c2w ',') <* char (c2w ')') <?> "forest"
 
 -- | A 'leaf' is a 'node' without children.
-leaf :: Parser PhyloTextTree
+leaf :: Parser PhyloByteStringTree
 leaf = do
   n <- node
     <?> "leaf"
   return $ Node n []
 
 -- | A 'node' has a name and a 'branchLength'.
-node :: Parser PhyloTextLabel
+node :: Parser PhyloByteStringLabel
 node = do
   n <- name
   b <- branchLength
     <?> "node"
   return $ PhyloLabel n b
 
-checkNameCharacter :: Char -> Bool
-checkNameCharacter c = c `notElem` " :;()[],"
+checkNameCharacter :: Word8 -> Bool
+checkNameCharacter c = c `notElem` map c2w " :;()[],"
 
 -- | A name can be any string of printable characters except blanks, colons,
 -- semicolons, parentheses, and square brackets (and commas).
-name :: Parser T.Text
-name = T.pack <$> many (satisfy checkNameCharacter) <?> "name"
+name :: Parser B.ByteString
+name = B.pack <$> many (satisfy checkNameCharacter) <?> "name"
 
 -- | Branch lengths default to 0.
 branchLength :: Parser Double
-branchLength = char ':' *> branchLengthGiven <|> pure 0 <?> "branchLength"
+branchLength = char (c2w ':') *> branchLengthGiven <|> pure 0 <?> "branchLength"
 
 branchLengthGiven :: Parser Double
 branchLengthGiven = try float <|> (fromIntegral <$> (decimal :: Parser Int))

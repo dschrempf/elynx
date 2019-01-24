@@ -33,11 +33,9 @@ module EvoMod.Data.Sequence.Sequence
   , concatenate
   ) where
 
-import qualified Data.ByteString.Lazy          as B
+import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.List                     (maximumBy)
 import           Data.Ord                      (comparing)
-import qualified Data.Text                     as T
-import qualified Data.Text.Encoding            as T
 import qualified Data.Vector.Unboxed           as V
 import           Data.Word8                    (Word8)
 
@@ -45,11 +43,11 @@ import           EvoMod.Data.Sequence.Defaults (defFieldWidth,
                                                 defSequenceListSummaryNumber,
                                                 defSequenceNameWidth,
                                                 defSequenceSummaryLength)
-import           EvoMod.Tools                  (allEqual,
-                                                summarizeText)
+import           EvoMod.Tools                  (alignLeft, allEqual, c2w,
+                                                summarizeByteString, w2c)
 
 -- | For now, 'SequenceId's are just 'String's.
-type SequenceId = T.Text
+type SequenceId = B.ByteString
 
 -- | By choosing specific types for the identifier and the characters is of
 -- course limiting but also eases handling of types a lot.
@@ -58,69 +56,69 @@ data Sequence = Sequence { seqId :: SequenceId
   deriving (Eq)
 
 -- | Conversion from 'B.ByteString'.
-toSequence :: T.Text -> B.ByteString -> Sequence
+toSequence :: B.ByteString -> B.ByteString -> Sequence
 toSequence i cs = Sequence i v
-  where v = V.force . V.fromList . B.unpack $ cs
+  where v = V.force . V.fromList . map c2w . B.unpack $ cs
 
 -- | Conversion of data to 'B.ByteString'.
 seqToCsByteString :: Sequence -> B.ByteString
-seqToCsByteString = B.pack . V.toList . seqCs
+seqToCsByteString = B.pack . map w2c . V.toList . seqCs
 
 -- | Extract 'SequenceId' and data.
 fromSequence :: Sequence -> (SequenceId, B.ByteString)
 fromSequence s = (seqId s, seqToCsByteString s)
 
-showCharacters :: Sequence -> T.Text
-showCharacters = T.decodeUtf8 . B.toStrict . seqToCsByteString
+showCharacters :: Sequence -> B.ByteString
+showCharacters = seqToCsByteString
 
-showInfo :: Sequence -> T.Text
-showInfo s = T.unwords [ T.justifyLeft defSequenceNameWidth ' ' (seqId s)
-                       , T.justifyLeft defFieldWidth ' ' l ]
-  where l = T.pack . show $ V.length . seqCs $ s
+showInfo :: Sequence -> B.ByteString
+showInfo s = B.unwords [ alignLeft defSequenceNameWidth (seqId s)
+                       , alignLeft defFieldWidth l ]
+  where l = B.pack . show $ V.length . seqCs $ s
 
 instance Show Sequence where
-  show s = T.unpack $ showSequence s
+  show s = B.unpack $ showSequence s
 
-showSequence :: Sequence -> T.Text
-showSequence s = T.unwords [showInfo s, showCharacters s]
+showSequence :: Sequence -> B.ByteString
+showSequence s = B.unwords [showInfo s, showCharacters s]
 
 -- | Show a list of 'Sequence's, untrimmed.
-showSequenceList :: [Sequence] -> T.Text
-showSequenceList = T.unlines . map showSequence
+showSequenceList :: [Sequence] -> B.ByteString
+showSequenceList = B.unlines . map showSequence
 
 -- | Header printed before 'Sequence' list.
-sequenceListHeader :: T.Text
-sequenceListHeader = T.unwords [ T.justifyLeft defSequenceNameWidth ' ' (T.pack "Identifier")
-                               , T.justifyLeft defFieldWidth ' ' (T.pack "Length")
-                               , T.pack "Sequence" ]
+sequenceListHeader :: B.ByteString
+sequenceListHeader = B.unwords [ alignLeft defSequenceNameWidth (B.pack "Identifier")
+                               , alignLeft defFieldWidth (B.pack "Length")
+                               , B.pack "Sequence" ]
 
 -- | Trim and show a 'Sequence'.
-summarizeSequence :: Sequence -> T.Text
-summarizeSequence s = T.unwords [ showInfo s
-                                , summarizeText defSequenceSummaryLength (showCharacters s) ]
+summarizeSequence :: Sequence -> B.ByteString
+summarizeSequence s = B.unwords [ showInfo s
+                                , summarizeByteString defSequenceSummaryLength (showCharacters s) ]
 
 -- | Trim and show a list of 'Sequence's.
-summarizeSequenceList :: [Sequence] -> T.Text
+summarizeSequenceList :: [Sequence] -> B.ByteString
 summarizeSequenceList ss = summarizeSequenceListHeader ss <>
                            summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
 
-summarizeSequenceListHeader :: [Sequence] -> T.Text
-summarizeSequenceListHeader ss = T.unlines $
+summarizeSequenceListHeader :: [Sequence] -> B.ByteString
+summarizeSequenceListHeader ss = B.unlines $
   reportIfSubsetIsShown ++
-  [ T.pack $ "For each sequence the " ++ show defSequenceSummaryLength ++ " first bases are shown."
-  , T.pack $ "List contains " ++ show (length ss) ++ " sequences."
-  , T.pack ""
+  [ B.pack $ "For each sequence the " ++ show defSequenceSummaryLength ++ " first bases are shown."
+  , B.pack $ "List contains " ++ show (length ss) ++ " sequences."
+  , B.pack ""
   , sequenceListHeader ]
   where l = length ss
         s = show defSequenceListSummaryNumber ++ " out of " ++
             show (length ss) ++ " sequences are shown."
         reportIfSubsetIsShown
-          | l > defSequenceListSummaryNumber = [T.pack s]
+          | l > defSequenceListSummaryNumber = [B.pack s]
           | otherwise = []
 
 -- | Trim and show a list of 'Sequence's.
-summarizeSequenceListBody :: [Sequence] -> T.Text
-summarizeSequenceListBody ss = T.unlines $ map summarizeSequence ss
+summarizeSequenceListBody :: [Sequence] -> B.ByteString
+summarizeSequenceListBody ss = B.unlines $ map summarizeSequence ss
 
 -- | Calculate length of 'Sequence'.
 lengthSequence :: Sequence -> Int
@@ -143,4 +141,4 @@ concatenate :: Sequence -> Sequence -> Either String Sequence
 concatenate (Sequence i cs) (Sequence j ks)
   | i == j     = Right $ Sequence i (cs V.++ ks)
   | otherwise  = Left $ "concatenate: Sequences do not have equal IDs: "
-                 ++ T.unpack i ++ ", " ++ T.unpack j ++ "."
+                 ++ B.unpack i ++ ", " ++ B.unpack j ++ "."
