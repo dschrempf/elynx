@@ -62,6 +62,8 @@ simulateAlongProbTree i (Node p f) g = do
   i' <- jump i p g
   f' <- sequence [simulateAlongProbTree i' t g | t <- f]
   return $ Node i' f'
+-- simulateAlongProbTree :: (PrimMonad m) => State -> Tree ProbMatrix -> Gen (PrimState m) -> m (Tree State)
+-- simulateAlongProbTree i (Node p f) g = return $ Node i []
 
 -- -- | Convert a stationary distribution to a generator which speeds up random
 -- -- picks. Cf. 'jump'.

@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+if [[ -n $INCLUDE_SOURCED ]]; then return; fi
+INCLUDE_SOURCED=TRUE
+
 msg() {
     (( QUIET )) && return
     local mesg

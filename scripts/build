@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 # flags=("--fast")
 
 # if [[ $1 == "prod" ]]; then
@@ -8,7 +7,7 @@
 #     flags=()
 # fi
 
-flags=()
+flags=(--fast)
 
 normal_build() {
     source include
@@ -31,9 +30,10 @@ test_build() {
 }
 export -f test_build
 
-# Run the build in parallel but output is messy.
-parallel --tty -j4 {} ::: normal_build profile_build test_build || exit 1
+# Run the build in parallel but output is not colored.
+# parallel {} ::: normal_build profile_build test_build || exit 1
 
-# Sequential run but nice output.
-# parallel --tty {} ::: normal_build profile_build test_build || exit 1
+# normal_build
+# profile_build
+test_build
 

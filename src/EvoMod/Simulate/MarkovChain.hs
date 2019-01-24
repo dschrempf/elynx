@@ -21,8 +21,11 @@ module EvoMod.Simulate.MarkovChain
   ) where
 
 import           Control.Monad.Primitive
+-- import           Foreign.Storable
+-- import           Foreign.Storable.Tuple ()
 import           Numeric.LinearAlgebra
 import           System.Random.MWC
+-- import           System.Random.MWC.CondensedTable
 import           System.Random.MWC.Distributions
 
 -- | A probability matrix, P_ij(t) = Pr (X_t = j | X_0 = i).
@@ -34,8 +37,15 @@ type State = Int
 -- | The important matrix that gives the probabilities to move from one state to
 -- another in a specific time (branch length).
 probMatrix :: Matrix R -> Double -> ProbMatrix
-probMatrix q t = expQt
-  where !expQt = expm $ scale t q
+probMatrix q t | t == 0 = if rows q == cols q
+                          then ident (rows q)
+                          else error "Matrix is not square."
+               | t < 0 = error "Time is negative."
+               | otherwise = expm $ scale t q
+
+-- TODO: Write storable instance, compilation is really slow otherwise.
+-- instance Storable (Int, R) where
+--   sizeOf (x, y) = sizeOf x + sizeOf y
 
 -- | Move from a given state to a new one according to a transition probability
 -- matrix (for performance reasons this probability matrix needs to be given as
@@ -44,9 +54,17 @@ probMatrix q t = expQt
 -- This function is the bottleneck of the simulator and takes up most of the
 -- computation time. However, I was not able to find a faster implementation
 -- than the one from Data.Distribution.
+--
+-- -- TODO: Do not generate table for each jump.
+-- jump :: (PrimMonad m) => State -> ProbMatrix -> Gen (PrimState m) -> m State
+-- jump i p = genFromTable table
+--   where
+--     ws = toList $ p ! i
+--     vsAndWs = fromList [ (v, w) | (v, w) <- zip [(0 :: Int) ..] ws
+--                                 , w > 0 ]
+--     table = tableFromProbabilities vsAndWs
 jump :: (PrimMonad m) => State -> ProbMatrix -> Gen (PrimState m) -> m State
-jump i p = i'
-  where !i' = categorical $ p ! i
+jump i p = categorical (p ! i)
 
 -- -- | Perform N jumps from a given state and according to a transition
 -- -- probability matrix transformed to a list of generators. This implementation

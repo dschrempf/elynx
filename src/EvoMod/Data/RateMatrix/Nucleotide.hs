@@ -26,7 +26,7 @@ import EvoMod.Data.RateMatrix.RateMatrix
 
 -- | JC model.
 jc :: Matrix R
-jc = (4><4)
+jc = setDiagonal $ (4><4)
      [ 0.0, 1.0, 1.0, 1.0
      , 1.0, 0.0, 1.0, 1.0
      , 1.0, 1.0, 0.0, 1.0
