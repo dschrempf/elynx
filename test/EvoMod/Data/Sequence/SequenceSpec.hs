@@ -34,7 +34,7 @@ spec :: Spec
 spec =
   describe "longest" $
     it "finds the longest sequence"$ do
-    ss <- parseFileWith (fastaFile DNA) fastaDifferentLengthFN
+    ss <- parseFileWith (fasta DNA) fastaDifferentLengthFN
     longest ss `shouldBe` longestSequenceInFile
 
 
