@@ -62,4 +62,3 @@ type PhyloIntTree = Tree PhyloIntLabel
 -- | Phylogenetic tree with 'Double' branch lengths and 'ByteString' node labels.
 type PhyloByteStringTree = Tree PhyloByteStringLabel
 
-

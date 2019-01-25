@@ -42,7 +42,7 @@ module EvoMod.Data.Tree.Tree
 import Data.Tree
 -- import qualified Data.Set as S
 
--- | The simplest tree. Usually an extant leaf with an attached branch.
+-- | The simplest tree. Usually an extant leaf.
 singleton :: a -> Tree a
 singleton l = Node l []
 
