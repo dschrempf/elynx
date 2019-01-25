@@ -13,10 +13,10 @@ Creation date: Thu Jan 24 20:09:20 2019.
 -}
 
 module EvoMod.Data.Tree.NamedTree
-  ( NamedLabel (..)
+  ( Named (..)
   ) where
 
 import           Data.ByteString.Lazy.Char8
 
-class NamedLabel a where
+class Named a where
   name :: a -> ByteString

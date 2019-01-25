@@ -21,44 +21,51 @@ Also, the 'ByteString' label is needed often: 'PhyloByteStringLabel'.
 
 
 module EvoMod.Data.Tree.PhyloTree
-  ( PhyloLabel (..)
-  , PhyloIntLabel
-  , PhyloByteStringLabel
-  , PhyloTree
-  , PhyloIntTree
-  , PhyloByteStringTree
+  ( PhyloIntLabel (..)
+  , PhyloByteStringLabel (..)
   ) where
 
+import           Data.ByteString.Lazy.Builder
 import           Data.ByteString.Lazy.Char8
-import           Data.Tree
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.NamedTree
 
--- | A primitive label type for phylogenetic trees with an 'Int' label and a
--- 'Double' branch length.
-data PhyloLabel a = PhyloLabel { pLabel        :: a
-                               , pBranchLength :: Double }
-                 deriving (Show, Eq)
-
-instance MeasurableLabel (PhyloLabel a) where
-  branchLength = pBranchLength
+-- -- | A primitive label type for phylogenetic trees with an 'Int' label and a
+-- -- 'Double' branch length.
+-- data PhyloLabel a = PhyloLabel { pLabel :: a
+--                                , pBrLen :: Double }
+--                  deriving (Show, Eq)
 
 -- | Tree node with 'Int' label.
-type PhyloIntLabel = PhyloLabel Int
+data PhyloIntLabel = PhyloIntLabel { piLabel :: Int
+                                   , piBrLen :: Double }
+  deriving (Show, Eq)
+
+--
+instance Named PhyloIntLabel where
+  name = toLazyByteString . intDec . piLabel
+
+instance Measurable PhyloIntLabel where
+  measure = piBrLen
 
 -- | Tree node with 'ByteString' label. Important for parsing
 -- 'EvoMod.Import.Tree.Newick' files.
-type PhyloByteStringLabel = PhyloLabel ByteString
+data PhyloByteStringLabel = PhyloByteStringLabel { pbsLabel :: ByteString
+                                                 , pbsBrLen :: Double }
+  deriving (Show, Eq)
 
-instance NamedLabel PhyloByteStringLabel where
-  name = pLabel
+instance Named PhyloByteStringLabel where
+  name = pbsLabel
 
--- | A phylogenetic tree with 'Double' branch lengths arbitrary node labels.
-type PhyloTree a = Tree (PhyloLabel a)
+instance Measurable PhyloByteStringLabel where
+  measure = pbsBrLen
 
--- | A phylogenetic tree with 'Double' branch lengths and 'Int' node labels.
-type PhyloIntTree = Tree PhyloIntLabel
+-- -- | A phylogenetic tree with 'Double' branch lengths arbitrary node labels.
+-- type PhyloTree a = Tree (PhyloLabel a)
 
--- | Phylogenetic tree with 'Double' branch lengths and 'ByteString' node labels.
-type PhyloByteStringTree = Tree PhyloByteStringLabel
+-- -- | A phylogenetic tree with 'Double' branch lengths and 'Int' node labels.
+-- type PhyloIntTree = Tree PhyloIntLabel
+
+-- -- | Phylogenetic tree with 'Double' branch lengths and 'ByteString' node labels.
+-- type PhyloByteStringTree = Tree PhyloByteStringLabel
 

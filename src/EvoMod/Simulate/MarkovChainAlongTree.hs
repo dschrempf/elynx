@@ -41,14 +41,14 @@ import           EvoMod.Simulate.MarkovChain
 -- TODO: Extract stationary distribution.
 --
 -- The result is a set of trees with the simulated states as node labels.
-simulateNSitesAlongTree :: (PrimMonad m, MeasurableLabel a) => Int -> RateMatrix -> StationaryDist -> Tree a -> Gen (PrimState m) -> m [Tree State]
+simulateNSitesAlongTree :: (PrimMonad m, Measurable a) => Int -> RateMatrix -> StationaryDist -> Tree a -> Gen (PrimState m) -> m [Tree State]
 simulateNSitesAlongTree n q d t g = do
   i <- categorical d g
   replicateM n $ simulateAlongProbTree i pt g
   where pt = measureableTreeToProbTree q t
 
-measureableTreeToProbTree :: (MeasurableLabel a) => RateMatrix -> Tree a -> Tree ProbMatrix
-measureableTreeToProbTree q = fmap (probMatrix q . branchLength)
+measureableTreeToProbTree :: (Measurable a) => RateMatrix -> Tree a -> Tree ProbMatrix
+measureableTreeToProbTree q = fmap (probMatrix q . measure)
 
 -- This is the heart of the simulation. Take a tree and a root state. If there
 -- is a split (i.e., if we have a node and not a leaf), jump down the left

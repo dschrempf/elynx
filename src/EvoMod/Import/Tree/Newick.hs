@@ -46,17 +46,17 @@ import           EvoMod.Tools               (c2w)
 type Parser = Parsec Void B.ByteString
 
 -- | Parse many Newick trees.
-manyNewick :: Parser [PhyloByteStringTree]
+manyNewick :: Parser [Tree PhyloByteStringLabel]
 manyNewick = some (newick <* space) <* eof <?> "manyNewick"
 
 -- | Parse a Newick tree.
-newick :: Parser PhyloByteStringTree
+newick :: Parser (Tree PhyloByteStringLabel)
 newick = tree <* char (c2w ';') <?> "newick"
 
-tree :: Parser PhyloByteStringTree
+tree :: Parser (Tree PhyloByteStringLabel)
 tree = space *> (branched <|> leaf) <?> "tree"
 
-branched :: Parser PhyloByteStringTree
+branched :: Parser (Tree PhyloByteStringLabel)
 branched = do
   f <- forest
   n <- node
@@ -64,11 +64,11 @@ branched = do
   return $ Node n f
 
 -- | A 'forest' is a set of trees separated by @,@ and enclosed by parentheses.
-forest :: Parser [PhyloByteStringTree]
+forest :: Parser [Tree PhyloByteStringLabel]
 forest = char (c2w '(') *> tree `sepBy1` char (c2w ',') <* char (c2w ')') <?> "forest"
 
 -- | A 'leaf' is a 'node' without children.
-leaf :: Parser PhyloByteStringTree
+leaf :: Parser (Tree PhyloByteStringLabel)
 leaf = do
   n <- node
     <?> "leaf"
@@ -80,7 +80,7 @@ node = do
   n <- name
   b <- branchLength
     <?> "node"
-  return $ PhyloLabel n b
+  return $ PhyloByteStringLabel n b
 
 checkNameCharacter :: Word8 -> Bool
 checkNameCharacter c = c `notElem` map c2w " :;()[],"

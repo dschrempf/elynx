@@ -25,12 +25,11 @@ flags=()
 
 if [[ $1 == "test" ]];
 then
-    flags=(--fast)
-    test_build
+    flags=(--fast); test_build
 else
     normal_build
     profile_build
-    test_build
+    flags=(--fast); test_build
 fi
 
 # Run the build in parallel but output is not colored.

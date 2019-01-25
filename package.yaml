@@ -35,7 +35,7 @@ dependencies:
   - mwc-random
   - optparse-applicative
   - primitive
-  - safe
+  # - safe
   - text
   - vector
   - word8

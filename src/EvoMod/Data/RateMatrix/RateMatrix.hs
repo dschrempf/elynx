@@ -28,10 +28,9 @@ module EvoMod.Data.RateMatrix.RateMatrix
   )
 where
 
-import           EvoMod.Tools          (matrixSetDiagToZero)
+import           EvoMod.Tools          (matrixSetDiagToZero, nearlyEq)
 import           Numeric.LinearAlgebra
 import           Prelude               hiding ((<>))
-import           Safe                  (headMay)
 
 -- | A rate matrix is just a real matrix.
 type RateMatrix = Matrix R
@@ -64,14 +63,17 @@ toExchMatrix m f = m <> diag oneOverF
 fromExchMatrix :: ExchMatrix -> StationaryDist -> RateMatrix
 fromExchMatrix em d = normalizeRates d $ setDiagonal $ em <> diag d
 
+
 -- | Get stationary distribution from 'RateMatrix'. Involves eigendecomposition.
 -- Is there an easier way?
 getStationaryDistribution :: RateMatrix -> Maybe StationaryDist
-getStationaryDistribution m = do
-  let (evals, evecs) = eig m
-      is = find ((1.0 :+ 0.0) ==) evals
-  case headMay is of
-    Nothing -> Nothing
-    Just i -> return distReal
-      where distComplex = toColumns evecs !! i
-            distReal = cmap realPart distComplex
+getStationaryDistribution m =
+  if magnitude (eVals ! i) `nearlyEq` 0
+  then return $ cmap (/ norm1) distReal
+  else Nothing
+    where
+      (eVals, eVecs) = eig (tr m)
+      i = minIndex eVals
+      distComplex = toColumns eVecs !! i
+      distReal = cmap realPart distComplex
+      norm1 = norm_1 distReal

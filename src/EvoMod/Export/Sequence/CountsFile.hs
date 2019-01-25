@@ -51,7 +51,9 @@ A toy example:
 -}
 
 module EvoMod.Export.Sequence.CountsFile
-  ( DataOneSite
+  ( Chrom
+  , Pos
+  , DataOneSite
   , PopulationNames
   , toCountsFile
   ) where

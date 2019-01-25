@@ -37,6 +37,6 @@ import           EvoMod.Data.Tree.MeasurableTree
 
 -- | Simulate a 'MultiSequenceAlignment' for a given substitution model with
 -- given stationary distribution and a phylogenetic tree.
-simulateMSA :: (PrimMonad m, MeasurableLabel a) => Int -> RateMatrix -> StationaryDist -> Tree a -> m MultiSequenceAlignment
+simulateMSA :: (PrimMonad m, Measurable a) => Int -> RateMatrix -> StationaryDist -> Tree a -> m MultiSequenceAlignment
 -- simulateMSA n q d t g = simulateNSitesAlongTree n q d t g
 simulateMSA = undefined
