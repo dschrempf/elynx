@@ -26,6 +26,6 @@ spec :: Spec
 spec =
   describe "filterLongerThan" $
     it "filters sequences that are longer than a specified length" $ do
-    ss  <- parseFileWith (fastaFile DNA) fastaDifferentLengthFN
-    ss' <- parseFileWith (fastaFile DNA) fastaDifferentLengthTrimmedFN
+    ss  <- parseFileWith (fasta DNA) fastaDifferentLengthFN
+    ss' <- parseFileWith (fasta DNA) fastaDifferentLengthTrimmedFN
     filterLongerThan 10 ss `shouldBe` ss'
