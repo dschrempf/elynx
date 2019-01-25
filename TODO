@@ -2,6 +2,6 @@ XXX: I decided to not provide an option for reading from STDIN, since this is a
 corner case and additionally because behavior might be undefined when more than
 one input file is given. When does one file end and the next one begin?
 
-TODO: Verbosity.
+TODO: Verbosity and logging.
 
 TODO: Proper benchmark with 'stack build --bench'.

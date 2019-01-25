@@ -17,7 +17,7 @@ category:            Bioinformatics
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/dschrempf/evomod
+description:         Please see the README on GitHub at <https://github.com/dschrempf/evomod>.
 
 ghc-options:
   - -Wall
@@ -35,7 +35,7 @@ dependencies:
   - mwc-random
   - optparse-applicative
   - primitive
-  - storable-tuple
+  - safe
   - text
   - vector
   - word8

@@ -7,13 +7,46 @@ Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
 Portability :  non-portable (not tested)
 
-After simulating data according to a tree and a mutation model (and a population
-size, etc.), write the data to file using counts file format.
+* The Counts Format
 
-TODO: Add functions such as @[Sequence] -> B.ByteString@. But what do I actually
-need? It only makes sense to do something like @[MulitSequenceAlignment] ->
-B.ByteString@. But then I need to add positional information to
-/MultiSequenceAlignment/.
+The input of PoMo is allele frequency data.  Especially, when
+populations have many individuals it is preferable to count the
+number of bases at each position.  This decreases file size and speeds
+up the parser.
+
+Counts files contain:
+
+- One headerline that specifies the file as counts file and states the
+  number of populations as well as the number of sites (separated by
+  white space).
+
+- A second headerline with white space separated headers: CRHOM
+  (chromosome), POS (position) and sequence names.
+
+- Many lines with counts of A, C, G and T bases and their respective
+  positions.
+
+Comments:
+
+- Lines starting with # before the first headerline are treated as
+  comments.
+
+A toy example:
+
+@
+    COUNTSFILE  NPOP 5   NSITES N
+    CHROM  POS  Sheep    BlackSheep  RedSheep  Wolf     RedWolf
+    1      1    0,0,1,0  0,0,1,0     0,0,1,0   0,0,5,0  0,0,0,1
+    1      2    0,0,0,1  0,0,0,1     0,0,0,1   0,0,0,5  0,0,0,1
+    .
+    .
+    .
+    9      8373 0,0,0,1  1,0,0,0     0,1,0,0   0,1,4,0  0,0,1,0
+    .
+    .
+    .
+    Y      9999 0,0,0,1  0,1,0,0     0,1,0,0   0,5,0,0  0,0,1,0
+@
 
 -}
 
@@ -67,7 +100,7 @@ dataLine chrom mPos bstates = B.unwords $
   ++ map (alignRight colW . showCounts) bstates
 
 -- | Convert data to a counts file.
-toCountsFile :: PopulationNames -> [DataOneSite] -> B.ByteString
--- TODO: Chromosomal and positional information.
-toCountsFile ns d = B.unlines $ header l ns : map (dataLine Nothing Nothing) d
-  where l = length d
+toCountsFile :: PopulationNames -> [(Maybe Chrom, Maybe Pos, DataOneSite)] -> B.ByteString
+toCountsFile ns d = B.unlines $ header l ns : zipWith3 dataLine cs ps ds
+  where l            = length d
+        (cs, ps, ds) = unzip3 d

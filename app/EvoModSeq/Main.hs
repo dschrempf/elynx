@@ -50,7 +50,7 @@ main = do (EvoModIOArgs cmd c mofn q fns) <- parseEvoModIOArgs
             putStrLn "Read fasta file."
             putStrLn $ "Code: " ++ show c ++ "."
           -- 'sss' is a little weird, but IT IS a list of a list of sequences.
-          sss <- sequence $ parseFileWith (fastaFile c) <$> fns
+          sss <- sequence $ parseFileWith (fasta c) <$> fns
           let eRes = act cmd sss
           io mofn eRes
           -- unless q $ putStrLn ""

@@ -10,7 +10,7 @@ Portability :  portable
 
 Creation date: Thu Jan 17 14:19:26 2019.
 
-TODO: This module is not used.
+XXX: This module is not used.
 
 -}
 

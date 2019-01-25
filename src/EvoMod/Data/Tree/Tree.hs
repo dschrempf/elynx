@@ -27,8 +27,8 @@ has a label and a children. The terms 'Node' and /label/ are not to be confused.
 - Branches have /lengths/. For example, a branch length can be a distances or a
   time.
 
-TODO: Try fgl or alga. Use functional graph library for unrooted trees see also
-  the book /Haskell high performance programming from Thomasson/, p. 344.
+XXX: Try fgl or alga. Use functional graph library for unrooted trees see also
+the book /Haskell high performance programming from Thomasson/, p. 344.
 
 -}
 

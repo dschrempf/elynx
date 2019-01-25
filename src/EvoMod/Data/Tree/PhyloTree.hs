@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {- |
 Module      :  EvoMod.Data.Tree.PhyloTree
 Description :  Phylogenetic trees.
@@ -31,6 +32,7 @@ module EvoMod.Data.Tree.PhyloTree
 import           Data.ByteString.Lazy.Char8
 import           Data.Tree
 import           EvoMod.Data.Tree.MeasurableTree
+import           EvoMod.Data.Tree.NamedTree
 
 -- | A primitive label type for phylogenetic trees with an 'Int' label and a
 -- 'Double' branch length.
@@ -47,6 +49,9 @@ type PhyloIntLabel = PhyloLabel Int
 -- | Tree node with 'ByteString' label. Important for parsing
 -- 'EvoMod.Import.Tree.Newick' files.
 type PhyloByteStringLabel = PhyloLabel ByteString
+
+instance NamedLabel PhyloByteStringLabel where
+  name = pLabel
 
 -- | A phylogenetic tree with 'Double' branch lengths arbitrary node labels.
 type PhyloTree a = Tree (PhyloLabel a)
