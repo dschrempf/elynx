@@ -32,7 +32,6 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 
 import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Tools                                (c2w, w2c)
 
@@ -64,7 +63,3 @@ fastaSequence a = do hd <- sequenceHeader
 -- | Parse a Fasta file assuming 'Code'.
 fasta :: Code -> Parser [Sequence]
 fasta c = some (fastaSequence (alphabet c)) <* eof
-
--- -- | Parse a 'MultiSequenceAlignment' Fasta files assuming 'Code'.
--- fastaFileMSA :: Code -> Parser MultiSequenceAlignment
--- fastaFileMSA c = fromSequenceList <$> fastaFile c

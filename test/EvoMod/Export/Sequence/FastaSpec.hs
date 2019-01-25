@@ -25,7 +25,7 @@ spec :: Spec
 spec =
   describe "sequencesToFasta" $
     it "should create a fasta bytestring that, when parsed again, is the original sequence" $ do
-    ss <- parseFileWith (fastaFile DNA_IUPAC) fastaNucleotideIUPACFN
+    ss <- parseFileWith (fasta DNA_IUPAC) fastaNucleotideIUPACFN
     let f   = sequencesToFasta ss
-        ss' = parseByteStringWith (fastaFile DNA_IUPAC) f
+        ss' = parseByteStringWith (fasta DNA_IUPAC) f
     ss `shouldBe` ss'

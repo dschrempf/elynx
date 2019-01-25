@@ -26,25 +26,25 @@ spec :: Spec
 spec =
   describe "fastaFileMSA" $ do
     it "parses a fasta file with nucleotide sequences with equal length" $ do
-      msa <- parseFileWith (fastaFileMSA DNA) fastaNucleotideFN
+      msa <- fromSequenceList <$> parseFileWith (fasta DNA) fastaNucleotideFN
       msaNSequences msa `shouldBe` 3
       msaLength msa `shouldBe` 40
 
     it "parses a fasta file with nucleotide IUPAC sequences with equal length" $ do
-      msa <- parseFileWith (fastaFileMSA DNA_IUPAC) fastaNucleotideIUPACFN
+      msa <- fromSequenceList <$> parseFileWith (fasta DNA_IUPAC) fastaNucleotideIUPACFN
       msaNSequences msa `shouldBe` 3
       msaLength msa `shouldBe` 40
 
     it "should not parse erroneous files" $ do
-      emsa <- runParserOnFile (fastaFile DNA) fastaErroneousFN
+      emsa <- runParserOnFile (fasta DNA) fastaErroneousFN
       emsa  `shouldSatisfy` isLeft
 
     it "parses a fasta file with amino acid sequences with equal length" $ do
-      msa <- parseFileWith (fastaFileMSA Protein) fastaAminoAcidFN
+      msa <- fromSequenceList <$> parseFileWith (fasta Protein) fastaAminoAcidFN
       msaNSequences msa `shouldBe` 2
       msaLength msa `shouldBe` 237
 
     it "should not parse erroneous files" $ do
-      msa <- runParserOnFile (fastaFile Protein) fastaErroneousFN
+      msa <- runParserOnFile (fasta Protein) fastaErroneousFN
       msa  `shouldSatisfy` isLeft
 
