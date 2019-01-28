@@ -12,15 +12,14 @@ continuous-time discrete-state Markov processes.
 
 * Changelog
 
-TODO: Combine with type safety from alphabets (Int /= Word8?).
-
 -}
 
 module EvoMod.Data.RateMatrix.RateMatrix
   ( RateMatrix
   , ExchMatrix
   , StationaryDist
-  , normalizeRates
+  , normalize
+  , normalizeWith
   , setDiagonal
   , toExchMatrix
   , fromExchMatrix
@@ -29,7 +28,7 @@ module EvoMod.Data.RateMatrix.RateMatrix
 where
 
 import           EvoMod.Tools          (matrixSetDiagToZero, nearlyEq)
-import           Numeric.LinearAlgebra
+import           Numeric.LinearAlgebra hiding (normalize)
 import           Prelude               hiding ((<>))
 
 -- | A rate matrix is just a real matrix.
@@ -43,9 +42,15 @@ type ExchMatrix     = Matrix R
 -- | Stationary distribution of a rate matrix.
 type StationaryDist = Vector R
 
--- | Normalizes a Markov process generator such that one event happens per unit time.
-normalizeRates :: StationaryDist -> RateMatrix -> RateMatrix
-normalizeRates f m = scale (1.0 / totalRate) m
+-- | Normalizes a Markov process generator such that one event happens per unit
+-- time. Calculates stationary distribution from rate matrix.
+normalize :: RateMatrix -> RateMatrix
+normalize m = normalizeWith (getStationaryDistribution m) m
+
+-- | Normalizes a Markov process generator such that one event happens per unit
+-- time. Stationary distribution has to be given.
+normalizeWith :: StationaryDist -> RateMatrix -> RateMatrix
+normalizeWith f m = scale (1.0 / totalRate) m
   where totalRate = norm_1 $ f <# matrixSetDiagToZero m
 
 -- | Set the diagonal entries of a matrix such that the rows sum to 0.
@@ -61,8 +66,7 @@ toExchMatrix m f = m <> diag oneOverF
 
 -- | Convert exchangeability matrix to rate matrix.
 fromExchMatrix :: ExchMatrix -> StationaryDist -> RateMatrix
-fromExchMatrix em d = normalizeRates d $ setDiagonal $ em <> diag d
-
+fromExchMatrix em d = normalizeWith d $ setDiagonal $ em <> diag d
 
 -- | Get stationary distribution from 'RateMatrix'. Involves eigendecomposition.
 -- If the given matrix does not satisfy the required properties of transition

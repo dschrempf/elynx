@@ -13,6 +13,8 @@ Creation date: Thu Jan 24 08:33:26 2019.
 XXX: Maybe rename to something like /DNA substitution models/. Nucleotide ~
 Alphabet; DNA ~ Character.
 
+The order of nucleotides is A, C, G, T; see 'EvoMod.Data.Alphabet.Nucleotide'.
+
 -}
 
 module EvoMod.Data.RateMatrix.Nucleotide
@@ -23,22 +25,32 @@ module EvoMod.Data.RateMatrix.Nucleotide
 import Numeric.LinearAlgebra
 
 import EvoMod.Data.RateMatrix.RateMatrix
+-- import EvoMod.Data.Alphabet.Nucleotide
+import EvoMod.Data.Alphabet.Alphabet
+
+n :: Int
+n = cardinality (alphabet DNA)
+
+-- Improve safety by constructing matrices from a set of rates between
+-- 'Nucleotide's.
+-- jcFromNuc :: Nucleotide -> Nucleotide -> Double
+-- jcFromNuc i j | i == j    = 0.0
+--               | otherwise = 1.0
 
 -- | JC model.
-jc :: Matrix R
-jc = setDiagonal $ (4><4)
+jc :: RateMatrix
+jc = setDiagonal $ (n><n)
      [ 0.0, 1.0, 1.0, 1.0
      , 1.0, 0.0, 1.0, 1.0
      , 1.0, 1.0, 0.0, 1.0
      , 1.0, 1.0, 1.0, 0.0 ]
 
--- | HKY model.
+-- | HKY model with kappa.
 hky :: Double -> StationaryDist -> RateMatrix
 hky k = fromExchMatrix em
-  where em = (4><4)
+  where em = (n><n)
              [ 0.0, 1.0,   k, 1.0
              , 1.0, 0.0, 1.0,   k
              ,   k, 1.0, 0.0, 1.0
              , 1.0,   k, 1.0, 0.0 ]
-
 

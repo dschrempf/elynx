@@ -36,6 +36,7 @@ the book /Haskell high performance programming from Thomasson/, p. 344.
 module EvoMod.Data.Tree.Tree
   ( singleton
   , degree
+  , leafs
   -- , rootNodesAgreeWith
   ) where
 
@@ -49,6 +50,10 @@ singleton l = Node l []
 -- | The degree of the root node of a tree.
 degree :: Tree a -> Int
 degree = (+ 1) . length . subForest
+
+leafs :: Tree a -> [a]
+leafs (Node l []) = [l]
+leafs (Node _ f)  = concatMap leafs f
 
 -- -- | Check if ancestor and daughters of first tree are a subset of the ancestor
 -- -- and daughters of the second tree. Useful to test if, e.g., speciations agree.

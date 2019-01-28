@@ -16,7 +16,7 @@ The implementation of the Markov process is more than basic and can be improved 
 
 -}
 
-module EvoMod.Simulate.MarkovChainAlongTree
+module EvoMod.Simulate.MarkovProcessAlongTree
   (simulateNSitesAlongTree)
   where
 
@@ -28,7 +28,7 @@ import           System.Random.MWC.Distributions
 
 import           EvoMod.Data.RateMatrix.RateMatrix
 import           EvoMod.Data.Tree.MeasurableTree
-import           EvoMod.Simulate.MarkovChain
+import           EvoMod.Simulate.MarkovProcess
 
 -- -- | Convert a tree with branch lengths into a tree that has transition
 -- -- probability matrices assigned to each of its branches.
@@ -36,30 +36,25 @@ import           EvoMod.Simulate.MarkovChain
 -- branchLengthsToTransitionProbs m = fmap (probMatrix m)
 
 -- | Simulate a number of site for a given substitution model with given
--- stationary distribution. The result is a set of trees with the simulated
+-- stationary distribution. The result is a tree with the list of simulated
 -- states as node labels.
-simulateNSitesAlongTree :: (PrimMonad m, Measurable a) => Int -> RateMatrix -> Tree a -> Gen (PrimState m) -> m [Tree State]
+simulateNSitesAlongTree :: (PrimMonad m, Measurable a) => Int -> RateMatrix -> Tree a -> Gen (PrimState m) -> m (Tree [State])
 simulateNSitesAlongTree n q t g = do
   let d = getStationaryDistribution q
-  i <- categorical d g
-  replicateM n $ simulateAlongProbTree i pt g
+  is <- replicateM n $ categorical d g
+  simulateAlongProbTree is pt g
   where pt = measureableTreeToProbTree q t
 
 measureableTreeToProbTree :: (Measurable a) => RateMatrix -> Tree a -> Tree ProbMatrix
 measureableTreeToProbTree q = fmap (probMatrix q . measure)
 
--- This is the heart of the simulation. Take a tree and a root state. If there
--- is a split (i.e., if we have a node and not a leaf), jump down the left
--- branch and populate and flatten the tree and jump down the right branch and
--- populate and flatten the tree and append the two results. This is what
--- 'liftM2' is doing, it lifts the append function of lists (++) to the 'Rand g'
--- monad. If we encounter a leaf, just return the node label (or whatever the
--- type a is) and the state that we ended up at.
-simulateAlongProbTree :: (PrimMonad m) => State -> Tree ProbMatrix -> Gen (PrimState m) -> m (Tree State)
-simulateAlongProbTree i (Node p f) g = do
-  i' <- jump i p g
-  f' <- sequence [simulateAlongProbTree i' t g | t <- f]
-  return $ Node i' f'
+-- This is the heart of the simulation. Take a tree and a list of root states.
+-- Recursively jump down the branches to the leafs.
+simulateAlongProbTree :: (PrimMonad m) => [State] -> Tree ProbMatrix -> Gen (PrimState m) -> m (Tree [State])
+simulateAlongProbTree is (Node p f) g = do
+  is' <- mapM (\i -> jump i p g) is
+  f' <- sequence [simulateAlongProbTree is' t g | t <- f]
+  return $ Node is' f'
 -- simulateAlongProbTree :: (PrimMonad m) => State -> Tree ProbMatrix -> Gen (PrimState m) -> m (Tree State)
 -- simulateAlongProbTree i (Node p f) g = return $ Node i []
 

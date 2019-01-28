@@ -26,6 +26,7 @@ module EvoMod.Data.Alphabet.Alphabet
   , codeNameVerbose
   , Alphabet (..)
   , alphabet
+  , cardinality
   )
 where
 
@@ -66,3 +67,7 @@ alphabet :: Code -> Alphabet
 alphabet DNA       = toAlphabet [(minBound :: Nucleotide) .. ]
 alphabet DNA_IUPAC = toAlphabet [(minBound :: NucleotideIUPAC) .. ]
 alphabet Protein   = toAlphabet [(minBound :: AminoAcid) .. ]
+
+-- | The cardinality of an alphabet is the number of entries.
+cardinality :: Alphabet -> Int
+cardinality = S.size . fromAlphabet

@@ -12,6 +12,8 @@ a tree with states according to a stationary distribution, etc.
 
 The implementation of the Markov process is more than basic and can be improved in a lot of ways.
 
+TODO: Create executable from this file.
+
 * Changelog
 
 -}
@@ -23,20 +25,25 @@ module EvoMod.Simulate.MultiSequenceAlignment
 import           Control.Monad.Primitive
 import           Data.Tree
 
+import qualified Data.ByteString.Lazy.Char8                  as B
+
 import           EvoMod.Data.RateMatrix.RateMatrix
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
+import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Data.Tree.MeasurableTree
--- import           EvoMod.Simulate.MarkovChainAlongTree
+import           EvoMod.Data.Tree.NamedTree
+import           EvoMod.Data.Tree.Tree
+import           EvoMod.Simulate.MarkovProcessAlongTree
+import           System.Random.MWC
 
--- TODO: Need IDs. Maybe create something link 'IdentifiableLabel' or 'HasID'.
-
--- On the other hand, I think that these cross module dependencies are very
--- bad. Maybe just leave the solution below.
-
--- MSA _ n
-
--- | Simulate a 'MultiSequenceAlignment' for a given substitution model with
--- given stationary distribution and a phylogenetic tree.
-simulateMSA :: (PrimMonad m, Measurable a) => Int -> RateMatrix -> StationaryDist -> Tree a -> m MultiSequenceAlignment
--- simulateMSA n q d t g = simulateNSitesAlongTree n q d t g
-simulateMSA = undefined
+-- | Simulate a 'MultiSequenceAlignment' for a given substitution model and
+-- phylogenetic tree.
+simulateMSA :: (PrimMonad m, Measurable a, Named a)
+            => Int -> RateMatrix -> Tree a -> Gen (PrimState m)
+            -> m MultiSequenceAlignment
+simulateMSA n q t g = do
+  statesTree <- simulateNSitesAlongTree n q t g
+  let leafNames = map name $ leafs t
+      leafStates = leafs statesTree
+      sequences = [ toSequence i (B.pack $ map toEnum ss) | (i, ss) <- zip leafNames leafStates ]
+  return $ fromSequenceList sequences

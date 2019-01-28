@@ -1,7 +1,6 @@
-{-# LANGUAGE BangPatterns #-}
 {- |
-Module      :  EvoMod.Simulate.MarkovChain
-Description :  Markov chain helpers
+Module      :  EvoMod.Simulate.MarkovProcess
+Description :  Markov process helpers
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -13,7 +12,7 @@ Creation date: Thu Jan 24 09:02:25 2019.
 
 -}
 
-module EvoMod.Simulate.MarkovChain
+module EvoMod.Simulate.MarkovProcess
   ( ProbMatrix
   , State
   , probMatrix
