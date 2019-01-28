@@ -14,7 +14,6 @@ XXX: This module is not used.
 
 -}
 
-
 module EvoMod.Data.Tree.EvoTree
   ( EvoLabel (..)
   ) where

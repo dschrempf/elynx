@@ -30,11 +30,6 @@ import           EvoMod.Data.RateMatrix.RateMatrix
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Simulate.MarkovProcess
 
--- -- | Convert a tree with branch lengths into a tree that has transition
--- -- probability matrices assigned to each of its branches.
--- branchLengthsToTransitionProbs :: RateMatrix -> RTree a Double -> RTree a ProbMatrix
--- branchLengthsToTransitionProbs m = fmap (probMatrix m)
-
 -- | Simulate a number of site for a given substitution model with given
 -- stationary distribution. The result is a tree with the list of simulated
 -- states as node labels.

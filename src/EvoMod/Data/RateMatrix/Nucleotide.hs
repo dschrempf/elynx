@@ -25,10 +25,11 @@ module EvoMod.Data.RateMatrix.Nucleotide
 import Numeric.LinearAlgebra
 
 import EvoMod.Data.RateMatrix.RateMatrix
-import EvoMod.Data.Alphabet.Alphabet
 
 n :: Int
-n = cardinality (alphabet DNA)
+-- n = cardinality (alphabet DNA)
+-- XXX: Hardcoded here, to reduce intermodule dependencies.
+n = 4
 
 -- Improve safety by constructing matrices from a set of rates between
 -- 'Nucleotide's.

@@ -21,38 +21,19 @@ module EvoMod.Export.Tree.Newick
   ( toNewickWith
   ) where
 
-import           Data.List                  (intersperse)
-
 import qualified Data.ByteString.Builder    as B
 import qualified Data.ByteString.Lazy.Char8 as B
-
+import           Data.List                  (intersperse)
 import           Data.Tree
 
 import           EvoMod.Tools               (c2w)
 
--- -- | Extract node information and branch length information from a phylogenetic tree.
--- class BuilderNode n where
---   labelBuilder        :: n -> B.Builder
---   branchLengthBuilder :: n -> B.Builder
+-- TODO: Test this. Maybe provide helper function that uses 'measure' and
+-- 'name', but this would radically increase intermodule dependencies.
 
--- -- | General conversion of a tree into a Newick string in form of a text object.
--- -- Use provided functions to convert node labels to node and branch length text
--- -- objects. See also Biobase.Newick.Export.
--- toNewick :: (BuilderNode a) => Tree a -> T.Text
--- toNewick t = T.toStrict $ B.toLazyText $ go t <> B.singleton ';'
---   where
---     go (Node l [])   = lbl l
---     go (Node l ts)   = B.singleton '('
---                        <> mconcat (intersperse (B.singleton ',') $ map go ts)
---                        <> B.singleton ')'
---                        <> lbl l
---     lbl l = labelBuilder l
---             <> B.singleton ':'
---             <> branchLengthBuilder l
-
--- | General conversion of a tree into a Newick string in form of a text object.
--- Use provided functions to extract node labels and branch lengths text builder
--- objects. See also Biobase.Newick.Export.
+-- | General conversion of a tree into a Newick 'Bytestring'. Use provided
+-- functions to extract node labels and branch lengths builder objects. See also
+-- Biobase.Newick.Export.
 toNewickWith :: (a -> B.Builder) -> (a -> B.Builder) -> Tree a -> B.ByteString
 toNewickWith labelBuilder branchLengthBuilder t =
   B.toLazyByteString $ go t <> B.word8 (c2w ';')

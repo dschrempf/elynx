@@ -30,14 +30,13 @@ module EvoMod.Import.Tree.Newick
   , branchLength
   ) where
 
-import           Text.Megaparsec
-import           Text.Megaparsec.Byte
-import           Text.Megaparsec.Byte.Lexer (decimal, float)
-
-import qualified Data.ByteString.Lazy            as B
+import qualified Data.ByteString.Lazy       as B
 import           Data.Tree
 import           Data.Void
 import           Data.Word
+import           Text.Megaparsec
+import           Text.Megaparsec.Byte
+import           Text.Megaparsec.Byte.Lexer (decimal, float)
 
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Tools               (c2w)

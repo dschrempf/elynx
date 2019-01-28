@@ -24,16 +24,16 @@ module EvoMod.Import.Sequence.Fasta
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8                  as B
-import qualified Data.Set                                    as S
+import qualified Data.ByteString.Lazy.Char8    as B
+import qualified Data.Set                      as S
 import           Data.Void
-import           Data.Word8                                  (Word8, toUpper)
+import           Data.Word8                    (Word8, toUpper)
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Sequence.Sequence
-import           EvoMod.Tools                                (c2w, w2c)
+import           EvoMod.Tools                  (c2w, w2c)
 
 -- | A shortcut.
 type Parser = Parsec Void B.ByteString

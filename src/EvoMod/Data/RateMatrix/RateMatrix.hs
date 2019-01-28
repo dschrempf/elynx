@@ -27,9 +27,10 @@ module EvoMod.Data.RateMatrix.RateMatrix
   )
 where
 
-import           EvoMod.Tools          (matrixSetDiagToZero, nearlyEq)
 import           Numeric.LinearAlgebra hiding (normalize)
 import           Prelude               hiding ((<>))
+
+import           EvoMod.Tools          (matrixSetDiagToZero, nearlyEq)
 
 -- | A rate matrix is just a real matrix.
 type RateMatrix = Matrix R

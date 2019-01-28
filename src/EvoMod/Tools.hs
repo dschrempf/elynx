@@ -55,16 +55,6 @@ alignLeft :: Int -> B.ByteString -> B.ByteString
 alignLeft n s = B.replicate (fromIntegral n - l) ' ' <> B.take (fromIntegral n) s
   where l = B.length s
 
--- -- | For a given width, align string to the right; trim on the left if string is
--- -- longer.
--- alignRightTrim :: Int -> String -> String
--- alignRightTrim n s = reverse . take n . reverse $ alignRight n s
-
--- -- | For a given width, align string to the left; trim on the right if string is
--- -- longer.
--- alignLeftTrim :: Int -> String -> String
--- alignLeftTrim n s = take n $ alignLeft n s
-
 -- | Test if all elements of a list are equal.
 allEqual :: Eq a => [a] -> Bool
 allEqual xs = all (== head xs) (tail xs)
@@ -110,10 +100,6 @@ compose = foldl (flip (.)) id
 -- | Get all values of a bounded enumerated type.
 allValues :: (Bounded a, Enum a) => [a]
 allValues = [minBound..]
-
--- -- | Get all values of a bounded enumerated type.
--- allValues :: (Bounded a, Enum a) => [a]
--- allValues = [minBound..]
 
 -- -- | Calculate the nth harmonic number.
 -- harmonic :: Int -> Double

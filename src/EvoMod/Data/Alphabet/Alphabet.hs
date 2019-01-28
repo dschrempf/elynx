@@ -27,6 +27,8 @@ module EvoMod.Data.Alphabet.Alphabet
   , Alphabet (..)
   , alphabet
   , cardinality
+  , cardinalityFromCode
+  , indexToCharacter
   , indicesToCharacters
   )
 where
@@ -73,7 +75,14 @@ alphabet Protein   = toAlphabet [(minBound :: AminoAcid) .. ]
 cardinality :: Alphabet -> Int
 cardinality = S.size . fromAlphabet
 
+-- | Number of characters
+cardinalityFromCode :: Code -> Int
+cardinalityFromCode = cardinality . alphabet
+
+-- | Convert integer index to 'Character'.
+indexToCharacter :: Code -> Int -> Word8
+indexToCharacter c i = S.elemAt i (fromAlphabet . alphabet $ c)
+
 -- | Convert a set of integer indices to 'Character's.
 indicesToCharacters :: Code -> [Int] -> [Word8]
-indicesToCharacters c = map (`S.elemAt` al)
-  where al = fromAlphabet . alphabet $ c
+indicesToCharacters c = map (indexToCharacter c)
