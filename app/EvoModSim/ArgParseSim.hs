@@ -36,8 +36,8 @@ import           EvoMod.Tools
 
 type MegaParser = Parsec Void String
 
--- Convenience function to read in more complicated command line options with
--- attoparsec and optparse
+-- Ugly convenience function to read in more complicated command line options
+-- with megaparsec and optparse
 -- (https://github.com/pcapriotti/optparse-applicative#option-readers).
 megaReadM :: MegaParser a -> ReadM a
 megaReadM p = eitherReader $ \input ->
@@ -48,10 +48,11 @@ megaReadM p = eitherReader $ \input ->
       Right a -> Right a
 
 data SubstModel = SubstModel
-  { mCode       :: Code
-  , mName       :: String
-  , mParams     :: [Double]
-  , mRateMatrix :: RateMatrix
+  { mCode           :: Code
+  , mName           :: String
+  , mParams         :: [Double]
+  , mStationaryDist :: StationaryDist
+  , mRateMatrix     :: RateMatrix
   }
 
 data EvoModSimArgs = EvoModSimArgs
@@ -114,14 +115,17 @@ parseSubstModel :: MegaParser SubstModel
 parseSubstModel = do
   m  <- takeWhile1P (Just "ModelName") (/= '[')
   case m of
-       "JC" -> return $ SubstModel DNA m [] jc
+       "JC" -> do
+         let n = cardinality (alphabet DNA)
+             f = vector $ replicate n (1 / fromIntegral n)
+         return $ SubstModel DNA m [] f jc
        "HKY" -> do
          let n = cardinality (alphabet DNA)
          ps <- parseParams
          f  <- parseStateFreq n
          if length ps /= 1
            then error "HKY model only has one parameter, kappa."
-           else return $ SubstModel DNA m ps (hky (head ps) f)
+           else return $ SubstModel DNA m ps f (hky (head ps) f)
        -- "GTR" -> do
        --   ps <- parseParams
        --   f  <- parseStateFreq

@@ -22,9 +22,9 @@ module EvoMod.Data.RateMatrix.Nucleotide
   , hky
   ) where
 
-import Numeric.LinearAlgebra
+import           Numeric.LinearAlgebra             hiding (normalize)
 
-import EvoMod.Data.RateMatrix.RateMatrix
+import           EvoMod.Data.RateMatrix.RateMatrix
 
 n :: Int
 -- n = cardinality (alphabet DNA)
@@ -39,7 +39,7 @@ n = 4
 
 -- | JC model.
 jc :: RateMatrix
-jc = setDiagonal $ (n><n)
+jc = normalize $ setDiagonal $ (n><n)
      [ 0.0, 1.0, 1.0, 1.0
      , 1.0, 0.0, 1.0, 1.0
      , 1.0, 1.0, 0.0, 1.0

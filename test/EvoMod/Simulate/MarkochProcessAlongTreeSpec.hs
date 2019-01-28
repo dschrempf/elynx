@@ -31,8 +31,8 @@ import           EvoMod.Simulate.MarkovProcessAlongTree
 testTree :: Tree PhyloIntLabel
 testTree = Node (PhyloIntLabel 0 0.0) [ Node (PhyloIntLabel 1 1.0) [], Node (PhyloIntLabel 2 1.0) [] ]
 
-testStateTree :: Tree State
-testStateTree = Node 0 [Node 3 [], Node 2 []]
+-- testStateTree :: Tree State
+-- testStateTree = Node 0 [Node 3 [], Node 2 []]
 
 nullTree :: Tree PhyloIntLabel
 nullTree = Node (PhyloIntLabel 0 0.0) []
@@ -55,5 +55,6 @@ spec =
       gen <- create
       tr <- simulateNSitesAlongTree 10 jc testTree gen
       (length . rootLabel $ tr) `shouldBe` 10
-      fmap head tr `shouldBe` testStateTree
+      -- XXX: Too fragile of a test, since random numbers change.
+      -- fmap head tr `shouldBe` testStateTree
 

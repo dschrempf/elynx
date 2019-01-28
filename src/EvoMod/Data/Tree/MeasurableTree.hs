@@ -17,10 +17,13 @@ module EvoMod.Data.Tree.MeasurableTree
   ( Measurable (..)
   , totalBranchLength
   , height
+  , summarize
   ) where
 
 import           Data.Foldable
 import           Data.Tree
+
+import           EvoMod.Data.Tree.Tree
 
 -- | A 'Node' label with measurable branch length to the parent.
 class Measurable a where
@@ -38,3 +41,16 @@ distancesRootLeaves (Node l f ) = concatMap (map (+ measure l) . distancesRootLe
 -- | Height of a tree.
 height :: (Measurable a) => Tree a -> Double
 height = maximum . distancesRootLeaves
+
+-- | Summarize a tree with measureable branch lengths.
+summarize :: (Measurable a) => Tree a -> String
+summarize t = unlines [ "Leafs: " ++ show n ++ "."
+                      , "Height: " ++ show h ++ "."
+                      , "Average distance root to leafs: " ++ show h' ++ "."
+                      , "Total branch length: " ++ show b ++ "."
+                      ]
+  where n = length . leafs $ t
+        h = height t
+        b = totalBranchLength t
+        h' = (sum $ distancesRootLeaves t) / fromIntegral n
+

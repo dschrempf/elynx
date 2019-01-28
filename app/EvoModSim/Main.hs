@@ -48,10 +48,10 @@ simulateMSA :: (PrimMonad m, Measurable a, Named a)
             -> m MultiSequenceAlignment
 simulateMSA c n q t g = do
   statesTree <- simulateNSitesAlongTree n q t g
-  let leafNames = map name $ leafs t
+  let leafNames  = map name $ leafs t
       leafStates = leafs statesTree
-      sequences = [ toSequence i (B.pack $ indicesToCharacters c ss) |
-                    (i, ss) <- zip leafNames leafStates ]
+      sequences  = [ toSequence sId (B.pack $ indicesToCharacters c ss) |
+                    (sId, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
 
 main :: IO ()
@@ -59,23 +59,23 @@ main = do (EvoModSimArgs trFn q outFn sm len mSeed) <- parseEvoModSimArgs
           unless q $ do
             p  <- getProgName
             as <- getArgs
-            putStrLn evoModHeader
+            putStr evoModHeader
             putStrLn $ "Command line: " ++ p ++ " " ++ unwords as
             putStrLn ""
             putStrLn "Read tree."
           tree <- parseFileWith newick trFn
           unless q $ do
-            -- TODO: Summarize tree (library function to write, call here).
-            -- putStrLn $ show tree
+            putStr $ summarize tree
             putStrLn ""
-            putStrLn "Substitution model:"
+            putStrLn "Substitution model."
             putStrLn $ "Code: " ++ show (mCode sm) ++ "."
-            putStrLn $ "Name: " ++ show (mName sm) ++ "."
+            putStrLn $ "Name: " ++ mName sm ++ "."
             putStrLn $ "Parameters: " ++ show (mParams sm) ++ "."
+            putStrLn $ "Stationary frequencies: " ++ show (mStationaryDist sm) ++ "."
             -- XXX: This will be very verbose with amino acids or codons.
             putStrLn $ "Rate matrix: " ++ show (mRateMatrix sm) ++ "."
             putStrLn ""
-            putStrLn "Simualte alignment."
+            putStrLn "Simulate alignment."
             putStrLn $ "Length: " ++ show len ++ "."
           g <- case mSeed of
                Nothing -> createSystemRandom
