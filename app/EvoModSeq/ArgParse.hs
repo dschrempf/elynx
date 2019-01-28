@@ -14,10 +14,10 @@ Creation date: Sun Oct  7 17:29:45 2018.
 
 
 module ArgParse
-  ( EvoModIOArgs (..)
+  ( EvoModSeqArgs (..)
   , Command (..)
   , evoModHeader
-  , parseEvoModIOArgs
+  , parseEvoModSeqArgs
   ) where
 
 import           Control.Applicative
@@ -33,7 +33,7 @@ data Command = Summarize
              | Filter { longer  :: Maybe Int
                       , shorter :: Maybe Int}
 
-data EvoModIOArgs = EvoModIOArgs
+data EvoModSeqArgs = EvoModSeqArgs
                   {
                     argsCommand     :: Command
                   , argsAlphabet    :: Code
@@ -42,8 +42,8 @@ data EvoModIOArgs = EvoModIOArgs
                   , argsFileNames   :: [String]
                   }
 
-evolIOOpts :: Parser EvoModIOArgs
-evolIOOpts = EvoModIOArgs
+evolIOOpts :: Parser EvoModSeqArgs
+evolIOOpts = EvoModSeqArgs
   <$> commandArg
   <*> alphabetOpt
   <*> fileNameOutOpt
@@ -146,8 +146,8 @@ evoModFooterDoc :: Doc
 evoModFooterDoc = vcat $ map pretty evoModFooters
 
 -- | Read the arguments and prints out help if needed.
-parseEvoModIOArgs :: IO EvoModIOArgs
-parseEvoModIOArgs = execParser $
+parseEvoModSeqArgs :: IO EvoModSeqArgs
+parseEvoModSeqArgs = execParser $
   info (helper <*> versionOpt <*> evolIOOpts)
   (fullDesc
     <> progDesc evoModDescription

@@ -21,16 +21,19 @@ test_build() {
 }
 # export -f test_build
 
-flags=()
-
-if [[ $1 == "test" ]];
+flags=(--fast)
+if [[ $1 == "prod" ]]
 then
-    flags=(--fast); test_build
-else
-    normal_build
-    profile_build
-    flags=(--fast); test_build
+    flags=()
+elif [[ $1 == "test" ]]
+then
+    test_build
+    exit 0
 fi
+
+normal_build
+profile_build
+test_build
 
 # Run the build in parallel but output is not colored.
 # parallel {} ::: normal_build profile_build test_build || exit 1

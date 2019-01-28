@@ -43,10 +43,6 @@ probMatrix q t | t == 0 = if rows q == cols q
                | t < 0 = error "Time is negative."
                | otherwise = expm $ scale t q
 
--- TODO: Write storable instance, compilation is really slow otherwise.
--- instance Storable (Int, R) where
---   sizeOf (x, y) = sizeOf x + sizeOf y
-
 -- | Move from a given state to a new one according to a transition probability
 -- matrix (for performance reasons this probability matrix needs to be given as
 -- a list of generators, see
@@ -55,7 +51,16 @@ probMatrix q t | t == 0 = if rows q == cols q
 -- computation time. However, I was not able to find a faster implementation
 -- than the one from Data.Distribution.
 --
--- -- TODO: Do not generate table for each jump.
+jump :: (PrimMonad m) => State -> ProbMatrix -> Gen (PrimState m) -> m State
+jump i p = categorical (p ! i)
+
+-- XXX: Maybe for later, use condensed tables.
+--
+-- Write storable instance, compilation is really slow otherwise. instance
+-- Storable (Int, R) where sizeOf (x, y) = sizeOf x + sizeOf y
+--
+-- Do not generate table for each jump.
+--
 -- jump :: (PrimMonad m) => State -> ProbMatrix -> Gen (PrimState m) -> m State
 -- jump i p = genFromTable table
 --   where
@@ -63,8 +68,6 @@ probMatrix q t | t == 0 = if rows q == cols q
 --     vsAndWs = fromList [ (v, w) | (v, w) <- zip [(0 :: Int) ..] ws
 --                                 , w > 0 ]
 --     table = tableFromProbabilities vsAndWs
-jump :: (PrimMonad m) => State -> ProbMatrix -> Gen (PrimState m) -> m State
-jump i p = categorical (p ! i)
 
 -- -- | Perform N jumps from a given state and according to a transition
 -- -- probability matrix transformed to a list of generators. This implementation

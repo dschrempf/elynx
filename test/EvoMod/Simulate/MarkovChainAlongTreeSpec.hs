@@ -16,7 +16,7 @@ module EvoMod.Simulate.MarkovChainAlongTreeSpec
 
 -- import qualified Data.Text                            as T
 import           Data.Tree
-import           Numeric.LinearAlgebra
+-- import           Numeric.LinearAlgebra
 import           System.Random.MWC
 import           Test.Hspec
 
@@ -40,20 +40,20 @@ nullTree = Node (PhyloIntLabel 0 0.0) []
 nullStateTree :: Tree State
 nullStateTree = fmap (const 0) nullTree
 
-uniformStationaryDistribution :: Int -> Vector R
-uniformStationaryDistribution n = fromList $ replicate n (1.0 / fromIntegral n)
+-- uniformStationaryDistribution :: Int -> Vector R
+-- uniformStationaryDistribution n = fromList $ replicate n (1.0 / fromIntegral n)
 
 spec :: Spec
 spec =
   describe "simulateNSitesAlongTree" $ do
     it "simulates one site along an easy tree" $ do
       gen <- create
-      trs <- simulateNSitesAlongTree 1 jc (uniformStationaryDistribution 4) nullTree gen
+      trs <- simulateNSitesAlongTree 1 jc nullTree gen
       head trs `shouldBe` nullStateTree
 
     it "simulates some sites along a harder tree" $ do
       gen <- create
-      trs <- simulateNSitesAlongTree 10 jc (uniformStationaryDistribution 4) testTree gen
+      trs <- simulateNSitesAlongTree 10 jc testTree gen
       length trs `shouldBe` 10
       head trs `shouldBe` testStateTree
 

@@ -65,12 +65,17 @@ fromExchMatrix em d = normalizeRates d $ setDiagonal $ em <> diag d
 
 
 -- | Get stationary distribution from 'RateMatrix'. Involves eigendecomposition.
--- Is there an easier way?
-getStationaryDistribution :: RateMatrix -> Maybe StationaryDist
+-- If the given matrix does not satisfy the required properties of transition
+-- rate matrices and no eigenvector with an eigenvalue nearly equal to 0 is
+-- found, an error is thrown. Is there an easier way to calculate the stationary
+-- distribution or a better way to handle errors (of course I could use the
+-- Maybe monad, but then the error report is just delayed to the calling
+-- function)?
+getStationaryDistribution :: RateMatrix -> StationaryDist
 getStationaryDistribution m =
   if magnitude (eVals ! i) `nearlyEq` 0
-  then return $ cmap (/ norm1) distReal
-  else Nothing
+  then cmap (/ norm1) distReal
+  else error "Could not retrieve stationary distribution."
     where
       (eVals, eVecs) = eig (tr m)
       i = minIndex eVals

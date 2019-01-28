@@ -14,11 +14,12 @@ Creation date: Fri Oct  5 08:41:05 2018.
 
 module Main where
 
+import           ArgParse
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.Maybe                    (fromMaybe)
-
-import           ArgParse
+import qualified System.Environment            as Sys
+import           System.IO
 
 import           EvoMod.Data.Sequence.Filter
 import           EvoMod.Data.Sequence.Sequence
@@ -38,19 +39,25 @@ act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
   where filters = map (fromMaybe id) [ filterLongerThan <$> ml
                                     , filterShorterThan <$> ms ]
 
-io :: Maybe String -> Either String B.ByteString-> IO ()
-io _        (Left  s) = putStrLn s
-io Nothing  (Right b) = B.putStr b
-io (Just f) (Right b) = B.writeFile f b
+io :: Either String B.ByteString -> Handle -> IO ()
+io (Left  s)   _ = putStrLn s
+io (Right res) h = B.hPutStr h res
 
 main :: IO ()
-main = do (EvoModIOArgs cmd c mofn q fns) <- parseEvoModIOArgs
+main = do (EvoModSeqArgs cmd c mofn q fns) <- parseEvoModSeqArgs
+          p  <- Sys.getProgName
+          as <- Sys.getArgs
           unless q $ do
             putStrLn evoModHeader
+            putStrLn $ "Command line: " ++ p ++ " " ++ unwords as
             putStrLn "Read fasta file."
             putStrLn $ "Code: " ++ show c ++ "."
-          -- 'sss' is a little weird, but IT IS a list of a list of sequences.
+            putStrLn ""
+          -- 'sss' is a little weird, but it is a list of a list of sequences.
           sss <- sequence $ parseFileWith (fasta c) <$> fns
           let eRes = act cmd sss
-          io mofn eRes
-          -- unless q $ putStrLn ""
+          case mofn of
+            Nothing -> io eRes stdout
+            Just fn -> do
+              unless q $ putStrLn ("Results written to file " ++ fn ++ ".")
+              withFile fn WriteMode (io eRes)

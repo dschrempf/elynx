@@ -36,13 +36,11 @@ import           EvoMod.Simulate.MarkovChain
 -- branchLengthsToTransitionProbs m = fmap (probMatrix m)
 
 -- | Simulate a number of site for a given substitution model with given
--- stationary distribution.
---
--- TODO: Extract stationary distribution.
---
--- The result is a set of trees with the simulated states as node labels.
-simulateNSitesAlongTree :: (PrimMonad m, Measurable a) => Int -> RateMatrix -> StationaryDist -> Tree a -> Gen (PrimState m) -> m [Tree State]
-simulateNSitesAlongTree n q d t g = do
+-- stationary distribution. The result is a set of trees with the simulated
+-- states as node labels.
+simulateNSitesAlongTree :: (PrimMonad m, Measurable a) => Int -> RateMatrix -> Tree a -> Gen (PrimState m) -> m [Tree State]
+simulateNSitesAlongTree n q t g = do
+  let d = getStationaryDistribution q
   i <- categorical d g
   replicateM n $ simulateAlongProbTree i pt g
   where pt = measureableTreeToProbTree q t
