@@ -63,6 +63,13 @@ executables:
     dependencies:
       - evomod
 
+  evomod-sim:
+    <<: *defaults
+    main:                Main.hs
+    source-dirs:         app/EvoModSim
+    dependencies:
+      - evomod
+
 tests:
   evomod-test:
     <<: *defaults

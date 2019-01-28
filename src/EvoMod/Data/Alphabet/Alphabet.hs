@@ -27,6 +27,7 @@ module EvoMod.Data.Alphabet.Alphabet
   , Alphabet (..)
   , alphabet
   , cardinality
+  , indicesToCharacters
   )
 where
 
@@ -71,3 +72,8 @@ alphabet Protein   = toAlphabet [(minBound :: AminoAcid) .. ]
 -- | The cardinality of an alphabet is the number of entries.
 cardinality :: Alphabet -> Int
 cardinality = S.size . fromAlphabet
+
+-- | Convert a set of integer indices to 'Character's.
+indicesToCharacters :: Code -> [Int] -> [Word8]
+indicesToCharacters c = map (`S.elemAt` al)
+  where al = fromAlphabet . alphabet $ c

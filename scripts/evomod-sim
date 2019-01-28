@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+source include
+./build || exit 1
+
+file_tree=../data/Newick.tree
+
+msg "EvoMode-Sim."
+stack exec evomod-sim -- \
+      -t $file_tree -o evomod-sim.out -m "HKY[6.0][0.2,0.3,0.3,0.2]" -l 10000 -s [0] || exit 1

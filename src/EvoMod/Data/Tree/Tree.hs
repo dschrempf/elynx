@@ -51,6 +51,7 @@ singleton l = Node l []
 degree :: Tree a -> Int
 degree = (+ 1) . length . subForest
 
+-- | Get leafs of tree.
 leafs :: Tree a -> [a]
 leafs (Node l []) = [l]
 leafs (Node _ f)  = concatMap leafs f

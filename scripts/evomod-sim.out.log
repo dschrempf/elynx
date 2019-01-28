@@ -1,0 +1,224 @@
+IQ-TREE multicore version 1.6.9 for Linux 64-bit built Jan  9 2019
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor,
+Heiko Schmidt, Dominik Schrempf, Michael Woodhams.
+
+Host:    schwarzbaer (AVX2, FMA3, 15 GB RAM)
+Command: iqtree -m HKY -s evomod-sim.out
+Seed:    45133 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Mon Jan 28 16:46:53 2019
+Kernel:  AVX+FMA - 1 threads (4 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 4 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file evomod-sim.out ... Fasta format detected
+Alignment most likely contains DNA/RNA sequences
+Alignment has 40 sequences with 10000 columns, 10000 distinct patterns
+9994 parsimony-informative, 6 singleton sites, 0 constant sites
+            Gap/Ambiguity  Composition  p-value
+   1  Aeropyrum0    0.00%    passed     61.36%
+   2  Arabidopsi    0.00%    passed     24.56%
+   3  Oryza_sati    0.00%    passed     40.49%
+   4  Gymnosperm    0.00%    passed     50.54%
+   5  Physcomitr    0.00%    passed     53.86%
+   6  Chlamydomo    0.00%    passed     95.87%
+   7  Dunaliella    0.00%    passed     59.77%
+   8  Rhodophyta    0.00%    passed     74.45%
+   9  Babesia_bo    0.00%    passed     28.41%
+  10  Theileria0    0.00%    passed     80.16%
+  11  Plasmodium    0.00%    passed     89.64%
+  12  Toxoplasma    0.00%    passed     69.65%
+  13  Eimeria000    0.00%    passed     77.54%
+  14  Cryptospor    0.00%    passed     24.00%
+  15  Ciliophora    0.00%    passed     81.54%
+  16  Phytophtho    0.00%    passed     40.73%
+  17  Thalassios    0.00%    passed     97.23%
+  18  Phaeodacty    0.00%    passed     66.33%
+  19  Phaeophyce    0.00%    passed     88.88%
+  20  Candida_al    0.00%    passed     92.70%
+  21  Saccharomy    0.00%    passed     23.64%
+  22  Neurospora    0.00%    passed     36.80%
+  23  Schizosacc    0.00%    passed     90.05%
+  24  Cryptococc    0.00%    passed     68.74%
+  25  Ustilago_m    0.00%    passed     70.25%
+  26  Glomus_int    0.00%    passed     83.55%
+  27  Chytridiom    0.00%    passed     25.08%
+  28  Encephalit    0.00%    passed     53.30%
+  29  Drosophila    0.00%    passed     74.00%
+  30  Mammalians    0.00%    passed     68.39%
+  31  Tunicates0    0.00%    passed     74.97%
+  32  Hydrozoa00    0.00%    passed     98.33%
+  33  Monosiga_b    0.00%    passed     78.69%
+  34  Dictyostel    0.00%    passed     53.04%
+  35  Mastigamoe    0.00%    passed     90.37%
+  36  Archaeoglo    0.00%    passed     67.23%
+  37  Methanococ    0.00%    passed     40.13%
+  38  Pyrococcus    0.00%    passed     39.21%
+  39  Pyrobaculu    0.00%    passed     36.41%
+  40  Sulfolobus    0.00%    passed     37.26%
+****  TOTAL         0.00%  0 sequences failed composition chi2 test (p-value<5%; df=3)
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 0.032 seconds
+
+NOTE: 12 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.100)
+1. Initial log-likelihood: -365191.988
+2. Current log-likelihood: -352103.506
+3. Current log-likelihood: -340676.866
+4. Current log-likelihood: -336917.998
+5. Current log-likelihood: -336462.051
+6. Current log-likelihood: -336437.328
+7. Current log-likelihood: -336436.297
+Optimal log-likelihood: -336436.225
+Rate parameters:  A-C: 1.00000  A-G: 6.04880  A-T: 1.00000  C-G: 1.00000  C-T: 6.04880  G-T: 1.00000
+Base frequencies:  A: 0.200  C: 0.301  G: 0.299  T: 0.199
+Parameters optimization took 7 rounds (1.297 sec)
+Computing ML distances based on estimated model parameters... 0.130 sec
+Computing BIONJ tree...
+0.001 seconds
+Log-likelihood of BIONJ tree: -336239.510
+--------------------------------------------------------------------
+|             INITIALIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Generating 98 parsimony trees... 3.112 second
+
+******************************************************
+CHECKPOINT: Resuming analysis from evomod-sim.out.ckp.gz
+
+IQ-TREE multicore version 1.6.9 for Linux 64-bit built Jan  9 2019
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor,
+Heiko Schmidt, Dominik Schrempf, Michael Woodhams.
+
+Host:    schwarzbaer (AVX2, FMA3, 15 GB RAM)
+Command: iqtree -nt 4 -m HKY -s evomod-sim.out
+Seed:    14077 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Mon Jan 28 16:47:02 2019
+Kernel:  AVX+FMA - 4 threads (4 CPU cores detected)
+
+WARNING: Command-line argument `-nt` differs from checkpoint `-m`
+WARNING: Command-line argument `4` differs from checkpoint `HKY`
+WARNING: Command-line argument `-m` differs from checkpoint `-s`
+WARNING: Command-line argument `HKY` differs from checkpoint `evomod-sim.out`
+WARNING: Number of command-line arguments differs from checkpoint
+WARNING: Command-line differs from checkpoint!
+Reading alignment file evomod-sim.out ... Fasta format detected
+Alignment most likely contains DNA/RNA sequences
+Alignment has 40 sequences with 10000 columns, 10000 distinct patterns
+9994 parsimony-informative, 6 singleton sites, 0 constant sites
+            Gap/Ambiguity  Composition  p-value
+   1  Aeropyrum0    0.00%    passed     61.36%
+   2  Arabidopsi    0.00%    passed     24.56%
+   3  Oryza_sati    0.00%    passed     40.49%
+   4  Gymnosperm    0.00%    passed     50.54%
+   5  Physcomitr    0.00%    passed     53.86%
+   6  Chlamydomo    0.00%    passed     95.87%
+   7  Dunaliella    0.00%    passed     59.77%
+   8  Rhodophyta    0.00%    passed     74.45%
+   9  Babesia_bo    0.00%    passed     28.41%
+  10  Theileria0    0.00%    passed     80.16%
+  11  Plasmodium    0.00%    passed     89.64%
+  12  Toxoplasma    0.00%    passed     69.65%
+  13  Eimeria000    0.00%    passed     77.54%
+  14  Cryptospor    0.00%    passed     24.00%
+  15  Ciliophora    0.00%    passed     81.54%
+  16  Phytophtho    0.00%    passed     40.73%
+  17  Thalassios    0.00%    passed     97.23%
+  18  Phaeodacty    0.00%    passed     66.33%
+  19  Phaeophyce    0.00%    passed     88.88%
+  20  Candida_al    0.00%    passed     92.70%
+  21  Saccharomy    0.00%    passed     23.64%
+  22  Neurospora    0.00%    passed     36.80%
+  23  Schizosacc    0.00%    passed     90.05%
+  24  Cryptococc    0.00%    passed     68.74%
+  25  Ustilago_m    0.00%    passed     70.25%
+  26  Glomus_int    0.00%    passed     83.55%
+  27  Chytridiom    0.00%    passed     25.08%
+  28  Encephalit    0.00%    passed     53.30%
+  29  Drosophila    0.00%    passed     74.00%
+  30  Mammalians    0.00%    passed     68.39%
+  31  Tunicates0    0.00%    passed     74.97%
+  32  Hydrozoa00    0.00%    passed     98.33%
+  33  Monosiga_b    0.00%    passed     78.69%
+  34  Dictyostel    0.00%    passed     53.04%
+  35  Mastigamoe    0.00%    passed     90.37%
+  36  Archaeoglo    0.00%    passed     67.23%
+  37  Methanococ    0.00%    passed     40.13%
+  38  Pyrococcus    0.00%    passed     39.21%
+  39  Pyrobaculu    0.00%    passed     36.41%
+  40  Sulfolobus    0.00%    passed     37.26%
+****  TOTAL         0.00%  0 sequences failed composition chi2 test (p-value<5%; df=3)
+
+CHECKPOINT: Initial tree restored
+
+NOTE: 12 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.100)
+1. Initial log-likelihood: -365191.988
+2. Current log-likelihood: -352103.506
+3. Current log-likelihood: -340676.866
+4. Current log-likelihood: -336917.998
+5. Current log-likelihood: -336462.051
+6. Current log-likelihood: -336437.328
+7. Current log-likelihood: -336436.297
+Optimal log-likelihood: -336436.225
+Rate parameters:  A-C: 1.00000  A-G: 6.04880  A-T: 1.00000  C-G: 1.00000  C-T: 6.04880  G-T: 1.00000
+Base frequencies:  A: 0.200  C: 0.301  G: 0.299  T: 0.199
+Parameters optimization took 7 rounds (0.852 sec)
+Computing ML distances based on estimated model parameters... 0.261 sec
+Computing BIONJ tree...
+0.001 seconds
+Log-likelihood of BIONJ tree: -336239.510
+--------------------------------------------------------------------
+|             INITIALIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Generating 98 parsimony trees... 3.026 second
+Computing log-likelihood of 98 initial trees ... 4.450 seconds
+Current best score: -336239.510
+
+Do NNI search on 20 best initial trees
+Estimate model parameters (epsilon = 0.100)
+BETTER TREE FOUND at iteration 1: -336233.792
+Iteration 10 / LogL: -336238.630 / Time: 0h:0m:12s
+Iteration 20 / LogL: -336240.850 / Time: 0h:0m:16s
+Finish initializing candidate tree set (1)
+Current best tree score: -336233.792 / CPU time: 15.922
+Number of iterations: 20
+--------------------------------------------------------------------
+|               OPTIMIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Iteration 30 / LogL: -336254.542 / Time: 0h:0m:20s (0h:0m:51s left)
+Iteration 40 / LogL: -336233.860 / Time: 0h:0m:24s (0h:0m:38s left)
+Iteration 50 / LogL: -336235.582 / Time: 0h:0m:27s (0h:0m:29s left)
+Iteration 60 / LogL: -336235.831 / Time: 0h:0m:31s (0h:0m:22s left)
+Iteration 70 / LogL: -336245.537 / Time: 0h:0m:35s (0h:0m:15s left)
+Iteration 80 / LogL: -336258.201 / Time: 0h:0m:38s (0h:0m:10s left)
+Iteration 90 / LogL: -336236.512 / Time: 0h:0m:42s (0h:0m:5s left)
+Iteration 100 / LogL: -336237.455 / Time: 0h:0m:46s (0h:0m:0s left)
+TREE SEARCH COMPLETED AFTER 102 ITERATIONS / Time: 0h:0m:46s
+
+--------------------------------------------------------------------
+|                    FINALIZING TREE SEARCH                        |
+--------------------------------------------------------------------
+Performs final model parameters optimization
+Estimate model parameters (epsilon = 0.010)
+1. Initial log-likelihood: -336233.792
+2. Current log-likelihood: -336233.776
+Optimal log-likelihood: -336233.772
+Rate parameters:  A-C: 1.00000  A-G: 6.05647  A-T: 1.00000  C-G: 1.00000  C-T: 6.05647  G-T: 1.00000
+Base frequencies:  A: 0.200  C: 0.301  G: 0.299  T: 0.199
+Parameters optimization took 2 rounds (0.203 sec)
+BEST SCORE FOUND : -336233.772
+Total tree length: 15.688
+
+Total number of iterations: 102
+CPU time used for tree search: 172.734 sec (0h:2m:52s)
+Wall-clock time used for tree search: 45.915 sec (0h:0m:45s)
+Total CPU time used: 177.619 sec (0h:2m:57s)
+Total wall-clock time used: 47.219 sec (0h:0m:47s)
+
+Analysis results written to: 
+  IQ-TREE report:                evomod-sim.out.iqtree
+  Maximum-likelihood tree:       evomod-sim.out.treefile
+  Likelihood distances:          evomod-sim.out.mldist
+  Screen log file:               evomod-sim.out.log
+
+Date and Time: Mon Jan 28 16:47:49 2019

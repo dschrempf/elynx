@@ -25,7 +25,6 @@ module EvoMod.Data.RateMatrix.Nucleotide
 import Numeric.LinearAlgebra
 
 import EvoMod.Data.RateMatrix.RateMatrix
--- import EvoMod.Data.Alphabet.Nucleotide
 import EvoMod.Data.Alphabet.Alphabet
 
 n :: Int

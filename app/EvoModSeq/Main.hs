@@ -14,13 +14,15 @@ Creation date: Fri Oct  5 08:41:05 2018.
 
 module Main where
 
-import           ArgParse
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.Maybe                    (fromMaybe)
 import qualified System.Environment            as Sys
 import           System.IO
 
+import           ArgParseSeq
+
+import           EvoMod.ArgParse
 import           EvoMod.Data.Sequence.Filter
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Export.Sequence.Fasta
@@ -45,9 +47,9 @@ io (Right res) h = B.hPutStr h res
 
 main :: IO ()
 main = do (EvoModSeqArgs cmd c mofn q fns) <- parseEvoModSeqArgs
-          p  <- Sys.getProgName
-          as <- Sys.getArgs
           unless q $ do
+            p  <- Sys.getProgName
+            as <- Sys.getArgs
             putStrLn evoModHeader
             putStrLn $ "Command line: " ++ p ++ " " ++ unwords as
             putStrLn "Read fasta file."
@@ -59,5 +61,5 @@ main = do (EvoModSeqArgs cmd c mofn q fns) <- parseEvoModSeqArgs
           case mofn of
             Nothing -> io eRes stdout
             Just fn -> do
-              unless q $ putStrLn ("Results written to file " ++ fn ++ ".")
+              unless q $ putStrLn ("Results written to file '" ++ fn ++ "'.")
               withFile fn WriteMode (io eRes)
