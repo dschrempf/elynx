@@ -29,6 +29,10 @@ then
     test_build
 elif [[ $1 == "prod" ]]
 then
+    # # Seemed to be necessary at some point.
+    # rm -r .stack-work || exit 1
+    # rm -r .stack-work-profiling || exit 1
+    # rm -r .stack-work-testing || exit 1
     flags=()
     normal_build
     profile_build

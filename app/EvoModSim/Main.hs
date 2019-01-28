@@ -78,12 +78,13 @@ main = do (EvoModSimArgs trFn q outFn sm len mSeed) <- parseEvoModSimArgs
             putStrLn "Simulate alignment."
             putStrLn $ "Length: " ++ show len ++ "."
           g <- case mSeed of
-               Nothing -> createSystemRandom
-               Just s  -> initialize (V.fromList s)
-          case mSeed of
-            Nothing -> putStrLn "Seed: random."
-            Just s  -> putStrLn $ "Seed: " ++ show s ++ "."
+            Nothing -> putStrLn "Seed: random"
+                       >> createSystemRandom
+            Just s  -> putStrLn ("Seed: " ++ show s ++ ".")
+                       >> initialize (V.fromList s)
           msa <- simulateMSA (mCode sm) len (mRateMatrix sm) tree g
           let output = sequencesToFasta $ msaSequences msa
           B.writeFile outFn output
-          unless q $ putStrLn ("Output written to file '" ++ outFn ++ "'.")
+          unless q $ do
+            putStrLn ""
+            putStrLn ("Output written to file '" ++ outFn ++ "'.")

@@ -31,7 +31,7 @@ import           EvoMod.Tools               (c2w)
 -- TODO: Test this. Maybe provide helper function that uses 'measure' and
 -- 'name', but this would radically increase intermodule dependencies.
 
--- | General conversion of a tree into a Newick 'Bytestring'. Use provided
+-- | General conversion of a tree into a Newick 'B.Bytestring'. Use provided
 -- functions to extract node labels and branch lengths builder objects. See also
 -- Biobase.Newick.Export.
 toNewickWith :: (a -> B.Builder) -> (a -> B.Builder) -> Tree a -> B.ByteString
