@@ -24,7 +24,6 @@ module EvoMod.Tools
   , runParserOnFile
   , parseFileWith
   , parseByteStringWith
-  -- , showWithoutQuotes
   , summarizeByteString
   , compose
   , allValues
@@ -35,6 +34,7 @@ module EvoMod.Tools
   , nearlyEqVec
   , nearlyEqMatWith
   , nearlyEqMat
+  , normalizeSumVec
   ) where
 
 import           Codec.Compression.GZip     (compress, decompress)
@@ -151,3 +151,9 @@ nearlyEqMatWith tol a b = nearlyEqValListWith tol 0 (concat . toLists $ a - b)
 -- | Test if two vectors are nearly equal.
 nearlyEqMat :: Matrix R -> Matrix R -> Bool
 nearlyEqMat = nearlyEqMatWith eps
+
+-- | Normalize a vector such that elements sum to a given value. See 'normalize' but with 1-norm.
+normalizeSumVec :: Double -> Vector R -> Vector R
+normalizeSumVec c v = v * scalar c'
+  where s = sumElements v
+        c' = c/s

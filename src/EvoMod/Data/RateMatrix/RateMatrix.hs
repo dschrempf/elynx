@@ -30,7 +30,7 @@ where
 import           Numeric.LinearAlgebra hiding (normalize)
 import           Prelude               hiding ((<>))
 
-import           EvoMod.Tools          (matrixSetDiagToZero, nearlyEq)
+import           EvoMod.Tools          (matrixSetDiagToZero, nearlyEq, normalizeSumVec)
 
 -- | A rate matrix is just a real matrix.
 type RateMatrix = Matrix R
@@ -79,13 +79,10 @@ fromExchMatrix em d = normalizeWith d $ setDiagonal $ em <> diag d
 getStationaryDistribution :: RateMatrix -> StationaryDist
 getStationaryDistribution m =
   if magnitude (eVals ! i) `nearlyEq` 0
-  then cmap (/ norm_constant) distReal
+  then normalizeSumVec 1.0 distReal
   else error "Could not retrieve stationary distribution."
     where
       (eVals, eVecs) = eig (tr m)
       i = minIndex eVals
       distComplex = toColumns eVecs !! i
       distReal = cmap realPart distComplex
-      -- Don't use norm_1 here, because we need to have a stationary
-      -- distribution with positive entries.
-      norm_constant = sumElements distReal

@@ -22,9 +22,10 @@ import           EvoMod.Data.RateMatrix.RateMatrix
 import           EvoMod.Tools
 
 statDistLGPython :: StationaryDist
-statDistLGPython = fromList [ 0.079066, 0.012937, 0.053052, 0.071586, 0.042302, 0.057337, 0.022355
-                            , 0.062157, 0.064600, 0.099081, 0.022951, 0.041977, 0.044040, 0.040767
-                            , 0.055941, 0.061197, 0.053287, 0.069147, 0.012066, 0.034155]
+statDistLGPython = normalizeSumVec 1.0 $
+  fromList [ 0.079066, 0.012937, 0.053052, 0.071586, 0.042302, 0.057337, 0.022355
+           , 0.062157, 0.064600, 0.099081, 0.022951, 0.041977, 0.044040, 0.040767
+           , 0.055941, 0.061197, 0.053287, 0.069147, 0.012066, 0.034155]
 
 exchLGPython :: ExchMatrix
 exchLGPython = fromLists
@@ -109,6 +110,9 @@ exchLGPython = fromLists
     , 4.8130600e-01, 6.1202500e-01, 8.9613000e-02, 2.5733600e-01, 3.1444000e-01
     , 4.0054700e-01, 2.4584100e-01, 2.4931300e-01, 3.1518150e+00, 0.0000000e+00]]
 
+statDistUniform :: StationaryDist
+statDistUniform = vector $ replicate 20 0.05
+
 spec :: Spec
 spec = do
   describe "statDistLG" $
@@ -123,3 +127,16 @@ spec = do
   describe "lg" $
     it "stationary distribution can be extracted" $
     nearlyEqVecWith 1e-4 (getStationaryDistribution lg) statDistLG `shouldBe` True
+
+  describe "lgCustom" $
+    it "stationary distribution can be recovered" $
+    getStationaryDistribution (lgCustom statDistUniform) `nearlyEqVec` statDistUniform `shouldBe` True
+
+  describe "poisson" $
+    it "stationary distribution is uniform 1/20" $
+    getStationaryDistribution poisson `nearlyEqVec` statDistUniform `shouldBe` True
+
+  describe "poissonCustom" $
+    it "stationary distribution can be recovered" $ do
+    let pc = getStationaryDistribution $ poissonCustom statDistLGPython
+    pc `nearlyEqVec` statDistLGPython `shouldBe` True

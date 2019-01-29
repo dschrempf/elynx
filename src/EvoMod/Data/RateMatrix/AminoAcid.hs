@@ -18,6 +18,9 @@ module EvoMod.Data.RateMatrix.AminoAcid
   ( statDistLG
   , exchLG
   , lg
+  , lgCustom
+  , poisson
+  , poissonCustom
   ) where
 
 import           Data.List                         (elemIndex)
@@ -27,7 +30,7 @@ import           Numeric.LinearAlgebra
 import           Numeric.SpecFunctions
 
 import           EvoMod.Data.RateMatrix.RateMatrix
-import           EvoMod.Tools                      (c2w)
+import           EvoMod.Tools                      (c2w, matrixSetDiagToZero, normalizeSumVec)
 
 -- XXX: Hardcoded here, to reduce intermodule dependencies.
 n :: Int
@@ -142,10 +145,11 @@ exchLG = pamlToAlphaMat exchLGPaml
 
 -- Stationary distribution in PAML order.
 statDistLGPaml :: StationaryDist
-statDistLGPaml = fromList [0.079066, 0.055941, 0.041977, 0.053052, 0.012937, 0.040767,
-                           0.071586, 0.057337, 0.022355, 0.062157, 0.099081, 0.064600,
-                           0.022951, 0.042302, 0.044040, 0.061197, 0.053287, 0.012066,
-                           0.034155, 0.069147]
+statDistLGPaml = normalizeSumVec 1.0 $
+  fromList [ 0.079066, 0.055941, 0.041977, 0.053052, 0.012937, 0.040767
+           , 0.071586, 0.057337, 0.022355, 0.062157, 0.099081, 0.064600
+           , 0.022951, 0.042302, 0.044040, 0.061197, 0.053287, 0.012066
+           , 0.034155, 0.069147 ]
 
 -- | Stationary distribution of LG model in alphabetical order.
 statDistLG :: StationaryDist
@@ -153,4 +157,18 @@ statDistLG = pamlToAlphaVec statDistLGPaml
 
 -- | LG rate matrix in alphabetical order.
 lg :: RateMatrix
-lg = fromExchMatrix exchLG statDistLG
+lg = lgCustom statDistLG
+
+-- | LG model with custom stationary distribution.
+lgCustom :: StationaryDist -> RateMatrix
+lgCustom = fromExchMatrix exchLG
+
+-- | Poisson rate matrix.
+poisson :: RateMatrix
+poisson = poissonCustom uniformStat
+  where uniformStat = normalizeSumVec 1.0 $ vector $ replicate n 1.0
+
+-- | Poisson model with custom stationary distribuiton.
+poissonCustom :: StationaryDist -> RateMatrix
+poissonCustom = fromExchMatrix uniformExch
+  where uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n*n) 1.0
