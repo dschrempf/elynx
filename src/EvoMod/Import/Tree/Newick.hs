@@ -41,7 +41,7 @@ import           Text.Megaparsec.Byte.Lexer (decimal, float)
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Tools               (c2w)
 
--- | A shortcut.
+-- | Shortcut.
 type Parser = Parsec Void B.ByteString
 
 -- | Parse many Newick trees.

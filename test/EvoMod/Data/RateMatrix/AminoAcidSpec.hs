@@ -121,5 +121,5 @@ spec = do
     exchLG `nearlyEqMat` lg `shouldBe` False
 
   describe "lg" $
-    it "stationary distribution can be extracted" $ do
+    it "stationary distribution can be extracted" $
     nearlyEqVecWith 1e-4 (getStationaryDistribution lg) statDistLG `shouldBe` True

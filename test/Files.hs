@@ -19,6 +19,7 @@ module Files
   , fastaDifferentLengthFN
   , fastaDifferentLengthTrimmedFN
   , fastaErroneousFN
+  , componentsFilePhyloBayes
   ) where
 
 dataDir :: String
@@ -41,4 +42,7 @@ fastaDifferentLengthTrimmedFN = dataDir ++ "NucleotideDifferentLengthTrimmed.fas
 
 fastaErroneousFN :: String
 fastaErroneousFN = dataDir ++ "Erroneous.fasta"
+
+componentsFilePhyloBayes :: FilePath
+componentsFilePhyloBayes = dataDir ++ "EDMDistsPhyloBayes.txt"
 

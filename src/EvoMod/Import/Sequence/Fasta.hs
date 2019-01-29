@@ -35,7 +35,7 @@ import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Tools                  (c2w, w2c)
 
--- | A shortcut.
+-- | Shortcut.
 type Parser = Parsec Void B.ByteString
 
 allowedHeaderChar :: Parser Word8
