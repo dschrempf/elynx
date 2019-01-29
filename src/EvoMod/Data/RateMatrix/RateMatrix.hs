@@ -79,11 +79,13 @@ fromExchMatrix em d = normalizeWith d $ setDiagonal $ em <> diag d
 getStationaryDistribution :: RateMatrix -> StationaryDist
 getStationaryDistribution m =
   if magnitude (eVals ! i) `nearlyEq` 0
-  then cmap (/ norm1) distReal
+  then cmap (/ norm_constant) distReal
   else error "Could not retrieve stationary distribution."
     where
       (eVals, eVecs) = eig (tr m)
       i = minIndex eVals
       distComplex = toColumns eVecs !! i
       distReal = cmap realPart distComplex
-      norm1 = norm_1 distReal
+      -- Don't use norm_1 here, because we need to have a stationary
+      -- distribution with positive entries.
+      norm_constant = sumElements distReal

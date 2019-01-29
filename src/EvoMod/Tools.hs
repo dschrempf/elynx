@@ -29,15 +29,18 @@ module EvoMod.Tools
   , compose
   , allValues
   , matrixSetDiagToZero
+  , nearlyEqWith
   , nearlyEq
+  , nearlyEqVecWith
   , nearlyEqVec
+  , nearlyEqMatWith
+  , nearlyEqMat
   ) where
 
 import           Codec.Compression.GZip     (compress, decompress)
 import           Data.ByteString.Internal   (c2w, w2c)
 import qualified Data.ByteString.Lazy.Char8 as B
 import           Data.List                  (isSuffixOf)
-import qualified Data.Vector.Generic        as V
 import           Numeric.LinearAlgebra      hiding ((<>))
 import           Text.Megaparsec
 
@@ -126,9 +129,25 @@ nearlyEq :: Double -> Double -> Bool
 nearlyEq = nearlyEqWith eps
 
 -- | Test if the given number is nearly equal to all elements of a vector.
-nearlyEqValVec :: Double -> Vector R -> Bool
-nearlyEqValVec a = V.all (nearlyEq a)
+nearlyEqValListWith :: Double -> Double -> [Double] -> Bool
+nearlyEqValListWith tol a = all (nearlyEqWith tol a)
+
+-- -- | Test if the given number is nearly equal to all elements of a vector.
+-- nearlyEqValList :: Double -> [Double] -> Bool
+-- nearlyEqValList = nearlyEqValListWith eps
+
+-- | Test if two vectors are nearly equal.
+nearlyEqVecWith :: Double -> Vector R -> Vector R -> Bool
+nearlyEqVecWith tol a b = nearlyEqValListWith tol 0 (toList $ a - b)
 
 -- | Test if two vectors are nearly equal.
 nearlyEqVec :: Vector R -> Vector R -> Bool
-nearlyEqVec a b = nearlyEqValVec 0 (a - b)
+nearlyEqVec = nearlyEqVecWith eps
+
+-- | Test if two vectors are nearly equal.
+nearlyEqMatWith :: Double -> Matrix R -> Matrix R -> Bool
+nearlyEqMatWith tol a b = nearlyEqValListWith tol 0 (concat . toLists $ a - b)
+
+-- | Test if two vectors are nearly equal.
+nearlyEqMat :: Matrix R -> Matrix R -> Bool
+nearlyEqMat = nearlyEqMatWith eps

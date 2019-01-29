@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 # TODO: Improve this script.
-# TODO: Git ignore the evomode-sim out files (also IQ-TREE).
 
 normal_build() {
     source include

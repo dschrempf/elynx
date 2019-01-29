@@ -20,12 +20,12 @@ module EvoMod.Data.Alphabet.AminoAcid
   , aminoAcidToWord
   ) where
 
-import           Data.Word8          (Word8, toUpper)
+import           Data.Word8                     (Word8, toUpper)
 
 import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Tools          (c2w)
+import           EvoMod.Tools                   (c2w)
 
--- | Amino acids.
+-- | Amino acids type; alphabetical order.
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
   deriving (Show, Eq, Ord, Enum, Bounded)
 
