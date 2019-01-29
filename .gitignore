@@ -10,6 +10,15 @@ evomod-seq.eventlog
 evomod-seq.hp
 evomod-seq.prof
 evomod-seq.ps
+evomod-sim.out
+
+# IQ-TREE files.
+*.bionj
+*.ckp.gz
+*.iqtree
+*.log
+*.mldist
+*.treefile
 
 # Tags.
 /TAGS
