@@ -26,7 +26,7 @@ import           Data.Tree
 import           System.Random.MWC
 import           System.Random.MWC.Distributions
 
-import           EvoMod.Data.RateMatrix.RateMatrix
+import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Simulate.MarkovProcess
 
@@ -55,7 +55,7 @@ simulateAlongProbTree is (Node p f) g = do
 
 -- -- | Convert a stationary distribution to a generator which speeds up random
 -- -- picks. Cf. 'jump'.
--- stationaryDistToGenerator :: StationaryDist -> Generator State
+-- stationaryDistToGenerator :: StationaryDistribution -> Generator State
 -- stationaryDistToGenerator f = fG
 --   -- This is a little complicated. I need to convert the vector to a list to be
 --   -- able to create a distribution.

@@ -14,10 +14,10 @@ continuous-time discrete-state Markov processes.
 
 -}
 
-module EvoMod.Data.RateMatrix.RateMatrix
+module EvoMod.Data.MarkovProcess.RateMatrix
   ( RateMatrix
   , ExchMatrix
-  , StationaryDist
+  , StationaryDistribution
   , normalize
   , normalizeWith
   , setDiagonal
@@ -38,10 +38,10 @@ type RateMatrix = Matrix R
 -- | A matrix of exchangeabilities, we have q = e * pi, where q is a rate
 -- matrix, e is the exchangeability matrix and pi is the diagonal matrix
 -- containing the stationary frequency distribution.
-type ExchMatrix     = Matrix R
+type ExchMatrix = Matrix R
 
 -- | Stationary distribution of a rate matrix.
-type StationaryDist = Vector R
+type StationaryDistribution = Vector R
 
 -- | Normalizes a Markov process generator such that one event happens per unit
 -- time. Calculates stationary distribution from rate matrix.
@@ -50,7 +50,7 @@ normalize m = normalizeWith (getStationaryDistribution m) m
 
 -- | Normalizes a Markov process generator such that one event happens per unit
 -- time. Stationary distribution has to be given.
-normalizeWith :: StationaryDist -> RateMatrix -> RateMatrix
+normalizeWith :: StationaryDistribution -> RateMatrix -> RateMatrix
 normalizeWith f m = scale (1.0 / totalRate) m
   where totalRate = norm_1 $ f <# matrixSetDiagToZero m
 
@@ -61,12 +61,12 @@ setDiagonal m = diagZeroes - diag (fromList rowSums)
         rowSums    = map norm_1 $ toRows diagZeroes
 
 -- | Extract the exchangeability matrix from a rate matrix.
-toExchMatrix :: RateMatrix -> StationaryDist -> ExchMatrix
+toExchMatrix :: RateMatrix -> StationaryDistribution -> ExchMatrix
 toExchMatrix m f = m <> diag oneOverF
   where oneOverF = cmap (1.0/) f
 
 -- | Convert exchangeability matrix to rate matrix.
-fromExchMatrix :: ExchMatrix -> StationaryDist -> RateMatrix
+fromExchMatrix :: ExchMatrix -> StationaryDistribution -> RateMatrix
 fromExchMatrix em d = normalizeWith d $ setDiagonal $ em <> diag d
 
 -- | Get stationary distribution from 'RateMatrix'. Involves eigendecomposition.
@@ -76,7 +76,7 @@ fromExchMatrix em d = normalizeWith d $ setDiagonal $ em <> diag d
 -- distribution or a better way to handle errors (of course I could use the
 -- Maybe monad, but then the error report is just delayed to the calling
 -- function)?
-getStationaryDistribution :: RateMatrix -> StationaryDist
+getStationaryDistribution :: RateMatrix -> StationaryDistribution
 getStationaryDistribution m =
   if magnitude (eVals ! i) `nearlyEq` 0
   then normalizeSumVec 1.0 distReal

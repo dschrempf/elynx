@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Data.RateMatrix.AminoAcidSpec
+Module      :  EvoMod.Data.MarkovProcess.AminoAcidSpec
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -11,17 +11,17 @@ Creation date: Tue Jan 29 10:47:40 2019.
 
 -}
 
-module EvoMod.Data.RateMatrix.AminoAcidSpec
+module EvoMod.Data.MarkovProcess.AminoAcidSpec
   (spec) where
 
 import           Numeric.LinearAlgebra
 import           Test.Hspec
 
-import           EvoMod.Data.RateMatrix.AminoAcid
-import           EvoMod.Data.RateMatrix.RateMatrix
+import           EvoMod.Data.MarkovProcess.AminoAcid
+import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Tools
 
-statDistLGPython :: StationaryDist
+statDistLGPython :: StationaryDistribution
 statDistLGPython = normalizeSumVec 1.0 $
   fromList [ 0.079066, 0.012937, 0.053052, 0.071586, 0.042302, 0.057337, 0.022355
            , 0.062157, 0.064600, 0.099081, 0.022951, 0.041977, 0.044040, 0.040767
@@ -110,7 +110,7 @@ exchLGPython = fromLists
     , 4.8130600e-01, 6.1202500e-01, 8.9613000e-02, 2.5733600e-01, 3.1444000e-01
     , 4.0054700e-01, 2.4584100e-01, 2.4931300e-01, 3.1518150e+00, 0.0000000e+00]]
 
-statDistUniform :: StationaryDist
+statDistUniform :: StationaryDistribution
 statDistUniform = vector $ replicate 20 0.05
 
 spec :: Spec

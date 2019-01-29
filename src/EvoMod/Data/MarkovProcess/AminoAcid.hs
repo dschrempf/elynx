@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Data.RateMatrix.AminoAcid
+Module      :  EvoMod.Data.MarkovProcess.AminoAcid
 Description :  Amino acid rate matrices such as LG
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -14,7 +14,7 @@ The order of amino acids is alphabetic.
 
 -}
 
-module EvoMod.Data.RateMatrix.AminoAcid
+module EvoMod.Data.MarkovProcess.AminoAcid
   ( statDistLG
   , exchLG
   , lg
@@ -29,7 +29,7 @@ import           Data.Word                         (Word8)
 import           Numeric.LinearAlgebra
 import           Numeric.SpecFunctions
 
-import           EvoMod.Data.RateMatrix.RateMatrix
+import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Tools                      (c2w, matrixSetDiagToZero, normalizeSumVec)
 
 -- XXX: Hardcoded here, to reduce intermodule dependencies.
@@ -144,7 +144,7 @@ exchLG :: ExchMatrix
 exchLG = pamlToAlphaMat exchLGPaml
 
 -- Stationary distribution in PAML order.
-statDistLGPaml :: StationaryDist
+statDistLGPaml :: StationaryDistribution
 statDistLGPaml = normalizeSumVec 1.0 $
   fromList [ 0.079066, 0.055941, 0.041977, 0.053052, 0.012937, 0.040767
            , 0.071586, 0.057337, 0.022355, 0.062157, 0.099081, 0.064600
@@ -152,7 +152,7 @@ statDistLGPaml = normalizeSumVec 1.0 $
            , 0.034155, 0.069147 ]
 
 -- | Stationary distribution of LG model in alphabetical order.
-statDistLG :: StationaryDist
+statDistLG :: StationaryDistribution
 statDistLG = pamlToAlphaVec statDistLGPaml
 
 -- | LG rate matrix in alphabetical order.
@@ -160,7 +160,7 @@ lg :: RateMatrix
 lg = lgCustom statDistLG
 
 -- | LG model with custom stationary distribution.
-lgCustom :: StationaryDist -> RateMatrix
+lgCustom :: StationaryDistribution -> RateMatrix
 lgCustom = fromExchMatrix exchLG
 
 -- | Poisson rate matrix.
@@ -169,6 +169,6 @@ poisson = poissonCustom uniformStat
   where uniformStat = normalizeSumVec 1.0 $ vector $ replicate n 1.0
 
 -- | Poisson model with custom stationary distribuiton.
-poissonCustom :: StationaryDist -> RateMatrix
+poissonCustom :: StationaryDistribution -> RateMatrix
 poissonCustom = fromExchMatrix uniformExch
   where uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n*n) 1.0

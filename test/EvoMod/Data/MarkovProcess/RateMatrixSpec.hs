@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Data.RateMatrix.RateMatrixSpec
+Module      :  EvoMod.Data.MarkovProcess.RateMatrixSpec
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -11,17 +11,17 @@ Creation date: Fri Jan 25 16:47:28 2019.
 
 -}
 
-module EvoMod.Data.RateMatrix.RateMatrixSpec
+module EvoMod.Data.MarkovProcess.RateMatrixSpec
   (spec) where
 
 import           Data.Vector.Generic
 import           Test.Hspec
 
-import           EvoMod.Data.RateMatrix.Nucleotide
-import           EvoMod.Data.RateMatrix.RateMatrix
+import           EvoMod.Data.MarkovProcess.Nucleotide
+import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Tools                      (nearlyEqVec)
 
-stationaryDist :: StationaryDist
+stationaryDist :: StationaryDistribution
 stationaryDist = fromList [0.2, 0.3, 0.3, 0.2]
 
 hkyRM :: RateMatrix

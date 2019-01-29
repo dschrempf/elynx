@@ -29,7 +29,8 @@ import           ArgParseSim
 import           EvoMod.ArgParse
 import           EvoMod.Data.Alphabet.Alphabet
 -- import           EvoMod.Data.RateMatrix.Nucleotide
-import           EvoMod.Data.RateMatrix.RateMatrix
+import           EvoMod.Data.MarkovProcess.RateMatrix
+import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Data.Tree.MeasurableTree
@@ -71,7 +72,7 @@ main = do (EvoModSimArgs trFn q outFn sm len mSeed) <- parseEvoModSimArgs
             putStrLn $ "Code: " ++ show (mCode sm) ++ "."
             putStrLn $ "Name: " ++ mName sm ++ "."
             putStrLn $ "Parameters: " ++ show (mParams sm) ++ "."
-            putStrLn $ "Stationary frequencies: " ++ show (mStationaryDist sm) ++ "."
+            putStrLn $ "Stationary frequencies: " ++ show (mStationaryDistribution sm) ++ "."
             -- XXX: This will be very verbose with amino acids or codons.
             putStrLn $ "Rate matrix: " ++ show (mRateMatrix sm) ++ "."
             putStrLn ""

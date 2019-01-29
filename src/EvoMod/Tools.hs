@@ -35,6 +35,7 @@ module EvoMod.Tools
   , nearlyEqMatWith
   , nearlyEqMat
   , normalizeSumVec
+  , uniformVec
   ) where
 
 import           Codec.Compression.GZip     (compress, decompress)
@@ -157,3 +158,7 @@ normalizeSumVec :: Double -> Vector R -> Vector R
 normalizeSumVec c v = v * scalar c'
   where s = sumElements v
         c' = c/s
+
+-- | A uniform vector of given length.
+uniformVec :: Int -> Vector R
+uniformVec n = vector $ replicate n (1 / fromIntegral n)

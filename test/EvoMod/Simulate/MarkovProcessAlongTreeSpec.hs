@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Simulate.MarkochProcessAlongTreeSpec
+Module      :  EvoMod.Simulate.MarkovProcessAlongTreeSpec
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -11,7 +11,7 @@ Creation date: Thu Jan 24 15:25:49 2019.
 
 -}
 
-module EvoMod.Simulate.MarkochProcessAlongTreeSpec
+module EvoMod.Simulate.MarkovProcessAlongTreeSpec
   (spec) where
 
 -- import qualified Data.Text                            as T
@@ -20,7 +20,7 @@ import           Data.Tree
 import           System.Random.MWC
 import           Test.Hspec
 
-import           EvoMod.Data.RateMatrix.Nucleotide
+import           EvoMod.Data.MarkovProcess.Nucleotide
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Simulate.MarkovProcess
 import           EvoMod.Simulate.MarkovProcessAlongTree

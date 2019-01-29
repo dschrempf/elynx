@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Import.RateMatrix.EDMStationaryDistributionsPhyloBayes
+Module      :  EvoMod.Import.MarkovProcess.EDMModelPhyloBayes
 Description :  Import stationary distributions from Phylobayes format.
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -12,7 +12,7 @@ Creation date: Tue Jan 29 12:12:55 2019.
 
 -}
 
-module EvoMod.Import.RateMatrix.EDMStationaryDistributionsPhyloBayes
+module EvoMod.Import.MarkovProcess.EDMModelPhyloBayes
   ( Parser
   , phylobayes
   ) where
@@ -25,21 +25,21 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
-import           EvoMod.Data.RateMatrix.EDMModel
+import           EvoMod.Data.MarkovProcess.EDMModel
 import           EvoMod.Tools                    (c2w)
 
 -- | Shortcut.
 type Parser = Parsec Void B.ByteString
 
 -- | Parse stationary distributions from Phylobayes format.
-phylobayes :: Parser EDMComponents
+phylobayes :: Parser [EDMComponent]
 phylobayes = do
   n <- headerLine
   k <- kComponentsLine
   cs <- count k $ dataLine n
   _ <- many newline *> eof
     <?> "phylobayes"
-  return $ EDMComponents k cs
+  return cs
 
 horizontalSpace :: Parser ()
 horizontalSpace = skipMany $ char (c2w ' ') <|> tab

@@ -14,27 +14,30 @@ Creation date: Sun Oct  7 17:29:45 2018.
 
 
 module ArgParseSim
-  ( SubstModel (..)
-  , EvoModSimArgs (..)
+  ( EvoModSimArgs (..)
   , parseEvoModSimArgs
   ) where
 
 -- import           Control.Applicative
 import           Data.Void
 import           Data.Word
-import           Numeric.LinearAlgebra             (norm_1, size, vector)
+import           Numeric.LinearAlgebra                    (norm_1, size, vector)
 import           Options.Applicative
-import           Text.Megaparsec                   hiding (option)
+import           Text.Megaparsec                          hiding (option)
 import           Text.Megaparsec.Char
 import           Text.Megaparsec.Char.Lexer
 
 import           EvoMod.ArgParse
 import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Data.RateMatrix.Nucleotide
-import           EvoMod.Data.RateMatrix.RateMatrix
+import           EvoMod.Data.MarkovProcess.Nucleotide
+import           EvoMod.Data.MarkovProcess.RateMatrix
+import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools
 
 type MegaParser = Parsec Void String
+
+nNuc :: Int
+nNuc = cardinality (alphabet DNA)
 
 -- Ugly convenience function to read in more complicated command line options
 -- with megaparsec and optparse
@@ -47,21 +50,13 @@ megaReadM p = eitherReader $ \input ->
       Left eb -> Left $ errorBundlePretty eb
       Right a -> Right a
 
-data SubstModel = SubstModel
-  { mCode           :: Code
-  , mName           :: String
-  , mParams         :: [Double]
-  , mStationaryDist :: StationaryDist
-  , mRateMatrix     :: RateMatrix
-  }
-
 data EvoModSimArgs = EvoModSimArgs
-  { argsTreeFile   :: String
-  , argsQuiet      :: Bool
-  , argsFileOut    :: String
-  , argsSubstModel :: SubstModel
-  , argsLength     :: Int
-  , argsSeed       :: Maybe [Word32]
+  { argsTreeFile          :: String
+  , argsQuiet             :: Bool
+  , argsFileOut           :: String
+  , argsSubstitutionModel :: SubstitutionModel
+  , argsLength            :: Int
+  , argsSeed              :: Maybe [Word32]
   }
 
 evoModSimArgs :: Parser EvoModSimArgs
@@ -94,7 +89,7 @@ fileOutOpt = strOption
     <> help "Specify output file NAME")
 
 -- Read a stationary frequency of the form `pi_A,pi_C,pi_G,...`.
-parseStateFreq :: Int -> MegaParser StationaryDist
+parseStateFreq :: Int -> MegaParser StationaryDistribution
 parseStateFreq nAlleles = do
   _ <- char '['
   f <- vector <$> sepBy float (char ',')
@@ -111,21 +106,17 @@ parseParams = do
   _ <- char ']'
   return params
 
-parseSubstModel :: MegaParser SubstModel
-parseSubstModel = do
+parseSubstitutionModel :: MegaParser SubstitutionModel
+parseSubstitutionModel = do
   m  <- takeWhile1P (Just "ModelName") (/= '[')
   case m of
-       "JC" -> do
-         let n = cardinality (alphabet DNA)
-             f = vector $ replicate n (1 / fromIntegral n)
-         return $ SubstModel DNA m [] f jc
+       "JC" -> return jcModel
        "HKY" -> do
-         let n = cardinality (alphabet DNA)
          ps <- parseParams
-         f  <- parseStateFreq n
+         f  <- parseStateFreq nNuc
          if length ps /= 1
            then error "HKY model only has one parameter, kappa."
-           else return $ SubstModel DNA m ps f (hky (head ps) f)
+           else return $ hkyModel (head ps) f
        -- "GTR" -> do
        --   ps <- parseParams
        --   f  <- parseStateFreq
@@ -134,8 +125,8 @@ parseSubstModel = do
        --     else return $ GTR (head ps) (ps !! 1) (ps !! 2) (ps !! 3) (ps !! 4) f
        _ -> error "Model string could not be parsed."
 
-substModelOpt :: Parser SubstModel
-substModelOpt = option (megaReadM parseSubstModel)
+substModelOpt :: Parser SubstitutionModel
+substModelOpt = option (megaReadM parseSubstitutionModel)
   ( long "substition-model"
     <> short 'm'
     <> metavar "MODEL"
