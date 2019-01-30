@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 source include
-./build || exit 1
+
+./build fast || exit 1
 
 file_tree=../data/Newick.tree
 

@@ -1,52 +1,42 @@
 #!/usr/bin/env bash
 
-# TODO: Improve this script.
+source include
 
 normal_build() {
-    source include
     msg "Normal build with documentation."
-    stack build "${flags[@]}" --haddock || exit 1
+    stack build "${flags[@]}" || exit 1
 }
-# export -f normal_build
 
 profile_build() {
-    source include
     msg "Profile build."
     stack build "${flags[@]}" --profile --work-dir .stack-work-profiling || exit 1
 }
-# export -f profile_build
 
 test_build() {
     source include
     msg "EvoMod test suite."
     stack build "${flags[@]}" --test --work-dir .stack-work-testing || exit 1
 }
-# export -f test_build
 
 if [[ -z $1 ]]
 then
-    flags=(--fast)
+    echo "Usage: ./build (fast|prod|prof|test)"
+    exit 1
+elif [[ $1 == "fast" ]]
+then
+    flags=(--fast --haddock --test)
     normal_build
-    profile_build
-    test_build
 elif [[ $1 == "prod" ]]
 then
-    # # Seemed to be necessary at some point.
-    # rm -r .stack-work || exit 1
-    # rm -r .stack-work-profiling || exit 1
-    # rm -r .stack-work-testing || exit 1
-    flags=()
+    stack clean --full
+    flags=(--haddock --test)
     normal_build
+elif [[ $1 == "prof" ]]
+then
+    flags=()
     profile_build
-    test_build
 elif [[ $1 == "test" ]]
 then
     flags=(--fast)
     test_build
 fi
-
-
-# Run the build in parallel but output is not colored.
-# parallel {} ::: normal_build profile_build test_build || exit 1
-
-

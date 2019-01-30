@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 source include
-./build || exit 1
+
+./build prof || exit 1
 
 file_profile=../data/Profile.fa.gz
 

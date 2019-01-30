@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 source include
-./build || exit 1
+
+./build prod || exit 1
 
 file_benchmark=../data/BenchmarkEnsemblMouse.fa.gz
 

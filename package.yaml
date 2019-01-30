@@ -35,7 +35,6 @@ dependencies:
   - mwc-random
   - optparse-applicative
   - primitive
-  - text
   - vector
   - word8
   - zlib
