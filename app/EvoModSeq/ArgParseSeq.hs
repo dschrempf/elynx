@@ -33,9 +33,9 @@ data Command = Summarize
 data EvoModSeqArgs = EvoModSeqArgs
   { argsCommand     :: Command
   , argsAlphabet    :: Code
-  , argsFileNameOut :: Maybe String
+  , argsFileNameOut :: Maybe FilePath
   , argsQuiet       :: Bool
-  , argsFileNames   :: [String]
+  , argsFileNames   :: [FilePath]
   }
 
 evoModSeqArgs :: Parser EvoModSeqArgs
@@ -85,14 +85,14 @@ alphabetOpt = option auto
     <> metavar "NAME"
     <> help "Specify alphabet type NAME" )
 
-fileNameOutOpt :: Parser (Maybe String)
+fileNameOutOpt :: Parser (Maybe FilePath)
 fileNameOutOpt = optional $ strOption
   ( long "output-file"
     <> short 'o'
     <> metavar "NAME"
     <> help "Specify output file NAME" )
 
-fileNameArg :: Parser String
+fileNameArg :: Parser FilePath
 fileNameArg = argument str
   ( metavar "INPUT-FILE-NAMES"
     <> help "Read sequences from INPUT-FILE-NAMES" )

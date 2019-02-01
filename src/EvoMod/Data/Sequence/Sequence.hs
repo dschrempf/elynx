@@ -137,8 +137,8 @@ trimSequence :: Int -> Sequence -> Sequence
 trimSequence n s@Sequence{seqCs=cs} = s {seqCs = V.take n cs}
 
 -- | Concatenate two sequences. 'SequenceId's have to match.
-concatenate :: Sequence -> Sequence -> Either String Sequence
+concatenate :: Sequence -> Sequence -> Either B.ByteString Sequence
 concatenate (Sequence i cs) (Sequence j ks)
   | i == j     = Right $ Sequence i (cs V.++ ks)
-  | otherwise  = Left $ "concatenate: Sequences do not have equal IDs: "
-                 ++ B.unpack i ++ ", " ++ B.unpack j ++ "."
+  | otherwise  = Left $ B.pack "concatenate: Sequences do not have equal IDs: "
+                 <> i <> B.pack ", " <> j <> B.pack "."

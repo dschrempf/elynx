@@ -21,7 +21,6 @@ import           Control.Monad.Primitive
 import qualified Data.ByteString.Lazy                        as B
 import           Data.Tree
 import qualified Data.Vector                                 as V
-import           System.Environment
 import           System.Random.MWC
 
 import           ArgParseSim
@@ -58,23 +57,15 @@ simulateMSA c n q t g = do
 main :: IO ()
 main = do (EvoModSimArgs trFn q outFn sm len mSeed) <- parseEvoModSimArgs
           unless q $ do
-            p  <- getProgName
-            as <- getArgs
-            putStr evoModHeader
-            putStrLn $ "Command line: " ++ p ++ " " ++ unwords as
+            programHeader
             putStrLn ""
             putStrLn "Read tree."
           tree <- parseFileWith newick trFn
           unless q $ do
-            putStr $ summarize tree
+            B.putStr $ summarize tree
             putStrLn ""
             putStrLn "Substitution model."
-            putStrLn $ "Code: " ++ show (mCode sm) ++ "."
-            putStrLn $ "Name: " ++ mName sm ++ "."
-            putStrLn $ "Parameters: " ++ show (mParams sm) ++ "."
-            putStrLn $ "Stationary frequencies: " ++ show (mStationaryDistribution sm) ++ "."
-            -- XXX: This will be very verbose with amino acids or codons.
-            putStrLn $ "Rate matrix: " ++ show (mRateMatrix sm) ++ "."
+            B.putStr $ summarizeSubstitutionModel sm
             putStrLn ""
             putStrLn "Simulate alignment."
             putStrLn $ "Length: " ++ show len ++ "."
@@ -83,7 +74,7 @@ main = do (EvoModSimArgs trFn q outFn sm len mSeed) <- parseEvoModSimArgs
                        >> createSystemRandom
             Just s  -> putStrLn ("Seed: " ++ show s ++ ".")
                        >> initialize (V.fromList s)
-          msa <- simulateMSA (mCode sm) len (mRateMatrix sm) tree g
+          msa <- simulateMSA (smCode sm) len (smRateMatrix sm) tree g
           let output = sequencesToFasta $ msaSequences msa
           B.writeFile outFn output
           unless q $ do

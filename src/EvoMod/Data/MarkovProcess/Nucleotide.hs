@@ -24,6 +24,8 @@ module EvoMod.Data.MarkovProcess.Nucleotide
   , hkyModel
   ) where
 
+import qualified Data.ByteString.Lazy.Char8                  as B
+
 import           Numeric.LinearAlgebra                       hiding (normalize)
 
 import           EvoMod.Data.Alphabet.Alphabet
@@ -45,7 +47,7 @@ jc = normalize $ setDiagonal $
 
 -- | JC substitution model.
 jcModel :: SubstitutionModel
-jcModel = SubstitutionModel DNA "JC" [] f e jc
+jcModel = SubstitutionModel DNA (B.pack "JC") [] f e jc
   where f = uniformVec n
         e = toExchMatrix jc f
 
@@ -63,6 +65,6 @@ hky = fromExchMatrix . hkyExchMatrix
 
 -- | HKY substitution model.
 hkyModel :: Double -> StationaryDistribution -> SubstitutionModel
-hkyModel k f = SubstitutionModel DNA "HKY" [k] f e m
+hkyModel k f = SubstitutionModel DNA (B.pack "HKY") [k] f e m
   where e = hkyExchMatrix k
         m = hky k f

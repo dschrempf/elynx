@@ -14,13 +14,15 @@ Creation date: Mon Jan 28 14:46:10 2019.
 
 module EvoMod.ArgParse
   ( parseEvoModArgs
-  , evoModHeader
+  , programHeader
   ) where
 
 import           Data.Version                    (showVersion)
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
 import           Paths_evomod                    (version)
+import           System.Environment
+
 
 import           EvoMod.Data.Alphabet.Alphabet
 
@@ -79,3 +81,11 @@ parseEvoModArgs p = execParser $
     <> progDesc evoModDescription
     <> headerDoc (Just evoModHeaderDoc)
     <> footerDoc (Just evoModFooterDoc))
+
+-- | Program header.
+programHeader :: IO ()
+programHeader = do
+  p  <- getProgName
+  as <- getArgs
+  putStr evoModHeader
+  putStrLn $ "Command line: " ++ p ++ " " ++ unwords as

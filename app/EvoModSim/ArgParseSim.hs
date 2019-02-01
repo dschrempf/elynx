@@ -18,7 +18,6 @@ module ArgParseSim
   , parseEvoModSimArgs
   ) where
 
--- import           Control.Applicative
 import           Data.Void
 import           Data.Word
 import           Numeric.LinearAlgebra                    (norm_1, size, vector)
@@ -51,9 +50,9 @@ megaReadM p = eitherReader $ \input ->
       Right a -> Right a
 
 data EvoModSimArgs = EvoModSimArgs
-  { argsTreeFile          :: String
+  { argsTreeFile          :: FilePath
   , argsQuiet             :: Bool
-  , argsFileOut           :: String
+  , argsFileOut           :: FilePath
   , argsSubstitutionModel :: SubstitutionModel
   , argsLength            :: Int
   , argsSeed              :: Maybe [Word32]
@@ -68,7 +67,7 @@ evoModSimArgs = EvoModSimArgs
   <*> lengthOpt
   <*> seedOpt
 
-treeFileOpt :: Parser String
+treeFileOpt :: Parser FilePath
 treeFileOpt = strOption
   ( long "tree-file"
     <> short 't'
@@ -81,7 +80,7 @@ quietOpt = switch
   <> short 'q'
   <> help "Be quiet" )
 
-fileOutOpt :: Parser String
+fileOutOpt :: Parser FilePath
 fileOutOpt = strOption
   ( long "output-file"
     <> short 'o'

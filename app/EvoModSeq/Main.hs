@@ -17,7 +17,6 @@ module Main where
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.Maybe                    (fromMaybe)
-import qualified System.Environment            as Sys
 import           System.IO
 
 import           ArgParseSeq
@@ -29,29 +28,26 @@ import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools                  (compose, parseFileWith)
 
-concatenateSeqs :: [[Sequence]] -> Either String [Sequence]
-concatenateSeqs []   = Left "Nothing to concatenate."
-concatenateSeqs [ss] = Left $ "Got only one list of sequences: " ++ B.unpack (summarizeSequenceList ss)
+concatenateSeqs :: [[Sequence]] -> Either B.ByteString [Sequence]
+concatenateSeqs []   = Left $ B.pack "Nothing to concatenate."
+concatenateSeqs [ss] = Left $ B.pack "Got only one list of sequences: " <> summarizeSequenceList ss
 concatenateSeqs sss  = foldM (zipWithM concatenate) (head sss) (tail sss)
 
-act :: Command -> [[Sequence]] -> Either String B.ByteString
+act :: Command -> [[Sequence]] -> Either B.ByteString B.ByteString
 act Summarize sss    = Right . B.concat $ map summarizeSequenceList sss
 act Concatenate sss  = sequencesToFasta <$> concatenateSeqs sss
 act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
   where filters = map (fromMaybe id) [ filterLongerThan <$> ml
                                     , filterShorterThan <$> ms ]
 
-io :: Either String B.ByteString -> Handle -> IO ()
-io (Left  s)   _ = putStrLn s
+io :: Either B.ByteString B.ByteString -> Handle -> IO ()
+io (Left  s)   _ = B.putStrLn s
 io (Right res) h = B.hPutStr h res
 
 main :: IO ()
 main = do (EvoModSeqArgs cmd c mofn q fns) <- parseEvoModSeqArgs
           unless q $ do
-            p  <- Sys.getProgName
-            as <- Sys.getArgs
-            putStrLn evoModHeader
-            putStrLn $ "Command line: " ++ p ++ " " ++ unwords as
+            programHeader
             putStrLn "Read fasta file."
             putStrLn $ "Code: " ++ show c ++ "."
             putStrLn ""

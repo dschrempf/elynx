@@ -17,7 +17,8 @@ module EvoMod.Data.MarkovProcess.MixtureModel
   , MixtureModel (..)
   ) where
 
-import           EvoMod.Data.Alphabet.Alphabet
+import qualified Data.ByteString.Lazy.Char8                  as B
+
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 
 -- | A mixture model component has a weight and a substitution model.
@@ -28,7 +29,6 @@ data MixtureModelComponent = MixtureModelComponent
 
 -- | A mixture model with its components.
 data MixtureModel = MixtureModel
-  { mmCode       :: Code
-  , mmName       :: String
+  { mmName       :: B.ByteString
   , mmComponents :: [MixtureModelComponent]
   }

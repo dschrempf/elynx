@@ -22,25 +22,25 @@ module Files
   , componentsFilePhyloBayes
   ) where
 
-dataDir :: String
+dataDir :: FilePath
 dataDir = "data/"
 
-fastaNucleotideFN :: String
+fastaNucleotideFN :: FilePath
 fastaNucleotideFN = dataDir ++ "Nucleotide.fasta"
 
-fastaNucleotideIUPACFN :: String
+fastaNucleotideIUPACFN :: FilePath
 fastaNucleotideIUPACFN = dataDir ++ "NucleotideIUPAC.fasta"
 
-fastaAminoAcidFN :: String
+fastaAminoAcidFN :: FilePath
 fastaAminoAcidFN = dataDir ++ "AminoAcid.fasta"
 
-fastaDifferentLengthFN :: String
+fastaDifferentLengthFN :: FilePath
 fastaDifferentLengthFN = dataDir ++ "NucleotideDifferentLength.fasta"
 
-fastaDifferentLengthTrimmedFN :: String
+fastaDifferentLengthTrimmedFN :: FilePath
 fastaDifferentLengthTrimmedFN = dataDir ++ "NucleotideDifferentLengthTrimmed.fasta"
 
-fastaErroneousFN :: String
+fastaErroneousFN :: FilePath
 fastaErroneousFN = dataDir ++ "Erroneous.fasta"
 
 componentsFilePhyloBayes :: FilePath

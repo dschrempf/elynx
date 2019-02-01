@@ -16,7 +16,9 @@ module EvoMod.Data.MarkovProcess.EDMModel
   ( EDMComponent (..)
   ) where
 
+-- import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
+-- import           EvoMod.Data.MarkovProcess.SubstitutionModel
 
 -- | Empirical distribution mixture model component.
 data EDMComponent = EDMComponent
@@ -24,3 +26,9 @@ data EDMComponent = EDMComponent
   , cStationaryDistribution :: StationaryDistribution
   }
   deriving (Show, Eq)
+
+-- -- | Take a substitution model and
+-- edmModel :: SubstitutionModel -> [EDMComponent] -> MixtureModel
+-- edmModel sm cs = MixtureModel ("EDM" ++ show nc)
+--   where es = smExchMatrix s
+--         nc = length cs

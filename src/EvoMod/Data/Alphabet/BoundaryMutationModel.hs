@@ -73,7 +73,7 @@ data State = Bnd { bndN :: PopSize     -- | Population size.
                  , plyB :: Allele }
            deriving (Read, Eq)
 
--- | String representation of 'State'; without surrounding brackets.
+-- | B.ByteString representation of 'State'; without surrounding brackets.
 showCounts :: State -> B.ByteString
 showCounts (Bnd n a) = B.intersperse ',' $ B.concat $ map (B.pack . toCounts) allValues
   where toCounts b

@@ -66,17 +66,17 @@ msaNSequences = length . msaSequences
 -- to an alignment. See also 'msaConcatenate'.
 msaJoin :: MultiSequenceAlignment
         -> MultiSequenceAlignment
-        -> Either String MultiSequenceAlignment
+        -> Either B.ByteString MultiSequenceAlignment
 msaJoin (MSA xs lx) (MSA ys ly)
   | lx == ly = Right $ MSA (xs ++ ys) lx
-  | otherwise  = Left "msaJoin: Multi sequence alignments do not have equal length."
+  | otherwise  = Left $ B.pack "msaJoin: Multi sequence alignments do not have equal length."
 
 -- | Concatenate two 'MultiSequenceAlignment's horizontally. That is, add more
 -- sites to an alignment. See also 'msaJoin'.
 msaConcatenate :: MultiSequenceAlignment
                -> MultiSequenceAlignment
-               -> Either String MultiSequenceAlignment
+               -> Either B.ByteString MultiSequenceAlignment
 msaConcatenate (MSA xs lx) (MSA ys ly)
   | lx /= ly =
-    Left "msaConcatenate: Multi sequence alignments do not have equal length."
+    Left $ B.pack "msaConcatenate: Multi sequence alignments do not have equal length."
   | otherwise = fromSequenceList <$> zipWithM concatenate xs ys

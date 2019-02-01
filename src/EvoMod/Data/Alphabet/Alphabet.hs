@@ -37,8 +37,8 @@ import qualified Data.Set                        as S
 import           Data.Word                       (Word8)
 
 import           EvoMod.Data.Alphabet.AminoAcid
-import           EvoMod.Data.Alphabet.Nucleotide
 import           EvoMod.Data.Alphabet.Character
+import           EvoMod.Data.Alphabet.Nucleotide
 
 -- | The used genetic code. Could include Protein_IUPAC, CountsFile for
 -- population data and so on.
