@@ -28,7 +28,7 @@ import           ParsePhyloModel
 
 import           EvoMod.ArgParse
 import           EvoMod.Data.Alphabet.Alphabet
--- import           EvoMod.Data.RateMatrix.Nucleotide
+import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.PhyloModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
@@ -38,7 +38,6 @@ import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.NamedTree
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes hiding (Parser)
--- import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Data.Tree.Tree
 import           EvoMod.Import.Tree.Newick                      hiding (name)
 import           EvoMod.Simulate.MarkovProcessAlongTree
@@ -81,8 +80,7 @@ main = do
   let pM = parseByteStringWith (phyloModelString edmCs) pMs
   unless q $ do
     case pM of
-      -- TODO: Output mixture model summary.
-      PhyloMixtureModel _       -> undefined
+      PhyloMixtureModel mm      -> B.putStr $ summarizeMixtureModel mm
       PhyloSubstitutionModel sm -> B.putStr $ summarizeSubstitutionModel sm
     putStrLn ""
     putStrLn "Simulate alignment."

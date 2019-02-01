@@ -72,6 +72,12 @@ parseHKY = do
 substitutionModel :: Parser SubstitutionModel
 substitutionModel = try parseJC <|> try parseHKY
 
+-- TODO: Code is important! Check if # of aa matches code from
+-- substitution model.
+
+-- TODO: Think about how models are specified. Probably turn this around.
+-- HKY[6.0][EDMFILE]. Otherwise, stationary frequency of HKY model is ignored,
+-- which is very bad behavior.
 parseEDM :: Maybe [EDMComponent] -> Parser MixtureModel
 parseEDM mcs = do
   _ <- chunk (B.pack "EDM")

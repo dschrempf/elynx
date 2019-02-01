@@ -39,6 +39,6 @@ summarizeSubstitutionModel sm = B.unlines $ map B.pack
   , "Code: " ++ show (smCode sm) ++ "."
   , "Name: " ++ show (smName sm) ++ "."
   , "Parameters: " ++ show (smParams sm) ++ "."
-  , "Stationary frequencies: " ++ show (smStationaryDistribution sm) ++ "."
+  , "Stationary distribution: " ++ show (smStationaryDistribution sm) ++ "."
      -- XXX: This will be very verbose with amino acids or codons.
   , "Rate matrix: " ++ show (smRateMatrix sm) ++ "." ]
