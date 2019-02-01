@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Import.MarkovProcess.EDMModelPhyloBayesSpec
+Module      :  EvoMod.Import.MarkovProcess.EDMModelPhylobayesSpec
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -11,16 +11,16 @@ Creation date: Tue Jan 29 12:26:49 2019.
 
 -}
 
-module EvoMod.Import.MarkovProcess.EDMModelPhyloBayesSpec
+module EvoMod.Import.MarkovProcess.EDMModelPhylobayesSpec
   (spec) where
 
 import           Numeric.LinearAlgebra                          (fromList)
 import           Test.Hspec
 
 import           EvoMod.Data.MarkovProcess.EDMModel
-import           EvoMod.Import.MarkovProcess.EDMModelPhyloBayes
+import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes
 import           EvoMod.Tools                                   (parseFileWith)
-import           Files                                          (componentsFilePhyloBayes)
+import           Files                                          (componentsFilePhylobayes)
 
 testComponents :: [EDMComponent]
 testComponents =
@@ -52,5 +52,5 @@ testComponents =
 spec :: Spec
 spec = describe "phylobayes" $
   it "parses a text file with stationary distributions in phylobayes format" $ do
-  cs <- parseFileWith phylobayes componentsFilePhyloBayes
+  cs <- parseFileWith phylobayes componentsFilePhylobayes
   cs `shouldBe` testComponents

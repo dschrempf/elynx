@@ -10,9 +10,9 @@ Portability :  portable
 
 Creation date: Tue Jan 29 19:57:55 2019.
 
-EDM models are empricial distribution mixture models. That is, they are mixture
-models that share the same exchangeability matrix but have different stationary
-distributions obtained from data.
+Empricial distribution mixture (EDM) models are mixture models that share the
+same exchangeability matrix but have different stationary distributions obtained
+from data.
 
 -}
 

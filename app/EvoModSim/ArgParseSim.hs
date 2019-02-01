@@ -18,54 +18,42 @@ module ArgParseSim
   , parseEvoModSimArgs
   ) where
 
-import           Data.Void
+import qualified Data.ByteString.Lazy.Char8 as B
 import           Data.Word
-import           Numeric.LinearAlgebra                    (norm_1, size, vector)
 import           Options.Applicative
-import           Text.Megaparsec                          hiding (option)
-import           Text.Megaparsec.Char
-import           Text.Megaparsec.Char.Lexer
 
 import           EvoMod.ArgParse
-import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Data.MarkovProcess.Nucleotide
-import           EvoMod.Data.MarkovProcess.RateMatrix
-import           EvoMod.Data.MarkovProcess.SubstitutionModel
-import           EvoMod.Tools
 
-type MegaParser = Parsec Void String
-
-nNuc :: Int
-nNuc = cardinality (alphabet DNA)
-
--- Ugly convenience function to read in more complicated command line options
--- with megaparsec and optparse
--- (https://github.com/pcapriotti/optparse-applicative#option-readers).
-megaReadM :: MegaParser a -> ReadM a
-megaReadM p = eitherReader $ \input ->
-  let eea = runParser p "" input
-  in
-    case eea of
-      Left eb -> Left $ errorBundlePretty eb
-      Right a -> Right a
+-- -- Ugly convenience function to read in more complicated command line options
+-- -- with megaparsec and optparse
+-- -- (https://github.com/pcapriotti/optparse-applicative#option-readers).
+-- megaReadM :: MegaParser a -> ReadM a
+-- megaReadM p = eitherReader $ \input ->
+--   let eea = runParser p "" input
+--   in
+--     case eea of
+--       Left eb -> Left $ errorBundlePretty eb
+--       Right a -> Right a
 
 data EvoModSimArgs = EvoModSimArgs
-  { argsTreeFile          :: FilePath
-  , argsQuiet             :: Bool
-  , argsFileOut           :: FilePath
-  , argsSubstitutionModel :: SubstitutionModel
-  , argsLength            :: Int
-  , argsSeed              :: Maybe [Word32]
+  { argsTreeFile         :: FilePath
+  , argsPhyloModelString :: B.ByteString
+  , argsLength           :: Int
+  , argsMaybeEDMFile     :: Maybe FilePath
+  , argsSeed             :: Maybe [Word32]
+  , argsQuiet            :: Bool
+  , argsFileOut          :: FilePath
   }
 
 evoModSimArgs :: Parser EvoModSimArgs
 evoModSimArgs = EvoModSimArgs
   <$> treeFileOpt
+  <*> (B.pack <$> phyloModelOpt)
+  <*> lengthOpt
+  <*> maybeEDMFileOpt
+  <*> seedOpt
   <*> quietOpt
   <*> fileOutOpt
-  <*> substModelOpt
-  <*> lengthOpt
-  <*> seedOpt
 
 treeFileOpt :: Parser FilePath
 treeFileOpt = strOption
@@ -87,49 +75,12 @@ fileOutOpt = strOption
     <> metavar "NAME"
     <> help "Specify output file NAME")
 
--- Read a stationary frequency of the form `pi_A,pi_C,pi_G,...`.
-parseStateFreq :: Int -> MegaParser StationaryDistribution
-parseStateFreq nAlleles = do
-  _ <- char '['
-  f <- vector <$> sepBy float (char ',')
-  _ <- char ']'
-  if size f /= nAlleles
-    then error "Length of stationary frequency vector is faulty, only DNA models are supported."
-  else if nearlyEq (norm_1 f) 1.0 then return f
-    else error $ "Stationary frequencies sum to " ++ show (norm_1 f) ++ " but should sum to 1.0."
-
-parseParams :: MegaParser [Double]
-parseParams = do
-  _ <- char '['
-  params <- sepBy1 float (char ',')
-  _ <- char ']'
-  return params
-
-parseSubstitutionModel :: MegaParser SubstitutionModel
-parseSubstitutionModel = do
-  m  <- takeWhile1P (Just "ModelName") (/= '[')
-  case m of
-       "JC" -> return jcModel
-       "HKY" -> do
-         ps <- parseParams
-         f  <- parseStateFreq nNuc
-         if length ps /= 1
-           then error "HKY model only has one parameter, kappa."
-           else return $ hkyModel (head ps) f
-       -- "GTR" -> do
-       --   ps <- parseParams
-       --   f  <- parseStateFreq
-       --   if length ps /= 5
-       --     then error "GTR model has five parameters."
-       --     else return $ GTR (head ps) (ps !! 1) (ps !! 2) (ps !! 3) (ps !! 4) f
-       _ -> error "Model string could not be parsed."
-
-substModelOpt :: Parser SubstitutionModel
-substModelOpt = option (megaReadM parseSubstitutionModel)
-  ( long "substition-model"
+phyloModelOpt :: Parser String
+phyloModelOpt = strOption
+  ( long "phylogenetic-model"
     <> short 'm'
     <> metavar "MODEL"
-    <> help "Set the substitution model; available models are shown below" )
+    <> help "Set the phylogenetic model; available models are shown below" )
 
 lengthOpt :: Parser Int
 lengthOpt = option auto
@@ -147,6 +98,13 @@ seedOpt = optional $ option auto
     <> showDefault
     <> help ( "Set seed for the random number generator; "
               ++ "list of 32 bit integers with up to 256 elements" ) )
+
+maybeEDMFileOpt :: Parser (Maybe FilePath)
+maybeEDMFileOpt = optional $ strOption
+  ( long "edm-file"
+    <> short 'e'
+    <> metavar "NAME"
+    <> help "empirical distribution model file NAME in Phylobayes format" )
 
 -- | Read the arguments and prints out help if needed.
 parseEvoModSimArgs :: IO EvoModSimArgs
