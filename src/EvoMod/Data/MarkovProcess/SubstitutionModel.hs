@@ -35,7 +35,8 @@ data SubstitutionModel = SubstitutionModel
 -- | Summarize a substitution model; to be printed to screen or log.
 summarizeSubstitutionModel :: SubstitutionModel -> B.ByteString
 summarizeSubstitutionModel sm = B.unlines $ map B.pack
-  [ "Code: " ++ show (smCode sm) ++ "."
+  [ "Substitution model."
+  , "Code: " ++ show (smCode sm) ++ "."
   , "Name: " ++ show (smName sm) ++ "."
   , "Parameters: " ++ show (smParams sm) ++ "."
   , "Stationary frequencies: " ++ show (smStationaryDistribution sm) ++ "."

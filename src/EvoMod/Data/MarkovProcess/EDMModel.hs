@@ -10,15 +10,22 @@ Portability :  portable
 
 Creation date: Tue Jan 29 19:57:55 2019.
 
+EDM models are empricial distribution mixture models. That is, they are mixture
+models that share the same exchangeability matrix but have different stationary
+distributions obtained from data.
+
 -}
 
 module EvoMod.Data.MarkovProcess.EDMModel
   ( EDMComponent (..)
+  , edmModel
   ) where
 
--- import           EvoMod.Data.MarkovProcess.MixtureModel
+import qualified Data.ByteString.Lazy.Char8                  as B
+
+import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
--- import           EvoMod.Data.MarkovProcess.SubstitutionModel
+import           EvoMod.Data.MarkovProcess.SubstitutionModel
 
 -- | Empirical distribution mixture model component.
 data EDMComponent = EDMComponent
@@ -27,8 +34,9 @@ data EDMComponent = EDMComponent
   }
   deriving (Show, Eq)
 
--- -- | Take a substitution model and
--- edmModel :: SubstitutionModel -> [EDMComponent] -> MixtureModel
--- edmModel sm cs = MixtureModel ("EDM" ++ show nc)
---   where es = smExchMatrix s
---         nc = length cs
+-- | Take a substitution model and mixture components to create an empirical
+-- distribution mixture model (EDM model).
+edmModel :: SubstitutionModel -> [EDMComponent] -> MixtureModel
+edmModel sm cs = MixtureModel name
+  [ MixtureModelComponent w sm {smStationaryDistribution = sd} | (EDMComponent w sd) <- cs ]
+  where name = B.pack $ "EDM" ++ show (length cs)

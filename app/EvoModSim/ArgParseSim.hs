@@ -78,7 +78,7 @@ quietOpt :: Parser Bool
 quietOpt = switch
   ( long "quiet"
   <> short 'q'
-  <> help "Be quiet" )
+  <> help "Be quiet (default: False)" )
 
 fileOutOpt :: Parser FilePath
 fileOutOpt = strOption
@@ -138,7 +138,6 @@ lengthOpt = option auto
     <> metavar "NUMBER"
     <> help "Set alignment length to NUMBER" )
 
--- TODO: Improve reading of seed.
 seedOpt :: Parser (Maybe [Word32])
 seedOpt = optional $ option auto
   ( long "seed"
@@ -146,7 +145,8 @@ seedOpt = optional $ option auto
     <> metavar "INT"
     <> value [ 0 :: Word32 ]
     <> showDefault
-    <> help "Set seed for the random number generator" )
+    <> help ( "Set seed for the random number generator; "
+              ++ "list of 32 bit integers with up to 256 elements" ) )
 
 -- | Read the arguments and prints out help if needed.
 parseEvoModSimArgs :: IO EvoModSimArgs

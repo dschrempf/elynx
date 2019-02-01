@@ -50,7 +50,7 @@ evoModHeaderDoc = vcat $ map pretty evoModHeaders
 evoModFooterDoc :: Doc
 evoModFooterDoc = vcat $ map pretty evoModFooters
 
--- | TODO: Check if this is good to set across executables.
+-- | XXX: Set across executables; subject to change.
 evoModFooters :: [String]
 evoModFooters = [ "File formats:" ] ++ fs ++
                 [ "", "Alphabet types:" ] ++ as ++

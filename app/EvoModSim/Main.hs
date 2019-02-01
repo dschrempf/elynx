@@ -64,7 +64,6 @@ main = do (EvoModSimArgs trFn q outFn sm len mSeed) <- parseEvoModSimArgs
           unless q $ do
             B.putStr $ summarize tree
             putStrLn ""
-            putStrLn "Substitution model."
             B.putStr $ summarizeSubstitutionModel sm
             putStrLn ""
             putStrLn "Simulate alignment."

@@ -9,3 +9,8 @@ stack exec evomod-seq -- --help || exit 1
 msg "EvoMod-Seq version text."
 stack exec evomod-seq -- --version || exit 1
 
+msg "EvoMod-Sim help text."
+stack exec evomod-sim -- --help || exit 1
+
+msg "EvoMod-Sim version text."
+stack exec evomod-sim -- --version || exit 1
