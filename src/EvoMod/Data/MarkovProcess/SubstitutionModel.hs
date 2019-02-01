@@ -32,12 +32,11 @@ data SubstitutionModel = SubstitutionModel
   , smRateMatrix             :: RateMatrix
   }
 
--- | Summarize a substitution model; to be printed to screen or log.
-summarizeSubstitutionModel :: SubstitutionModel -> B.ByteString
-summarizeSubstitutionModel sm = B.unlines $ map B.pack
-  [ "Substitution model."
+-- | Summarize a substitution model; lines to be printed to screen or log.
+summarizeSubstitutionModel :: SubstitutionModel -> [B.ByteString]
+summarizeSubstitutionModel sm = map B.pack
+  [ "Substitution model " ++ show (smName sm)++ "."
   , "Code: " ++ show (smCode sm) ++ "."
-  , "Name: " ++ show (smName sm) ++ "."
   , "Parameters: " ++ show (smParams sm) ++ "."
   , "Stationary distribution: " ++ show (smStationaryDistribution sm) ++ "."
      -- XXX: This will be very verbose with amino acids or codons.

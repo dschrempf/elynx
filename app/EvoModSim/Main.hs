@@ -30,6 +30,7 @@ import           EvoMod.ArgParse
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.PhyloModel
+import           EvoMod.Data.MarkovProcess.EDMModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
@@ -74,14 +75,15 @@ main = do
         putStrLn "Read EDM file."
       Just <$> parseFileWith phylobayes edmF
   unless q $ do
-    putStrLn "TODO: Summarize EDM components."
+    -- Is there a better way?
+    maybe (return ()) (B.putStrLn . summarizeEDMComponents) edmCs
     putStrLn ""
     putStrLn "Read model string."
   let pM = parseByteStringWith (phyloModelString edmCs) pMs
   unless q $ do
     case pM of
-      PhyloMixtureModel mm      -> B.putStr $ summarizeMixtureModel mm
-      PhyloSubstitutionModel sm -> B.putStr $ summarizeSubstitutionModel sm
+      PhyloMixtureModel mm      -> B.putStr . B.unlines $ summarizeMixtureModel mm
+      PhyloSubstitutionModel sm -> B.putStr . B.unlines $ summarizeSubstitutionModel sm
     putStrLn ""
     putStrLn "Simulate alignment."
     putStrLn $ "Length: " ++ show len ++ "."

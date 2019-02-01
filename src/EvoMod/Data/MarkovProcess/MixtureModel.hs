@@ -30,12 +30,11 @@ data MixtureModelComponent = MixtureModelComponent
   , mmcSubstitutionModel :: SubstitutionModel
   }
 
--- | Summarize a mixture model component; to be printed to screen or log.
-summarizeMixtureModelComponent :: MixtureModelComponent -> B.ByteString
-summarizeMixtureModelComponent mmc = B.unlines
-  -- TODO: Remove newlines at the end. Maybe already from summarizeSubstitutionModel.
-  [ B.pack "Weight: " <> (B.toLazyByteString . B.doubleDec $ mmcWeight mmc)
-  , summarizeSubstitutionModel $ mmcSubstitutionModel mmc ]
+-- | Summarize a mixture model component; lines to be printed to screen or log.
+summarizeMixtureModelComponent :: MixtureModelComponent -> [B.ByteString]
+summarizeMixtureModelComponent mmc =
+  B.pack "Weight: " <> (B.toLazyByteString . B.doubleDec $ mmcWeight mmc)
+  : summarizeSubstitutionModel (mmcSubstitutionModel mmc)
 
 -- | A mixture model with its components.
 data MixtureModel = MixtureModel
@@ -43,11 +42,9 @@ data MixtureModel = MixtureModel
   , mmComponents :: [MixtureModelComponent]
   }
 
--- | Summarize a mixture model; to be printed to screen or log.
-summarizeMixtureModel :: MixtureModel -> B.ByteString
-summarizeMixtureModel mm = B.unlines $
-  [ B.pack "Mixture model."
-  , B.pack $ "Name: " ++ show (mmName mm) ]
-  ++ cs
-  where cs = [ B.pack ("Component " ++ show i ++ ":\n") <> summarizeMixtureModelComponent c
-             | (i, c) <- zip [0 :: Int ..] (mmComponents mm) ]
+-- | Summarize a mixture model; lines to be printed to screen or log.
+summarizeMixtureModel :: MixtureModel -> [B.ByteString]
+summarizeMixtureModel mm =
+  B.pack "Mixture model " <> mmName mm
+  : concat [ B.pack ("Component " ++ show i ++ ":") : summarizeMixtureModelComponent c
+            | (i, c) <- zip [0 :: Int ..] (mmComponents mm) ]

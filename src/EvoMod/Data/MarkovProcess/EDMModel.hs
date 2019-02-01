@@ -18,6 +18,7 @@ from data.
 
 module EvoMod.Data.MarkovProcess.EDMModel
   ( EDMComponent (..)
+  , summarizeEDMComponents
   , edmModel
   ) where
 
@@ -33,6 +34,12 @@ data EDMComponent = EDMComponent
   , cStationaryDistribution :: StationaryDistribution
   }
   deriving (Show, Eq)
+
+-- | Summarize EDM components; line to be printed to screen or log.
+summarizeEDMComponents :: [EDMComponent] -> B.ByteString
+summarizeEDMComponents cs = B.pack
+                            $ "Empiricial distribution mixture model with "
+                            ++ show (length cs) ++ " components"
 
 -- | Take a substitution model and mixture components to create an empirical
 -- distribution mixture model (EDM model).
