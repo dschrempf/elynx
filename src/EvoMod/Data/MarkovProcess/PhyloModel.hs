@@ -18,9 +18,24 @@ complicated models may be added in the future.
 
 module EvoMod.Data.MarkovProcess.PhyloModel
   ( PhyloModel (..)
+  , pmCode
+  , pmSummarize
   ) where
 
-import EvoMod.Data.MarkovProcess.MixtureModel
-import EvoMod.Data.MarkovProcess.SubstitutionModel
+import qualified Data.ByteString.Lazy.Char8                  as B
+
+import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.MarkovProcess.MixtureModel
+import           EvoMod.Data.MarkovProcess.SubstitutionModel
 
 data PhyloModel = PhyloMixtureModel MixtureModel | PhyloSubstitutionModel SubstitutionModel
+
+-- | Extract code from phylogenetic model.
+pmCode :: PhyloModel -> Code
+pmCode (PhyloMixtureModel mm)      = mmCode mm
+pmCode (PhyloSubstitutionModel sm) = smCode sm
+
+-- | Summarize a phylogenetic model; lines to be printed to screen or log.
+pmSummarize :: PhyloModel -> [B.ByteString]
+pmSummarize (PhyloMixtureModel mm)      = summarizeMixtureModel mm
+pmSummarize (PhyloSubstitutionModel sm) = summarizeSubstitutionModel sm

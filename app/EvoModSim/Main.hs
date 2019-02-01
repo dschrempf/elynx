@@ -21,6 +21,7 @@ import           Control.Monad.Primitive
 import qualified Data.ByteString.Lazy.Char8                     as B
 import           Data.Tree
 import qualified Data.Vector                                    as V
+import           Numeric.LinearAlgebra
 import           System.Random.MWC
 
 import           ArgParseSim
@@ -28,76 +29,90 @@ import           ParsePhyloModel
 
 import           EvoMod.ArgParse
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.MarkovProcess.EDMModel
 import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.PhyloModel
-import           EvoMod.Data.MarkovProcess.EDMModel
-import           EvoMod.Data.MarkovProcess.RateMatrix
+-- import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.NamedTree
+import           EvoMod.Data.Tree.Tree
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes hiding (Parser)
-import           EvoMod.Data.Tree.Tree
 import           EvoMod.Import.Tree.Newick                      hiding (name)
 import           EvoMod.Simulate.MarkovProcessAlongTree
 import           EvoMod.Tools
 
--- | Simulate a 'MultiSequenceAlignment' for a given substitution model and
--- phylogenetic tree.
+-- | Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
+-- phylogenetic tree, and alignment length.
 simulateMSA :: (PrimMonad m, Measurable a, Named a)
-            => Code -> Int -> RateMatrix -> Tree a -> Gen (PrimState m)
+            => PhyloModel -> Tree a -> Int -> Gen (PrimState m)
             -> m MultiSequenceAlignment
-simulateMSA c n q t g = do
-  statesTree <- simulateNSitesAlongTree n q t g
+simulateMSA pm t n g = do
+  statesTree <- case pm of
+    PhyloSubstitutionModel sm -> simulateNSitesAlongTree n (smRateMatrix sm) t g
+    PhyloMixtureModel mm      -> simulateNSitesAlongTreeMixtureModel n ws qs t g
+      where
+        ws = vector $ getWeights mm
+        qs = getRateMatrices mm
   let leafNames  = map name $ leafs t
       leafStates = leafs statesTree
-      sequences  = [ toSequence sId (B.pack . map w2c $ indicesToCharacters c ss) |
+      code       = pmCode pm
+      sequences  = [ toSequence sId (B.pack . map w2c $ indicesToCharacters code ss) |
                     (sId, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
 
+-- -- | Simulate a 'MultiSequenceAlignment' for a given substitution model and
+-- -- phylogenetic tree.
+-- simulateMSA :: (PrimMonad m, Measurable a, Named a)
+--             => Code -> Int -> RateMatrix -> Tree a -> Gen (PrimState m)
+--             -> m MultiSequenceAlignment
+-- simulateMSA c n q t g = do
+--   statesTree <- simulateNSitesAlongTree n q t g
+--   let leafNames  = map name $ leafs t
+--       leafStates = leafs statesTree
+--       sequences  = [ toSequence sId (B.pack . map w2c $ indicesToCharacters c ss) |
+--                     (sId, ss) <- zip leafNames leafStates ]
+--   return $ fromSequenceList sequences
+
 main :: IO ()
 main = do
-  EvoModSimArgs trFn pMs len mEdmF mSeed q outFn <- parseEvoModSimArgs
-  unless q $ do
+  EvoModSimArgs treeFile phyloModelStr len mEDMFile mSeed quiet outFile <- parseEvoModSimArgs
+  unless quiet $ do
     programHeader
     putStrLn ""
     putStrLn "Read tree."
-  tree <- parseFileWith newick trFn
-  unless q $ do
+  tree <- parseFileWith newick treeFile
+  unless quiet $ do
     B.putStr $ summarize tree
     putStrLn ""
-  edmCs <- case mEdmF of
+  edmCs <- case mEDMFile of
     Nothing   -> return Nothing
     Just edmF -> do
-      unless q $
+      unless quiet $
         putStrLn "Read EDM file."
       Just <$> parseFileWith phylobayes edmF
-  unless q $ do
+  unless quiet $ do
     -- Is there a better way?
     maybe (return ()) (B.putStrLn . summarizeEDMComponents) edmCs
     putStrLn ""
     putStrLn "Read model string."
-  let pM = parseByteStringWith (phyloModelString edmCs) pMs
-  unless q $ do
-    case pM of
-      PhyloMixtureModel mm      -> B.putStr . B.unlines $ summarizeMixtureModel mm
-      PhyloSubstitutionModel sm -> B.putStr . B.unlines $ summarizeSubstitutionModel sm
+  let phyloModel = parseByteStringWith (phyloModelString edmCs) phyloModelStr
+  unless quiet $ do
+    B.putStr . B.unlines $ pmSummarize phyloModel
     putStrLn ""
     putStrLn "Simulate alignment."
     putStrLn $ "Length: " ++ show len ++ "."
-  g <- case mSeed of
+  gen <- case mSeed of
     Nothing -> putStrLn "Seed: random"
                >> createSystemRandom
     Just s  -> putStrLn ("Seed: " ++ show s ++ ".")
                >> initialize (V.fromList s)
-  msa <- case pM of
-    -- TODO: Handle mixture models.
-    PhyloMixtureModel _ -> undefined
-    PhyloSubstitutionModel sm -> simulateMSA (smCode sm) len (smRateMatrix sm) tree g
+  msa <- simulateMSA phyloModel tree len gen
   let output = sequencesToFasta $ msaSequences msa
-  B.writeFile outFn output
-  unless q $ do
+  B.writeFile outFile output
+  unless quiet $ do
     putStrLn ""
-    putStrLn ("Output written to file '" ++ outFn ++ "'.")
+    putStrLn ("Output written to file '" ++ outFile ++ "'.")

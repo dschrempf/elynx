@@ -17,12 +17,14 @@ The implementation of the Markov process is more than basic and can be improved 
 -}
 
 module EvoMod.Simulate.MarkovProcessAlongTree
-  (simulateNSitesAlongTree)
+  ( simulateNSitesAlongTree
+  , simulateNSitesAlongTreeMixtureModel )
   where
 
 import           Control.Monad
 import           Control.Monad.Primitive
 import           Data.Tree
+import           Numeric.LinearAlgebra
 import           System.Random.MWC
 import           System.Random.MWC.Distributions
 
@@ -35,10 +37,29 @@ import           EvoMod.Simulate.MarkovProcess
 -- states as node labels.
 simulateNSitesAlongTree :: (PrimMonad m, Measurable a) => Int -> RateMatrix -> Tree a -> Gen (PrimState m) -> m (Tree [State])
 simulateNSitesAlongTree n q t g = do
-  let d = getStationaryDistribution q
+  let d  = getStationaryDistribution q
+      pt = measureableTreeToProbTree q t
   is <- replicateM n $ categorical d g
   simulateAlongProbTree is pt g
-  where pt = measureableTreeToProbTree q t
+
+simulateNSitesAlongTreeMixtureModel :: (PrimMonad m, Measurable a) => Int -> Vector R -> [RateMatrix] -> Tree a -> Gen (PrimState m) -> m (Tree [State])
+simulateNSitesAlongTreeMixtureModel n ws qs t g = do
+  let ds = map getStationaryDistribution qs
+      pt = measureableTreeToProbTreeMixtureModel qs t
+  cs <- replicateM n $ categorical ws g
+  is <- sequence [ categorical (ds !! c) g | c <- cs ]
+  simulateAlongProbTreeMixtureModel is cs pt g
+
+measureableTreeToProbTreeMixtureModel :: (Measurable a) => [RateMatrix] -> Tree a -> Tree [ProbMatrix]
+measureableTreeToProbTreeMixtureModel qs = fmap (\a -> [probMatrix q . measure $ a | q <- qs])
+
+-- See 'simulateAlongProbTree', only we have a number of mixture components. The
+-- starting states and the components for each site have to be provided.
+simulateAlongProbTreeMixtureModel :: (PrimMonad m) => [State] -> [Int] -> Tree [ProbMatrix] -> Gen (PrimState m) -> m (Tree [State])
+simulateAlongProbTreeMixtureModel is cs (Node ps f) g = do
+  is' <- sequence [ jump i (ps !! c) g | (i, c) <- zip is cs ]
+  f'  <- sequence [ simulateAlongProbTreeMixtureModel is' cs t g | t <- f ]
+  return $ Node is' f'
 
 measureableTreeToProbTree :: (Measurable a) => RateMatrix -> Tree a -> Tree ProbMatrix
 measureableTreeToProbTree q = fmap (probMatrix q . measure)
@@ -50,52 +71,3 @@ simulateAlongProbTree is (Node p f) g = do
   is' <- mapM (\i -> jump i p g) is
   f' <- sequence [simulateAlongProbTree is' t g | t <- f]
   return $ Node is' f'
--- simulateAlongProbTree :: (PrimMonad m) => State -> Tree ProbMatrix -> Gen (PrimState m) -> m (Tree State)
--- simulateAlongProbTree i (Node p f) g = return $ Node i []
-
--- -- | Convert a stationary distribution to a generator which speeds up random
--- -- picks. Cf. 'jump'.
--- stationaryDistToGenerator :: StationaryDistribution -> Generator State
--- stationaryDistToGenerator f = fG
---   -- This is a little complicated. I need to convert the vector to a list to be
---   -- able to create a distribution.
---   where !fL = toList f
---         !fD = fromList $ zip (map State [0..]) fL
---         !fG = fromDistribution fD
-
--- -- | See 'jump'.
--- treeProbMatrixToTreeGenerator :: RTree a ProbMatrix -> RTree a [Generator State]
--- treeProbMatrixToTreeGenerator t = tG
---   where
---     -- Create a tree with the probability matrices as list of row vectors.
---     !tL = fmap toLists t
---     -- A complicated double map. We need to create generators for each branch on
---     -- the tree (fmap) and for each target state on each branch (map).
---     !tG = (fmap . map) (fromDistribution . fromList . zip (map State [0..])) tL
-
--- -- | Simulate data (states at the leaves) for a tree with transition
--- -- probabilities on its branches and with the stationary distribution of states
--- -- at the root. The state at the root is randomly chosen from the stationary
--- -- distribution and the states at the nodes and leaves are randomly chosen
--- -- according to the transition probabilities.
--- simulateSite :: (MonadRandom m) =>
---                 Generator State
---              -> RTree a [Generator State]
---              -> m [(a, State)]
--- simulateSite f t = do
---   !rootState <- getSample f
---   populateAndFlattenTree t rootState
-
--- -- | Randomly draw an index according to a given generator. Use the stationary
--- -- distribution and rooted tree at the drawn index to simulate a site. This is
--- -- useful for simulation, e.g., Gamma rate heterogeneity models.
--- simulateSiteGen :: (MonadRandom m) =>
---                    Generator Int
---                 -> [Generator State]
---                 -> [RTree a [Generator State]]
---                 -> m [(a, State)]
--- simulateSiteGen gen fs trs = do
---   !i <- getSample gen
---   let !f = fs  !! i
---       !t = trs !! i
---   simulateSite f t

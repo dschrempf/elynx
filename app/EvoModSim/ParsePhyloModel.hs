@@ -75,6 +75,8 @@ substitutionModel = try parseJC <|> try parseHKY
 -- TODO: Code is important! Check if # of aa matches code from
 -- substitution model.
 
+-- TODO: Rate matrices need to be initialized with the EDM components.
+
 -- TODO: Think about how models are specified. Probably turn this around.
 -- HKY[6.0][EDMFILE]. Otherwise, stationary frequency of HKY model is ignored,
 -- which is very bad behavior.

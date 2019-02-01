@@ -17,12 +17,19 @@ module EvoMod.Data.MarkovProcess.MixtureModel
   , summarizeMixtureModelComponent
   , MixtureModel (..)
   , summarizeMixtureModel
+  , isValidMixtureModel
+  , mmCode
+  , getWeights
+  , getRateMatrices
   ) where
 
 import qualified Data.ByteString.Builder                     as B
 import qualified Data.ByteString.Lazy.Char8                  as B
 
+import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
+import           EvoMod.Tools                                (allEqual)
 
 -- | A mixture model component has a weight and a substitution model.
 data MixtureModelComponent = MixtureModelComponent
@@ -48,3 +55,29 @@ summarizeMixtureModel mm =
   B.pack "Mixture model " <> mmName mm
   : concat [ B.pack ("Component " ++ show i ++ ":") : summarizeMixtureModelComponent c
             | (i, c) <- zip [0 :: Int ..] (mmComponents mm) ]
+
+-- | Checks if a mixture model is valid.
+--
+-- XXX: For the future, a proper way of creating mixture models might be of
+-- interest. For example, not exporting the constructor nor the record fields
+-- and providing an algebraic way of creating mixture models (empty and
+-- addComponent which performs necessary checks).
+isValidMixtureModel :: MixtureModel -> Bool
+isValidMixtureModel mm = allEqual (map (smCode . mmcSubstitutionModel) cs)
+                         && not (null cs)
+  where cs = mmComponents mm
+
+-- | Throws error if components use different 'Code's.
+mmCode :: MixtureModel -> Code
+mmCode mm = if isValidMixtureModel mm
+            then smCode . mmcSubstitutionModel $ head (mmComponents mm)
+            else error "Mixture model is invalid."
+
+-- | Extract weights.
+getWeights :: MixtureModel -> [Double]
+getWeights mm = map mmcWeight $ mmComponents mm
+
+-- | Extract rate matrices.
+getRateMatrices :: MixtureModel -> [RateMatrix]
+getRateMatrices mm = map (smRateMatrix . mmcSubstitutionModel) (mmComponents mm)
+
