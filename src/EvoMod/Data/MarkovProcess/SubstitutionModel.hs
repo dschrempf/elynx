@@ -34,10 +34,11 @@ data SubstitutionModel = SubstitutionModel
 
 -- | Summarize a substitution model; lines to be printed to screen or log.
 summarizeSubstitutionModel :: SubstitutionModel -> [B.ByteString]
-summarizeSubstitutionModel sm = map B.pack
-  [ "Substitution model " ++ show (smName sm)++ "."
-  , "Code: " ++ show (smCode sm) ++ "."
-  , "Parameters: " ++ show (smParams sm) ++ "."
-  , "Stationary distribution: " ++ show (smStationaryDistribution sm) ++ "."
-     -- XXX: This will be very verbose with amino acids or codons.
-  , "Rate matrix: " ++ show (smRateMatrix sm) ++ "." ]
+summarizeSubstitutionModel sm = map B.pack $
+  (show (smCode sm) ++ " substitution model: " ++ B.unpack (smName sm) ++ ".") :
+  [ "Parameters: " ++ show (smParams sm) ++ "." | not (null (smParams sm))] ++
+  case smCode sm of
+    DNA -> [ "Stationary distribution: " ++ show (smStationaryDistribution sm) ++ "."
+           , "Rate matrix: " ++ show (smRateMatrix sm) ++ "." ]
+    Protein -> [ "Stationary distribution: " ++ show (smStationaryDistribution sm) ++ "." ]
+    _ -> []

@@ -10,13 +10,13 @@ if [[ $1 == "s" ]]
 then
     msg "EvoMod-Sim; substitution model."
     stack exec evomod-sim -- \
-          -t $file_tree -o evomod-sim.out -m "HKY[6.0][0.2,0.3,0.3,0.2]" -l 10000 -s [0] || exit 1
+          -t $file_tree -o evomod-sim.out -m "HKY[6.0]{0.2,0.3,0.3,0.2}" -l 10000 -s [0] || exit 1
 elif [[ $1 == "e" ]]
 then
     msg "EvoMod-Sim; empirical distribution mixture model."
     file_edm=../data/EDMDistsPhylobayes.txt
     stack exec evomod-sim -- \
-          -t $file_tree -o evomod-sim.out -e $file_edm -m "EDM[HKY[6.0][0.2,0.3,0.3,0.2]]" -l 10000 -s [0] || exit 1
+          -t $file_tree -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -l 10000 -s [0] || exit 1
 else
     msg "Usage: ./evomod-sim (s|e)"
     exit 1

@@ -54,17 +54,26 @@ evoModFooterDoc = vcat $ map pretty evoModFooters
 evoModFooters :: [String]
 evoModFooters = [ "File formats:" ] ++ fs ++
                 [ "", "Alphabet types:" ] ++ as ++
-                [ "", "Substitution models:" ] ++ sm
+                [ "", "Substitution models:" ] ++ sm ++
+                [ "", "Mixture models:" ] ++ mm
   where
     toListItem = ("  - " ++)
     fs = map toListItem ["FASTA"]
     as = map (toListItem . codeNameVerbose) [(minBound :: Code) ..]
-    sm =  [ "  - HKY model with transition to transversion ratio kappa and a state frequency vector."
-          , "    Specified with \"-m HKY[DOUBLE][DOUBLE,DOUBLE,DOUBLE,DOUBLE]\"."
-          , "  - GTR model with five rate parameters and state frequency vector."
-          , "    Specified with \"-m HKY[DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE][DOUBLE,DOUBLE,DOUBLE,DOUBLE]\"."
-          , ""
-          , "Note: The state frequency vector has to sum up to 1.0 and only has three free parameters." ]
+    sm =
+      [ "  MODELNAME[PARAMETER,PARAMETER,...]{PI_A,PI_C,PI_G,PI_T}"
+      , "  Supported DNA models: JC, HKY."
+      , "  Supported Protein models: Poisson, Poisson-Custom, LG, LG-Custom."
+      , "  MODELNAME-Custom means that a custom stationary distribution is provided."
+      , "  For example,"
+      , "    HKY model with parameter KAPPA and stationary distribution:"
+      , "      -m HKY[KAPPA]{DOUBLE,DOUBLE,DOUBLE,DOUBLE}"
+      ]
+    mm =
+      [ "  Empirical distribution mixture (EDM) models."
+      , "  For example,"
+      , "    EDM LG model with distributions given in FILE (see -e option)."
+      , "      -m EDM[LG-Custom] -e FILE" ]
 
 versionOpt :: Parser (a -> a)
 versionOpt = infoOption evoModHeader

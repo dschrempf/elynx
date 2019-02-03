@@ -52,7 +52,7 @@ data MixtureModel = MixtureModel
 -- | Summarize a mixture model; lines to be printed to screen or log.
 summarizeMixtureModel :: MixtureModel -> [B.ByteString]
 summarizeMixtureModel mm =
-  B.pack "Mixture model " <> mmName mm
+  B.pack "Mixture model: " <> mmName mm <> B.pack "."
   : concat [ B.pack ("Component " ++ show i ++ ":") : summarizeMixtureModelComponent c
             | (i, c) <- zip [0 :: Int ..] (mmComponents mm) ]
 

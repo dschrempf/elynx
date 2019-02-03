@@ -18,19 +18,27 @@ module EvoMod.Data.MarkovProcess.AminoAcid
   ( statDistLG
   , exchLG
   , lg
+  , lgModel
   , lgCustom
+  , lgCustomModel
   , poisson
+  , poissonModel
   , poissonCustom
+  , poissonCustomModel
   ) where
 
-import           Data.List                         (elemIndex)
-import           Data.Maybe                        (fromMaybe)
-import           Data.Word                         (Word8)
+import qualified Data.ByteString.Lazy.Char8                  as B
+import           Data.List                                   (elemIndex)
+import           Data.Maybe                                  (fromMaybe)
+import           Data.Word                                   (Word8)
 import           Numeric.LinearAlgebra
 import           Numeric.SpecFunctions
 
+import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.RateMatrix
-import           EvoMod.Tools                      (c2w, matrixSetDiagToZero, normalizeSumVec)
+import           EvoMod.Data.MarkovProcess.SubstitutionModel
+import           EvoMod.Tools                                (c2w, matrixSetDiagToZero,
+                                                              normalizeSumVec, uniformVec)
 
 -- XXX: Hardcoded here, to reduce intermodule dependencies.
 n :: Int
@@ -155,20 +163,40 @@ statDistLGPaml = normalizeSumVec 1.0 $
 statDistLG :: StationaryDistribution
 statDistLG = pamlToAlphaVec statDistLGPaml
 
--- | LG rate matrix in alphabetical order.
+-- | LG rate matrix with amino acids in alphabetical order.
 lg :: RateMatrix
 lg = lgCustom statDistLG
 
--- | LG model with custom stationary distribution.
+-- | LG substitution model.
+lgModel :: SubstitutionModel
+lgModel = SubstitutionModel Protein (B.pack "LG") [] statDistLG exchLG lg
+
+-- | LG rate matrix with custom stationary distribution.
 lgCustom :: StationaryDistribution -> RateMatrix
 lgCustom = fromExchMatrix exchLG
 
+-- | LG substitution model with custom stationary distribution.
+lgCustomModel :: StationaryDistribution -> SubstitutionModel
+lgCustomModel f = SubstitutionModel Protein (B.pack "LG-Custom") [] f exchLG (lgCustom f)
+
+uniformExch :: ExchMatrix
+uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n*n) 1.0
+
+exchPoisson :: ExchMatrix
+exchPoisson = uniformExch
+
 -- | Poisson rate matrix.
 poisson :: RateMatrix
-poisson = poissonCustom uniformStat
-  where uniformStat = normalizeSumVec 1.0 $ vector $ replicate n 1.0
+poisson = poissonCustom $ uniformVec n
 
--- | Poisson model with custom stationary distribuiton.
+-- | Poisson substitution model.
+poissonModel :: SubstitutionModel
+poissonModel = SubstitutionModel Protein (B.pack "Poisson") [] (uniformVec n) exchPoisson poisson
+
+-- | Poisson rate matrix with custom stationary distribution.
 poissonCustom :: StationaryDistribution -> RateMatrix
 poissonCustom = fromExchMatrix uniformExch
-  where uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n*n) 1.0
+
+-- | Poisson substitution model with custom stationary distribution.
+poissonCustomModel :: StationaryDistribution -> SubstitutionModel
+poissonCustomModel f = SubstitutionModel Protein (B.pack "Poisson-Custom") [] f exchPoisson (poissonCustom f)

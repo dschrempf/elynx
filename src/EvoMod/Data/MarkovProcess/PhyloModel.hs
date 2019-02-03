@@ -28,6 +28,8 @@ import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 
+-- | A phylogenetic model is a mixture model or a substitution model. More
+-- complicated models may be added.
 data PhyloModel = PhyloMixtureModel MixtureModel | PhyloSubstitutionModel SubstitutionModel
 
 -- | Extract code from phylogenetic model.

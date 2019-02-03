@@ -33,6 +33,19 @@ import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools                                (uniformVec)
 
+-- XXX: Another idea of structuring the code. This would probably be cleaner in
+-- the long run.
+
+-- data PhyloModel = MixtureModel | SubstitutionModel
+
+-- data MixtureModel = [(Weight, SubstitutionModel)]
+
+-- data SubstitutionModel = SMDNA DNASubstitutionModel | SMAA AASubstitutionModel
+
+-- data DNASubstitutionModel = JC | HKY Double StationaryDistribution
+
+-- data AASubstitutionModel = LG | ...
+
 n :: Int
 n = cardinality (alphabet DNA)
 

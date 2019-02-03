@@ -18,6 +18,7 @@ module ParsePhyloModel
 
 import qualified Data.ByteString.Lazy.Char8                  as B
 import           Data.Void
+import           Data.Word                                   (Word8)
 import           Numeric.LinearAlgebra                       (norm_1, size,
                                                               vector)
 import           Text.Megaparsec
@@ -25,6 +26,7 @@ import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.MarkovProcess.AminoAcid
 import           EvoMod.Data.MarkovProcess.EDMModel
 import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.Nucleotide
@@ -35,60 +37,89 @@ import           EvoMod.Tools
 
 type Parser = Parsec Void B.ByteString
 
+bs :: String -> B.ByteString
+bs = B.pack
+
 nNuc :: Int
 nNuc = cardinality (alphabet DNA)
 
+nAA :: Int
+nAA = cardinality (alphabet Protein)
+
+paramsStart :: Word8
+paramsStart = c2w '['
+
+paramsEnd :: Word8
+paramsEnd = c2w ']'
+
+sdStart :: Word8
+sdStart = c2w '{'
+
+sdEnd :: Word8
+sdEnd = c2w '}'
+
+name :: Parser String
+name = B.unpack <$>
+  takeWhile1P (Just "Substitution model name") (`notElem` [paramsStart, paramsEnd])
+
 params :: Parser [Double]
-params = do
-  _ <- char $ c2w '['
-  ps <- sepBy1 float (char $ c2w ',')
-  _ <- char $ c2w ']'
-  return ps
+params = between (char paramsStart) (char paramsEnd) (sepBy1 float (char $ c2w ','))
 
--- Read a stationary distribution of the form `pi_A,pi_C,pi_G,...`.
-stationaryDistribution :: Int -> Parser StationaryDistribution
-stationaryDistribution nAlleles = do
-  _ <- char $ c2w '['
-  f <- vector <$> sepBy float (char $ c2w ',')
-  _ <- char $ c2w ']'
-  if size f /= nAlleles
-    then error "Length of stationary distribution vector is faulty, only DNA models are supported."
-  else if nearlyEq (norm_1 f) 1.0 then return f
-    else error $ "Stationary distributions sum to " ++ show (norm_1 f) ++ " but should sum to 1.0."
+stationaryDistribution :: Parser StationaryDistribution
+stationaryDistribution = do
+  f <- vector <$> between (char sdStart) (char sdEnd) (sepBy1 float (char $ c2w ','))
+  if nearlyEq (norm_1 f) 1.0
+    then return f
+    else error $ "Sum of stationary distribution is " ++ show (norm_1 f)
+         ++ " but should be 1.0."
 
-parseJC :: Parser SubstitutionModel
-parseJC = chunk (B.pack "JC") >> return jcModel
+type Name = String
+type Params = [Double]
 
-parseHKY :: Parser SubstitutionModel
-parseHKY = do
-  _ <- chunk (B.pack "HKY")
-  ps <- params
-  f  <- stationaryDistribution nNuc
-  if length ps /= 1
-    then error "HKY model only has one parameter, kappa."
-    else return $ hkyModel (head ps) f
+checkLength :: StationaryDistribution -> Int -> a -> a
+checkLength f n r = if size f /= n
+                  then error $ "Length of stationary distribution is " ++ show (size f)
+                       ++ " but should be " ++ show n ++ "."
+                  else r
 
--- XXX: More models need to be added.
+assembleSubstitutionModel :: Name -> Maybe Params -> Maybe StationaryDistribution
+                     -> SubstitutionModel
+-- DNA models.
+assembleSubstitutionModel "JC" Nothing Nothing = jcModel
+assembleSubstitutionModel "HKY" (Just [k]) (Just f) = checkLength f nNuc $ hkyModel k f
+-- Protein models.
+assembleSubstitutionModel "LG" Nothing Nothing = lgModel
+assembleSubstitutionModel "LG-Custom" Nothing (Just f) = checkLength f nAA $ lgCustomModel f
+assembleSubstitutionModel "Poisson" Nothing Nothing = poissonModel
+assembleSubstitutionModel "Poisson-Custom" Nothing (Just f)  = checkLength f nAA $ poissonCustomModel f
+assembleSubstitutionModel n mps mf = error . unlines $
+  [ "Cannot assemble substitution model. "
+  , "Name: " ++ show n
+  , "Parameters: " ++ show mps
+  , "Stationary distribution: " ++ show mf ]
+
 substitutionModel :: Parser SubstitutionModel
-substitutionModel = try parseJC <|> try parseHKY
+substitutionModel = do
+  n  <- name
+  mps <- optional params
+  mf <- optional stationaryDistribution
+  return $ assembleSubstitutionModel n mps mf
 
--- TODO: Code is important! Check if # of aa matches code from
--- substitution model.
-
--- TODO: Rate matrices need to be initialized with the EDM components.
-
--- TODO: Think about how models are specified. Probably turn this around.
--- HKY[6.0][EDMFILE]. Otherwise, stationary frequency of HKY model is ignored,
--- which is very bad behavior.
 parseEDM :: Maybe [EDMComponent] -> Parser MixtureModel
 parseEDM mcs = do
-  _ <- chunk (B.pack "EDM")
-  _ <- char $ c2w '['
-  sm <- substitutionModel
-  _ <- char $ c2w ']'
+  _ <- chunk (bs "EDM")
+  _ <- char paramsStart
+  n <- name
+  mps <- optional params
+  _ <- char paramsEnd
   case mcs of
     Nothing -> error "Empirical distributions not given."
-    Just cs -> return $ edmModel sm cs
+    Just cs -> do
+      let sms = map (\c -> assembleSubstitutionModel n mps (Just $ cStationaryDistribution c)) cs
+          ws = map cWeight cs
+          edmName = B.pack $ "EDM" ++ show (length cs)
+      return $ MixtureModel edmName
+        [ MixtureModelComponent w sm | (w, sm) <- zip ws sms ]
 
 mixtureModel :: Maybe [EDMComponent] -> Parser MixtureModel
 mixtureModel = parseEDM

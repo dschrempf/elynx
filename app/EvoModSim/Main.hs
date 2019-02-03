@@ -77,6 +77,7 @@ simulateMSA pm t n g = do
 --                     (sId, ss) <- zip leafNames leafStates ]
 --   return $ fromSequenceList sequences
 
+-- TODO: Output exact matrices etc. to log file.
 main :: IO ()
 main = do
   EvoModSimArgs treeFile phyloModelStr len mEDMFile mSeed quiet outFile <- parseEvoModSimArgs
@@ -85,13 +86,13 @@ main = do
     putStrLn ""
     putStrLn "Read tree."
   tree <- parseFileWith newick treeFile
-  unless quiet $ do
+  unless quiet $
     B.putStr $ summarize tree
-    putStrLn ""
   edmCs <- case mEDMFile of
     Nothing   -> return Nothing
     Just edmF -> do
-      unless quiet $
+      unless quiet $ do
+        putStrLn ""
         putStrLn "Read EDM file."
       Just <$> parseFileWith phylobayes edmF
   unless quiet $ do

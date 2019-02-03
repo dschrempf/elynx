@@ -32,7 +32,7 @@ import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Simulate.MarkovProcess
 
--- | Simulate a number of site for a given substitution model with given
+-- | Simulate a number of sites for a given substitution model with given
 -- stationary distribution. The result is a tree with the list of simulated
 -- states as node labels.
 simulateNSitesAlongTree :: (PrimMonad m, Measurable a) => Int -> RateMatrix -> Tree a -> Gen (PrimState m) -> m (Tree [State])
@@ -42,6 +42,8 @@ simulateNSitesAlongTree n q t g = do
   is <- replicateM n $ categorical d g
   simulateAlongProbTree is pt g
 
+-- | Simulate a number of sites for a given set of substitution models with
+-- corresponding weights. See also 'simulateNSitesAlongTree'.
 simulateNSitesAlongTreeMixtureModel :: (PrimMonad m, Measurable a) => Int -> Vector R -> [RateMatrix] -> Tree a -> Gen (PrimState m) -> m (Tree [State])
 simulateNSitesAlongTreeMixtureModel n ws qs t g = do
   let ds = map getStationaryDistribution qs
