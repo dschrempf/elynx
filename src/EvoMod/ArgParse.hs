@@ -44,9 +44,6 @@ evoModHeader = unlines evoModHeaders
 stringsToDoc :: [String] -> Doc
 stringsToDoc = vcat . map pretty
 
--- evoModHeaderDoc :: Doc
--- evoModHeaderDoc = stringsToDoc evoModHeaders
-
 evoModSuiteFooterEnd :: [String]
 evoModSuiteFooterEnd =
   "" : evoModVersion : evoModCopyright :
@@ -67,8 +64,6 @@ parseEvoModArgs ftr p = execParser $
   info (helper <*> versionOpt <*> p)
   (fullDesc
     <> progDesc evoModDescription
-    -- Not needed. Show at the bottom.
-    -- <> headerDoc (Just evoModHeaderDoc)
     <> footerDoc (Just . stringsToDoc $ ftr'))
   where ftr' = ftr ++ evoModSuiteFooterEnd
 

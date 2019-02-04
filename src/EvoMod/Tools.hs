@@ -14,28 +14,39 @@ Indispensable tools.
 
 
 module EvoMod.Tools
-  ( alignRight
+  (
+    -- * ByteString handling.
+    alignRight
   , alignLeft
-  , allEqual
+  , summarizeByteString
   , c2w
   , w2c
-  , readGZFile
-  , writeGZFile
-  , runParserOnFile
-  , parseFileWith
-  , parseByteStringWith
-  , summarizeByteString
-  , compose
-  , allValues
-  , matrixSetDiagToZero
+    -- * Equality tests.
+  , allEqual
   , nearlyEqWith
   , nearlyEq
   , nearlyEqVecWith
   , nearlyEqVec
   , nearlyEqMatWith
   , nearlyEqMat
+    -- * Numerics.
+  , harmonic
+    -- * Input, output.
+  , readGZFile
+  , writeGZFile
+    -- * Parsing.
+  , runParserOnFile
+  , parseFileWith
+  , parseByteStringWith
+    -- * Weird stuff :).
+  , compose
+  , allValues
+    -- * Vectors.
   , normalizeSumVec
   , uniformVec
+    -- * Matrices.
+  , matrixSeparateSymSkew
+  , matrixSetDiagToZero
   ) where
 
 import           Codec.Compression.GZip     (compress, decompress)
@@ -97,7 +108,7 @@ summarizeByteString :: Int -> B.ByteString -> B.ByteString
 summarizeByteString l s | B.length s >= fromIntegral l = B.take (fromIntegral l) s <> B.pack "..."
                         | otherwise = s
 
--- | See https://wiki.haskell.org/Compose.
+-- | Chain a list of functions together. See https://wiki.haskell.org/Compose.
 compose :: [a -> a] -> a -> a
 compose = foldl (flip (.)) id
 
@@ -105,17 +116,17 @@ compose = foldl (flip (.)) id
 allValues :: (Bounded a, Enum a) => [a]
 allValues = [minBound..]
 
--- -- | Calculate the nth harmonic number.
--- harmonic :: Int -> Double
--- harmonic 1 = 1.0
--- harmonic n = 1.0 / fromIntegral n + harmonic (n-1)
+-- | Calculate the nth harmonic number.
+harmonic :: Int -> Double
+harmonic 1 = 1.0
+harmonic n = 1.0 / fromIntegral n + harmonic (n-1)
 
--- -- | Separate a square matrix into a symmetric and a skew-symmetric matrix.
--- matrixSeparateSymSkew :: Matrix R -> (Matrix R, Matrix R)
--- matrixSeparateSymSkew m = (mSym, mSkew)
---   where trM = tr m
---         mSym  = scale 0.5 $ m + trM
---         mSkew = scale 0.5 $ m - trM
+-- | Separate a square matrix into a symmetric and a skew-symmetric matrix.
+matrixSeparateSymSkew :: Matrix R -> (Matrix R, Matrix R)
+matrixSeparateSymSkew m = (mSym, mSkew)
+  where trM = tr m
+        mSym  = scale 0.5 $ m + trM
+        mSkew = scale 0.5 $ m - trM
 
 -- | Set the diagonal entries of a matrix to zero.
 matrixSetDiagToZero :: Matrix R -> Matrix R
@@ -132,10 +143,6 @@ nearlyEq = nearlyEqWith eps
 -- | Test if the given number is nearly equal to all elements of a vector.
 nearlyEqValListWith :: Double -> Double -> [Double] -> Bool
 nearlyEqValListWith tol a = all (nearlyEqWith tol a)
-
--- -- | Test if the given number is nearly equal to all elements of a vector.
--- nearlyEqValList :: Double -> [Double] -> Bool
--- nearlyEqValList = nearlyEqValListWith eps
 
 -- | Test if two vectors are nearly equal.
 nearlyEqVecWith :: Double -> Vector R -> Vector R -> Bool

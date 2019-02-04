@@ -16,6 +16,6 @@ module EvoMod.Definitions
   ( eps
   ) where
 
--- | Wanted double precision when comparing 'Double' values.
+-- | Required precision when comparing 'Double' values.
 eps :: Double
 eps = 1e-12
