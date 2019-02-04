@@ -10,6 +10,9 @@ Portability :  portable
 
 Creation date: Tue Jan 29 19:57:55 2019.
 
+-- TODO: Remove this model. It is not needed. An EDM model is just a normal
+-- mixture model. What may be needed is a parser for EDM models.
+
 Empricial distribution mixture (EDM) models are mixture models that share the
 same exchangeability matrix but have different stationary distributions obtained
 from data.

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+cwd=$(pwd)
+
+cd .. || exit 1
+
+graphmod -q -a \
+         -r Main \
+         -r ParseModuleString \
+         -r EvoMod.ArgParse \
+         -r EvoMod.Tools \
+         -r EvoMod.Definitions \
+         . > "${cwd}/module-dependencies.dot" \
+    || exit 1
+
+cd "$cwd" || exit 1
+
+xdot module-dependencies.dot

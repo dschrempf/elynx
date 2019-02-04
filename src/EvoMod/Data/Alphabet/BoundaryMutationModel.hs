@@ -7,6 +7,8 @@ Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
 Portability :  non-portable (not tested)
 
+TODO: Get rid of Lens dependency. I just do not really need it at the moment.
+
 The boundary mutation model is a discrete-state, continuous-time Markov process
 that allows mutations only when the population is monomorphic.
 

@@ -1,0 +1,340 @@
+digraph G {
+size="6,4";
+ratio="fill";
+u16[label="Prelude",style="filled",fillcolor="#bbffbb",penwidth="0"];
+subgraph cluster_0 {
+label="";
+color="#0000000F";
+style="filled";
+u54[label="",style="filled",fillcolor="#ffffbb",penwidth="0"];
+
+}
+subgraph cluster_1 {
+label="Control";
+color="#0000000F";
+style="filled";
+u9[label="Lens",style="filled",fillcolor="#bbbbff",penwidth="0"];
+subgraph cluster_2 {
+label="Monad";
+color="#0000000F";
+style="filled";
+u29[label="Monad",style="filled,bold",fillcolor="#bbbbff"];
+u50[label="Primitive",style="filled",fillcolor="#ffbbbb",penwidth="0"];
+
+}
+
+}
+subgraph cluster_3 {
+label="Data";
+color="#0000000F";
+style="filled";
+u1[label="Set",style="filled",fillcolor="#bbffff",penwidth="0"];
+u2[label="Word",style="filled",fillcolor="#bbffff",penwidth="0"];
+u4[label="Word8",style="filled",fillcolor="#bbffff",penwidth="0"];
+u12[label="List",style="filled",fillcolor="#bbffff",penwidth="0"];
+u13[label="Maybe",style="filled",fillcolor="#bbffff",penwidth="0"];
+u26[label="Ord",style="filled",fillcolor="#bbffff",penwidth="0"];
+u32[label="Foldable",style="filled",fillcolor="#bbffff",penwidth="0"];
+u33[label="Tree",style="filled",fillcolor="#bbffff",penwidth="0"];
+u42[label="Void",style="filled",fillcolor="#bbffff",penwidth="0"];
+subgraph cluster_4 {
+label="ByteString";
+color="#0000000F";
+style="filled";
+u20[label="Builder",style="filled",fillcolor="#ffbbff",penwidth="0"];
+subgraph cluster_5 {
+label="Lazy";
+color="#0000000F";
+style="filled";
+u48[label="Lazy",style="filled,bold",fillcolor="#ffbbff"];
+u8[label="Char8",style="filled",fillcolor="#77ff77",penwidth="0"];
+u37[label="Builder",style="filled",fillcolor="#77ff77",penwidth="0"];
+
+}
+
+}
+subgraph cluster_6 {
+label="Vector";
+color="#0000000F";
+style="filled";
+u27[label="Unboxed",style="filled",fillcolor="#ffff77",penwidth="0"];
+
+}
+
+}
+subgraph cluster_7 {
+label="EvoMod";
+color="#0000000F";
+style="filled";
+subgraph cluster_8 {
+label="Data";
+color="#0000000F";
+style="filled";
+subgraph cluster_9 {
+label="Alphabet";
+color="#0000000F";
+style="filled";
+u0[label="Alphabet",style="filled",fillcolor="#77ffff",penwidth="0"];
+u3[label="AminoAcid",style="filled",fillcolor="#77ffff",penwidth="0"];
+u5[label="Character",style="filled",fillcolor="#77ffff",penwidth="0"];
+u6[label="Nucleotide",style="filled",fillcolor="#77ffff",penwidth="0"];
+u7[label="BoundaryMutationModel",style="filled",fillcolor="#77ffff",penwidth="0"];
+
+}
+subgraph cluster_10 {
+label="MarkovProcess";
+color="#0000000F";
+style="filled";
+u11[label="AminoAcid",style="filled",fillcolor="#ff77ff",penwidth="0"];
+u15[label="RateMatrix",style="filled",fillcolor="#ff77ff",penwidth="0"];
+u17[label="SubstitutionModel",style="filled",fillcolor="#ff77ff",penwidth="0"];
+u18[label="EDMModel",style="filled",fillcolor="#ff77ff",penwidth="0"];
+u19[label="MixtureModel",style="filled",fillcolor="#ff77ff",penwidth="0"];
+u21[label="Nucleotide",style="filled",fillcolor="#ff77ff",penwidth="0"];
+u22[label="PhyloModel",style="filled",fillcolor="#ff77ff",penwidth="0"];
+
+}
+subgraph cluster_11 {
+label="Sequence";
+color="#0000000F";
+style="filled";
+u23[label="Defaults",style="filled",fillcolor="#33ff33",penwidth="0"];
+u24[label="Filter",style="filled",fillcolor="#33ff33",penwidth="0"];
+u25[label="Sequence",style="filled",fillcolor="#33ff33",penwidth="0"];
+u28[label="MultiSequenceAlignment",style="filled",fillcolor="#33ff33",penwidth="0"];
+
+}
+subgraph cluster_12 {
+label="Tree";
+color="#0000000F";
+style="filled";
+u30[label="EvoTree",style="filled",fillcolor="#bbff77",penwidth="0"];
+u31[label="MeasurableTree",style="filled",fillcolor="#bbff77",penwidth="0"];
+u34[label="Tree",style="filled",fillcolor="#bbff77",penwidth="0"];
+u35[label="NamedTree",style="filled",fillcolor="#bbff77",penwidth="0"];
+u36[label="PhyloTree",style="filled",fillcolor="#bbff77",penwidth="0"];
+
+}
+
+}
+subgraph cluster_13 {
+label="Export";
+color="#0000000F";
+style="filled";
+subgraph cluster_14 {
+label="Sequence";
+color="#0000000F";
+style="filled";
+u38[label="CountsFile",style="filled",fillcolor="#ff3333",penwidth="0"];
+u39[label="Fasta",style="filled",fillcolor="#ff3333",penwidth="0"];
+
+}
+subgraph cluster_15 {
+label="Tree";
+color="#0000000F";
+style="filled";
+u40[label="Newick",style="filled",fillcolor="#77bbff",penwidth="0"];
+
+}
+
+}
+subgraph cluster_16 {
+label="Import";
+color="#0000000F";
+style="filled";
+subgraph cluster_17 {
+label="MarkovProcess";
+color="#0000000F";
+style="filled";
+u41[label="EDMModelPhylobayes",style="filled",fillcolor="#33bb77",penwidth="0"];
+
+}
+subgraph cluster_18 {
+label="Sequence";
+color="#0000000F";
+style="filled";
+u46[label="Fasta",style="filled",fillcolor="#ffff33",penwidth="0"];
+
+}
+subgraph cluster_19 {
+label="Tree";
+color="#0000000F";
+style="filled";
+u47[label="Newick",style="filled",fillcolor="#7733bb",penwidth="0"];
+
+}
+
+}
+subgraph cluster_20 {
+label="Simulate";
+color="#0000000F";
+style="filled";
+u49[label="MarkovProcess",style="filled",fillcolor="#bb7733",penwidth="0"];
+u53[label="MarkovProcessAlongTree",style="filled",fillcolor="#bb7733",penwidth="0"];
+
+}
+
+}
+subgraph cluster_21 {
+label="Numeric";
+color="#0000000F";
+style="filled";
+u10[label="SpecFunctions",style="filled",fillcolor="#33ffff",penwidth="0"];
+u14[label="LinearAlgebra",style="filled",fillcolor="#33ffff",penwidth="0"];
+
+}
+subgraph cluster_22 {
+label="System";
+color="#0000000F";
+style="filled";
+subgraph cluster_23 {
+label="Random";
+color="#0000000F";
+style="filled";
+subgraph cluster_24 {
+label="MWC";
+color="#0000000F";
+style="filled";
+u51[label="MWC",style="filled,bold",fillcolor="#33bb33"];
+u52[label="Distributions",style="filled",fillcolor="#bbbb33",penwidth="0"];
+
+}
+
+}
+
+}
+subgraph cluster_25 {
+label="Text";
+color="#0000000F";
+style="filled";
+subgraph cluster_26 {
+label="Megaparsec";
+color="#0000000F";
+style="filled";
+u43[label="Megaparsec",style="filled,bold",fillcolor="#3333bb"];
+subgraph cluster_27 {
+label="Byte";
+color="#0000000F";
+style="filled";
+u44[label="Byte",style="filled,bold",fillcolor="#bb3333"];
+u45[label="Lexer",style="filled",fillcolor="#33bbbb",penwidth="0"];
+
+}
+
+}
+
+}
+u0 -> u1;
+u0 -> u2;
+u0 -> u3;
+u0 -> u5;
+u0 -> u6;
+u3 -> u4;
+u3 -> u5;
+u5 -> u4;
+u6 -> u4;
+u6 -> u5;
+u7 -> u5;
+u7 -> u6;
+u7 -> u8;
+u7 -> u9;
+u7 -> u10;
+u11 -> u0;
+u11 -> u2;
+u11 -> u8;
+u11 -> u10;
+u11 -> u12;
+u11 -> u13;
+u11 -> u14;
+u11 -> u15;
+u11 -> u17;
+u15 -> u14;
+u15 -> u16;
+u17 -> u0;
+u17 -> u8;
+u17 -> u15;
+u18 -> u8;
+u18 -> u15;
+u19 -> u0;
+u19 -> u8;
+u19 -> u15;
+u19 -> u17;
+u19 -> u20;
+u21 -> u0;
+u21 -> u8;
+u21 -> u14;
+u21 -> u15;
+u21 -> u17;
+u22 -> u0;
+u22 -> u8;
+u22 -> u17;
+u22 -> u19;
+u24 -> u25;
+u25 -> u4;
+u25 -> u8;
+u25 -> u12;
+u25 -> u23;
+u25 -> u26;
+u25 -> u27;
+u28 -> u8;
+u28 -> u25;
+u28 -> u29;
+u31 -> u8;
+u31 -> u32;
+u31 -> u33;
+u31 -> u34;
+u34 -> u33;
+u35 -> u8;
+u36 -> u8;
+u36 -> u31;
+u36 -> u35;
+u36 -> u37;
+u38 -> u7;
+u38 -> u8;
+u38 -> u13;
+u39 -> u8;
+u39 -> u25;
+u40 -> u8;
+u40 -> u12;
+u40 -> u20;
+u40 -> u33;
+u41 -> u8;
+u41 -> u14;
+u41 -> u18;
+u41 -> u29;
+u41 -> u42;
+u41 -> u43;
+u41 -> u44;
+u41 -> u45;
+u46 -> u0;
+u46 -> u1;
+u46 -> u4;
+u46 -> u8;
+u46 -> u25;
+u46 -> u29;
+u46 -> u42;
+u46 -> u43;
+u46 -> u44;
+u47 -> u2;
+u47 -> u33;
+u47 -> u36;
+u47 -> u42;
+u47 -> u43;
+u47 -> u44;
+u47 -> u45;
+u47 -> u48;
+u49 -> u14;
+u49 -> u50;
+u49 -> u51;
+u49 -> u52;
+u53 -> u14;
+u53 -> u15;
+u53 -> u29;
+u53 -> u31;
+u53 -> u33;
+u53 -> u49;
+u53 -> u50;
+u53 -> u51;
+u53 -> u52;
+
+}
