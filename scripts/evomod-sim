@@ -16,7 +16,7 @@ then
     msg "EvoMod-Sim; empirical distribution mixture model."
     file_edm=../data/EDMDistsPhylobayes.txt
     stack exec evomod-sim -- \
-          -t $file_tree -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -l 10000 -s [0] || exit 1
+          -t $file_tree -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -l 1000 -s [0] || exit 1
 else
     msg "Usage: ./evomod-sim (s|e)"
     exit 1

@@ -108,4 +108,25 @@ maybeEDMFileOpt = optional $ strOption
 
 -- | Read the arguments and prints out help if needed.
 parseEvoModSimArgs :: IO EvoModSimArgs
-parseEvoModSimArgs = parseEvoModArgs evoModSimArgs
+parseEvoModSimArgs = parseEvoModArgs evoModSimFooter evoModSimArgs
+
+evoModSimFooter :: [String]
+evoModSimFooter = sms ++ mms
+  where
+    sms =
+      [ "Substitution models:"
+      , "  MODELNAME[PARAMETER,PARAMETER,...]{PI_A,PI_C,PI_G,PI_T}"
+      , "  Supported DNA models: JC, HKY."
+      , "  Supported Protein models: Poisson, Poisson-Custom, LG, LG-Custom."
+      , "  MODELNAME-Custom means that a custom stationary distribution is provided."
+      , "  For example,"
+      , "    HKY model with parameter KAPPA and stationary distribution:"
+      , "      -m HKY[KAPPA]{DOUBLE,DOUBLE,DOUBLE,DOUBLE}"
+      ]
+    mms =
+      [ ""
+      , "Mixture models:"
+      , "  Empirical distribution mixture (EDM) models."
+      , "  For example,"
+      , "    EDM LG model with distributions given in FILE (see -e option)."
+      , "      -m EDM[LG-Custom] -e FILE" ]

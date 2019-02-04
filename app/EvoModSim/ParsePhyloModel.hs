@@ -85,13 +85,13 @@ checkLength f n r = if size f /= n
 assembleSubstitutionModel :: Name -> Maybe Params -> Maybe StationaryDistribution
                      -> SubstitutionModel
 -- DNA models.
-assembleSubstitutionModel "JC" Nothing Nothing = jcModel
-assembleSubstitutionModel "HKY" (Just [k]) (Just f) = checkLength f nNuc $ hkyModel k f
+assembleSubstitutionModel "JC" Nothing Nothing = jc
+assembleSubstitutionModel "HKY" (Just [k]) (Just f) = checkLength f nNuc $ hky k f
 -- Protein models.
-assembleSubstitutionModel "LG" Nothing Nothing = lgModel
-assembleSubstitutionModel "LG-Custom" Nothing (Just f) = checkLength f nAA $ lgCustomModel f
-assembleSubstitutionModel "Poisson" Nothing Nothing = poissonModel
-assembleSubstitutionModel "Poisson-Custom" Nothing (Just f)  = checkLength f nAA $ poissonCustomModel f
+assembleSubstitutionModel "LG" Nothing Nothing = lg
+assembleSubstitutionModel "LG-Custom" Nothing (Just f) = checkLength f nAA $ lgCustom f
+assembleSubstitutionModel "Poisson" Nothing Nothing = poisson
+assembleSubstitutionModel "Poisson-Custom" Nothing (Just f)  = checkLength f nAA $ poissonCustom f
 assembleSubstitutionModel n mps mf = error . unlines $
   [ "Cannot assemble substitution model. "
   , "Name: " ++ show n

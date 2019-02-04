@@ -19,6 +19,7 @@ import           Test.Hspec
 
 import           EvoMod.Data.MarkovProcess.AminoAcid
 import           EvoMod.Data.MarkovProcess.RateMatrix
+import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools
 
 statDistLGPython :: StationaryDistribution
@@ -113,6 +114,15 @@ exchLGPython = fromLists
 statDistUniform :: StationaryDistribution
 statDistUniform = vector $ replicate 20 0.05
 
+statDistLG :: StationaryDistribution
+statDistLG = smStationaryDistribution lg
+
+exchLG :: ExchMatrix
+exchLG = smExchMatrix lg
+
+rmLG :: RateMatrix
+rmLG = smRateMatrix lg
+
 spec :: Spec
 spec = do
   describe "statDistLG" $
@@ -122,21 +132,22 @@ spec = do
   describe "exchLG" $
     it "matches exchangeability matrix from python library" $ do
     exchLG `nearlyEqMat` exchLGPython `shouldBe` True
-    exchLG `nearlyEqMat` lg `shouldBe` False
+    exchLG `nearlyEqMat` rmLG `shouldBe` False
 
   describe "lg" $
     it "stationary distribution can be extracted" $
-    nearlyEqVecWith 1e-4 (getStationaryDistribution lg) statDistLG `shouldBe` True
+    nearlyEqVecWith 1e-4 (getStationaryDistribution rmLG) statDistLG `shouldBe` True
 
   describe "lgCustom" $
-    it "stationary distribution can be recovered" $
-    getStationaryDistribution (lgCustom statDistUniform) `nearlyEqVec` statDistUniform `shouldBe` True
+    it "stationary distribution can be recovered" $ do
+    let f = getStationaryDistribution (smRateMatrix $ lgCustom statDistUniform)
+    f `nearlyEqVec` statDistUniform `shouldBe` True
 
   describe "poisson" $
     it "stationary distribution is uniform 1/20" $
-    getStationaryDistribution poisson `nearlyEqVec` statDistUniform `shouldBe` True
+    getStationaryDistribution (smRateMatrix poisson) `nearlyEqVec` statDistUniform `shouldBe` True
 
   describe "poissonCustom" $
     it "stationary distribution can be recovered" $ do
-    let pc = getStationaryDistribution $ poissonCustom statDistLGPython
-    pc `nearlyEqVec` statDistLGPython `shouldBe` True
+    let f = getStationaryDistribution $ smRateMatrix $ poissonCustom statDistLGPython
+    f `nearlyEqVec` statDistLGPython `shouldBe` True

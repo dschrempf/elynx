@@ -19,9 +19,7 @@ The order of nucleotides is A, C, G, T; see 'EvoMod.Data.Alphabet.Nucleotide'.
 
 module EvoMod.Data.MarkovProcess.Nucleotide
   ( jc
-  , jcModel
   , hky
-  , hkyModel
   ) where
 
 import qualified Data.ByteString.Lazy.Char8                  as B
@@ -50,8 +48,8 @@ n :: Int
 n = cardinality (alphabet DNA)
 
 -- | JC model matrix.
-jc :: RateMatrix
-jc = normalize $ setDiagonal $
+rmJC :: RateMatrix
+rmJC = normalize $ setDiagonal $
   (n><n)
   [ 0.0, 1.0, 1.0, 1.0
   , 1.0, 0.0, 1.0, 1.0
@@ -59,13 +57,13 @@ jc = normalize $ setDiagonal $
   , 1.0, 1.0, 1.0, 0.0 ]
 
 -- | JC substitution model.
-jcModel :: SubstitutionModel
-jcModel = SubstitutionModel DNA (B.pack "JC") [] f e jc
+jc :: SubstitutionModel
+jc = SubstitutionModel DNA (B.pack "JC") [] f e rmJC
   where f = uniformVec n
-        e = toExchMatrix jc f
+        e = toExchMatrix rmJC f
 
-hkyExchMatrix :: Double -> ExchMatrix
-hkyExchMatrix k =
+exchHKY :: Double -> ExchMatrix
+exchHKY k =
   (n><n)
   [ 0.0, 1.0,   k, 1.0
   , 1.0, 0.0, 1.0,   k
@@ -73,11 +71,11 @@ hkyExchMatrix k =
   , 1.0,   k, 1.0, 0.0 ]
 
 -- | HKY matrix with kappa and stationary distribution.
-hky :: Double -> StationaryDistribution -> RateMatrix
-hky = fromExchMatrix . hkyExchMatrix
+rmHKY :: Double -> StationaryDistribution -> RateMatrix
+rmHKY = fromExchMatrix . exchHKY
 
 -- | HKY substitution model.
-hkyModel :: Double -> StationaryDistribution -> SubstitutionModel
-hkyModel k f = SubstitutionModel DNA (B.pack "HKY") [k] f e m
-  where e = hkyExchMatrix k
-        m = hky k f
+hky :: Double -> StationaryDistribution -> SubstitutionModel
+hky k f = SubstitutionModel DNA (B.pack "HKY") [k] f e m
+  where e = exchHKY k
+        m = rmHKY k f

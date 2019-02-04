@@ -23,11 +23,8 @@ import           Options.Applicative.Help.Pretty
 import           Paths_evomod                    (version)
 import           System.Environment
 
-
-import           EvoMod.Data.Alphabet.Alphabet
-
 evoModVersion :: String
-evoModVersion = "EvoMod version " ++ showVersion version ++ "."
+evoModVersion = "EvoMod suite version " ++ showVersion version ++ "."
 
 evoModCopyright :: String
 evoModCopyright = "Developed by Dominik Schrempf."
@@ -44,36 +41,18 @@ evoModHeaders = [ evoModVersion
 evoModHeader :: String
 evoModHeader = unlines evoModHeaders
 
-evoModHeaderDoc :: Doc
-evoModHeaderDoc = vcat $ map pretty evoModHeaders
+stringsToDoc :: [String] -> Doc
+stringsToDoc = vcat . map pretty
 
-evoModFooterDoc :: Doc
-evoModFooterDoc = vcat $ map pretty evoModFooters
+-- evoModHeaderDoc :: Doc
+-- evoModHeaderDoc = stringsToDoc evoModHeaders
 
--- | XXX: Set across executables; subject to change.
-evoModFooters :: [String]
-evoModFooters = [ "File formats:" ] ++ fs ++
-                [ "", "Alphabet types:" ] ++ as ++
-                [ "", "Substitution models:" ] ++ sm ++
-                [ "", "Mixture models:" ] ++ mm
-  where
-    toListItem = ("  - " ++)
-    fs = map toListItem ["FASTA"]
-    as = map (toListItem . codeNameVerbose) [(minBound :: Code) ..]
-    sm =
-      [ "  MODELNAME[PARAMETER,PARAMETER,...]{PI_A,PI_C,PI_G,PI_T}"
-      , "  Supported DNA models: JC, HKY."
-      , "  Supported Protein models: Poisson, Poisson-Custom, LG, LG-Custom."
-      , "  MODELNAME-Custom means that a custom stationary distribution is provided."
-      , "  For example,"
-      , "    HKY model with parameter KAPPA and stationary distribution:"
-      , "      -m HKY[KAPPA]{DOUBLE,DOUBLE,DOUBLE,DOUBLE}"
-      ]
-    mm =
-      [ "  Empirical distribution mixture (EDM) models."
-      , "  For example,"
-      , "    EDM LG model with distributions given in FILE (see -e option)."
-      , "      -m EDM[LG-Custom] -e FILE" ]
+evoModSuiteFooterEnd :: [String]
+evoModSuiteFooterEnd =
+  "" : evoModVersion : evoModCopyright :
+  [ "  - evomod-seq: parse, view and modify evolutionary sequences"
+  , "  - evomod-sim: simulate evolutionary sequences"
+  ]
 
 versionOpt :: Parser (a -> a)
 versionOpt = infoOption evoModHeader
@@ -83,13 +62,15 @@ versionOpt = infoOption evoModHeader
     <> hidden )
 
 -- | Read the arguments and prints out help if needed.
-parseEvoModArgs :: Parser a -> IO a
-parseEvoModArgs p = execParser $
+parseEvoModArgs :: [String] -> Parser a -> IO a
+parseEvoModArgs ftr p = execParser $
   info (helper <*> versionOpt <*> p)
   (fullDesc
     <> progDesc evoModDescription
-    <> headerDoc (Just evoModHeaderDoc)
-    <> footerDoc (Just evoModFooterDoc))
+    -- Not needed. Show at the bottom.
+    -- <> headerDoc (Just evoModHeaderDoc)
+    <> footerDoc (Just . stringsToDoc $ ftr'))
+  where ftr' = ftr ++ evoModSuiteFooterEnd
 
 -- | Program header.
 programHeader :: IO ()

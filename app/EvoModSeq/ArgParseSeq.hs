@@ -105,4 +105,12 @@ quietOpt = switch
     <> help "Be quiet" )
 
 parseEvoModSeqArgs :: IO EvoModSeqArgs
-parseEvoModSeqArgs = parseEvoModArgs evoModSeqArgs
+parseEvoModSeqArgs = parseEvoModArgs evoModSeqFooter evoModSeqArgs
+
+evoModSeqFooter :: [String]
+evoModSeqFooter = [ "File formats:" ] ++ fs ++
+                  [ "", "Alphabet types:" ] ++ as
+  where
+    toListItem = ("  - " ++)
+    fs = map toListItem ["FASTA"]
+    as = map (toListItem . codeNameVerbose) [(minBound :: Code) ..]

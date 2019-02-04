@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Data.MarkovProcess.RateMatrixSpec
+Module      :  EvoMod.Data.MarkovProcess.NucleotideSpec
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -11,7 +11,7 @@ Creation date: Fri Jan 25 16:47:28 2019.
 
 -}
 
-module EvoMod.Data.MarkovProcess.RateMatrixSpec
+module EvoMod.Data.MarkovProcess.NucleotideSpec
   (spec) where
 
 import           Data.Vector.Generic
@@ -19,17 +19,18 @@ import           Test.Hspec
 
 import           EvoMod.Data.MarkovProcess.Nucleotide
 import           EvoMod.Data.MarkovProcess.RateMatrix
-import           EvoMod.Tools                      (nearlyEqVec)
+import           EvoMod.Data.MarkovProcess.SubstitutionModel
+import           EvoMod.Tools                                (nearlyEqVec)
 
 stationaryDist :: StationaryDistribution
 stationaryDist = fromList [0.2, 0.3, 0.3, 0.2]
 
-hkyRM :: RateMatrix
-hkyRM = hky 6.0 stationaryDist
+hkyModel :: SubstitutionModel
+hkyModel = hky 6.0 stationaryDist
 
 spec :: Spec
 spec =
   describe "getStationaryDistribution" $
   it "extracts the stationary distribution from a rate matrix" $ do
-  let sd = getStationaryDistribution hkyRM
+  let sd = getStationaryDistribution (smRateMatrix hkyModel)
   sd `nearlyEqVec` stationaryDist `shouldBe` True

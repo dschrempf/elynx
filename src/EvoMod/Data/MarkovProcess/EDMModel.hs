@@ -19,14 +19,11 @@ from data.
 module EvoMod.Data.MarkovProcess.EDMModel
   ( EDMComponent (..)
   , summarizeEDMComponents
-  , edmModel
   ) where
 
 import qualified Data.ByteString.Lazy.Char8                  as B
 
-import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
-import           EvoMod.Data.MarkovProcess.SubstitutionModel
 
 -- | Empirical distribution mixture model component.
 data EDMComponent = EDMComponent
@@ -40,10 +37,3 @@ summarizeEDMComponents :: [EDMComponent] -> B.ByteString
 summarizeEDMComponents cs = B.pack
                             $ "Empiricial distribution mixture model with "
                             ++ show (length cs) ++ " components"
-
--- | Take a substitution model and mixture components to create an empirical
--- distribution mixture model (EDM model).
-edmModel :: SubstitutionModel -> [EDMComponent] -> MixtureModel
-edmModel sm cs = MixtureModel name
-  [ MixtureModelComponent w sm {smStationaryDistribution = sd} | (EDMComponent w sd) <- cs ]
-  where name = B.pack $ "EDM" ++ show (length cs)

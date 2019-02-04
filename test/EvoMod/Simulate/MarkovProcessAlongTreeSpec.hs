@@ -21,6 +21,7 @@ import           System.Random.MWC
 import           Test.Hspec
 
 import           EvoMod.Data.MarkovProcess.Nucleotide
+import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Simulate.MarkovProcess
 import           EvoMod.Simulate.MarkovProcessAlongTree
@@ -48,12 +49,12 @@ spec =
   describe "simulateNSitesAlongTree" $ do
     it "simulates one site along an easy tree" $ do
       gen <- create
-      tr <- simulateNSitesAlongTree 1 jc nullTree gen
+      tr <- simulateNSitesAlongTree 1 (smRateMatrix jc) nullTree gen
       fmap head tr `shouldBe` nullStateTree
 
     it "simulates some sites along a harder tree" $ do
       gen <- create
-      tr <- simulateNSitesAlongTree 10 jc testTree gen
+      tr <- simulateNSitesAlongTree 10 (smRateMatrix jc) testTree gen
       (length . rootLabel $ tr) `shouldBe` 10
       -- XXX: Too fragile of a test, since random numbers change.
       -- fmap head tr `shouldBe` testStateTree

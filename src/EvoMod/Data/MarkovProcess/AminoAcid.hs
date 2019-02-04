@@ -15,16 +15,10 @@ The order of amino acids is alphabetic.
 -}
 
 module EvoMod.Data.MarkovProcess.AminoAcid
-  ( statDistLG
-  , exchLG
-  , lg
-  , lgModel
+  ( lg
   , lgCustom
-  , lgCustomModel
   , poisson
-  , poissonModel
   , poissonCustom
-  , poissonCustomModel
   ) where
 
 import qualified Data.ByteString.Lazy.Char8                  as B
@@ -164,20 +158,20 @@ statDistLG :: StationaryDistribution
 statDistLG = pamlToAlphaVec statDistLGPaml
 
 -- | LG rate matrix with amino acids in alphabetical order.
-lg :: RateMatrix
-lg = lgCustom statDistLG
+rmLG :: RateMatrix
+rmLG = rmLGCustom statDistLG
 
 -- | LG substitution model.
-lgModel :: SubstitutionModel
-lgModel = SubstitutionModel Protein (B.pack "LG") [] statDistLG exchLG lg
+lg :: SubstitutionModel
+lg = SubstitutionModel Protein (B.pack "LG") [] statDistLG exchLG rmLG
 
 -- | LG rate matrix with custom stationary distribution.
-lgCustom :: StationaryDistribution -> RateMatrix
-lgCustom = fromExchMatrix exchLG
+rmLGCustom :: StationaryDistribution -> RateMatrix
+rmLGCustom = fromExchMatrix exchLG
 
 -- | LG substitution model with custom stationary distribution.
-lgCustomModel :: StationaryDistribution -> SubstitutionModel
-lgCustomModel f = SubstitutionModel Protein (B.pack "LG-Custom") [] f exchLG (lgCustom f)
+lgCustom :: StationaryDistribution -> SubstitutionModel
+lgCustom f = SubstitutionModel Protein (B.pack "LG-Custom") [] f exchLG (rmLGCustom f)
 
 uniformExch :: ExchMatrix
 uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n*n) 1.0
@@ -186,17 +180,17 @@ exchPoisson :: ExchMatrix
 exchPoisson = uniformExch
 
 -- | Poisson rate matrix.
-poisson :: RateMatrix
-poisson = poissonCustom $ uniformVec n
+rmPoisson :: RateMatrix
+rmPoisson = rmPoissonCustom $ uniformVec n
 
 -- | Poisson substitution model.
-poissonModel :: SubstitutionModel
-poissonModel = SubstitutionModel Protein (B.pack "Poisson") [] (uniformVec n) exchPoisson poisson
+poisson :: SubstitutionModel
+poisson = SubstitutionModel Protein (B.pack "Poisson") [] (uniformVec n) exchPoisson rmPoisson
 
 -- | Poisson rate matrix with custom stationary distribution.
-poissonCustom :: StationaryDistribution -> RateMatrix
-poissonCustom = fromExchMatrix uniformExch
+rmPoissonCustom :: StationaryDistribution -> RateMatrix
+rmPoissonCustom = fromExchMatrix uniformExch
 
 -- | Poisson substitution model with custom stationary distribution.
-poissonCustomModel :: StationaryDistribution -> SubstitutionModel
-poissonCustomModel f = SubstitutionModel Protein (B.pack "Poisson-Custom") [] f exchPoisson (poissonCustom f)
+poissonCustom :: StationaryDistribution -> SubstitutionModel
+poissonCustom f = SubstitutionModel Protein (B.pack "Poisson-Custom") [] f exchPoisson (rmPoissonCustom f)
