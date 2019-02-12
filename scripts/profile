@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
+# Print which RTS options are available.
+# stack exec $program_name -- +RTS -?
+
 source include
 
 ./build prof || exit 1
 
-file_profile=../data/Profile.fa.gz
 
 msg "EvoMode-Seq profiling run."
+file_profile=../data/Profile.fa.gz
 # See https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/profiling.html#profiling
 # Run the program with
 # -p: profiling support
@@ -15,11 +18,17 @@ msg "EvoMode-Seq profiling run."
 # -H: set heap size
 # -K: set stack size
 # -l: event log (compile option is necessary)
-stack exec evomod-seq --work-dir .stack-work-profiling -- summarize -a DNA_IUPAC $file_profile +RTS -p -hy -l -s || exit 1
+stack exec evomod-seq --work-dir $prof_dir -- \
+      summarize -a DNA_IUPAC $file_profile \
+      +RTS -p -hy -l -s || exit 1
 
 # Create a graph of the memory heap profile.
 hp2ps -e10in -c evomod-seq.hp
 
-# Print which RTS options are available.
-# stack exec $program_name -- +RTS -?
+msg "EvoMode-Sim profiling run."
 
+file_tree=../data/Newick.tree
+file_edm=../data/EDMDistsPhylobayes.txt
+stack exec evomod-sim --work-dir $prof_dir -- \
+      -t $file_tree -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -l 1000 -s [0] \
+      +RTS -p -hy -l -s || exit 1

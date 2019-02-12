@@ -11,13 +11,13 @@ normal_build() {
 profile_build() {
     msg "Profile build."
     msg "Flags: ${flags[*]}"
-    stack build "${flags[@]}" --profile --work-dir .stack-work-profiling || exit 1
+    stack build "${flags[@]}" --profile --work-dir "$prof_dir" || exit 1
 }
 
 test_build() {
     msg "Test suite."
     msg "Flags: ${flags[*]}"
-    stack build "${flags[@]}" --test --work-dir .stack-work-testing || exit 1
+    stack build "${flags[@]}" --test --work-dir "$test_dir" || exit 1
 }
 
 if [[ -z $1 ]]

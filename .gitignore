@@ -10,6 +10,11 @@ evomod-seq.eventlog
 evomod-seq.hp
 evomod-seq.prof
 evomod-seq.ps
+evomod-sim.aux
+evomod-sim.eventlog
+evomod-sim.hp
+evomod-sim.prof
+evomod-sim.ps
 evomod-sim.out
 
 # IQ-TREE files.

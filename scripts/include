@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ -n $INCLUDE_SOURCED ]]; then return; fi
-INCLUDE_SOURCED=TRUE
+export INCLUDE_SOURCED=TRUE
 
 msg() {
     (( QUIET )) && return
@@ -10,6 +10,7 @@ msg() {
     # printf "${GREEN}==>${ALL_OFF} ${mesg}${ALL_OFF}\n" "$@" >&1
     printf "%s==>%s %s%s\\n" "$GREEN" "$ALL_OFF" "$mesg" "$ALL_OFF" >&1
 }
+export -f msg
 
 # Check if messages are to be printed using color.
 unset ALL_OFF BOLD BLUE GREEN RED YELLOW
@@ -30,3 +31,6 @@ if [[ -t 2 ]]; then
     fi
 fi
 readonly ALL_OFF BOLD BLUE GREEN RED YELLOW
+
+export prof_dir=".stack-work-profiling"
+export test_dir=".stack-work-testing"
