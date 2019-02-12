@@ -78,9 +78,12 @@ simulateMSA pm t n g = do
 --   return $ fromSequenceList sequences
 
 -- TODO: Output exact matrices etc. to log file.
+
+-- TODO: Use ST (or Reader) to handle arguments, this will be especially useful
+-- with 'phyloModelStr'.
 main :: IO ()
 main = do
-  EvoModSimArgs treeFile phyloModelStr len mEDMFile mSeed quiet outFile <- parseEvoModSimArgs
+  EvoModSimArgs treeFile phyloModelStr len mEDMFile mWs mSeed quiet outFile <- parseEvoModSimArgs
   unless quiet $ do
     programHeader
     putStrLn ""
@@ -100,7 +103,7 @@ main = do
     maybe (return ()) (B.putStrLn . summarizeEDMComponents) edmCs
     putStrLn ""
     putStrLn "Read model string."
-  let phyloModel = parseByteStringWith (phyloModelString edmCs) phyloModelStr
+  let phyloModel = parseByteStringWith (phyloModelString edmCs mWs) phyloModelStr
   unless quiet $ do
     B.putStr . B.unlines $ pmSummarize phyloModel
     putStrLn ""

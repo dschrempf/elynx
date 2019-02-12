@@ -36,13 +36,14 @@ import           EvoMod.ArgParse
 --       Right a -> Right a
 
 data EvoModSimArgs = EvoModSimArgs
-  { argsTreeFile         :: FilePath
-  , argsPhyloModelString :: B.ByteString
-  , argsLength           :: Int
-  , argsMaybeEDMFile     :: Maybe FilePath
-  , argsSeed             :: Maybe [Word32]
-  , argsQuiet            :: Bool
-  , argsFileOut          :: FilePath
+  { argsTreeFile            :: FilePath
+  , argsPhyloModelString    :: B.ByteString
+  , argsLength              :: Int
+  , argsMaybeEDMFile        :: Maybe FilePath
+  , argsMaybeMixtureWeights :: Maybe [Double]
+  , argsSeed                :: Maybe [Word32]
+  , argsQuiet               :: Bool
+  , argsFileOut             :: FilePath
   }
 
 evoModSimArgs :: Parser EvoModSimArgs
@@ -51,6 +52,7 @@ evoModSimArgs = EvoModSimArgs
   <*> (B.pack <$> phyloModelOpt)
   <*> lengthOpt
   <*> maybeEDMFileOpt
+  <*> maybeMixtureWeights
   <*> seedOpt
   <*> quietOpt
   <*> fileOutOpt
@@ -66,7 +68,7 @@ quietOpt :: Parser Bool
 quietOpt = switch
   ( long "quiet"
   <> short 'q'
-  <> help "Be quiet (default: False)" )
+  <> help "Be quiet" )
 
 fileOutOpt :: Parser FilePath
 fileOutOpt = strOption
@@ -105,6 +107,13 @@ maybeEDMFileOpt = optional $ strOption
     <> short 'e'
     <> metavar "NAME"
     <> help "empirical distribution model file NAME in Phylobayes format" )
+
+maybeMixtureWeights :: Parser (Maybe [Double])
+maybeMixtureWeights = optional $ option auto
+  ( long "mixture-model-weights"
+    <> short 'w'
+    <> metavar "[DOUBLE,DOUBLE,...]"
+    <> help "weights of mixture model components" )
 
 -- | Read the arguments and prints out help if needed.
 parseEvoModSimArgs :: IO EvoModSimArgs

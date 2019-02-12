@@ -17,6 +17,7 @@ module ParsePhyloModel
   ) where
 
 import qualified Data.ByteString.Lazy.Char8                  as B
+import           Data.Maybe
 import           Data.Void
 import           Data.Word                                   (Word8)
 import           Numeric.LinearAlgebra                       (norm_1, size,
@@ -34,6 +35,8 @@ import           EvoMod.Data.MarkovProcess.PhyloModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools
+
+import           Debug.Trace
 
 type Parser = Parsec Void B.ByteString
 
@@ -60,7 +63,7 @@ sdEnd = c2w '}'
 
 name :: Parser String
 name = B.unpack <$>
-  takeWhile1P (Just "Substitution model name") (`notElem` [paramsStart, paramsEnd])
+  takeWhile1P (Just "Substitution model name") (`notElem` [paramsStart, paramsEnd, sdStart])
 
 params :: Parser [Double]
 params = between (char paramsStart) (char paramsEnd) (sepBy1 float (char $ c2w ','))
@@ -105,27 +108,25 @@ substitutionModel = do
   mf <- optional stationaryDistribution
   return $ assembleSubstitutionModel n mps mf
 
-parseEDM :: Maybe [EDMComponent] -> Parser MixtureModel
-parseEDM mcs = do
+parseEDM :: [EDMComponent] -> Maybe [Double] -> Parser MixtureModel
+parseEDM cs mws = do
   _ <- chunk (bs "EDM")
   _ <- char paramsStart
   n <- name
   mps <- optional params
   _ <- char paramsEnd
-  case mcs of
-    Nothing -> error "Empirical distributions not given."
-    Just cs -> do
-      let sms = map (\c -> assembleSubstitutionModel n mps (Just $ cStationaryDistribution c)) cs
-          ws = map cWeight cs
-          edmName = B.pack $ "EDM" ++ show (length cs)
-      return $ MixtureModel edmName
-        [ MixtureModelComponent w sm | (w, sm) <- zip ws sms ]
+  let sms = map (\c -> assembleSubstitutionModel n mps (Just $ cStationaryDistribution c)) cs
+      edmName = B.pack $ "EDM" ++ show (length cs)
+      ws = fromMaybe (map cWeight cs) mws
+  return $ MixtureModel edmName
+    [ MixtureModelComponent w sm | (w, sm) <- zip ws sms ]
 
-mixtureModel :: Maybe [EDMComponent] -> Parser MixtureModel
-mixtureModel = parseEDM
+mixtureModel :: Maybe [EDMComponent] -> Maybe [Double] -> Parser MixtureModel
+mixtureModel Nothing _     = error "Empirical distributions not given."
+mixtureModel (Just cs) mws = parseEDM cs mws
 
 -- | Parse the phylogenetic model string.
-phyloModelString :: Maybe [EDMComponent] -> Parser PhyloModel
+phyloModelString :: Maybe [EDMComponent] -> Maybe [Double] -> Parser PhyloModel
 -- XXX: The EDM components have to be given. Make this more general.
-phyloModelString mcs = try (PhyloSubstitutionModel <$> substitutionModel)
-                       <|> (PhyloMixtureModel <$> mixtureModel mcs)
+phyloModelString mcs mws = try (PhyloSubstitutionModel <$> substitutionModel)
+                           <|> (PhyloMixtureModel <$> mixtureModel mcs mws)

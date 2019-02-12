@@ -17,8 +17,14 @@ then
     file_edm=../data/EDMDistsPhylobayes.txt
     stack exec evomod-sim -- \
           -t $file_tree -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -l 1000 -s [0] || exit 1
+elif [[ $1 == "w" ]]
+then
+    msg "EvoMod-Sim; empirical distribution mixture model with custom weights."
+    file_edm=../data/EDMDistsPhylobayes.txt
+    stack exec evomod-sim -- \
+          -t $file_tree -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -w "[0.9,0.05,0.03,0.02]" -l 1000 -s [0] || exit 1
 else
-    msg "Usage: ./evomod-sim (s|e)"
+    msg "Usage: ./evomod-sim (s|e|w)"
     exit 1
 fi
 
