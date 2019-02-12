@@ -51,36 +51,23 @@ simulateMSA :: (PrimMonad m, Measurable a, Named a)
             => PhyloModel -> Tree a -> Int -> Gen (PrimState m)
             -> m MultiSequenceAlignment
 simulateMSA pm t n g = do
-  statesTree <- case pm of
+  leafStates <- case pm of
     PhyloSubstitutionModel sm -> simulateNSitesAlongTree n (smRateMatrix sm) t g
     PhyloMixtureModel mm      -> simulateNSitesAlongTreeMixtureModel n ws qs t g
       where
         ws = vector $ getWeights mm
         qs = getRateMatrices mm
   let leafNames  = map name $ leafs t
-      leafStates = leafs statesTree
       code       = pmCode pm
       sequences  = [ toSequence sId (B.pack . map w2c $ indicesToCharacters code ss) |
                     (sId, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
 
--- -- | Simulate a 'MultiSequenceAlignment' for a given substitution model and
--- -- phylogenetic tree.
--- simulateMSA :: (PrimMonad m, Measurable a, Named a)
---             => Code -> Int -> RateMatrix -> Tree a -> Gen (PrimState m)
---             -> m MultiSequenceAlignment
--- simulateMSA c n q t g = do
---   statesTree <- simulateNSitesAlongTree n q t g
---   let leafNames  = map name $ leafs t
---       leafStates = leafs statesTree
---       sequences  = [ toSequence sId (B.pack . map w2c $ indicesToCharacters c ss) |
---                     (sId, ss) <- zip leafNames leafStates ]
---   return $ fromSequenceList sequences
-
 -- TODO: Output exact matrices etc. to log file.
 
 -- TODO: Use ST (or Reader) to handle arguments, this will be especially useful
 -- with 'phyloModelStr'.
+
 main :: IO ()
 main = do
   EvoModSimArgs treeFile phyloModelStr len mEDMFile mWs mSeed quiet outFile <- parseEvoModSimArgs

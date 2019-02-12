@@ -33,19 +33,33 @@ import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Simulate.MarkovProcess
 
+measureableTreeToProbTree :: (Measurable a) => RateMatrix -> Tree a -> Tree ProbMatrix
+measureableTreeToProbTree q = fmap (probMatrix q . measure)
+
 -- | Simulate a number of sites for a given substitution model with given
 -- stationary distribution. The result is a tree with the list of simulated
 -- states as node labels.
-simulateNSitesAlongTree :: (PrimMonad m, Measurable a) => Int -> RateMatrix -> Tree a -> Gen (PrimState m) -> m (Tree [State])
+simulateNSitesAlongTree :: (PrimMonad m, Measurable a) => Int -> RateMatrix -> Tree a -> Gen (PrimState m) -> m [[State]]
 simulateNSitesAlongTree n q t g = do
   let d  = getStationaryDistribution q
       pt = measureableTreeToProbTree q t
   is <- replicateM n $ categorical d g
   simulateAlongProbTree is pt g
 
+-- This is the heart of the simulation. Take a tree and a list of root states.
+-- Recursively jump down the branches to the leafs.
+simulateAlongProbTree :: (PrimMonad m) => [State] -> Tree ProbMatrix -> Gen (PrimState m) -> m [[State]]
+simulateAlongProbTree is (Node p f) g = do
+  is' <- mapM (\i -> jump i p g) is
+  if null f
+    then return [is']
+    else concat <$> sequence [simulateAlongProbTree is' t g | t <- f]
+
 -- | Simulate a number of sites for a given set of substitution models with
 -- corresponding weights. See also 'simulateNSitesAlongTree'.
-simulateNSitesAlongTreeMixtureModel :: (PrimMonad m, Measurable a) => Int -> Vector R -> [RateMatrix] -> Tree a -> Gen (PrimState m) -> m (Tree [State])
+--
+-- TODO: Parallelize.
+simulateNSitesAlongTreeMixtureModel :: (PrimMonad m, Measurable a) => Int -> Vector R -> [RateMatrix] -> Tree a -> Gen (PrimState m) -> m [[State]]
 simulateNSitesAlongTreeMixtureModel n ws qs t g = do
   let ds = map getStationaryDistribution qs
       pt = measureableTreeToProbTreeMixtureModel qs t
@@ -63,20 +77,11 @@ measureableTreeToProbTreeMixtureModel qs = fmap (\a -> [probMatrix q . measure $
 -- populateAndFlattenTree :: (MonadRandom m) => RTree a [Generator State] -> State -> m [(a, State)]
 -- populateAndFlattenTree (Leaf a) s = return [(a, s)]
 -- populateAndFlattenTree (Node _ lp lc rp rc) s = liftM2 (++) (jumpDownBranch lp lc) (jumpDownBranch rp rc)
---   where jumpDownBranch p t = jump s p >>= populateAndFlattenTree 
-simulateAlongProbTreeMixtureModel :: (PrimMonad m) => [State] -> [Int] -> Tree [ProbMatrix] -> Gen (PrimState m) -> m (Tree [State])
-simulateAlongProbTreeMixtureModel is cs (Node ps f) g = do
-  is' <- sequence [ jump i (ps !! c) g | (i, c) <- zip is cs ]
-  f'  <- sequence [ simulateAlongProbTreeMixtureModel is' cs t g | t <- f ]
-  return $ Node is' f'
+--   where jumpDownBranch p t = jump s p >>= populateAndFlattenTree
 
-measureableTreeToProbTree :: (Measurable a) => RateMatrix -> Tree a -> Tree ProbMatrix
-measureableTreeToProbTree q = fmap (probMatrix q . measure)
-
--- This is the heart of the simulation. Take a tree and a list of root states.
--- Recursively jump down the branches to the leafs.
-simulateAlongProbTree :: (PrimMonad m) => [State] -> Tree ProbMatrix -> Gen (PrimState m) -> m (Tree [State])
-simulateAlongProbTree is (Node p f) g = do
-  is' <- mapM (\i -> jump i p g) is
-  f' <- sequence [simulateAlongProbTree is' t g | t <- f]
-  return $ Node is' f'
+simulateAlongProbTreeMixtureModel :: (PrimMonad m) => [State] -> [Int] -> Tree [ProbMatrix] -> Gen (PrimState m) -> m [[State]]
+simulateAlongProbTreeMixtureModel is cs (Node ps f) g
+  = do is' <- sequence [ jump i (ps !! c) g | (i, c) <- zip is cs ]
+       if null f
+         then return [is']
+         else concat <$> sequence [ simulateAlongProbTreeMixtureModel is' cs t g | t <- f ]
