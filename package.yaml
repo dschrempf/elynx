@@ -25,6 +25,7 @@ ghc-options:
   - -fllvm
 
 dependencies:
+  - async
   - base
   - bytestring
   - containers
@@ -47,6 +48,10 @@ _defaults: &defaults
   # Development options.
   ghc-options:
     - -eventlog
+    # Activate threading.
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
   # # Production options.
   # ghc-options:
   # - -threaded

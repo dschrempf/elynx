@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+edm_file=../../data/EDMDistsIQTREE.nex
+tree_file=../../data/Newick.tree
+
+iqtree -nt 4 -s ../evomod-sim.out -pre verify -mdef "$edm_file" -m LG+CF004ModelOpt
+
+if [[ -x newick-compare ]]
+then
+    newick-compare verify.treefile $tree_file
+else
+    echo "Trees have to be compared manually."
+fi
+
+echo "Estimated weights have to be compared manually."

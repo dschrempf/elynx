@@ -16,11 +16,13 @@ Creation date: Mon Jan 28 14:12:52 2019.
 
 module Main where
 
+import           Control.Concurrent
+import           Control.Concurrent.Async
 import           Control.Monad
-import           Control.Monad.Primitive
 import qualified Data.ByteString.Lazy.Char8                     as B
 import           Data.Tree
 import qualified Data.Vector                                    as V
+import           Data.Word
 import           Numeric.LinearAlgebra
 import           System.Random.MWC
 
@@ -45,21 +47,38 @@ import           EvoMod.Import.Tree.Newick                      hiding (name)
 import           EvoMod.Simulate.MarkovProcessAlongTree
 import           EvoMod.Tools
 
+-- | Should be in the library...
+splitGen :: Int -> GenIO -> IO [GenIO]
+splitGen n gen
+  | n <= 0    = return []
+  | otherwise =
+  fmap (gen:) . replicateM (n-1) $
+  initialize =<< (uniformVector gen 256 :: IO (V.Vector Word32))
+
+-- | A small brain f***.
+myConcat :: [[[a]]] -> [[a]]
+myConcat xss | length xss <= 1 = head xss
+             | otherwise = myConcat $ zipWith (++) (head xss) (xss !! 1) : (tail . tail) xss
+
 -- | Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
-simulateMSA :: (PrimMonad m, Measurable a, Named a)
-            => PhyloModel -> Tree a -> Int -> Gen (PrimState m)
-            -> m MultiSequenceAlignment
+simulateMSA :: (Measurable a, Named a)
+            => PhyloModel -> Tree a -> Int -> GenIO
+            -> IO MultiSequenceAlignment
 simulateMSA pm t n g = do
-  leafStates <- case pm of
-    -- XXX: For now, exclusively use the low memory version (internal node
-    -- states are thrown away).
-    PhyloSubstitutionModel sm -> simulateAndFlattenNSitesAlongTree n (smRateMatrix sm) t g
-    PhyloMixtureModel mm      -> simulateAndFlattenNSitesAlongTreeMixtureModel n ws qs t g
+  c  <- getNumCapabilities
+  gs <- splitGen c g
+  let n' = n `div` c
+      nR = n `mod` c
+      ns = replicate (c-1) n' ++ [n' + nR]
+  leafStatesS <- case pm of
+    PhyloSubstitutionModel sm -> mapConcurrently (\(num, gen) -> simulateAndFlattenNSitesAlongTree num (smRateMatrix sm) t gen) (zip ns gs)
+    PhyloMixtureModel mm      -> mapConcurrently (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws qs t gen) (zip ns gs)
       where
         ws = vector $ getWeights mm
         qs = getRateMatrices mm
-  let leafNames  = map name $ leafs t
+  let leafStates = myConcat leafStatesS
+      leafNames  = map name $ leafs t
       code       = pmCode pm
       sequences  = [ toSequence sId (B.pack . map w2c $ indicesToCharacters code ss) |
                     (sId, ss) <- zip leafNames leafStates ]

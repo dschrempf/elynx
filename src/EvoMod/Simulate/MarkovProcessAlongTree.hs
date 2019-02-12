@@ -10,7 +10,6 @@
 Calculate transition probability matrices, map rate matrices on trees, populate
 a tree with states according to a stationary distribution, etc.
 
-
 The implementation of the Markov process is more than basic and can be improved
 in a lot of ways.
 
@@ -136,4 +135,3 @@ simulateAlongProbTreeMixtureModel is cs (Node ps f) g = do
   is' <- sequence [ jump i (ps !! c) g | (i, c) <- zip is cs ]
   f'  <- sequence [ simulateAlongProbTreeMixtureModel is' cs t g | t <- f ]
   return $ Node is' f'
-
