@@ -47,16 +47,11 @@ library:
 _defaults: &defaults
   # Development options.
   ghc-options:
+    # Deactivate eventlog for production.
     - -eventlog
-    # Activate threading.
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
-  # # Production options.
-  # ghc-options:
-  # - -threaded
-  # - -rtsopts
-  # - -with-rtsopts=-N
   
 executables:
   evomod-seq:

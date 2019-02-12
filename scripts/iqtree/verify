@@ -5,7 +5,7 @@ tree_file=../../data/Newick.tree
 
 iqtree -nt 4 -s ../evomod-sim.out -pre verify -mdef "$edm_file" -m LG+CF004ModelOpt
 
-if [[ -x newick-compare ]]
+if hash newick-compare 2>/dev/null
 then
     newick-compare verify.treefile $tree_file
 else
