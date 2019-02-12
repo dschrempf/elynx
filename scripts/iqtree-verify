@@ -3,11 +3,11 @@
 edm_file=../../data/EDMDistsIQTREE.nex
 tree_file=../../data/Newick.tree
 
-iqtree -nt 4 -s ../evomod-sim.out -pre verify -mdef "$edm_file" -m LG+CF004ModelOpt
+iqtree -nt 4 -s ../evomod-sim.out -pre iqtree-verify -mdef "$edm_file" -m LG+CF004ModelOpt
 
 if hash newick-compare 2>/dev/null
 then
-    newick-compare verify.treefile $tree_file
+    newick-compare iqtree-verify.treefile $tree_file
 else
     echo "Trees have to be compared manually."
 fi

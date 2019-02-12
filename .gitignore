@@ -16,7 +16,7 @@ evomod-sim.hp
 evomod-sim.prof
 evomod-sim.ps
 evomod-sim.out
-/scripts/iqtree/verify.*
+/scripts/iqtree-verify.*
 
 # IQ-TREE files.
 *.bionj
