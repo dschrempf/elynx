@@ -52,8 +52,10 @@ simulateMSA :: (PrimMonad m, Measurable a, Named a)
             -> m MultiSequenceAlignment
 simulateMSA pm t n g = do
   leafStates <- case pm of
-    PhyloSubstitutionModel sm -> simulateNSitesAlongTree n (smRateMatrix sm) t g
-    PhyloMixtureModel mm      -> simulateNSitesAlongTreeMixtureModel n ws qs t g
+    -- XXX: For now, exclusively use the low memory version (internal node
+    -- states are thrown away).
+    PhyloSubstitutionModel sm -> simulateAndFlattenNSitesAlongTree n (smRateMatrix sm) t g
+    PhyloMixtureModel mm      -> simulateAndFlattenNSitesAlongTreeMixtureModel n ws qs t g
       where
         ws = vector $ getWeights mm
         qs = getRateMatrices mm
