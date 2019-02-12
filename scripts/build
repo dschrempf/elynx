@@ -26,7 +26,7 @@ then
     exit 1
 elif [[ $1 == "fast" ]]
 then
-    flags=(--fast --haddock --test)
+    flags=(--fast)
     normal_build
 elif [[ $1 == "prod" ]]
 then

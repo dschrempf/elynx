@@ -36,8 +36,6 @@ import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools
 
-import           Debug.Trace
-
 type Parser = Parsec Void B.ByteString
 
 bs :: String -> B.ByteString
