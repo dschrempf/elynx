@@ -10,7 +10,8 @@
 Calculate transition probability matrices, map rate matrices on trees, populate
 a tree with states according to a stationary distribution, etc.
 
-The implementation of the Markov process is more than basic and can be improved in a lot of ways.
+The implementation of the Markov process is more than basic and can be improved
+in a lot of ways.
 
 * Changelog
 
@@ -57,6 +58,12 @@ measureableTreeToProbTreeMixtureModel qs = fmap (\a -> [probMatrix q . measure $
 
 -- See 'simulateAlongProbTree', only we have a number of mixture components. The
 -- starting states and the components for each site have to be provided.
+
+-- XXX: The whole tree is stored in memory. Solution:
+-- populateAndFlattenTree :: (MonadRandom m) => RTree a [Generator State] -> State -> m [(a, State)]
+-- populateAndFlattenTree (Leaf a) s = return [(a, s)]
+-- populateAndFlattenTree (Node _ lp lc rp rc) s = liftM2 (++) (jumpDownBranch lp lc) (jumpDownBranch rp rc)
+--   where jumpDownBranch p t = jump s p >>= populateAndFlattenTree 
 simulateAlongProbTreeMixtureModel :: (PrimMonad m) => [State] -> [Int] -> Tree [ProbMatrix] -> Gen (PrimState m) -> m (Tree [State])
 simulateAlongProbTreeMixtureModel is cs (Node ps f) g = do
   is' <- sequence [ jump i (ps !! c) g | (i, c) <- zip is cs ]
