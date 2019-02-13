@@ -103,6 +103,8 @@ summarizeEDMComponents cs = B.pack
 -- TODO: Use ST (or Reader) to handle arguments, this will be especially useful
 -- with 'phyloModelStr'.
 
+-- TODO: Proper log.
+
 main :: IO ()
 main = do
   EvoModSimArgs treeFile phyloModelStr len mEDMFile mWs mSeed quiet outFile <- parseEvoModSimArgs
