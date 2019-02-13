@@ -28,11 +28,6 @@ import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools                  (compose, parseFileWith)
 
-concatenateSeqs :: [[Sequence]] -> Either B.ByteString [Sequence]
-concatenateSeqs []   = Left $ B.pack "Nothing to concatenate."
-concatenateSeqs [ss] = Left $ B.pack "Got only one list of sequences: " <> summarizeSequenceList ss
-concatenateSeqs sss  = foldM (zipWithM concatenate) (head sss) (tail sss)
-
 act :: Command -> [[Sequence]] -> Either B.ByteString B.ByteString
 act Summarize sss    = Right . B.concat $ map summarizeSequenceList sss
 act Concatenate sss  = sequencesToFasta <$> concatenateSeqs sss

@@ -25,6 +25,7 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   -- | * Manipulation
   , msaJoin
   , msaConcatenate
+  , msasConcatenate
   ) where
 
 import           Control.Monad
@@ -80,3 +81,10 @@ msaConcatenate (MSA xs lx) (MSA ys ly)
   | lx /= ly =
     Left $ B.pack "msaConcatenate: Multi sequence alignments do not have equal length."
   | otherwise = fromSequenceList <$> zipWithM concatenate xs ys
+
+-- | Concatenate a list of 'MultiSequenceAlignment's horizontally. See
+-- 'concatenateMSA'.
+msasConcatenate :: [MultiSequenceAlignment] -> Either B.ByteString MultiSequenceAlignment
+msasConcatenate []    = Left $ B.pack "Nothing to concatenate."
+msasConcatenate [msa] = Right msa
+msasConcatenate msas  = foldM msaConcatenate (head msas) (tail msas)

@@ -31,8 +31,10 @@ module EvoMod.Data.Sequence.Sequence
   -- * Manipulation
   , trimSequence
   , concatenate
+  , concatenateSeqs
   ) where
 
+import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.List                     (maximumBy)
 import           Data.Ord                      (comparing)
@@ -142,3 +144,9 @@ concatenate (Sequence i cs) (Sequence j ks)
   | i == j     = Right $ Sequence i (cs V.++ ks)
   | otherwise  = Left $ B.pack "concatenate: Sequences do not have equal IDs: "
                  <> i <> B.pack ", " <> j <> B.pack "."
+
+-- | Concatenate a list of sequences, see 'concatenate'.
+concatenateSeqs :: [[Sequence]] -> Either B.ByteString [Sequence]
+concatenateSeqs []   = Left $ B.pack "Nothing to concatenate."
+concatenateSeqs [ss] = Right ss
+concatenateSeqs sss  = foldM (zipWithM concatenate) (head sss) (tail sss)

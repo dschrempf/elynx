@@ -20,6 +20,7 @@ import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8                     as B
+import           Data.List
 import           Data.Tree
 import qualified Data.Vector                                    as V
 import           Data.Word
@@ -55,10 +56,13 @@ splitGen n gen
   fmap (gen:) . replicateM (n-1) $
   initialize =<< (uniformVector gen 256 :: IO (V.Vector Word32))
 
--- | A small brain f***.
-myConcat :: [[[a]]] -> [[a]]
-myConcat xss | length xss <= 1 = head xss
-             | otherwise = myConcat $ zipWith (++) (head xss) (xss !! 1) : (tail . tail) xss
+-- | A brain f***. As an example, let @xss@ be a list of alignments (i.e., a
+-- list of a list of a list of alleles). This function horizontally concatenates
+-- the sites. The number of species needs to be same in each alignment. No
+-- checks are performed!
+horizontalConcat :: [[[a]]] -> [[a]]
+horizontalConcat [xs] = xs
+horizontalConcat xss = foldl' (zipWith (++)) (head xss) (tail xss)
 
 -- | Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
@@ -68,23 +72,28 @@ simulateMSA :: (Measurable a, Named a)
 simulateMSA pm t n g = do
   c  <- getNumCapabilities
   gs <- splitGen c g
+  -- XXX: This way of parallelization should be abstracted at some point.
   let n' = n `div` c
       nR = n `mod` c
-      ns = replicate (c-1) n' ++ [n' + nR]
+      ns = replicate nR (n'+1) ++ replicate (c - nR) n'
   leafStatesS <- case pm of
-    PhyloSubstitutionModel sm -> mapConcurrently (\(num, gen) -> simulateAndFlattenNSitesAlongTree num (smRateMatrix sm) t gen) (zip ns gs)
-    PhyloMixtureModel mm      -> mapConcurrently (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws qs t gen) (zip ns gs)
+    PhyloSubstitutionModel sm -> mapConcurrently
+      (\(num, gen) -> simulateAndFlattenNSitesAlongTree num (smRateMatrix sm) t gen)
+      (zip ns gs)
+    PhyloMixtureModel mm      -> mapConcurrently
+      (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws qs t gen)
+      (zip ns gs)
       where
         ws = vector $ getWeights mm
         qs = getRateMatrices mm
-  let leafStates = myConcat leafStatesS
+  -- XXX: The horizontal concatenation might be slow. If so, 'concatenateSeqs'
+  -- or 'concatenateMSAs' can be used, which directly appends vectors.
+  let leafStates = horizontalConcat leafStatesS
       leafNames  = map name $ leafs t
       code       = pmCode pm
       sequences  = [ toSequence sId (B.pack . map w2c $ indicesToCharacters code ss) |
                     (sId, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
-
--- TODO: Output exact matrices etc. to log file.
 
 -- TODO: Use ST (or Reader) to handle arguments, this will be especially useful
 -- with 'phyloModelStr'.
