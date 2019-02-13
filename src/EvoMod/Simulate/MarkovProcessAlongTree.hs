@@ -13,8 +13,6 @@ a tree with states according to a stationary distribution, etc.
 The implementation of the Markov process is more than basic and can be improved
 in a lot of ways.
 
--- TODO: Parallelize.
-
 -}
 
 module EvoMod.Simulate.MarkovProcessAlongTree

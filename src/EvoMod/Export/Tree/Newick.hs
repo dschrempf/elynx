@@ -16,20 +16,19 @@ See nomenclature in 'EvoMod.Data.Tree.Tree'.
 
 -}
 
-
 module EvoMod.Export.Tree.Newick
   ( toNewickWith
+  , toNewickPhyloIntTree
+  , toNewickPhyloByteStringTree
   ) where
 
-import qualified Data.ByteString.Builder    as B
-import qualified Data.ByteString.Lazy.Char8 as B
-import           Data.List                  (intersperse)
+import qualified Data.ByteString.Lazy.Builder as B
+import qualified Data.ByteString.Lazy.Char8   as B
+import           Data.List                    (intersperse)
 import           Data.Tree
 
-import           EvoMod.Tools               (c2w)
-
--- TODO: Test this. Maybe provide helper function that uses 'measure' and
--- 'name', but this would radically increase intermodule dependencies.
+import           EvoMod.Data.Tree.PhyloTree
+import           EvoMod.Tools                 (c2w)
 
 -- | General conversion of a tree into a Newick 'B.Bytestring'. Use provided
 -- functions to extract node labels and branch lengths builder objects. See also
@@ -47,20 +46,12 @@ toNewickWith labelBuilder branchLengthBuilder t =
             <> B.word8 (c2w ':')
             <> branchLengthBuilder l
 
--- -- | Convert a phylogenetic tree with integral node labels into a Newick text
--- -- object. This function is preferable because it uses the text builder and is
--- -- much faster.
--- toNewickIntegral :: (Integral a, RealFloat b) => Tree a -> T.Text
--- toNewickIntegral t = T.toStrict $ B.toLazyText $ toNewickWithBuilder B.decimal Tools.realFloatBuilder t
+-- | Convenience function for exporting trees with 'Int' labels and 'Double'
+-- branch lengths.
+toNewickPhyloIntTree :: Tree PhyloIntLabel -> B.ByteString
+toNewickPhyloIntTree = toNewickWith (B.intDec . piLabel) (B.doubleDec . piBrLen)
 
--- -- | General conversion of a tree into a Newick string in form of a text object.
--- -- Use provided text builders to convert node states and branches to text
--- -- objects.
--- toNewickWithBuilder :: (a -> B.Builder) -> (b -> B.Builder) -> PhyloTree a b c -> B.Builder
--- toNewickWithBuilder f g t = go t `mappend` B.singleton ';'
---   where
---     go (Node s [])   = lbl s
---     go (Node s ts)   = B.singleton '(' `mappend`
---                          mconcat (intersperse (B.singleton ',') $ map go ts)
---                          `mappend` B.singleton ')' `mappend` lbl s
---     lbl (PhyloLabel s l _) = f s `mappend` B.singleton ':' `mappend` g l
+-- | Convenience function for exporting trees with 'ByteString' labels and 'Double'
+-- branch lengths.
+toNewickPhyloByteStringTree :: Tree PhyloByteStringLabel -> B.ByteString
+toNewickPhyloByteStringTree = toNewickWith (B.lazyByteString . pbsLabel) (B.doubleDec . pbsBrLen)

@@ -30,7 +30,6 @@ dependencies:
   - bytestring
   - containers
   - hmatrix
-  - lens
   - math-functions
   - megaparsec
   - mwc-random

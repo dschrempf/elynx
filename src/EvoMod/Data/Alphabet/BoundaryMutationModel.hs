@@ -7,8 +7,6 @@ Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
 Portability :  non-portable (not tested)
 
-TODO: Get rid of Lens dependency. I just do not really need it at the moment.
-
 The boundary mutation model is a discrete-state, continuous-time Markov process
 that allows mutations only when the population is monomorphic.
 
@@ -35,13 +33,11 @@ module EvoMod.Data.Alphabet.BoundaryMutationModel
 
 import qualified Data.ByteString.Lazy.Char8      as B
 
-import           Control.Lens
-
 import           Numeric.SpecFunctions           (choose)
 
 import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Nucleotide
-import           EvoMod.Tools                    (allValues)
+import           EvoMod.Tools                    (allValues, fstTriple, sndTriple, trdTriple)
 
 -- | Alleles are just nucleotides at the moment. However, I want to keep the
 -- code such that it can be extended easily to codons or amino acids.
@@ -142,12 +138,12 @@ fromIndexWith n i
   | i >= stateSpaceSize n = error $
     "Index " ++ show i ++ "out of bounds when population size is " ++ show n ++ "."
   | i < nAlleles = Bnd n (toEnum i)
-  | otherwise = Ply n (i' - p^._1 + 1) (p^._2) (p^._3)
+  | otherwise = Ply n (i' - fstTriple p + 1) (sndTriple p) (trdTriple p)
   where i' = i - nAlleles
         l = [ (enumCombination a b * (n-1), a, b)
             | a <- [minBound .. pred maxBound]
             , b <- [succ a ..]]
-        p = last $ takeWhile (\e -> e^._1 <= i') l
+        p = last $ takeWhile (\e -> fstTriple e <= i') l
 
 -- | Convert 'State' to a number 'Int' for the given population size 'PopSize'.
 -- Back conversion can be done with 'fromIndexWith', with the same population size.

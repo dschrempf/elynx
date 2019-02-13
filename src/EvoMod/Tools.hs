@@ -47,6 +47,10 @@ module EvoMod.Tools
     -- * Matrices.
   , matrixSeparateSymSkew
   , matrixSetDiagToZero
+    -- * Tuples.
+  , fstTriple
+  , sndTriple
+  , trdTriple
   ) where
 
 import           Codec.Compression.GZip     (compress, decompress)
@@ -169,3 +173,15 @@ normalizeSumVec c v = v * scalar c'
 -- | A uniform vector of given length.
 uniformVec :: Int -> Vector R
 uniformVec n = vector $ replicate n (1 / fromIntegral n)
+
+-- | Extract first element of triple.
+fstTriple :: (a, b, c) -> a
+fstTriple (x, _, _) = x
+
+-- | Extract second element of triple.
+sndTriple :: (a, b, c) -> b
+sndTriple (_, x, _) = x
+
+-- | Extract third element of triple.
+trdTriple :: (a, b, c) -> c
+trdTriple (_, _, x) = x
