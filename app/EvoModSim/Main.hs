@@ -47,6 +47,12 @@ import           EvoMod.Import.Tree.Newick                      hiding (name)
 import           EvoMod.Simulate.MarkovProcessAlongTree
 import           EvoMod.Tools
 
+-- TODO: Move this to Tools.
+
+-- TODO: Split Tools into submodules.
+
+-- TODO: Complete haddock.
+
 -- | Should be in the library...
 splitGen :: Int -> GenIO -> IO [GenIO]
 splitGen n gen
@@ -90,6 +96,7 @@ simulateMSA pm t n g = do
   let leafStates = horizontalConcat leafStatesS
       leafNames  = map name $ leafs t
       code       = pmCode pm
+      -- TODO: Make this more accessible.
       sequences  = [ toSequence sId (B.pack . map w2c $ indicesToCharacters code ss) |
                     (sId, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
