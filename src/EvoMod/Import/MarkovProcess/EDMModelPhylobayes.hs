@@ -14,22 +14,27 @@ Creation date: Tue Jan 29 12:12:55 2019.
 
 module EvoMod.Import.MarkovProcess.EDMModelPhylobayes
   ( Parser
+  , Weight
+  , EDMComponent
   , phylobayes
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8      as B
+import qualified Data.ByteString.Lazy.Char8           as B
 import           Data.Void
-import           Numeric.LinearAlgebra           (vector)
+import           Numeric.LinearAlgebra                (vector, Vector, R)
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
-import           EvoMod.Data.MarkovProcess.EDMModel
-import           EvoMod.Tools                    (c2w)
+import           EvoMod.Tools                         (c2w)
 
 -- | Shortcut.
 type Parser = Parsec Void B.ByteString
+
+type Weight = Double
+
+type EDMComponent = (Weight, Vector R)
 
 -- | Parse stationary distributions from Phylobayes format.
 phylobayes :: Parser [EDMComponent]
@@ -64,4 +69,4 @@ dataLine n = do
   when (length vals /= n) (error "Did not find correct number of entries.")
   _ <- many newline
     <?> "dataLine"
-  return $ EDMComponent weight (vector vals)
+  return (weight, vector vals)

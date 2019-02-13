@@ -16,24 +16,24 @@ module ParsePhyloModel
   ( phyloModelString
   ) where
 
-import qualified Data.ByteString.Lazy.Char8                  as B
+import qualified Data.ByteString.Lazy.Char8                     as B
 import           Data.Maybe
 import           Data.Void
-import           Data.Word                                   (Word8)
-import           Numeric.LinearAlgebra                       (norm_1, size,
-                                                              vector)
+import           Data.Word                                      (Word8)
+import           Numeric.LinearAlgebra                          (norm_1, size,
+                                                                 vector)
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.AminoAcid
-import           EvoMod.Data.MarkovProcess.EDMModel
 import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.Nucleotide
 import           EvoMod.Data.MarkovProcess.PhyloModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
+import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes (EDMComponent)
 import           EvoMod.Tools
 
 type Parser = Parsec Void B.ByteString
@@ -113,9 +113,9 @@ parseEDM cs mws = do
   n <- name
   mps <- optional params
   _ <- char paramsEnd
-  let sms = map (\c -> assembleSubstitutionModel n mps (Just $ cStationaryDistribution c)) cs
+  let sms = map (\c -> assembleSubstitutionModel n mps (Just $ snd c)) cs
       edmName = B.pack $ "EDM" ++ show (length cs)
-      ws = fromMaybe (map cWeight cs) mws
+      ws = fromMaybe (map fst cs) mws
   return $ MixtureModel edmName
     [ MixtureModelComponent w sm | (w, sm) <- zip ws sms ]
 

@@ -32,7 +32,6 @@ import           ParsePhyloModel
 
 import           EvoMod.ArgParse
 import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Data.MarkovProcess.EDMModel
 import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.PhyloModel
 -- import           EvoMod.Data.MarkovProcess.RateMatrix
@@ -94,6 +93,12 @@ simulateMSA pm t n g = do
       sequences  = [ toSequence sId (B.pack . map w2c $ indicesToCharacters code ss) |
                     (sId, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
+
+-- | Summarize EDM components; line to be printed to screen or log.
+summarizeEDMComponents :: [EDMComponent] -> B.ByteString
+summarizeEDMComponents cs = B.pack
+                            $ "Empiricial distribution mixture model with "
+                            ++ show (length cs) ++ " components"
 
 -- TODO: Use ST (or Reader) to handle arguments, this will be especially useful
 -- with 'phyloModelStr'.

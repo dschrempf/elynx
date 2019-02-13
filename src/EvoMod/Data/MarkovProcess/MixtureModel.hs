@@ -13,7 +13,8 @@ Creation date: Tue Jan 29 19:17:40 2019.
 -}
 
 module EvoMod.Data.MarkovProcess.MixtureModel
-  ( MixtureModelComponent (..)
+  ( Weight
+  , MixtureModelComponent (..)
   , summarizeMixtureModelComponent
   , MixtureModel (..)
   , summarizeMixtureModel
@@ -31,9 +32,11 @@ import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools                                (allEqual)
 
+type Weight = Double
+
 -- | A mixture model component has a weight and a substitution model.
 data MixtureModelComponent = MixtureModelComponent
-  { mmcWeight            :: Double
+  { mmcWeight            :: Weight
   , mmcSubstitutionModel :: SubstitutionModel
   }
 
