@@ -10,6 +10,8 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:54:51 2018.
 
+TODO: Benchmark with repa!
+
 -}
 
 module EvoMod.Data.Sequence.Sequence
@@ -35,10 +37,10 @@ module EvoMod.Data.Sequence.Sequence
   ) where
 
 import           Control.Monad
+import qualified Data.Array.Repa               as R
 import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.List                     (maximumBy)
 import           Data.Ord                      (comparing)
-import qualified Data.Vector.Unboxed           as V
 import           Data.Word8                    (Word8)
 
 import           EvoMod.Data.Sequence.Defaults (defFieldWidth,
@@ -54,17 +56,18 @@ type SequenceId = B.ByteString
 -- | By choosing specific types for the identifier and the characters is of
 -- course limiting but also eases handling of types a lot.
 data Sequence = Sequence { seqId :: SequenceId
-                         , seqCs :: V.Vector Word8 }
+                         , seqCs :: R.Array R.U R.DIM1 Word8 }
   deriving (Eq)
 
 -- | Conversion from 'B.ByteString'.
 toSequence :: B.ByteString -> B.ByteString -> Sequence
 toSequence i cs = Sequence i v
-  where v = V.force . V.fromList . map c2w . B.unpack $ cs
+  where v = R.fromListUnboxed (R.Z R.:. l) . map c2w . B.unpack $ cs
+        l = fromIntegral $ B.length cs :: Int
 
 -- | Conversion of data to 'B.ByteString'.
 seqToCsByteString :: Sequence -> B.ByteString
-seqToCsByteString = B.pack . map w2c . V.toList . seqCs
+seqToCsByteString = B.pack . map w2c . R.toList . seqCs
 
 -- | Extract 'SequenceId' and data.
 fromSequence :: Sequence -> (SequenceId, B.ByteString)
@@ -76,7 +79,7 @@ showCharacters = seqToCsByteString
 showInfo :: Sequence -> B.ByteString
 showInfo s = B.unwords [ alignLeft defSequenceNameWidth (seqId s)
                        , alignLeft defFieldWidth l ]
-  where l = B.pack . show $ V.length . seqCs $ s
+  where l = B.pack . show $ R.size . R.extent . seqCs $ s
 
 instance Show Sequence where
   show s = B.unpack $ showSequence s
@@ -124,7 +127,7 @@ summarizeSequenceListBody ss = B.unlines $ map summarizeSequence ss
 
 -- | Calculate length of 'Sequence'.
 lengthSequence :: Sequence -> Int
-lengthSequence = V.length . seqCs
+lengthSequence = R.size . R.extent . seqCs
 
 -- | Check if all 'Sequence's have equal length.
 equalLength :: [Sequence] -> Bool
@@ -136,12 +139,12 @@ longest = maximumBy (comparing lengthSequence)
 
 -- | Trim to given length.
 trimSequence :: Int -> Sequence -> Sequence
-trimSequence n s@Sequence{seqCs=cs} = s {seqCs = V.take n cs}
+trimSequence n s@Sequence{seqCs=cs} = s {seqCs = R.computeS $ R.extract (R.Z R.:. 0) (R.Z R.:. n) cs}
 
 -- | Concatenate two sequences. 'SequenceId's have to match.
 concatenate :: Sequence -> Sequence -> Either B.ByteString Sequence
 concatenate (Sequence i cs) (Sequence j ks)
-  | i == j     = Right $ Sequence i (cs V.++ ks)
+  | i == j     = Right $ Sequence i (R.computeS $ cs R.++ ks)
   | otherwise  = Left $ B.pack "concatenate: Sequences do not have equal IDs: "
                  <> i <> B.pack ", " <> j <> B.pack "."
 
