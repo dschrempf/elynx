@@ -28,7 +28,7 @@ import           Data.List                    (intersperse)
 import           Data.Tree
 
 import           EvoMod.Data.Tree.PhyloTree
-import           EvoMod.Tools                 (c2w)
+import           EvoMod.Tools.ByteString      (c2w)
 
 -- | General conversion of a tree into a Newick 'B.Bytestring'. Use provided
 -- functions to extract node labels and branch lengths builder objects. See also
@@ -51,7 +51,7 @@ toNewickWith labelBuilder branchLengthBuilder t =
 toNewickPhyloIntTree :: Tree PhyloIntLabel -> B.ByteString
 toNewickPhyloIntTree = toNewickWith (B.intDec . piLabel) (B.doubleDec . piBrLen)
 
--- | Convenience function for exporting trees with 'ByteString' labels and 'Double'
--- branch lengths.
+-- | Convenience function for exporting trees with 'B.ByteString' labels and
+-- 'Double' branch lengths.
 toNewickPhyloByteStringTree :: Tree PhyloByteStringLabel -> B.ByteString
 toNewickPhyloByteStringTree = toNewickWith (B.lazyByteString . pbsLabel) (B.doubleDec . pbsBrLen)

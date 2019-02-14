@@ -62,7 +62,7 @@ import qualified Data.ByteString.Lazy.Char8                 as B
 import           Data.Maybe                                 (fromMaybe)
 
 import           EvoMod.Data.Alphabet.BoundaryMutationModel
-import           EvoMod.Tools                               (alignLeft,
+import           EvoMod.Tools.ByteString                    (alignLeft,
                                                              alignRight)
 
 -- | The number of sites that will be printed.

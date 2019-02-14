@@ -23,7 +23,7 @@ module EvoMod.Data.Alphabet.AminoAcid
 import           Data.Word8                     (Word8, toUpper)
 
 import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Tools                   (c2w)
+import           EvoMod.Tools.ByteString        (c2w)
 
 -- | Amino acids type; alphabetical order.
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y

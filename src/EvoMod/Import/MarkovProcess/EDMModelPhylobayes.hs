@@ -14,27 +14,26 @@ Creation date: Tue Jan 29 12:12:55 2019.
 
 module EvoMod.Import.MarkovProcess.EDMModelPhylobayes
   ( Parser
-  , Weight
   , EDMComponent
   , phylobayes
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8           as B
+import qualified Data.ByteString.Lazy.Char8 as B
 import           Data.Void
-import           Numeric.LinearAlgebra                (vector, Vector, R)
+import           Numeric.LinearAlgebra      (R, Vector, vector)
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
-import           EvoMod.Tools                         (c2w)
+import           EvoMod.Tools.ByteString    (c2w)
 
 -- | Shortcut.
 type Parser = Parsec Void B.ByteString
 
-type Weight = Double
-
-type EDMComponent = (Weight, Vector R)
+-- | An empirical mixture model component has a weight and a stationary
+-- distribution.
+type EDMComponent = (Double, Vector R)
 
 -- | Parse stationary distributions from Phylobayes format.
 phylobayes :: Parser [EDMComponent]

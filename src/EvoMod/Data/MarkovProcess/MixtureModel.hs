@@ -30,8 +30,9 @@ import qualified Data.ByteString.Lazy.Char8                  as B
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
-import           EvoMod.Tools                                (allEqual)
+import           EvoMod.Tools.Equality                       (allEqual)
 
+-- | Mixture model component weight.
 type Weight = Double
 
 -- | A mixture model component has a weight and a substitution model.

@@ -31,8 +31,10 @@ import           Numeric.SpecFunctions
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
-import           EvoMod.Tools                                (c2w, matrixSetDiagToZero,
-                                                              normalizeSumVec, uniformVec)
+import           EvoMod.Tools.ByteString                     (c2w)
+import           EvoMod.Tools.LinearAlgebra                  (matrixSetDiagToZero,
+                                                              normalizeSumVec,
+                                                              uniformVec)
 
 -- XXX: Hardcoded here, to reduce intermodule dependencies.
 n :: Int

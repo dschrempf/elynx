@@ -39,7 +39,7 @@ import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer (decimal, float)
 
 import           EvoMod.Data.Tree.PhyloTree
-import           EvoMod.Tools               (c2w)
+import           EvoMod.Tools.ByteString    (c2w)
 
 -- | Shortcut.
 type Parser = Parsec Void B.ByteString

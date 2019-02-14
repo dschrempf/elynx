@@ -20,7 +20,7 @@ import           Test.Hspec
 import           EvoMod.Data.MarkovProcess.Nucleotide
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
-import           EvoMod.Tools                                (nearlyEqVec)
+import           EvoMod.Tools.Equality                       (nearlyEqVec)
 
 stationaryDist :: StationaryDistribution
 stationaryDist = fromList [0.2, 0.3, 0.3, 0.2]

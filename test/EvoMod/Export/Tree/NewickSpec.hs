@@ -22,7 +22,7 @@ import           Test.Hspec
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Export.Tree.Newick
 import           EvoMod.Import.Tree.Newick
-import           EvoMod.Tools
+import           EvoMod.Tools.InputOutput
 
 samplePhyloByteStringTree :: Tree PhyloByteStringLabel
 samplePhyloByteStringTree = parseByteStringWith newick sampleNewickByteString1

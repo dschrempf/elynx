@@ -45,8 +45,8 @@ import           EvoMod.Data.Sequence.Defaults (defFieldWidth,
                                                 defSequenceListSummaryNumber,
                                                 defSequenceNameWidth,
                                                 defSequenceSummaryLength)
-import           EvoMod.Tools                  (alignLeft, allEqual, c2w,
-                                                summarizeByteString, w2c)
+import           EvoMod.Tools.ByteString
+import           EvoMod.Tools.Equality
 
 -- | For now, 'SequenceId's are just 'String's.
 type SequenceId = B.ByteString

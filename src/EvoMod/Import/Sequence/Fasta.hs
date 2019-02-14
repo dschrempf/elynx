@@ -33,7 +33,7 @@ import           Text.Megaparsec.Byte
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Sequence.Sequence
-import           EvoMod.Tools                  (c2w, w2c)
+import           EvoMod.Tools.ByteString       (c2w, w2c)
 
 -- | Shortcut.
 type Parser = Parsec Void B.ByteString

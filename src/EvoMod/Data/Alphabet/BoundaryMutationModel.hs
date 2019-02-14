@@ -37,7 +37,7 @@ import           Numeric.SpecFunctions           (choose)
 
 import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Nucleotide
-import           EvoMod.Tools                    (allValues, fstTriple, sndTriple, trdTriple)
+import           EvoMod.Tools.Misc
 
 -- | Alleles are just nucleotides at the moment. However, I want to keep the
 -- code such that it can be extended easily to codons or amino acids.

@@ -20,10 +20,8 @@ import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8                     as B
-import           Data.List
 import           Data.Tree
 import qualified Data.Vector                                    as V
-import           Data.Word
 import           Numeric.LinearAlgebra
 import           System.Random.MWC
 
@@ -34,7 +32,6 @@ import           EvoMod.ArgParse
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.PhyloModel
--- import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
@@ -45,29 +42,9 @@ import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes hiding (Parser)
 import           EvoMod.Import.Tree.Newick                      hiding (name)
 import           EvoMod.Simulate.MarkovProcessAlongTree
-import           EvoMod.Tools
-
--- TODO: Move this to Tools.
-
--- TODO: Split Tools into submodules.
-
--- TODO: Complete haddock.
-
--- | Should be in the library...
-splitGen :: Int -> GenIO -> IO [GenIO]
-splitGen n gen
-  | n <= 0    = return []
-  | otherwise =
-  fmap (gen:) . replicateM (n-1) $
-  initialize =<< (uniformVector gen 256 :: IO (V.Vector Word32))
-
--- | A brain f***. As an example, let @xss@ be a list of alignments (i.e., a
--- list of a list of a list of alleles). This function horizontally concatenates
--- the sites. The number of species needs to be same in each alignment. No
--- checks are performed!
-horizontalConcat :: [[[a]]] -> [[a]]
-horizontalConcat [xs] = xs
-horizontalConcat xss = foldl' (zipWith (++)) (head xss) (tail xss)
+import           EvoMod.Tools.ByteString
+import           EvoMod.Tools.InputOutput
+import           EvoMod.Tools.Misc
 
 -- | Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.

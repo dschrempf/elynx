@@ -34,7 +34,8 @@ import           EvoMod.Data.MarkovProcess.PhyloModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes (EDMComponent)
-import           EvoMod.Tools
+import           EvoMod.Tools.ByteString
+import           EvoMod.Tools.Equality
 
 type Parser = Parsec Void B.ByteString
 

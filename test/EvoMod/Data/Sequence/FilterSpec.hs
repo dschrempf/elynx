@@ -17,7 +17,7 @@ module EvoMod.Data.Sequence.FilterSpec
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Sequence.Filter
 import           EvoMod.Import.Sequence.Fasta
-import           EvoMod.Tools
+import           EvoMod.Tools.InputOutput
 import           Files
 import           Test.Hspec
 

@@ -26,7 +26,8 @@ import           EvoMod.Data.Sequence.Filter
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
-import           EvoMod.Tools                  (compose, parseFileWith)
+import           EvoMod.Tools.InputOutput
+import           EvoMod.Tools.Misc
 
 act :: Command -> [[Sequence]] -> Either B.ByteString B.ByteString
 act Summarize sss    = Right . B.concat $ map summarizeSequenceList sss

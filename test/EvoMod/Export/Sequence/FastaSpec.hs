@@ -17,7 +17,7 @@ module EvoMod.Export.Sequence.FastaSpec
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
-import           EvoMod.Tools
+import           EvoMod.Tools.InputOutput
 import           Files
 import           Test.Hspec
 

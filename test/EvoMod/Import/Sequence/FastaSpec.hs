@@ -18,7 +18,7 @@ import           Data.Either
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Import.Sequence.Fasta
-import           EvoMod.Tools
+import           EvoMod.Tools.InputOutput
 import           Files
 import           Test.Hspec
 

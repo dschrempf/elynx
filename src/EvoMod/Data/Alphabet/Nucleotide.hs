@@ -23,10 +23,10 @@ module EvoMod.Data.Alphabet.Nucleotide
   , nucleotideIUPACToWord )
 where
 
-import           Data.Word8          (Word8, toUpper)
+import           Data.Word8                     (Word8, toUpper)
 
 import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Tools          (c2w)
+import           EvoMod.Tools.ByteString        (c2w)
 
 -- | Nucleotide data type. Actually, only two bits are needed, but 'Word8' is
 -- the smallest available data type. One could use a /pack/ function like it is

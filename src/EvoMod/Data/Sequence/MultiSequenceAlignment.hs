@@ -10,6 +10,8 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:40:18 2018.
 
+TODO: Probably use a matrix?
+
 -}
 
 
@@ -83,7 +85,7 @@ msaConcatenate (MSA xs lx) (MSA ys ly)
   | otherwise = fromSequenceList <$> zipWithM concatenate xs ys
 
 -- | Concatenate a list of 'MultiSequenceAlignment's horizontally. See
--- 'concatenateMSA'.
+-- 'msaConcatenate'.
 msasConcatenate :: [MultiSequenceAlignment] -> Either B.ByteString MultiSequenceAlignment
 msasConcatenate []    = Left $ B.pack "Nothing to concatenate."
 msasConcatenate [msa] = Right msa

@@ -18,7 +18,7 @@ import           Numeric.LinearAlgebra                          (fromList)
 import           Test.Hspec
 
 import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes
-import           EvoMod.Tools                                   (parseFileWith)
+import           EvoMod.Tools.InputOutput                       (parseFileWith)
 import           Files                                          (componentsFilePhylobayes)
 
 testComponents :: [EDMComponent]

@@ -20,7 +20,7 @@ import           Test.Hspec
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Import.Sequence.Fasta
-import           EvoMod.Tools
+import           EvoMod.Tools.InputOutput
 import           Files
 
 longestSequenceInFileBS :: B.ByteString
