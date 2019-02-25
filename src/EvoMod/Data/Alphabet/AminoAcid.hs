@@ -23,7 +23,7 @@ module EvoMod.Data.Alphabet.AminoAcid
 import           Data.Word8                     (Word8, toUpper)
 
 import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Tools.ByteString        (c2w)
+import           EvoMod.Tools.ByteString        (c2w, w2c)
 
 -- | Amino acids type; alphabetical order.
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
@@ -51,7 +51,7 @@ wordToAminoAcid w | w' == c2w 'A' = A
                   | w' == c2w 'V' = V
                   | w' == c2w 'W' = W
                   | w' == c2w 'Y' = Y
-                  | otherwise     = error $ "Cannot read nucleotide: " ++ show w ++ "."
+                  | otherwise     = error $ "Cannot read amino acid: " ++ [w2c w] ++ "."
   where w' = toUpper w
 
 -- | And writing is also interesting.

@@ -29,6 +29,7 @@ module EvoMod.Data.Alphabet.Alphabet
   , cardinality
   , cardinalityFromCode
   , indexToCharacter
+  , characterToIndex
   , indicesToCharacters
   )
 where
@@ -82,6 +83,11 @@ cardinalityFromCode = cardinality . alphabet
 -- | Convert integer index to 'Character'.
 indexToCharacter :: Code -> Int -> Word8
 indexToCharacter c i = S.elemAt i (fromAlphabet . alphabet $ c)
+
+characterToIndex :: Code -> Word8 -> Int
+characterToIndex DNA       char = fromEnum (fromWord char :: Nucleotide)
+characterToIndex DNA_IUPAC char = fromEnum (fromWord char :: NucleotideIUPAC)
+characterToIndex Protein   char = fromEnum (fromWord char :: AminoAcid)
 
 -- | Convert a set of integer indices to 'Character's.
 indicesToCharacters :: Code -> [Int] -> [Word8]

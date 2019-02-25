@@ -29,6 +29,7 @@ data Command = Summarize
              | Concatenate
              | Filter { longer  :: Maybe Int
                       , shorter :: Maybe Int}
+             | Analyze
 
 data EvoModSeqArgs = EvoModSeqArgs
   { argsCommand     :: Command
@@ -50,7 +51,8 @@ commandArg :: Parser Command
 commandArg = hsubparser $
   summarizeCommand <>
   concatenateCommand <>
-  filterCommand
+  filterCommand <>
+  analyzeCommand
 
 summarizeCommand :: Mod CommandFields Command
 summarizeCommand = command "summarize" $
@@ -77,6 +79,11 @@ filterShorterThanOpt = optional $ option auto
   ( long "shorter-than"
     <> metavar "LENGTH"
     <> help "Only keep sequences shorter than LENGTH." )
+
+analyzeCommand :: Mod CommandFields Command
+analyzeCommand = command "analyze" $
+  info (pure Analyze)
+  (progDesc "Analyze multi sequence alignment (error if sequences have different length).")
 
 alphabetOpt :: Parser Code
 alphabetOpt = option auto

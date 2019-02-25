@@ -26,7 +26,7 @@ where
 import           Data.Word8                     (Word8, toUpper)
 
 import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Tools.ByteString        (c2w)
+import           EvoMod.Tools.ByteString        (c2w, w2c)
 
 -- | Nucleotide data type. Actually, only two bits are needed, but 'Word8' is
 -- the smallest available data type. One could use a /pack/ function like it is
@@ -41,7 +41,7 @@ wordToNucleotide w | w' == c2w 'A' = A
                    | w' == c2w 'C' = C
                    | w' == c2w 'G' = G
                    | w' == c2w 'T' = T
-                   | otherwise     = error $ "Cannot read nucleotide: " ++ show w ++ "."
+                   | otherwise     = error $ "Cannot read nucleotide: " ++ [w2c w] ++ "."
   where w' = toUpper w
 
 -- | Convert 'Nucleotide' to 'Word8'.
@@ -85,7 +85,7 @@ wordToNucleotideIUPAC w | w' == c2w 'A' = A_IUPAC
                         | w' == c2w 'H' = H
                         | w' == c2w 'V' = V
                         | w' == c2w '-' = Gap
-                        | otherwise     = error $ "Cannot read nucleotide IUPAC code: " ++ show w ++ "."
+                        | otherwise     = error $ "Cannot read nucleotide IUPAC code: " ++ [w2c w] ++ "."
   where w' = toUpper w
 
 -- | So that we can write 'NucleotideIUPAC'.

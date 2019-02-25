@@ -24,17 +24,20 @@ import           ArgParseSeq
 import           EvoMod.ArgParse
 import           EvoMod.Data.Sequence.Filter
 import           EvoMod.Data.Sequence.Sequence
+import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.InputOutput
 import           EvoMod.Tools.Misc
 
 act :: Command -> [[Sequence]] -> Either B.ByteString B.ByteString
-act Summarize sss    = Right . B.concat $ map summarizeSequenceList sss
-act Concatenate sss  = sequencesToFasta <$> concatenateSeqs sss
+act Summarize sss      = Right . B.intercalate (B.pack "\n") $ map summarizeSequenceList sss
+act Concatenate sss    = sequencesToFasta <$> concatenateSeqs sss
 act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
-  where filters = map (fromMaybe id) [ filterLongerThan <$> ml
+  where filters        = map (fromMaybe id) [ filterLongerThan <$> ml
                                     , filterShorterThan <$> ms ]
+act Analyze sss        = Right . B.intercalate (B.pack "\n") $ map summarizeMSA msas
+  where msas = map fromSequenceList sss
 
 io :: Either B.ByteString B.ByteString -> Handle -> IO ()
 io (Left  s)   _ = B.putStrLn s
@@ -44,7 +47,7 @@ main :: IO ()
 main = do (EvoModSeqArgs cmd c mofn q fns) <- parseEvoModSeqArgs
           unless q $ do
             programHeader
-            putStrLn "Read fasta file."
+            putStrLn "Read fasta file(s)."
             putStrLn $ "Code: " ++ show c ++ "."
             putStrLn ""
           -- 'sss' is a little weird, but it is a list of a list of sequences.

@@ -10,8 +10,6 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:54:51 2018.
 
-TODO: Benchmark with repa!
-
 -}
 
 module EvoMod.Data.Sequence.Sequence
@@ -43,6 +41,7 @@ import           Data.List                     (maximumBy)
 import           Data.Ord                      (comparing)
 import           Data.Word8                    (Word8)
 
+import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Sequence.Defaults (defFieldWidth,
                                                 defSequenceListSummaryNumber,
                                                 defSequenceNameWidth,
@@ -55,13 +54,14 @@ type SequenceId = B.ByteString
 
 -- | By choosing specific types for the identifier and the characters is of
 -- course limiting but also eases handling of types a lot.
-data Sequence = Sequence { seqId :: SequenceId
-                         , seqCs :: R.Array R.U R.DIM1 Word8 }
+data Sequence = Sequence { seqId   :: SequenceId
+                         , seqCode :: Code
+                         , seqCs   :: R.Array R.U R.DIM1 Word8 }
   deriving (Eq)
 
 -- | Conversion from 'B.ByteString'.
-toSequence :: B.ByteString -> B.ByteString -> Sequence
-toSequence i cs = Sequence i v
+toSequence :: B.ByteString -> Code -> B.ByteString -> Sequence
+toSequence i code cs = Sequence i code v
   where v = R.fromListUnboxed (R.Z R.:. l) . map c2w . B.unpack $ cs
         l = fromIntegral $ B.length cs :: Int
 
@@ -102,6 +102,8 @@ summarizeSequence :: Sequence -> B.ByteString
 summarizeSequence s = B.unwords [ showInfo s
                                 , summarizeByteString defSequenceSummaryLength (showCharacters s) ]
 
+-- TODO: Print codes! Then, MSAs have to be printed differently, because code
+-- has to be the same in this case.
 -- | Trim and show a list of 'Sequence's.
 summarizeSequenceList :: [Sequence] -> B.ByteString
 summarizeSequenceList ss = summarizeSequenceListHeader ss <>
@@ -139,14 +141,14 @@ longest = maximumBy (comparing lengthSequence)
 
 -- | Trim to given length.
 trimSequence :: Int -> Sequence -> Sequence
-trimSequence n s@Sequence{seqCs=cs} = s {seqCs = R.computeS $ R.extract (R.Z R.:. 0) (R.Z R.:. n) cs}
+trimSequence n s@Sequence{seqCs=cs} = s {seqCs = R.computeS $ R.extract (R.ix1 0) (R.ix1 n) cs}
 
 -- | Concatenate two sequences. 'SequenceId's have to match.
 concatenate :: Sequence -> Sequence -> Either B.ByteString Sequence
-concatenate (Sequence i cs) (Sequence j ks)
-  | i == j     = Right $ Sequence i (R.computeS $ cs R.++ ks)
-  | otherwise  = Left $ B.pack "concatenate: Sequences do not have equal IDs: "
-                 <> i <> B.pack ", " <> j <> B.pack "."
+concatenate (Sequence i code cs) (Sequence j kode ks)
+  | i == j && code == kode = Right $ Sequence i code (R.computeS $ cs R.++ ks)
+  | otherwise              = Left $ B.pack "concatenate: Sequences do not have equal IDs: "
+                             <> i <> B.pack ", " <> j <> B.pack "."
 
 -- | Concatenate a list of sequences, see 'concatenate'.
 concatenateSeqs :: [[Sequence]] -> Either B.ByteString [Sequence]

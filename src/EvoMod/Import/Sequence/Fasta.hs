@@ -53,13 +53,14 @@ sequenceLine a = do xs <- takeWhile1P (Just "Alphabet character") (checkWord8 a)
                     return xs
 
 -- | Parse a sequence of 'Alphabet' 'EvoMod.Data.Alphabet.Character's.
-fastaSequence :: Alphabet -> Parser Sequence
-fastaSequence a = do hd <- sequenceHeader
+fastaSequence :: Code -> Parser Sequence
+fastaSequence c = do hd <- sequenceHeader
                      cs <- some (sequenceLine a)
                      _  <- many eol
                      let hd' = B.pack $ map w2c hd
-                     return $ toSequence hd' (B.concat cs)
+                     return $ toSequence hd' c (B.concat cs)
+  where a = alphabet c
 
 -- | Parse a Fasta file assuming 'Code'.
 fasta :: Code -> Parser [Sequence]
-fasta c = some (fastaSequence (alphabet c)) <* eof
+fasta c = some (fastaSequence c) <* eof

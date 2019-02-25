@@ -74,7 +74,7 @@ simulateMSA pm t n g = do
       leafNames  = map name $ leafs t
       code       = pmCode pm
       -- TODO: Make this more accessible.
-      sequences  = [ toSequence sId (B.pack . map w2c $ indicesToCharacters code ss) |
+      sequences  = [ toSequence sId code (B.pack . map w2c $ indicesToCharacters code ss) |
                     (sId, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
 
