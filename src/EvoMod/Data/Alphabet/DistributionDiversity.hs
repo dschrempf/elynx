@@ -31,9 +31,10 @@ import           Data.Word
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Tools.Numeric
 
+-- TODO: Parallel worker.
 -- | Entropy of vector.
 entropy :: Array D DIM1 Double -> Double
-entropy arr = negate $ runIdentity $ sumAllP $ R.map xLogX arr
+entropy arr = negate $ runIdentity $ sumAllP $ computeUnboxedS $ R.map xLogX arr
 
 -- | Effective number of used characters measured using 'entropy'. The result
 -- only makes sense when the sum of the array is 1.0.
@@ -44,7 +45,7 @@ kEffEntropy = exp . entropy
 -- binomially sampling the same character twice and only makes sense when the
 -- sum of the array is 1.0.
 homoplasy :: Array D DIM1 Double -> Double
-homoplasy arr = runIdentity $ sumAllP $ R.map (\x -> x*x) arr
+homoplasy arr = runIdentity $ sumAllP $ computeUnboxedS $ R.map (\x -> x*x) arr
 
 -- | Effective number of used characters measured using 'homoplasy'. The result
 -- only makes sense when the sum of the array is 1.0.

@@ -56,6 +56,7 @@ msaLength (MSA _ _ d) = nCols d
 msaNSequences :: MultiSequenceAlignment -> Int
 msaNSequences (MSA _ _ d) = nRows d
 
+-- TODO: THIS IS FLAWED. ROWS AND COLUMNS ARE MIXED UP.
 -- | Create 'MultiSequenceAlignment' from a list of 'Sequence's.
 fromSequenceList :: [Sequence] -> MultiSequenceAlignment
 fromSequenceList ss
@@ -90,7 +91,10 @@ summarizeMSA msa = B.pack "Multi sequence alignment.\n" <> summarizeSequenceList
 
 -- | Diversity analysis. See 'kEffEntropy'.
 diversityAnalysis :: MultiSequenceAlignment -> B.ByteString
-diversityAnalysis (MSA _ code d) = B.pack $ show $ fMapCol (kEffEntropy . frequencyCharacters code) d
+-- diversityAnalysis (MSA _ code d) = B.pack $ show $ fMapCol (kEffEntropy . frequencyCharacters code) d
+-- diversityAnalysis (MSA _ code d) = B.pack $ show $ fMapCol computeUnboxedS d
+-- TODO: THIS IS FLAWED. ROWS AND COLUMNS ARE MIXED UP.
+diversityAnalysis (MSA _ code d) = B.pack $ show $ d
 
 -- | Join two 'MultiSequenceAlignment's vertically. That is, add more sequences
 -- to an alignment. See also 'msaConcatenate'.

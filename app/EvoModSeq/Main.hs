@@ -36,7 +36,7 @@ act Concatenate sss    = sequencesToFasta <$> concatenateSeqs sss
 act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
   where filters        = map (fromMaybe id) [ filterLongerThan <$> ml
                                     , filterShorterThan <$> ms ]
-act Analyze sss        = Right . B.intercalate (B.pack "\n") $ map summarizeMSA msas
+act Analyze sss        = Right . B.intercalate (B.pack "\n") $ map diversityAnalysis msas
   where msas = map fromSequenceList sss
 
 io :: Either B.ByteString B.ByteString -> Handle -> IO ()
