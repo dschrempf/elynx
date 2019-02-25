@@ -123,7 +123,7 @@ main = do
     Just s  -> putStrLn ("Seed: " ++ show s ++ ".")
                >> initialize (V.fromList s)
   msa <- simulateMSA phyloModel tree len gen
-  let output = sequencesToFasta $ msaSequences msa
+  let output = sequencesToFasta $ toSequenceList msa
   B.writeFile outFile output
   unless quiet $ do
     putStrLn ""
