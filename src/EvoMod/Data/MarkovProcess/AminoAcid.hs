@@ -81,8 +81,8 @@ pamlToAlphaMat m = build (n,n) (\i j -> m
 
 -- Lower triangular matrix of LG exchangeabilities in PAML order and in form of
 -- a list.
-exchLGRawPaml :: [Double]
-exchLGRawPaml = [0.425093, 0.276818, 0.751878, 0.395144, 0.123954, 5.076149,
+lgExchRawPaml :: [Double]
+lgExchRawPaml = [0.425093, 0.276818, 0.751878, 0.395144, 0.123954, 5.076149,
                  2.489084, 0.534551, 0.528768, 0.062556, 0.969894, 2.807908,
                  1.695752, 0.523386, 0.084808, 1.038545, 0.363970, 0.541712,
                  5.243870, 0.003499, 4.128591, 2.066040, 0.390192, 1.437645,
@@ -130,68 +130,70 @@ ijToK i j = round (i `choose` 2) + j
 
 -- The function is a little weird because HMatrix uses Double indices for Matrix
 -- Double builders.
-exchLGPamlBuilder :: Double -> Double -> Double
-exchLGPamlBuilder i j | i > j  = exchLGRawPaml !! ijToK iI jI
+lgExchPamlBuilder :: Double -> Double -> Double
+lgExchPamlBuilder i j | i > j  = lgExchRawPaml !! ijToK iI jI
                       | i == j = 0.0
-                      | i < j  = exchLGRawPaml !! ijToK jI iI
+                      | i < j  = lgExchRawPaml !! ijToK jI iI
                       | otherwise = error "Float indices could not be compared during matrix creation."
   where iI = round i :: Int
         jI = round j :: Int
 
 -- Exchangeability matrix of LG model in PAML order.
-exchLGPaml :: ExchMatrix
-exchLGPaml = build (n,n) exchLGPamlBuilder
+lgExchPaml :: ExchMatrix
+lgExchPaml = build (n,n) lgExchPamlBuilder
 
 -- | Exchangeabilities of LG model in alphabetical order.
-exchLG :: ExchMatrix
-exchLG = pamlToAlphaMat exchLGPaml
+lgExch :: ExchMatrix
+lgExch = pamlToAlphaMat lgExchPaml
 
 -- Stationary distribution in PAML order.
-statDistLGPaml :: StationaryDistribution
-statDistLGPaml = normalizeSumVec 1.0 $
+lgStatDistPaml :: StationaryDistribution
+lgStatDistPaml = normalizeSumVec 1.0 $
   fromList [ 0.079066, 0.055941, 0.041977, 0.053052, 0.012937, 0.040767
            , 0.071586, 0.057337, 0.022355, 0.062157, 0.099081, 0.064600
            , 0.022951, 0.042302, 0.044040, 0.061197, 0.053287, 0.012066
            , 0.034155, 0.069147 ]
 
 -- | Stationary distribution of LG model in alphabetical order.
-statDistLG :: StationaryDistribution
-statDistLG = pamlToAlphaVec statDistLGPaml
+lgStatDist :: StationaryDistribution
+lgStatDist = pamlToAlphaVec lgStatDistPaml
 
 -- | LG rate matrix with amino acids in alphabetical order.
-rmLG :: RateMatrix
-rmLG = rmLGCustom statDistLG
+lgRM :: RateMatrix
+lgRM = lgRMCustom lgStatDist
 
 -- | LG substitution model.
 lg :: SubstitutionModel
-lg = SubstitutionModel Protein (B.pack "LG") [] statDistLG exchLG rmLG
+lg = SubstitutionModel Protein (B.pack "LG") [] lgStatDist lgExch lgRM
 
 -- | LG rate matrix with custom stationary distribution.
-rmLGCustom :: StationaryDistribution -> RateMatrix
-rmLGCustom = fromExchMatrix exchLG
+lgRMCustom :: StationaryDistribution -> RateMatrix
+lgRMCustom = fromExchMatrix lgExch
 
--- | LG substitution model with custom stationary distribution.
-lgCustom :: StationaryDistribution -> SubstitutionModel
-lgCustom f = SubstitutionModel Protein (B.pack "LG-Custom") [] f exchLG (rmLGCustom f)
+-- | LG substitution model with custom stationary distribution and maybe a name.
+lgCustom :: StationaryDistribution -> Maybe B.ByteString -> SubstitutionModel
+lgCustom f mn = SubstitutionModel Protein name [] f lgExch (lgRMCustom f)
+  where name = fromMaybe (B.pack "LG-Custom") mn
 
 uniformExch :: ExchMatrix
 uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n*n) 1.0
 
-exchPoisson :: ExchMatrix
-exchPoisson = uniformExch
+poissonExch :: ExchMatrix
+poissonExch = uniformExch
 
 -- | Poisson rate matrix.
-rmPoisson :: RateMatrix
-rmPoisson = rmPoissonCustom $ uniformVec n
+poissonRM :: RateMatrix
+poissonRM = poissonRMCustom $ uniformVec n
 
 -- | Poisson substitution model.
 poisson :: SubstitutionModel
-poisson = SubstitutionModel Protein (B.pack "Poisson") [] (uniformVec n) exchPoisson rmPoisson
+poisson = SubstitutionModel Protein (B.pack "Poisson") [] (uniformVec n) poissonExch poissonRM
 
 -- | Poisson rate matrix with custom stationary distribution.
-rmPoissonCustom :: StationaryDistribution -> RateMatrix
-rmPoissonCustom = fromExchMatrix uniformExch
+poissonRMCustom :: StationaryDistribution -> RateMatrix
+poissonRMCustom = fromExchMatrix uniformExch
 
--- | Poisson substitution model with custom stationary distribution.
-poissonCustom :: StationaryDistribution -> SubstitutionModel
-poissonCustom f = SubstitutionModel Protein (B.pack "Poisson-Custom") [] f exchPoisson (rmPoissonCustom f)
+-- | Poisson substitution model with custom stationary distribution and maybe a name.
+poissonCustom :: StationaryDistribution -> Maybe B.ByteString -> SubstitutionModel
+poissonCustom f mn = SubstitutionModel Protein name [] f poissonExch (poissonRMCustom f)
+  where name = fromMaybe (B.pack "Poisson-Custom") mn

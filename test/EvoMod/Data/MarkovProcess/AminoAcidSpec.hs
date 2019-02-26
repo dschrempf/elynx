@@ -141,7 +141,7 @@ spec = do
 
   describe "lgCustom" $
     it "stationary distribution can be recovered" $ do
-    let f = getStationaryDistribution (smRateMatrix $ lgCustom statDistUniform)
+    let f = getStationaryDistribution $ smRateMatrix $ lgCustom statDistUniform Nothing
     f `nearlyEqVec` statDistUniform `shouldBe` True
 
   describe "poisson" $
@@ -150,5 +150,5 @@ spec = do
 
   describe "poissonCustom" $
     it "stationary distribution can be recovered" $ do
-    let f = getStationaryDistribution $ smRateMatrix $ poissonCustom statDistLGPython
+    let f = getStationaryDistribution $ smRateMatrix $ poissonCustom statDistLGPython Nothing
     f `nearlyEqVec` statDistLGPython `shouldBe` True

@@ -91,9 +91,9 @@ assembleSubstitutionModel "JC" Nothing Nothing = jc
 assembleSubstitutionModel "HKY" (Just [k]) (Just f) = checkLength f nNuc $ hky k f
 -- Protein models.
 assembleSubstitutionModel "LG" Nothing Nothing = lg
-assembleSubstitutionModel "LG-Custom" Nothing (Just f) = checkLength f nAA $ lgCustom f
+assembleSubstitutionModel "LG-Custom" Nothing (Just f) = checkLength f nAA $ lgCustom f Nothing
 assembleSubstitutionModel "Poisson" Nothing Nothing = poisson
-assembleSubstitutionModel "Poisson-Custom" Nothing (Just f)  = checkLength f nAA $ poissonCustom f
+assembleSubstitutionModel "Poisson-Custom" Nothing (Just f) = checkLength f nAA $ poissonCustom f Nothing
 assembleSubstitutionModel n mps mf = error . unlines $
   [ "Cannot assemble substitution model. "
   , "Name: " ++ show n
