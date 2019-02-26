@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Tools.LinearAlgebra
+Module      :  EvoMod.Tools.Matrix
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -9,31 +9,18 @@ Portability :  portable
 
 Creation date: Thu Feb 14 13:33:13 2019.
 
-Tools for vectors and matrices.
+Tools for matrices from 'Numeric.LinearAlgebra'.
 
 -}
 
-module EvoMod.Tools.LinearAlgebra
+module EvoMod.Tools.Matrix
   (
-    -- * Vectors.
-    normalizeSumVec
-  , uniformVec
     -- * Matrices.
-  , matrixSeparateSymSkew
+    matrixSeparateSymSkew
   , matrixSetDiagToZero
   ) where
 
 import           Numeric.LinearAlgebra
-
--- | Normalize a vector such that elements sum to a given value. See 'normalize' but with 1-norm.
-normalizeSumVec :: Double -> Vector R -> Vector R
-normalizeSumVec c v = v * scalar c'
-  where s = sumElements v
-        c' = c/s
-
--- | A uniform vector of given length.
-uniformVec :: Int -> Vector R
-uniformVec n = vector $ replicate n (1 / fromIntegral n)
 
 -- | Separate a square matrix into a symmetric and a skew-symmetric matrix.
 matrixSeparateSymSkew :: Matrix R -> (Matrix R, Matrix R)

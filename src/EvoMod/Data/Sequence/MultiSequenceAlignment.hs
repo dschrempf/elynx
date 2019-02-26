@@ -22,11 +22,12 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , toSequenceList
   , showMSA
   , summarizeMSA
-  , diversityAnalysis
   -- | * Manipulation
   , msaJoin
   , msaConcatenate
   , msasConcatenate
+  -- | * Analysis
+  , diversityAnalysis
   ) where
 
 import           Control.Monad
@@ -41,6 +42,7 @@ import           EvoMod.Data.Alphabet.DistributionDiversity
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Tools.Equality
 import           EvoMod.Tools.Repa
+import           EvoMod.Tools.Vector
 
 -- | A collection of sequences.
 data MultiSequenceAlignment = MSA { msaNames :: [SequenceId]
@@ -88,10 +90,6 @@ showMSA msa = msaHeader <> showSequenceList (toSequenceList msa)
 summarizeMSA :: MultiSequenceAlignment -> B.ByteString
 summarizeMSA msa = B.pack "Multi sequence alignment.\n" <> summarizeSequenceList (toSequenceList msa)
 
--- | Diversity analysis. See 'kEffEntropy'.
-diversityAnalysis :: MultiSequenceAlignment -> B.ByteString
-diversityAnalysis (MSA _ code d) = B.pack $ show $ fMapCol (kEffEntropy . frequencyCharacters code) d
-
 -- | Join two 'MultiSequenceAlignment's vertically. That is, add more sequences
 -- to an alignment. See also 'msaConcatenate'.
 msaJoin :: MultiSequenceAlignment
@@ -127,3 +125,7 @@ msasConcatenate :: [MultiSequenceAlignment] -> Either B.ByteString MultiSequence
 msasConcatenate []    = Left $ B.pack "Nothing to concatenate."
 msasConcatenate [msa] = Right msa
 msasConcatenate msas  = foldM msaConcatenate (head msas) (tail msas)
+
+-- | Diversity analysis. See 'kEffEntropy'.
+diversityAnalysis :: MultiSequenceAlignment -> B.ByteString
+diversityAnalysis (MSA _ code d) = B.pack $ show $ meanVec $ fMapCol (kEffEntropy . frequencyCharacters code) d

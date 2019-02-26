@@ -29,7 +29,7 @@ import           Numeric.LinearAlgebra                       hiding (normalize)
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
-import           EvoMod.Tools.LinearAlgebra                  (uniformVec)
+import           EvoMod.Tools.Vector
 
 -- XXX: Another idea of structuring the code. This would probably be cleaner in
 -- the long run.

@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 {- |
 Module      :  EvoMod.Tools.Repa
 Description :  Tools for repa arrays
@@ -21,9 +23,10 @@ module EvoMod.Tools.Repa
   , fMapCol
   ) where
 
-import Prelude as P
-import           Data.Array.Repa as R
+import           Data.Array.Repa                   as R
 import           Data.Array.Repa.Algorithms.Matrix
+import           Data.Vector.Storable              as V
+import           Prelude                           as P
 
 -- | From Data.Array.Repa.Algorithms.Matrix of repa-algorithms.
 nRows :: Source r e => Array r DIM2 e -> Int
@@ -35,16 +38,16 @@ nCols = col . extent
 
 -- | Select nth row of matrix.
 nThRow :: Source r e => Int -> Array r DIM2 e -> Array D DIM1 e
-nThRow n arr = slice arr (Z :. n :. All)
+nThRow n arr = R.slice arr (Z :. n :. All)
 
 -- | Select nth column of matrix.
 nThCol :: Source r e => Int -> Array r DIM2 e -> Array D DIM1 e
-nThCol n arr = slice arr (Z :. All :. n)
+nThCol n arr = R.slice arr (Z :. All :. n)
 
 -- | Map a function on each row of a DIM2 array.
-fMapRow :: Source r e => (Array D DIM1 e -> b) -> Array r DIM2 e -> [b]
-fMapRow f arr = P.map (\n -> f (nThRow n arr)) [0 .. nRows arr - 1]
+fMapRow :: (Source r e, V.Storable b) => (Array D DIM1 e -> b) -> Array r DIM2 e -> V.Vector b
+fMapRow f arr = generate (nRows arr) (\n -> f (nThRow n arr))
 
 -- | Map a function on each row of a DIM2 array.
-fMapCol :: Source r e => (Array D DIM1 e -> b) -> Array r DIM2 e -> [b]
-fMapCol f arr = P.map (\n -> f (nThCol n arr)) [0 .. nCols arr - 1]
+fMapCol :: (Source r e, V.Storable b) => (Array D DIM1 e -> b) -> Array r DIM2 e -> V.Vector b
+fMapCol f arr = generate (nCols arr) (\n -> f (nThCol n arr))

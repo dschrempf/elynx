@@ -27,11 +27,12 @@ module EvoMod.Data.MarkovProcess.RateMatrix
   )
 where
 
-import           Numeric.LinearAlgebra      hiding (normalize)
-import           Prelude                    hiding ((<>))
+import           Numeric.LinearAlgebra hiding (normalize)
+import           Prelude               hiding ((<>))
 
 import           EvoMod.Tools.Equality
-import           EvoMod.Tools.LinearAlgebra
+import           EvoMod.Tools.Matrix
+import           EvoMod.Tools.Vector
 
 -- | A rate matrix is just a real matrix.
 type RateMatrix = Matrix R
