@@ -33,23 +33,23 @@ import           EvoMod.Tools.Numeric
 
 -- TODO: Parallel worker.
 -- | Entropy of vector.
-entropy :: Array D DIM1 Double -> Double
+entropy :: Array U DIM1 Double -> Double
 entropy arr = negate $ runIdentity $ sumAllP $ computeUnboxedS $ R.map xLogX arr
 
 -- | Effective number of used characters measured using 'entropy'. The result
 -- only makes sense when the sum of the array is 1.0.
-kEffEntropy :: Array D DIM1 Double -> Double
+kEffEntropy :: Array U DIM1 Double -> Double
 kEffEntropy = exp . entropy
 
 -- | Probability of homoplasy of vector. The result is the probability of
 -- binomially sampling the same character twice and only makes sense when the
 -- sum of the array is 1.0.
-homoplasy :: Array D DIM1 Double -> Double
+homoplasy :: Array U DIM1 Double -> Double
 homoplasy arr = runIdentity $ sumAllP $ computeUnboxedS $ R.map (\x -> x*x) arr
 
 -- | Effective number of used characters measured using 'homoplasy'. The result
 -- only makes sense when the sum of the array is 1.0.
-kEffHomoplasy :: Array D DIM1 Double -> Double
+kEffHomoplasy :: Array U DIM1 Double -> Double
 kEffHomoplasy arr = 1.0 / homoplasy arr
 
 -- Increment element at index in vector by one.

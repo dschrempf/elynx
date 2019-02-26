@@ -21,11 +21,12 @@ module EvoMod.Tools.Repa
   , nThCol
   , fMapRow
   , fMapCol
+  , concatArrs
   ) where
 
 import           Data.Array.Repa                   as R
 import           Data.Array.Repa.Algorithms.Matrix
-import           Data.Vector.Storable              as V
+import qualified Data.Vector.Unboxed               as V
 import           Prelude                           as P
 
 -- | From Data.Array.Repa.Algorithms.Matrix of repa-algorithms.
@@ -45,9 +46,19 @@ nThCol :: Source r e => Int -> Array r DIM2 e -> Array D DIM1 e
 nThCol n arr = R.slice arr (Z :. All :. n)
 
 -- | Map a function on each row of a DIM2 array.
-fMapRow :: (Source r e, V.Storable b) => (Array D DIM1 e -> b) -> Array r DIM2 e -> V.Vector b
-fMapRow f arr = generate (nRows arr) (\n -> f (nThRow n arr))
+fMapRow :: (Source r e) => (Array r DIM1 e -> b) -> Array D DIM2 e -> [b]
+fMapRow f arr = P.map (\n -> f (nThRow n arr)) [0 .. nRows arr - 1]
 
 -- | Map a function on each row of a DIM2 array.
-fMapCol :: (Source r e, V.Storable b) => (Array D DIM1 e -> b) -> Array r DIM2 e -> V.Vector b
-fMapCol f arr = generate (nCols arr) (\n -> f (nThCol n arr))
+fMapCol :: (Source r e) => (Array r DIM1 e -> b) -> Array r DIM2 e -> [b]
+fMapCol f arr = P.map (\n -> f (nThCol n arr)) [0 .. nCols arr - 1]
+
+
+-- | Concatenate a list of arrays. Assume all arrays have equal length.
+concatArrs :: V.Unbox e => [Array U DIM1 e] -> Array U DIM2 e
+concatArrs arrs = fromUnboxed (R.ix2 nRs nCs) concatenatedVectors
+  where
+    nRs = length arrs
+    nCs = size $ extent (head arrs)
+    vectors = P.map toUnboxed arrs
+    concatenatedVectors = V.concat vectors

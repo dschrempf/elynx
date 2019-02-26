@@ -68,8 +68,8 @@ fromSequenceList ss
     code  = seqCode $ head ss
     len   = lengthSequence $ head ss
     nSeqs = length ss
-    vs    = P.map (toUnboxed . seqCs) ss
-    d     = fromUnboxed (ix2 nSeqs len) (V.concat vs)
+    arrs  = P.map seqCs ss
+    d     = concatArrs arrs
 
 -- | Conversion to list of 'Sequence's.
 toSequenceList :: MultiSequenceAlignment -> [Sequence]
@@ -126,6 +126,13 @@ msasConcatenate []    = Left $ B.pack "Nothing to concatenate."
 msasConcatenate [msa] = Right msa
 msasConcatenate msas  = foldM msaConcatenate (head msas) (tail msas)
 
+-- Convert alignment to frequency data.
+type FrequencyData = Array U DIM2 Double
+
+toFrequencyData :: MultiSequenceAlignment -> FrequencyData
+toFrequencyData (MSA _ c d) = concatArrs $ P.map computeUnboxedS $ fMapCol (frequencyCharacters c) d
+
 -- | Diversity analysis. See 'kEffEntropy'.
-diversityAnalysis :: MultiSequenceAlignment -> B.ByteString
-diversityAnalysis (MSA _ code d) = B.pack $ show $ meanVec $ fMapCol (kEffEntropy . frequencyCharacters code) d
+diversityAnalysis :: FrequencyData -> [Double]
+diversityAnalysis fd = B.pack $ show $ mean $ fMapCol kEffEntropy fd
+  where mean xs = sum xs / fromIntegral (length xs)
