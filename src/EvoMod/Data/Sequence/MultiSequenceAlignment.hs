@@ -56,7 +56,6 @@ msaLength (MSA _ _ d) = nCols d
 msaNSequences :: MultiSequenceAlignment -> Int
 msaNSequences (MSA _ _ d) = nRows d
 
--- TODO: THIS IS FLAWED. ROWS AND COLUMNS ARE MIXED UP.
 -- | Create 'MultiSequenceAlignment' from a list of 'Sequence's.
 fromSequenceList :: [Sequence] -> MultiSequenceAlignment
 fromSequenceList ss
@@ -68,12 +67,12 @@ fromSequenceList ss
     len   = lengthSequence $ head ss
     nSeqs = length ss
     vs    = P.map (toUnboxed . seqCs) ss
-    d     = fromUnboxed (ix2 len nSeqs) (V.concat vs)
+    d     = fromUnboxed (ix2 nSeqs len) (V.concat vs)
 
 -- | Conversion to list of 'Sequence's.
 toSequenceList :: MultiSequenceAlignment -> [Sequence]
 toSequenceList msa@(MSA names code d) = P.map
-  (\n -> Sequence (names !! n) code (computeUnboxedS $ slice d (Z :. All :. n)))
+  (\n -> Sequence (names !! n) code (computeUnboxedS $ nThRow n d))
   [0..nSeqs-1]
   where
     nSeqs = msaNSequences msa
@@ -91,10 +90,7 @@ summarizeMSA msa = B.pack "Multi sequence alignment.\n" <> summarizeSequenceList
 
 -- | Diversity analysis. See 'kEffEntropy'.
 diversityAnalysis :: MultiSequenceAlignment -> B.ByteString
--- diversityAnalysis (MSA _ code d) = B.pack $ show $ fMapCol (kEffEntropy . frequencyCharacters code) d
--- diversityAnalysis (MSA _ code d) = B.pack $ show $ fMapCol computeUnboxedS d
--- TODO: THIS IS FLAWED. ROWS AND COLUMNS ARE MIXED UP.
-diversityAnalysis (MSA _ code d) = B.pack $ show $ d
+diversityAnalysis (MSA _ code d) = B.pack $ show $ fMapCol (kEffEntropy . frequencyCharacters code) d
 
 -- | Join two 'MultiSequenceAlignment's vertically. That is, add more sequences
 -- to an alignment. See also 'msaConcatenate'.

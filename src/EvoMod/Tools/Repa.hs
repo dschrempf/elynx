@@ -27,19 +27,19 @@ import           Data.Array.Repa.Algorithms.Matrix
 
 -- | From Data.Array.Repa.Algorithms.Matrix of repa-algorithms.
 nRows :: Source r e => Array r DIM2 e -> Int
-nRows = col . extent
+nRows = row . extent
 
 -- | Get number of columns from a shape. See 'row' of repa-algorithms.
 nCols :: Source r e => Array r DIM2 e -> Int
-nCols = row . extent
+nCols = col . extent
 
 -- | Select nth row of matrix.
 nThRow :: Source r e => Int -> Array r DIM2 e -> Array D DIM1 e
-nThRow n arr = slice arr (Z :. All :. n)
+nThRow n arr = slice arr (Z :. n :. All)
 
 -- | Select nth column of matrix.
 nThCol :: Source r e => Int -> Array r DIM2 e -> Array D DIM1 e
-nThCol n arr = slice arr (Z :. n :. All)
+nThCol n arr = slice arr (Z :. All :. n)
 
 -- | Map a function on each row of a DIM2 array.
 fMapRow :: Source r e => (Array D DIM1 e -> b) -> Array r DIM2 e -> [b]
