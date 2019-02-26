@@ -31,7 +31,7 @@ import           Numeric.LinearAlgebra hiding (normalize)
 import           Prelude               hiding ((<>))
 
 import           EvoMod.Tools.Equality
-import           EvoMod.Tools.Matrix
+import           EvoMod.Tools.LinearAlgebra
 import           EvoMod.Tools.Vector
 
 -- | A rate matrix is just a real matrix.

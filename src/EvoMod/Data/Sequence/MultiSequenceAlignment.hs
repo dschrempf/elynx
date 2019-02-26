@@ -27,57 +27,51 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , msaConcatenate
   , msasConcatenate
   -- | * Analysis
-  , diversityAnalysis
+  , toFrequencyData
+  , kEffMean
   ) where
 
 import           Control.Monad
-import           Data.Array.Repa                            as R
 import qualified Data.ByteString.Lazy.Char8                 as B
-import qualified Data.Vector.Unboxed                        as V
+import qualified Data.Matrix.Storable                       as M
 import           Data.Word8                                 (Word8)
-import           Prelude                                    as P
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Alphabet.DistributionDiversity
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Tools.Equality
-import           EvoMod.Tools.Repa
-import           EvoMod.Tools.Vector
+import           EvoMod.Tools.Matrix
 
 -- | A collection of sequences.
 data MultiSequenceAlignment = MSA { msaNames :: [SequenceId]
                                   , msaCode  :: Code
-                                  , msaData  :: Array U DIM2 Word8
+                                  , msaData  :: M.Matrix Word8
                                   }
 
 -- | Number of sites.
 msaLength :: MultiSequenceAlignment -> Int
-msaLength (MSA _ _ d) = nCols d
+msaLength (MSA _ _ d) = M.cols d
 
 -- | Number of sequences.
 msaNSequences :: MultiSequenceAlignment -> Int
-msaNSequences (MSA _ _ d) = nRows d
+msaNSequences (MSA _ _ d) = M.rows d
 
 -- | Create 'MultiSequenceAlignment' from a list of 'Sequence's.
 fromSequenceList :: [Sequence] -> MultiSequenceAlignment
 fromSequenceList ss
-  | equalLength ss && allEqual (P.map seqCode ss) = MSA names code d
+  | equalLength ss && allEqual (map seqCode ss) = MSA names code d
   | otherwise = error "Sequences do not have equal length."
   where
-    names = P.map seqId ss
+    names = map seqId ss
     code  = seqCode $ head ss
-    len   = lengthSequence $ head ss
-    nSeqs = length ss
-    arrs  = P.map seqCs ss
-    d     = concatArrs arrs
+    vecs  = map seqCs ss
+    d     = M.fromRows vecs
 
 -- | Conversion to list of 'Sequence's.
 toSequenceList :: MultiSequenceAlignment -> [Sequence]
-toSequenceList msa@(MSA names code d) = P.map
-  (\n -> Sequence (names !! n) code (computeUnboxedS $ nThRow n d))
-  [0..nSeqs-1]
+toSequenceList (MSA ns c d) = zipWith (\n r -> Sequence n c r) ns rows
   where
-    nSeqs = msaNSequences msa
+    rows  = M.toRows d
 
 msaHeader :: B.ByteString
 msaHeader = sequenceListHeader
@@ -98,11 +92,12 @@ msaJoin :: MultiSequenceAlignment
 -- top bottom.
 msaJoin t b
   | msaLength t == msaLength b &&
-    msaCode t == msaCode b = Right $ MSA names (msaCode t) d
+    msaCode t == msaCode b = Right $ MSA names (msaCode t) (tD === bD)
   | otherwise  = Left $ B.pack "msaJoin: Multi sequence alignments do not have equal length."
   where
-    names = msaNames t P.++ msaNames b
-    d     = computeUnboxedS $ msaData t R.++ msaData b
+    names = msaNames t ++ msaNames b
+    tD    = msaData t
+    bD    = msaData b
 
 -- | Concatenate two 'MultiSequenceAlignment's horizontally. That is, add more
 -- sites to an alignment. See also 'msaJoin'.
@@ -112,12 +107,11 @@ msaConcatenate :: MultiSequenceAlignment
 -- left right.
 msaConcatenate l r
   | msaNSequences l == msaNSequences r &&
-    msaCode l == msaCode r = Right $ MSA (msaNames l) (msaCode l) d
+    msaCode l == msaCode r = Right $ MSA (msaNames l) (msaCode l) (lD ||| rD)
   | otherwise = Left $ B.pack "msaConcatenate: Multi sequence alignments do not have equal length."
   where
     lD = msaData l
     rD = msaData r
-    d = computeUnboxedS $ transpose $ transpose lD R.++ transpose rD
 
 -- | Concatenate a list of 'MultiSequenceAlignment's horizontally. See
 -- 'msaConcatenate'.
@@ -127,12 +121,12 @@ msasConcatenate [msa] = Right msa
 msasConcatenate msas  = foldM msaConcatenate (head msas) (tail msas)
 
 -- Convert alignment to frequency data.
-type FrequencyData = Array U DIM2 Double
+type FrequencyData = M.Matrix Double
 
 toFrequencyData :: MultiSequenceAlignment -> FrequencyData
-toFrequencyData (MSA _ c d) = concatArrs $ P.map computeUnboxedS $ fMapCol (frequencyCharacters c) d
+toFrequencyData (MSA _ c d) = fMapCol (frequencyCharacters c) d
 
 -- | Diversity analysis. See 'kEffEntropy'.
-diversityAnalysis :: FrequencyData -> [Double]
-diversityAnalysis fd = B.pack $ show $ mean $ fMapCol kEffEntropy fd
+kEffMean :: FrequencyData -> Double
+kEffMean fd =  mean $ map kEffEntropy (M.toColumns fd)
   where mean xs = sum xs / fromIntegral (length xs)

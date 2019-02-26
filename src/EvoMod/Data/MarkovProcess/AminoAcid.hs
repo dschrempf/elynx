@@ -33,7 +33,7 @@ import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools.ByteString                     (c2w)
 import           EvoMod.Tools.Vector
-import           EvoMod.Tools.Matrix
+import           EvoMod.Tools.LinearAlgebra
 
 -- XXX: Hardcoded here, to reduce intermodule dependencies.
 n :: Int

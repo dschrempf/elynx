@@ -16,20 +16,20 @@ module EvoMod.Data.Alphabet.DistributionDiversitySpec
   ) where
 
 import Test.Hspec
-import Data.Array.Repa as R
+import qualified Data.Vector.Storable as V
 
 import EvoMod.Data.Alphabet.DistributionDiversity
 import EvoMod.Tools.Equality
 
-testArr1 :: Array D DIM1 Double
-testArr1 = delay $ fromListUnboxed (ix1 20) $ replicate 20 0.0
+testArr1 :: V.Vector Double
+testArr1 = V.replicate 20 0.0
 
-testArr2 :: Array D DIM1 Double
-testArr2 = delay $ fromListUnboxed (ix1 5) [0, 0, 0, 1, 0]
+testArr2 :: V.Vector Double
+testArr2 = V.fromList [0, 0, 0, 1, 0]
 
 -- Compare results from random array tested with Python functions.
-testArr3 :: Array D DIM1 Double
-testArr3 = delay $ fromListUnboxed (ix1 3) [0.3, 0.4, 0.7]
+testArr3 :: V.Vector Double
+testArr3 = V.fromList [0.3, 0.4, 0.7]
 
 spec :: Spec
 spec = do

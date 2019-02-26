@@ -15,15 +15,15 @@ Tools for vectors from 'Data.Vector.Storable'.
 
 module EvoMod.Tools.Vector
   (
-    -- * Vectors.
-    normalizeSumVec
+    sumVec
+  , normalizeSumVec
   , uniformVec
   , meanVec
   ) where
 
 import           Data.Vector.Storable as V
 
--- Sum of elements.
+-- | Sum of elements.
 sumVec :: (Num a, Storable a) => Vector a -> a
 sumVec = V.foldl' (+) 0
 

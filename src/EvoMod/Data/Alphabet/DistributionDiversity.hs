@@ -23,50 +23,50 @@ module EvoMod.Data.Alphabet.DistributionDiversity
   , frequencyCharacters
   ) where
 
-import           Data.Array.Repa               as R
-import           Data.Functor.Identity
-import qualified Data.Vector.Unboxed           as V
+-- import           Data.Functor.Identity
+-- import qualified Data.Matrix.Storable          as M
+import qualified Data.Vector.Storable          as V
 import           Data.Word
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Tools.Numeric
+import           EvoMod.Tools.Vector
 
 -- TODO: Parallel worker.
 -- | Entropy of vector.
-entropy :: Array U DIM1 Double -> Double
-entropy arr = negate $ runIdentity $ sumAllP $ computeUnboxedS $ R.map xLogX arr
+entropy :: V.Vector Double -> Double
+entropy v = negate $ sumVec $ V.map xLogX v
 
 -- | Effective number of used characters measured using 'entropy'. The result
 -- only makes sense when the sum of the array is 1.0.
-kEffEntropy :: Array U DIM1 Double -> Double
+kEffEntropy :: V.Vector Double -> Double
 kEffEntropy = exp . entropy
 
 -- | Probability of homoplasy of vector. The result is the probability of
 -- binomially sampling the same character twice and only makes sense when the
 -- sum of the array is 1.0.
-homoplasy :: Array U DIM1 Double -> Double
-homoplasy arr = runIdentity $ sumAllP $ computeUnboxedS $ R.map (\x -> x*x) arr
+homoplasy :: V.Vector Double -> Double
+homoplasy v = sumVec $ V.map (\x -> x*x) v
 
 -- | Effective number of used characters measured using 'homoplasy'. The result
 -- only makes sense when the sum of the array is 1.0.
-kEffHomoplasy :: Array U DIM1 Double -> Double
-kEffHomoplasy arr = 1.0 / homoplasy arr
+kEffHomoplasy :: V.Vector Double -> Double
+kEffHomoplasy v = 1.0 / homoplasy v
 
 -- Increment element at index in vector by one.
 incrementElemIndexByOne :: Int -> V.Vector Int -> V.Vector Int
 incrementElemIndexByOne i v = v V.// [(i, e+1)]
   where e = v V.! i
 
-countCharacters :: Code -> Array D DIM1 Word8 -> Array U DIM1 Int
-countCharacters code d = fromUnboxed (ix1 nCharacters) $
-  V.foldl' (\vec char -> incrementElemIndexByOne (characterToIndex code char) vec) zeroCounts v
+countCharacters :: Code -> V.Vector Word8 -> V.Vector Int
+countCharacters code =
+  V.foldl' (\vec char -> incrementElemIndexByOne (characterToIndex code char) vec) zeroCounts
   where
-    v           = toUnboxed $ computeUnboxedS d
-    nCharacters = cardinalityFromCode code
-    zeroCounts  = V.replicate nCharacters (0 :: Int)
+    nChars     = cardinalityFromCode code
+    zeroCounts = V.replicate nChars (0 :: Int)
 
-frequencyCharacters :: Code -> Array D DIM1 Word8 -> Array D DIM1 Double
-frequencyCharacters code d = R.map (\e -> fromIntegral e / fromIntegral s) counts
+frequencyCharacters :: Code -> V.Vector Word8 -> V.Vector Double
+frequencyCharacters code d = V.map (\e -> fromIntegral e / fromIntegral s) counts
   where
     counts = countCharacters code d
-    s      = runIdentity $ sumAllP counts
+    s      = sumVec counts
