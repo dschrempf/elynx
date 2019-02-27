@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+./build prod || exit 1
+
+stack install || exit 1

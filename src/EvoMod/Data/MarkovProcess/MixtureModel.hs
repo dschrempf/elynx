@@ -58,7 +58,7 @@ summarizeMixtureModel :: MixtureModel -> [B.ByteString]
 summarizeMixtureModel mm =
   B.pack "Mixture model: " <> mmName mm <> B.pack "."
   : concat [ B.pack ("Component " ++ show i ++ ":") : summarizeMixtureModelComponent c
-            | (i, c) <- zip [0 :: Int ..] (mmComponents mm) ]
+            | (i, c) <- zip [1 :: Int ..] (mmComponents mm) ]
 
 -- | Checks if a mixture model is valid.
 --

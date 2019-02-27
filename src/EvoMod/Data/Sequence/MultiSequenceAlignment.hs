@@ -28,6 +28,7 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , msasConcatenate
   -- | * Analysis
   , toFrequencyData
+  , kEffAll
   , kEffMean
   ) where
 
@@ -127,7 +128,12 @@ type FrequencyData = M.Matrix Double
 toFrequencyData :: MultiSequenceAlignment -> FrequencyData
 toFrequencyData (MSA _ c d) = fMapColParChunk 100 (frequencyCharacters c) d
 
+-- TODO.
+-- | Diversity analysis. See 'kEffEntropy'.
+kEffAll :: FrequencyData -> [Double]
+kEffAll fd = parMapChunk 500 kEffEntropy (M.toColumns fd)
+
 -- | Diversity analysis. See 'kEffEntropy'.
 kEffMean :: FrequencyData -> Double
-kEffMean fd =  mean $ parMapChunk 500 kEffEntropy (M.toColumns fd)
+kEffMean = mean . kEffAll
   where mean xs = sum xs / fromIntegral (length xs)

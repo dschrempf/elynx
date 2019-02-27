@@ -10,6 +10,13 @@ Portability :  portable
 
 Creation date: Fri Feb  1 13:32:16 2019.
 
+TODO: This is super ugly. Isn't there a better way to define models?
+
+Maybe:
+-e exchangeabilities
+-d stationary distribution
+But how to define a mixture model then?
+
 -}
 
 module ParsePhyloModel
@@ -28,6 +35,7 @@ import           Text.Megaparsec.Byte.Lexer
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.AminoAcid
+import           EvoMod.Data.MarkovProcess.CXXModels
 import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.Nucleotide
 import           EvoMod.Data.MarkovProcess.PhyloModel
@@ -80,21 +88,21 @@ type Params = [Double]
 
 checkLength :: StationaryDistribution -> Int -> a -> a
 checkLength f n r = if size f /= n
-                  then error $ "Length of stationary distribution is " ++ show (size f)
-                       ++ " but should be " ++ show n ++ "."
-                  else r
+                    then error $ "Length of stationary distribution is " ++ show (size f)
+                         ++ " but should be " ++ show n ++ "."
+                    else r
 
 assembleSubstitutionModel :: Name -> Maybe Params -> Maybe StationaryDistribution
-                     -> SubstitutionModel
+                          -> Either String SubstitutionModel
 -- DNA models.
-assembleSubstitutionModel "JC" Nothing Nothing = jc
-assembleSubstitutionModel "HKY" (Just [k]) (Just f) = checkLength f nNuc $ hky k f
+assembleSubstitutionModel "JC" Nothing Nothing = Right jc
+assembleSubstitutionModel "HKY" (Just [k]) (Just f) = Right $ checkLength f nNuc $ hky k f
 -- Protein models.
-assembleSubstitutionModel "LG" Nothing Nothing = lg
-assembleSubstitutionModel "LG-Custom" Nothing (Just f) = checkLength f nAA $ lgCustom f Nothing
-assembleSubstitutionModel "Poisson" Nothing Nothing = poisson
-assembleSubstitutionModel "Poisson-Custom" Nothing (Just f) = checkLength f nAA $ poissonCustom f Nothing
-assembleSubstitutionModel n mps mf = error . unlines $
+assembleSubstitutionModel "LG" Nothing Nothing = Right lg
+assembleSubstitutionModel "LG-Custom" Nothing (Just f) = Right $ checkLength f nAA $ lgCustom f Nothing
+assembleSubstitutionModel "Poisson" Nothing Nothing = Right poisson
+assembleSubstitutionModel "Poisson-Custom" Nothing (Just f) = Right $ checkLength f nAA $ poissonCustom f Nothing
+assembleSubstitutionModel n mps mf = Left $ unlines
   [ "Cannot assemble substitution model. "
   , "Name: " ++ show n
   , "Parameters: " ++ show mps
@@ -105,7 +113,10 @@ substitutionModel = do
   n  <- name
   mps <- optional params
   mf <- optional stationaryDistribution
-  return $ assembleSubstitutionModel n mps mf
+  let esm = assembleSubstitutionModel n mps mf
+  case esm of
+    Left err -> fail err
+    Right sm -> return sm
 
 parseEDM :: [EDMComponent] -> Maybe [Double] -> Parser MixtureModel
 parseEDM cs mws = do
@@ -118,10 +129,22 @@ parseEDM cs mws = do
       edmName = B.pack $ "EDM" ++ show (length cs)
       ws = fromMaybe (map fst cs) mws
   return $ MixtureModel edmName
-    [ MixtureModelComponent w sm | (w, sm) <- zip ws sms ]
+    [ MixtureModelComponent w sm | (w, Right sm) <- zip ws sms ]
+
+parseCXX :: Maybe [Double] -> Parser MixtureModel
+parseCXX mws = do
+  n <- name
+  case n of
+    "C10" -> return $ c10CustomWeights mws
+    "C20" -> return $ c10CustomWeights mws
+    "C30" -> return $ c10CustomWeights mws
+    "C40" -> return $ c10CustomWeights mws
+    "C50" -> return $ c10CustomWeights mws
+    "C60" -> return $ c10CustomWeights mws
+    _     -> fail "Not a CXX model."
 
 mixtureModel :: Maybe [EDMComponent] -> Maybe [Double] -> Parser MixtureModel
-mixtureModel Nothing _     = error "Empirical distributions not given."
+mixtureModel Nothing   mws = parseCXX mws
 mixtureModel (Just cs) mws = parseEDM cs mws
 
 -- | Parse the phylogenetic model string.

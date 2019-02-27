@@ -18,7 +18,18 @@ XXX: For now, I only provide Poisson exchangeabilities.
 -}
 
 module EvoMod.Data.MarkovProcess.CXXModels
-  ( cxx
+  ( c10
+  , c10CustomWeights
+  , c20
+  , c20CustomWeights
+  , c30
+  , c30CustomWeights
+  , c40
+  , c40CustomWeights
+  , c50
+  , c50CustomWeights
+  , c60
+  , c60CustomWeights
   ) where
 
 import qualified Data.ByteString.Builder                     as B
@@ -29,15 +40,6 @@ import           EvoMod.Data.MarkovProcess.CXXModelsData
 import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
-
-cxx :: Int -> MixtureModel
-cxx 10 = c10
-cxx 20 = c20
-cxx 30 = c30
-cxx 40 = c40
-cxx 50 = c50
-cxx 60 = c60
-cxx _  = error "CXX models only available with 10, 20, 30, 40, 50, and 60 components."
 
 c10 :: MixtureModel
 c10 = cxxFromStatDistsAndWeights c10Weights c10StatDists
@@ -56,6 +58,42 @@ c50 = cxxFromStatDistsAndWeights c50Weights c50StatDists
 
 c60 :: MixtureModel
 c60 = cxxFromStatDistsAndWeights c60Weights c60StatDists
+
+c10CustomWeights :: Maybe [Weight] -> MixtureModel
+c10CustomWeights (Just ws)
+  | length ws == 10 = cxxFromStatDistsAndWeights ws c10StatDists
+  | otherwise       = error "Number of weights does not match C60 model."
+c10CustomWeights Nothing = c10
+
+c20CustomWeights :: Maybe [Weight] -> MixtureModel
+c20CustomWeights (Just ws)
+  | length ws == 20 = cxxFromStatDistsAndWeights ws c20StatDists
+  | otherwise       = error "Number of weights does not match C60 model."
+c20CustomWeights Nothing = c20
+
+c30CustomWeights :: Maybe [Weight] -> MixtureModel
+c30CustomWeights (Just ws)
+  | length ws == 30 = cxxFromStatDistsAndWeights ws c30StatDists
+  | otherwise       = error "Number of weights does not match C60 model."
+c30CustomWeights Nothing = c30
+
+c40CustomWeights :: Maybe [Weight] -> MixtureModel
+c40CustomWeights (Just ws)
+  | length ws == 40 = cxxFromStatDistsAndWeights ws c40StatDists
+  | otherwise       = error "Number of weights does not match C60 model."
+c40CustomWeights Nothing = c40
+
+c50CustomWeights :: Maybe [Weight] -> MixtureModel
+c50CustomWeights (Just ws)
+  | length ws == 50 = cxxFromStatDistsAndWeights ws c50StatDists
+  | otherwise       = error "Number of weights does not match C60 model."
+c50CustomWeights Nothing = c50
+
+c60CustomWeights :: Maybe [Weight] -> MixtureModel
+c60CustomWeights (Just ws)
+  | length ws == 60 = cxxFromStatDistsAndWeights ws c60StatDists
+  | otherwise       = error "Number of weights does not match C60 model."
+c60CustomWeights Nothing = c60
 
 cxxName :: Int -> B.Builder
 cxxName nComps = B.char8 'C' <> B.intDec nComps

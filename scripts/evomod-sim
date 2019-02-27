@@ -23,8 +23,13 @@ then
     file_edm=../data/EDMDistsPhylobayes.txt
     stack exec evomod-sim -- \
           -t $file_tree -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -w "[0.9,0.05,0.03,0.02]" -l 1000 -s [0] || exit 1
+elif [[ $1 == "c" ]]
+then
+    msg "EvoMod-Sim; CXX distribution mixture model."
+    stack exec evomod-sim -- \
+          -t $file_tree -o evomod-sim.out -m "C20" -l 1000 -s [0] || exit 1
 else
-    msg "Usage: ./evomod-sim (s|e|w)"
+    msg "Usage: ./evomod-sim (s|e|w|c)"
     exit 1
 fi
 

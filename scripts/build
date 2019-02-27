@@ -20,6 +20,11 @@ test_build() {
     stack build "${flags[@]}" --test --work-dir "$test_dir" || exit 1
 }
 
+if [[ $2 == "clean" ]]
+then
+    stack clean --full
+fi
+
 if [[ -z $1 ]]
 then
     echo "Usage: ./build (fast|prod|prof|test)"
@@ -30,7 +35,6 @@ then
     normal_build
 elif [[ $1 == "prod" ]]
 then
-    stack clean --full
     flags=(--haddock --test)
     normal_build
 elif [[ $1 == "prof" ]]
