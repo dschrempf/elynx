@@ -56,6 +56,7 @@ nucleotideToWord T = c2w 'T'
 instance Character Nucleotide where
   fromWord = wordToNucleotide
   toWord   = nucleotideToWord
+  alphabet = [minBound :: Nucleotide ..]
 
 -- | Nucleotides with IUPAC code (ordering according to list on Wikipedia).
 --
@@ -133,6 +134,7 @@ nucleotideIUPACToWord Gap     = c2w '-'
 instance Character NucleotideIUPAC where
   fromWord = wordToNucleotideIUPAC
   toWord   = nucleotideIUPACToWord
+  alphabet = [minBound :: NucleotideIUPAC ..]
 
 -- | Convert IUPAC code to set of normal nucleotides.
 fromIUPACNucleotide :: NucleotideIUPAC -> [Nucleotide]

@@ -29,3 +29,4 @@ import           Data.Word8 (Word8)
 class (Enum a, Bounded a) => Character a where
   fromWord :: Word8 -> a
   toWord   :: a -> Word8
+  alphabet :: [a]
