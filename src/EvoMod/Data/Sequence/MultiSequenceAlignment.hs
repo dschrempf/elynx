@@ -27,6 +27,7 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , msaConcatenate
   , msasConcatenate
   -- | * Analysis
+  , FrequencyData
   , toFrequencyData
   , kEffAll
   , kEffMean
@@ -125,10 +126,10 @@ msasConcatenate msas  = foldM msaConcatenate (head msas) (tail msas)
 -- Convert alignment to frequency data.
 type FrequencyData = M.Matrix Double
 
+-- | Calculcate frequency of characters in multi sequence alignment.
 toFrequencyData :: MultiSequenceAlignment -> FrequencyData
 toFrequencyData (MSA _ c d) = fMapColParChunk 100 (frequencyCharacters c) d
 
--- TODO.
 -- | Diversity analysis. See 'kEffEntropy'.
 kEffAll :: FrequencyData -> [Double]
 kEffAll fd = parMapChunk 500 kEffEntropy (M.toColumns fd)

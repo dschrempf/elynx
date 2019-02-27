@@ -86,8 +86,8 @@ stationaryDistribution = do
 type Name = String
 type Params = [Double]
 
-checkLength :: StationaryDistribution -> Int -> a -> a
-checkLength f n r = if size f /= n
+assertLength :: StationaryDistribution -> Int -> a -> a
+assertLength f n r = if size f /= n
                     then error $ "Length of stationary distribution is " ++ show (size f)
                          ++ " but should be " ++ show n ++ "."
                     else r
@@ -96,12 +96,12 @@ assembleSubstitutionModel :: Name -> Maybe Params -> Maybe StationaryDistributio
                           -> Either String SubstitutionModel
 -- DNA models.
 assembleSubstitutionModel "JC" Nothing Nothing = Right jc
-assembleSubstitutionModel "HKY" (Just [k]) (Just f) = Right $ checkLength f nNuc $ hky k f
+assembleSubstitutionModel "HKY" (Just [k]) (Just f) = Right $ assertLength f nNuc $ hky k f
 -- Protein models.
 assembleSubstitutionModel "LG" Nothing Nothing = Right lg
-assembleSubstitutionModel "LG-Custom" Nothing (Just f) = Right $ checkLength f nAA $ lgCustom f Nothing
+assembleSubstitutionModel "LG-Custom" Nothing (Just f) = Right $ assertLength f nAA $ lgCustom f Nothing
 assembleSubstitutionModel "Poisson" Nothing Nothing = Right poisson
-assembleSubstitutionModel "Poisson-Custom" Nothing (Just f) = Right $ checkLength f nAA $ poissonCustom f Nothing
+assembleSubstitutionModel "Poisson-Custom" Nothing (Just f) = Right $ assertLength f nAA $ poissonCustom f Nothing
 assembleSubstitutionModel n mps mf = Left $ unlines
   [ "Cannot assemble substitution model. "
   , "Name: " ++ show n
@@ -136,11 +136,11 @@ parseCXX mws = do
   n <- name
   case n of
     "C10" -> return $ c10CustomWeights mws
-    "C20" -> return $ c10CustomWeights mws
-    "C30" -> return $ c10CustomWeights mws
-    "C40" -> return $ c10CustomWeights mws
-    "C50" -> return $ c10CustomWeights mws
-    "C60" -> return $ c10CustomWeights mws
+    "C20" -> return $ c20CustomWeights mws
+    "C30" -> return $ c30CustomWeights mws
+    "C40" -> return $ c40CustomWeights mws
+    "C50" -> return $ c50CustomWeights mws
+    "C60" -> return $ c60CustomWeights mws
     _     -> fail "Not a CXX model."
 
 mixtureModel :: Maybe [EDMComponent] -> Maybe [Double] -> Parser MixtureModel

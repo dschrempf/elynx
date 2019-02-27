@@ -40,7 +40,11 @@ entropy v = negate $ sumVec $ V.map xLogX v
 -- | Effective number of used characters measured using 'entropy'. The result
 -- only makes sense when the sum of the array is 1.0.
 kEffEntropy :: V.Vector Double -> Double
-kEffEntropy = exp . entropy
+-- kEffEntropy v = exp . entropy
+kEffEntropy v = if e < 1e-8
+                then 1.0
+                else exp e
+  where e = entropy v
 
 -- | Probability of homoplasy of vector. The result is the probability of
 -- binomially sampling the same character twice and only makes sense when the
@@ -54,17 +58,26 @@ kEffHomoplasy :: V.Vector Double -> Double
 kEffHomoplasy v = 1.0 / homoplasy v
 
 -- Increment element at index in vector by one.
-incrementElemIndexByOne :: Int -> V.Vector Int -> V.Vector Int
-incrementElemIndexByOne i v = v V.// [(i, e+1)]
-  where e = v V.! i
+incrementElemIndexByOne :: [Int] -> V.Vector Int -> V.Vector Int
+incrementElemIndexByOne is v = v V.// zip is es'
+  where es' = [v V.! i + 1 | i <- is]
+
+-- For a given code and counts vector, increment the count of the given state
+-- (Word8).
+acc :: Code -> V.Vector Int -> Word8 -> V.Vector Int
+acc code vec char = incrementElemIndexByOne is vec
+  where
+    (codeNonIupac, charsNonIupac) = fromIUPAC code char
+    is = map (characterToIndex codeNonIupac) charsNonIupac
 
 countCharacters :: Code -> V.Vector Word8 -> V.Vector Int
 countCharacters code =
-  V.foldl' (\vec char -> incrementElemIndexByOne (characterToIndex code char) vec) zeroCounts
+  V.foldl' (acc code) zeroCounts
   where
     nChars     = cardinalityFromCode code
     zeroCounts = V.replicate nChars (0 :: Int)
 
+-- | For a given code vector of characters, calculate frequency of characters.
 frequencyCharacters :: Code -> V.Vector Word8 -> V.Vector Double
 frequencyCharacters code d = V.map (\e -> fromIntegral e / fromIntegral s) counts
   where

@@ -20,7 +20,9 @@ module EvoMod.Data.Alphabet.Nucleotide
   , nucleotideToWord
   , NucleotideIUPAC (..)
   , wordToNucleotideIUPAC
-  , nucleotideIUPACToWord )
+  , nucleotideIUPACToWord
+  , fromIUPACNucleotide
+  )
 where
 
 import           Data.Word8                     (Word8, toUpper)
@@ -55,15 +57,33 @@ instance Character Nucleotide where
   fromWord = wordToNucleotide
   toWord   = nucleotideToWord
 
--- | Nucleotides with IUPAC code.
--- A  adenosine          C  cytidine             G  guanine
--- T  thymidine          N  A/G/C/T (any)        U  uridine
--- K  G/T (keto)         S  G/C (strong)         Y  T/C (pyrimidine)
--- M  A/C (amino)        W  A/T (weak)           R  G/A (purine)
--- B  G/T/C              D  G/A/T                H  A/C/T
--- V  G/C/A              -  gap of indeterminate length
+-- | Nucleotides with IUPAC code (ordering according to list on Wikipedia).
+--
+-- Nucleotide IUPAC code.
+-- Symbol  Description  Bases represented  Complement
+-- ------  -----------  -----------------  ----------
+-- A       Adenine      A                  T
+-- C       Cytosine        C               G
+-- G       Guanine            G            C
+-- T       Thymine               T         A
+-- U       Uracil                U         A
+-- W       Weak         A        T         W
+-- S       Strong          C  G            S
+-- M       aMino        A  C               K
+-- K       Keto               G  T         M
+-- R       puRine       A     G            Y
+-- Y       pYrimidine      C     T         R
+-- B       not A           C  G  T         V
+-- D       not C        A     G  T         H
+-- H       not G        A  C     T         D
+-- V       not T        A  C  G            B
+-- N       any          A  C  G  T         N
+-- Z       Zero                            Z
+--
+-- Additionall, I add:
+-- -       Gap (same as N)                 -
 data NucleotideIUPAC = A_IUPAC | C_IUPAC | G_IUPAC | T_IUPAC
-                     | N | U | K | S | Y | M | W | R | B | D | H | V | Gap
+                     | U | W | S | M | K | R | Y | B | D | H | V | N | Z | Gap
   deriving (Show, Eq, Ord, Enum, Bounded)
 
 -- | So that we can read 'EvoMod.Data.Fasta' files.
@@ -72,18 +92,19 @@ wordToNucleotideIUPAC w | w' == c2w 'A' = A_IUPAC
                         | w' == c2w 'C' = C_IUPAC
                         | w' == c2w 'G' = G_IUPAC
                         | w' == c2w 'T' = T_IUPAC
-                        | w' == c2w 'N' = N
                         | w' == c2w 'U' = U
-                        | w' == c2w 'K' = K
-                        | w' == c2w 'S' = S
-                        | w' == c2w 'Y' = Y
-                        | w' == c2w 'M' = M
                         | w' == c2w 'W' = W
+                        | w' == c2w 'S' = S
+                        | w' == c2w 'M' = M
+                        | w' == c2w 'K' = K
                         | w' == c2w 'R' = R
+                        | w' == c2w 'Y' = Y
                         | w' == c2w 'B' = B
                         | w' == c2w 'D' = D
                         | w' == c2w 'H' = H
                         | w' == c2w 'V' = V
+                        | w' == c2w 'N' = N
+                        | w' == c2w 'Z' = Z
                         | w' == c2w '-' = Gap
                         | otherwise     = error $ "Cannot read nucleotide IUPAC code: " ++ [w2c w] ++ "."
   where w' = toUpper w
@@ -94,20 +115,42 @@ nucleotideIUPACToWord A_IUPAC = c2w 'A'
 nucleotideIUPACToWord C_IUPAC = c2w 'C'
 nucleotideIUPACToWord G_IUPAC = c2w 'G'
 nucleotideIUPACToWord T_IUPAC = c2w 'T'
-nucleotideIUPACToWord N       = c2w 'N'
 nucleotideIUPACToWord U       = c2w 'U'
-nucleotideIUPACToWord K       = c2w 'K'
-nucleotideIUPACToWord S       = c2w 'S'
-nucleotideIUPACToWord Y       = c2w 'Y'
-nucleotideIUPACToWord M       = c2w 'M'
 nucleotideIUPACToWord W       = c2w 'W'
+nucleotideIUPACToWord S       = c2w 'S'
+nucleotideIUPACToWord M       = c2w 'M'
+nucleotideIUPACToWord K       = c2w 'K'
 nucleotideIUPACToWord R       = c2w 'R'
+nucleotideIUPACToWord Y       = c2w 'Y'
 nucleotideIUPACToWord B       = c2w 'B'
 nucleotideIUPACToWord D       = c2w 'D'
 nucleotideIUPACToWord H       = c2w 'H'
 nucleotideIUPACToWord V       = c2w 'V'
+nucleotideIUPACToWord N       = c2w 'N'
+nucleotideIUPACToWord Z       = c2w 'Z'
 nucleotideIUPACToWord Gap     = c2w '-'
 
 instance Character NucleotideIUPAC where
   fromWord = wordToNucleotideIUPAC
   toWord   = nucleotideIUPACToWord
+
+-- | Convert IUPAC code to set of normal nucleotides.
+fromIUPACNucleotide :: NucleotideIUPAC -> [Nucleotide]
+fromIUPACNucleotide A_IUPAC = [A]
+fromIUPACNucleotide C_IUPAC = [C]
+fromIUPACNucleotide G_IUPAC = [G]
+fromIUPACNucleotide T_IUPAC = [T]
+fromIUPACNucleotide U       = [T]
+fromIUPACNucleotide W       = [A, T]
+fromIUPACNucleotide S       = [G, C]
+fromIUPACNucleotide M       = [A, C]
+fromIUPACNucleotide K       = [G, T]
+fromIUPACNucleotide R       = [A, G]
+fromIUPACNucleotide Y       = [C, T]
+fromIUPACNucleotide B       = [C, G, T]
+fromIUPACNucleotide D       = [A, G, T]
+fromIUPACNucleotide H       = [A, C, T]
+fromIUPACNucleotide V       = [A, C, G]
+fromIUPACNucleotide N       = [A, C, G, T]
+fromIUPACNucleotide Z       = []
+fromIUPACNucleotide Gap     = [A, C, G, T]

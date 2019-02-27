@@ -31,6 +31,7 @@ module EvoMod.Data.Alphabet.Alphabet
   , indexToCharacter
   , characterToIndex
   , indicesToCharacters
+  , fromIUPAC
   )
 where
 
@@ -43,14 +44,15 @@ import           EvoMod.Data.Alphabet.Nucleotide
 
 -- | The used genetic code. Could include Protein_IUPAC, CountsFile for
 -- population data and so on.
-data Code = DNA | DNA_IUPAC | Protein
+data Code = DNA | DNA_IUPAC | Protein | ProteinIUPAC
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 -- | Verbose version of code name.
 codeNameVerbose :: Code -> String
-codeNameVerbose DNA       = show DNA ++ " (nucleotides)"
-codeNameVerbose DNA_IUPAC = show DNA_IUPAC ++ " (nucleotides including IUPAC code)"
-codeNameVerbose Protein   = show Protein ++ " (amino acids)"
+codeNameVerbose DNA          = show DNA ++ " (nucleotides)"
+codeNameVerbose DNA_IUPAC    = show DNA_IUPAC ++ " (nucleotides including IUPAC codes)"
+codeNameVerbose Protein      = show Protein ++ " (amino acids)"
+codeNameVerbose ProteinIUPAC = show ProteinIUPAC ++ " (amino acids including IUPAC codes)"
 
 -- | 'Data.Set' is used because it uses an ordered, tree-like structure with
 -- fast queries. When parsing characters, they have to be checked for validity
@@ -68,9 +70,10 @@ toAlphabet = Alphabet . S.fromList . map toWord
 -- extension TypeApplications has to be added. Like this, new codes have to be
 -- added manually, but the type handling is cleaner.
 alphabet :: Code -> Alphabet
-alphabet DNA       = toAlphabet [(minBound :: Nucleotide) .. ]
-alphabet DNA_IUPAC = toAlphabet [(minBound :: NucleotideIUPAC) .. ]
-alphabet Protein   = toAlphabet [(minBound :: AminoAcid) .. ]
+alphabet DNA          = toAlphabet [(minBound :: Nucleotide) .. ]
+alphabet DNA_IUPAC    = toAlphabet [(minBound :: NucleotideIUPAC) .. ]
+alphabet Protein      = toAlphabet [(minBound :: AminoAcid) .. ]
+alphabet ProteinIUPAC = toAlphabet [(minBound :: AminoAcidIUPAC) .. ]
 
 -- | The cardinality of an alphabet is the number of entries.
 cardinality :: Alphabet -> Int
@@ -84,11 +87,20 @@ cardinalityFromCode = cardinality . alphabet
 indexToCharacter :: Code -> Int -> Word8
 indexToCharacter c i = S.elemAt i (fromAlphabet . alphabet $ c)
 
+-- | Convert a character (Word8) to integer index in alphabet.
 characterToIndex :: Code -> Word8 -> Int
-characterToIndex DNA       char = fromEnum (fromWord char :: Nucleotide)
-characterToIndex DNA_IUPAC char = fromEnum (fromWord char :: NucleotideIUPAC)
-characterToIndex Protein   char = fromEnum (fromWord char :: AminoAcid)
+characterToIndex DNA          char = fromEnum (fromWord char :: Nucleotide)
+characterToIndex DNA_IUPAC    char = fromEnum (fromWord char :: NucleotideIUPAC)
+characterToIndex Protein      char = fromEnum (fromWord char :: AminoAcid)
+characterToIndex ProteinIUPAC char = fromEnum (fromWord char :: AminoAcidIUPAC)
 
 -- | Convert a set of integer indices to 'Character's.
 indicesToCharacters :: Code -> [Int] -> [Word8]
 indicesToCharacters c = map (indexToCharacter c)
+
+-- | Convert from IUPAC.
+fromIUPAC :: Code -> Word8 -> (Code, [Word8])
+fromIUPAC DNA          c = (DNA,     [c])
+fromIUPAC DNA_IUPAC    c = (DNA,     map toWord $ fromIUPACNucleotide (fromWord c :: NucleotideIUPAC))
+fromIUPAC Protein      c = (Protein, [c])
+fromIUPAC ProteinIUPAC c = (Protein, map toWord $ fromIUPACAminoAcid (fromWord c :: AminoAcidIUPAC))
