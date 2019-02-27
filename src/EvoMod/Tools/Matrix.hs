@@ -15,22 +15,43 @@ Tools for matrices from 'Numeric.LinearAlgebra'.
 
 module EvoMod.Tools.Matrix
   (
-    fMapRow
-  , fMapCol
+    fMapRowSeq
+  , fMapRowPar
+  , fMapRowParChunk
+  , fMapColSeq
+  , fMapColPar
+  , fMapColParChunk
   , (|||)
   , (===)
   ) where
 
-import qualified Data.Vector.Storable              as V
-import qualified Data.Matrix.Storable              as M
+import           Control.Parallel.Strategies
+import qualified Data.Matrix.Storable        as M
+import qualified Data.Vector.Storable        as V
 
--- | Map a function on each row of a DIM2 array.
-fMapRow :: (V.Storable a, V.Storable b) => (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
-fMapRow f m = M.fromRows $ map f (M.toRows m)
+-- | Map a function on each row of a DIM2 array; sequential version.
+fMapRowSeq :: (V.Storable a, V.Storable b) => (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
+fMapRowSeq f m = M.fromRows $ map f (M.toRows m)
 
--- | Map a function on each row of a DIM2 array.
-fMapCol :: (V.Storable a, V.Storable b) => (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
-fMapCol f m = M.fromColumns $ map f (M.toColumns m)
+-- | Map a function on each row of a DIM2 array; parallel version.
+fMapRowPar :: (V.Storable a, V.Storable b) => (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
+fMapRowPar f m = M.fromRows $ parMap rseq f (M.toRows m)
+
+-- | Map a function on each row of a DIM2 array; parallel version with given chunk size.
+fMapRowParChunk :: (V.Storable a, V.Storable b) => Int -> (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
+fMapRowParChunk n f m = M.fromRows (map f (M.toRows m) `using` parListChunk n rseq)
+
+-- | Map a function on each row of a DIM2 array; sequential version.
+fMapColSeq :: (V.Storable a, V.Storable b) => (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
+fMapColSeq f m = M.fromColumns $ map f (M.toColumns m)
+
+-- | Map a function on each row of a DIM2 array; parallel version.
+fMapColPar :: (V.Storable a, V.Storable b) => (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
+fMapColPar f m = M.fromColumns $ parMap rseq f (M.toColumns m)
+
+-- | Map a function on each row of a DIM2 array; parallel version with given chunk size.
+fMapColParChunk :: (V.Storable a, V.Storable b) => Int -> (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
+fMapColParChunk n f m = M.fromColumns (map f (M.toColumns m) `using` parListChunk n rseq)
 
 -- | Horizontal concatenation.
 (|||) :: (V.Storable a) => M.Matrix a -> M.Matrix a -> M.Matrix a

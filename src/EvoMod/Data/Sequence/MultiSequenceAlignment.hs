@@ -41,6 +41,7 @@ import           EvoMod.Data.Alphabet.DistributionDiversity
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Tools.Equality
 import           EvoMod.Tools.Matrix
+import           EvoMod.Tools.Misc
 
 -- | A collection of sequences.
 data MultiSequenceAlignment = MSA { msaNames :: [SequenceId]
@@ -124,9 +125,9 @@ msasConcatenate msas  = foldM msaConcatenate (head msas) (tail msas)
 type FrequencyData = M.Matrix Double
 
 toFrequencyData :: MultiSequenceAlignment -> FrequencyData
-toFrequencyData (MSA _ c d) = fMapCol (frequencyCharacters c) d
+toFrequencyData (MSA _ c d) = fMapColParChunk 100 (frequencyCharacters c) d
 
 -- | Diversity analysis. See 'kEffEntropy'.
 kEffMean :: FrequencyData -> Double
-kEffMean fd =  mean $ map kEffEntropy (M.toColumns fd)
+kEffMean fd =  mean $ parMapChunk 500 kEffEntropy (M.toColumns fd)
   where mean xs = sum xs / fromIntegral (length xs)

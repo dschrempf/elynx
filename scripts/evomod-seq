@@ -18,3 +18,6 @@ stack exec evomod-seq -- concatenate -a DNA $file_DNA $file_DNA || exit 1
 
 msg "EvoMod-Seq; test if quiet."
 stack exec evomod-seq -- summarize -a DNA -q $file_DNA || exit 1
+
+msg "EvoMod-Seq; analyze."
+stack exec evomod-seq -- analyze -a DNA -q $file_DNA || exit 1

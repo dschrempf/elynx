@@ -35,6 +35,7 @@ dependencies:
   - megaparsec
   - mwc-random
   - optparse-applicative
+  - parallel
   - primitive
   - repa
   - repa-algorithms

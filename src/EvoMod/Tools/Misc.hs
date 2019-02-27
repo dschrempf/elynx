@@ -25,6 +25,8 @@ module EvoMod.Tools.Misc
   , trdTriple
     -- * MWC.
   , splitGen
+   -- * Parallel stuff.
+  , parMapChunk
   ) where
 
 import           Control.Monad
@@ -32,6 +34,7 @@ import           Data.List
 import qualified Data.Vector       as V
 import           Data.Word
 import           System.Random.MWC
+import Control.Parallel.Strategies
 
 -- | Chain a list of functions together. See https://wiki.haskell.org/Compose.
 compose :: [a -> a] -> a -> a
@@ -68,3 +71,7 @@ splitGen n gen
   | otherwise =
   fmap (gen:) . replicateM (n-1) $
   initialize =<< (uniformVector gen 256 :: IO (V.Vector Word32))
+
+-- | Parallel map with given chunk size.
+parMapChunk :: Int -> (a -> b) -> [a] -> [b]
+parMapChunk n f as = map f as `using` parListChunk n rseq
