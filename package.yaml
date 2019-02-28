@@ -37,8 +37,6 @@ dependencies:
   - optparse-applicative
   - parallel
   - primitive
-  - repa
-  - repa-algorithms
   - vector
   - word8
   - zlib
