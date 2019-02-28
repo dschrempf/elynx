@@ -32,7 +32,6 @@ import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Tools.Numeric
 import           EvoMod.Tools.Vector
 
--- TODO: Parallel worker; maybe with parListChunk.
 -- | Entropy of vector.
 entropy :: V.Vector Double -> Double
 entropy v = negate $ sumVec $ V.map xLogX v

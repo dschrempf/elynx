@@ -40,7 +40,7 @@ import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.Nucleotide
 import           EvoMod.Data.MarkovProcess.PhyloModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
-import           EvoMod.Data.MarkovProcess.SubstitutionModel
+import           EvoMod.Data.MarkovProcess.SubstitutionModel    hiding (substitutionModel)
 import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes (EDMComponent)
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality

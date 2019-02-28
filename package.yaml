@@ -30,6 +30,7 @@ dependencies:
   - bytestring
   - containers
   - hmatrix
+  - integration
   - math-functions
   - matrices
   - megaparsec
@@ -37,6 +38,7 @@ dependencies:
   - optparse-applicative
   - parallel
   - primitive
+  - statistics
   - vector
   - word8
   - zlib

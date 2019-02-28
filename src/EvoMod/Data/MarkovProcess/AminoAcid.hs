@@ -157,21 +157,13 @@ lgStatDistPaml = normalizeSumVec 1.0 $
 lgStatDist :: StationaryDistribution
 lgStatDist = pamlToAlphaVec lgStatDistPaml
 
--- | LG rate matrix with amino acids in alphabetical order.
-lgRM :: RateMatrix
-lgRM = lgRMCustom lgStatDist
-
 -- | LG substitution model.
 lg :: SubstitutionModel
-lg = SubstitutionModel Protein (L.pack "LG") [] lgStatDist lgExch lgRM
-
--- | LG rate matrix with custom stationary distribution.
-lgRMCustom :: StationaryDistribution -> RateMatrix
-lgRMCustom = fromExchMatrix lgExch
+lg = substitutionModel Protein (L.pack "LG") [] lgStatDist lgExch
 
 -- | LG substitution model with custom stationary distribution and maybe a name.
 lgCustom :: StationaryDistribution -> Maybe L.ByteString -> SubstitutionModel
-lgCustom f mn = SubstitutionModel Protein name [] f lgExch (lgRMCustom f)
+lgCustom f mn = substitutionModel Protein name [] f lgExch
   where name = fromMaybe (L.pack "LG-Custom") mn
 
 uniformExch :: ExchMatrix
@@ -180,19 +172,11 @@ uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n*n) 1.0
 poissonExch :: ExchMatrix
 poissonExch = uniformExch
 
--- | Poisson rate matrix.
-poissonRM :: RateMatrix
-poissonRM = poissonRMCustom $ uniformVec n
-
 -- | Poisson substitution model.
 poisson :: SubstitutionModel
-poisson = SubstitutionModel Protein (L.pack "Poisson") [] (uniformVec n) poissonExch poissonRM
-
--- | Poisson rate matrix with custom stationary distribution.
-poissonRMCustom :: StationaryDistribution -> RateMatrix
-poissonRMCustom = fromExchMatrix uniformExch
+poisson = substitutionModel Protein (L.pack "Poisson") [] (uniformVec n) poissonExch
 
 -- | Poisson substitution model with custom stationary distribution and maybe a name.
 poissonCustom :: StationaryDistribution -> Maybe L.ByteString -> SubstitutionModel
-poissonCustom f mn = SubstitutionModel Protein name [] f poissonExch (poissonRMCustom f)
+poissonCustom f mn = substitutionModel Protein name [] f poissonExch
   where name = fromMaybe (L.pack "Poisson-Custom") mn

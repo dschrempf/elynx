@@ -28,8 +28,18 @@ then
     msg "EvoMod-Sim; CXX distribution mixture model."
     stack exec evomod-sim -- \
           -t $file_tree -o evomod-sim.out -m "C20" -l 1000 -s [0] || exit 1
+elif [[ $1 == "g" ]]
+then
+    msg "EvoMod-Sim; gamma rate heterogeneity."
+    stack exec evomod-sim -- \
+          -t $file_tree -o evomod-sim.out -g "(4,0.2)" -m "HKY[6.0]{0.2,0.3,0.3,0.2}" -l 10000 -s [0] || exit 1
+elif [[ $1 == "cg" ]]
+then
+    msg "EvoMod-Sim; CXX distribution mixture model with gamma rate heterogeneity."
+    stack exec evomod-sim -- \
+          -t $file_tree -o evomod-sim.out -m "C10" -g "(4,0.2)" -l 1000 -s [0] || exit 1
 else
-    msg "Usage: ./evomod-sim (s|e|w|c)"
+    msg "Usage: ./evomod-sim (s|e|w|c|g|cg)"
     exit 1
 fi
 

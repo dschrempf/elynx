@@ -112,7 +112,7 @@ cxxName nComps = L.char8 'C' <> L.intDec nComps
 
 componentName :: Int -> Int -> L.ByteString
 componentName nComps comp = L.toLazyByteString $
-  cxxName nComps <> L.string8 "Comp" <> L.intDec comp
+  cxxName nComps <> L.string8 "; component " <> L.intDec comp
 
 cxxSubstitutionModelFromStatDist :: Int -> Int -> StationaryDistribution -> SubstitutionModel
 cxxSubstitutionModelFromStatDist nComps comp d = poissonCustom d (Just name)

@@ -17,11 +17,16 @@ module EvoMod.Data.MarkovProcess.MixtureModel
   , MixtureModelComponent (..)
   , summarizeMixtureModelComponent
   , MixtureModel (..)
+  , fromSubstitutionModels
+  , concatenateMixtureModels
   , summarizeMixtureModel
   , isValidMixtureModel
   , mmCode
   , getWeights
+  , getSubstitutionModels
   , getRateMatrices
+  , scaleMixtureModel
+  , appendNameMixtureModel
   ) where
 
 import qualified Data.ByteString.Builder                     as L
@@ -34,6 +39,9 @@ import           EvoMod.Tools.Equality                       (allEqual)
 
 -- | Mixture model component weight.
 type Weight = Double
+
+-- XXX.
+-- type Name = L.ByteString
 
 -- | A mixture model component has a weight and a substitution model.
 data MixtureModelComponent = MixtureModelComponent
@@ -52,6 +60,15 @@ data MixtureModel = MixtureModel
   { mmName       :: L.ByteString
   , mmComponents :: [MixtureModelComponent]
   }
+
+-- | Create a mixture model from a list of substitution models.
+fromSubstitutionModels :: L.ByteString -> [Weight] -> [SubstitutionModel] -> MixtureModel
+fromSubstitutionModels name ws sms = MixtureModel name comps
+  where comps = zipWith MixtureModelComponent ws sms
+
+-- | Concatenate mixture models.
+concatenateMixtureModels :: L.ByteString -> [MixtureModel] -> MixtureModel
+concatenateMixtureModels n mms = MixtureModel n $ concatMap mmComponents mms
 
 -- | Summarize a mixture model; lines to be printed to screen or log.
 summarizeMixtureModel :: MixtureModel -> [L.ByteString]
@@ -81,7 +98,32 @@ mmCode mm = if isValidMixtureModel mm
 getWeights :: MixtureModel -> [Double]
 getWeights mm = map mmcWeight $ mmComponents mm
 
+-- | Extract substitution models.
+getSubstitutionModels :: MixtureModel -> [SubstitutionModel]
+getSubstitutionModels m = map mmcSubstitutionModel $ mmComponents m
+
 -- | Extract rate matrices.
 getRateMatrices :: MixtureModel -> [RateMatrix]
 getRateMatrices mm = map (smRateMatrix . mmcSubstitutionModel) (mmComponents mm)
 
+-- Scale substitution model of mixture model component.
+scaleMixtureModelComponent :: MixtureModelComponent -> Double -> MixtureModelComponent
+scaleMixtureModelComponent mmc s = mmc { mmcSubstitutionModel = scaledSM }
+  where scaledSM = scaleSubstitutionModel (mmcSubstitutionModel mmc) s
+
+-- | Scale all substitution models of the mixture model.
+scaleMixtureModel :: MixtureModel -> Double -> MixtureModel
+scaleMixtureModel mm s = mm { mmComponents = scaledMMCs }
+  where
+    scaledMMCs = map (`scaleMixtureModelComponent` s) (mmComponents mm)
+
+-- Append byte string to substitution model of mixture model component.
+appendNameSubstitutionModelMMC :: MixtureModelComponent -> L.ByteString -> MixtureModelComponent
+appendNameSubstitutionModelMMC mmc n = mmc { mmcSubstitutionModel = sm' }
+  where sm' = appendNameSubstitutionModel (mmcSubstitutionModel mmc) n
+
+-- | Append byte string to all substitution models of mixture model.
+appendNameMixtureModel :: MixtureModel -> L.ByteString -> MixtureModel
+appendNameMixtureModel mm n = mm { mmComponents = renamedComps }
+  where comps = mmComponents mm
+        renamedComps = [ appendNameSubstitutionModelMMC c n | c <- comps ]

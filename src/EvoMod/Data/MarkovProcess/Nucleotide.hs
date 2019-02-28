@@ -48,8 +48,8 @@ n :: Int
 n = cardinalityFromCode DNA
 
 -- | JC model matrix.
-rmJC :: RateMatrix
-rmJC = normalize $ setDiagonal $
+jcExch :: ExchMatrix
+jcExch =
   (n><n)
   [ 0.0, 1.0, 1.0, 1.0
   , 1.0, 0.0, 1.0, 1.0
@@ -58,24 +58,18 @@ rmJC = normalize $ setDiagonal $
 
 -- | JC substitution model.
 jc :: SubstitutionModel
-jc = SubstitutionModel DNA (L.pack "JC") [] f e rmJC
+jc = substitutionModel DNA (L.pack "JC") [] f jcExch
   where f = uniformVec n
-        e = toExchMatrix rmJC f
 
-exchHKY :: Double -> ExchMatrix
-exchHKY k =
+hkyExch :: Double -> ExchMatrix
+hkyExch k =
   (n><n)
   [ 0.0, 1.0,   k, 1.0
   , 1.0, 0.0, 1.0,   k
   ,   k, 1.0, 0.0, 1.0
   , 1.0,   k, 1.0, 0.0 ]
 
--- | HKY matrix with kappa and stationary distribution.
-rmHKY :: Double -> StationaryDistribution -> RateMatrix
-rmHKY = fromExchMatrix . exchHKY
-
 -- | HKY substitution model.
 hky :: Double -> StationaryDistribution -> SubstitutionModel
-hky k f = SubstitutionModel DNA (L.pack "HKY") [k] f e m
-  where e = exchHKY k
-        m = rmHKY k f
+hky k f = substitutionModel DNA (L.pack "HKY") [k] f e
+  where e = hkyExch k

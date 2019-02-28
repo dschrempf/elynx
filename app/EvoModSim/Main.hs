@@ -8,8 +8,6 @@ Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
 Portability :  portable
 
-TODO: Rate heterogeneity with Gamma distribution.
-
 Creation date: Mon Jan 28 14:12:52 2019.
 
 -}
@@ -19,9 +17,9 @@ module Main where
 import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8                     as L
+import qualified Data.ByteString.Lazy.Char8                       as L
 import           Data.Tree
-import qualified Data.Vector                                    as V
+import qualified Data.Vector                                      as V
 import           Numeric.LinearAlgebra
 import           System.Random.MWC
 
@@ -30,6 +28,7 @@ import           ParsePhyloModel
 
 import           EvoMod.ArgParse
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
 import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.PhyloModel
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
@@ -39,8 +38,9 @@ import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.NamedTree
 import           EvoMod.Data.Tree.Tree
 import           EvoMod.Export.Sequence.Fasta
-import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes hiding (Parser)
-import           EvoMod.Import.Tree.Newick                      hiding (name)
+import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes   hiding
+                                                                   (Parser)
+import           EvoMod.Import.Tree.Newick                        hiding (name)
 import           EvoMod.Simulate.MarkovProcessAlongTree
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.InputOutput
@@ -91,7 +91,7 @@ summarizeEDMComponents cs = L.pack
 
 main :: IO ()
 main = do
-  EvoModSimArgs treeFile phyloModelStr len mEDMFile mWs mSeed quiet outFile <- parseEvoModSimArgs
+  EvoModSimArgs treeFile phyloModelStr len mEDMFile mWs mGammaPs mSeed quiet outFile <- parseEvoModSimArgs
   unless quiet $ do
     programHeader
     putStrLn ""
@@ -111,7 +111,10 @@ main = do
     maybe (return ()) (L.putStrLn . summarizeEDMComponents) edmCs
     putStrLn ""
     putStrLn "Read model string."
-  let phyloModel = parseByteStringWith (phyloModelString edmCs mWs) phyloModelStr
+  let phyloModel' = parseByteStringWith (phyloModelString edmCs mWs) phyloModelStr
+      phyloModel = case mGammaPs of
+        Nothing         -> phyloModel'
+        Just (n, alpha) -> addGammaRateHeterogeneity n alpha phyloModel'
   unless quiet $ do
     L.putStr . L.unlines $ pmSummarize phyloModel
     putStrLn ""

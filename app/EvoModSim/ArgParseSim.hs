@@ -35,12 +35,15 @@ import           EvoMod.ArgParse
 --       Left eb -> Left $ errorBundlePretty eb
 --       Right a -> Right a
 
+type GammaRateHeterogeneityParams = (Int, Double)
+
 data EvoModSimArgs = EvoModSimArgs
   { argsTreeFile            :: FilePath
   , argsPhyloModelString    :: L.ByteString
   , argsLength              :: Int
   , argsMaybeEDMFile        :: Maybe FilePath
   , argsMaybeMixtureWeights :: Maybe [Double]
+  , argsMaybeGammaParams    :: Maybe GammaRateHeterogeneityParams
   , argsSeed                :: Maybe [Word32]
   , argsQuiet               :: Bool
   , argsFileOut             :: FilePath
@@ -53,6 +56,7 @@ evoModSimArgs = EvoModSimArgs
   <*> lengthOpt
   <*> maybeEDMFileOpt
   <*> maybeMixtureWeights
+  <*> maybeGammaParams
   <*> seedOpt
   <*> quietOpt
   <*> fileOutOpt
@@ -114,6 +118,13 @@ maybeMixtureWeights = optional $ option auto
     <> short 'w'
     <> metavar "[DOUBLE,DOUBLE,...]"
     <> help "weights of mixture model components" )
+
+maybeGammaParams :: Parser (Maybe GammaRateHeterogeneityParams)
+maybeGammaParams = optional $ option auto
+  ( long "gamma-rate-heterogeneity"
+    <> short 'g'
+    <> metavar "(NCAT, SHAPE)"
+    <> help "number of gamma rate categories and shape parameter" )
 
 -- | Read the arguments and prints out help if needed.
 parseEvoModSimArgs :: IO EvoModSimArgs
