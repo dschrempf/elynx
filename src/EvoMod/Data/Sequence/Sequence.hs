@@ -10,6 +10,10 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:54:51 2018.
 
+XXX: Maybe it is better to use a ByteString for sequences. This would probably
+reduce memory overhead a lot. MSAs still need to be saved as matrices, because
+there are many column operations that would be awfully slow otherwise.
+
 -}
 
 module EvoMod.Data.Sequence.Sequence
