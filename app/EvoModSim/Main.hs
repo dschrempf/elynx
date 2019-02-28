@@ -19,7 +19,7 @@ module Main where
 import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8                     as B
+import qualified Data.ByteString.Lazy.Char8                     as L
 import           Data.Tree
 import qualified Data.Vector                                    as V
 import           Numeric.LinearAlgebra
@@ -74,13 +74,13 @@ simulateMSA pm t n g = do
       leafNames  = map name $ leafs t
       code       = pmCode pm
       -- TODO: Make this more accessible.
-      sequences  = [ toSequence sId code (B.pack . map w2c $ indicesToCharacters code ss) |
+      sequences  = [ toSequence sId code (L.pack . map w2c $ indicesToCharacters code ss) |
                     (sId, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
 
 -- | Summarize EDM components; line to be printed to screen or log.
-summarizeEDMComponents :: [EDMComponent] -> B.ByteString
-summarizeEDMComponents cs = B.pack
+summarizeEDMComponents :: [EDMComponent] -> L.ByteString
+summarizeEDMComponents cs = L.pack
                             $ "Empiricial distribution mixture model with "
                             ++ show (length cs) ++ " components"
 
@@ -98,7 +98,7 @@ main = do
     putStrLn "Read tree."
   tree <- parseFileWith newick treeFile
   unless quiet $
-    B.putStr $ summarize tree
+    L.putStr $ summarize tree
   edmCs <- case mEDMFile of
     Nothing   -> return Nothing
     Just edmF -> do
@@ -108,12 +108,12 @@ main = do
       Just <$> parseFileWith phylobayes edmF
   unless quiet $ do
     -- Is there a better way?
-    maybe (return ()) (B.putStrLn . summarizeEDMComponents) edmCs
+    maybe (return ()) (L.putStrLn . summarizeEDMComponents) edmCs
     putStrLn ""
     putStrLn "Read model string."
   let phyloModel = parseByteStringWith (phyloModelString edmCs mWs) phyloModelStr
   unless quiet $ do
-    B.putStr . B.unlines $ pmSummarize phyloModel
+    L.putStr . L.unlines $ pmSummarize phyloModel
     putStrLn ""
     putStrLn "Simulate alignment."
     putStrLn $ "Length: " ++ show len ++ "."
@@ -124,7 +124,7 @@ main = do
                >> initialize (V.fromList s)
   msa <- simulateMSA phyloModel tree len gen
   let output = sequencesToFasta $ toSequenceList msa
-  B.writeFile outFile output
+  L.writeFile outFile output
   unless quiet $ do
     putStrLn ""
     putStrLn ("Output written to file '" ++ outFile ++ "'.")

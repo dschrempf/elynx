@@ -58,7 +58,7 @@ module EvoMod.Export.Sequence.CountsFile
   , toCountsFile
   ) where
 
-import qualified Data.ByteString.Lazy.Char8                 as B
+import qualified Data.ByteString.Lazy.Char8                 as L
 import           Data.Maybe                                 (fromMaybe)
 
 import           EvoMod.Data.Alphabet.BoundaryMutationModel
@@ -69,24 +69,24 @@ import           EvoMod.Tools.ByteString                    (alignLeft,
 type NSites = Int
 
 -- | The names of the populations.
-type PopulationNames = [B.ByteString]
+type PopulationNames = [L.ByteString]
 
 -- Desired column width of the counts file.
 colW :: Int
 colW = 11
 
 -- | Compose the header using the number of sites and the population names.
-header :: NSites -> PopulationNames -> B.ByteString
-header nSites popNames = B.unlines [lineOne, lineTwo]
+header :: NSites -> PopulationNames -> L.ByteString
+header nSites popNames = L.unlines [lineOne, lineTwo]
   where nPop = length popNames
-        lineOne = B.pack $ "COUNTSFILE NPOP " ++ show nPop ++ " NSITES " ++ show nSites
-        lineTwo = B.unwords $
-          [ alignLeft colW $ B.pack "CHROM"
-          , alignRight colW $ B.pack "POS" ]
+        lineOne = L.pack $ "COUNTSFILE NPOP " ++ show nPop ++ " NSITES " ++ show nSites
+        lineTwo = L.unwords $
+          [ alignLeft colW $ L.pack "CHROM"
+          , alignRight colW $ L.pack "POS" ]
           ++ map (alignLeft colW) popNames
 
 -- | The chromosome name.
-type Chrom = B.ByteString
+type Chrom = L.ByteString
 
 -- | The position on the chromosome.
 type Pos   = Int
@@ -95,14 +95,14 @@ type Pos   = Int
 type DataOneSite = [State]
 
 -- | Get a data line in the counts file.
-dataLine :: Maybe Chrom -> Maybe Pos -> DataOneSite -> B.ByteString
-dataLine chrom mPos bstates = B.unwords $
-  [ alignLeft colW (fromMaybe (B.pack "NA") chrom)
-  , alignRight colW (B.pack (maybe "NaN" show mPos)) ]
+dataLine :: Maybe Chrom -> Maybe Pos -> DataOneSite -> L.ByteString
+dataLine chrom mPos bstates = L.unwords $
+  [ alignLeft colW (fromMaybe (L.pack "NA") chrom)
+  , alignRight colW (L.pack (maybe "NaN" show mPos)) ]
   ++ map (alignRight colW . showCounts) bstates
 
 -- | Convert data to a counts file.
-toCountsFile :: PopulationNames -> [(Maybe Chrom, Maybe Pos, DataOneSite)] -> B.ByteString
-toCountsFile ns d = B.unlines $ header l ns : zipWith3 dataLine cs ps ds
+toCountsFile :: PopulationNames -> [(Maybe Chrom, Maybe Pos, DataOneSite)] -> L.ByteString
+toCountsFile ns d = L.unlines $ header l ns : zipWith3 dataLine cs ps ds
   where l            = length d
         (cs, ps, ds) = unzip3 d

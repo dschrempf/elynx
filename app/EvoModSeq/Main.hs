@@ -15,7 +15,7 @@ Creation date: Fri Oct  5 08:41:05 2018.
 module Main where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8    as B
+import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.Maybe                    (fromMaybe)
 import           System.IO
 
@@ -30,18 +30,18 @@ import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.InputOutput
 import           EvoMod.Tools.Misc
 
-act :: Command -> [[Sequence]] -> Either B.ByteString B.ByteString
-act Summarize sss      = Right . B.intercalate (B.pack "\n") $ map summarizeSequenceList sss
+act :: Command -> [[Sequence]] -> Either L.ByteString L.ByteString
+act Summarize sss      = Right . L.intercalate (L.pack "\n") $ map summarizeSequenceList sss
 act Concatenate sss    = sequencesToFasta <$> concatenateSeqs sss
 act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
   where filters        = map (fromMaybe id) [ filterLongerThan <$> ml
                                     , filterShorterThan <$> ms ]
-act Analyze sss        = Right . B.intercalate (B.pack "\n") $ map (B.pack . show . kEffAll . toFrequencyData) msas
+act Analyze sss        = Right . L.intercalate (L.pack "\n") $ map (L.pack . show . kEffAll . toFrequencyData) msas
   where msas = map fromSequenceList sss
 
-io :: Either B.ByteString B.ByteString -> Handle -> IO ()
-io (Left  s)   _ = B.putStrLn s
-io (Right res) h = B.hPutStr h res
+io :: Either L.ByteString L.ByteString -> Handle -> IO ()
+io (Left  s)   _ = L.putStrLn s
+io (Right res) h = L.hPutStr h res
 
 main :: IO ()
 main = do (EvoModSeqArgs cmd c mofn q fns) <- parseEvoModSeqArgs

@@ -34,7 +34,7 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8                 as B
+import qualified Data.ByteString.Lazy.Char8                 as L
 import qualified Data.Matrix.Storable                       as M
 import           Data.Word8                                 (Word8)
 
@@ -76,27 +76,27 @@ toSequenceList (MSA ns c d) = zipWith (\n r -> Sequence n c r) ns rows
   where
     rows  = M.toRows d
 
-msaHeader :: B.ByteString
+msaHeader :: L.ByteString
 msaHeader = sequenceListHeader
 
 -- | Show a 'MultiSequenceAlignment' in text form.
-showMSA :: MultiSequenceAlignment -> B.ByteString
+showMSA :: MultiSequenceAlignment -> L.ByteString
 showMSA msa = msaHeader <> showSequenceList (toSequenceList msa)
 
 -- | Similar to 'summarizeSequenceList' but with different Header.
-summarizeMSA :: MultiSequenceAlignment -> B.ByteString
-summarizeMSA msa = B.pack "Multi sequence alignment.\n" <> summarizeSequenceList (toSequenceList msa)
+summarizeMSA :: MultiSequenceAlignment -> L.ByteString
+summarizeMSA msa = L.pack "Multi sequence alignment.\n" <> summarizeSequenceList (toSequenceList msa)
 
 -- | Join two 'MultiSequenceAlignment's vertically. That is, add more sequences
 -- to an alignment. See also 'msaConcatenate'.
 msaJoin :: MultiSequenceAlignment
         -> MultiSequenceAlignment
-        -> Either B.ByteString MultiSequenceAlignment
+        -> Either L.ByteString MultiSequenceAlignment
 -- top bottom.
 msaJoin t b
   | msaLength t == msaLength b &&
     msaCode t == msaCode b = Right $ MSA names (msaCode t) (tD === bD)
-  | otherwise  = Left $ B.pack "msaJoin: Multi sequence alignments do not have equal length."
+  | otherwise  = Left $ L.pack "msaJoin: Multi sequence alignments do not have equal length."
   where
     names = msaNames t ++ msaNames b
     tD    = msaData t
@@ -106,20 +106,20 @@ msaJoin t b
 -- sites to an alignment. See also 'msaJoin'.
 msaConcatenate :: MultiSequenceAlignment
                -> MultiSequenceAlignment
-               -> Either B.ByteString MultiSequenceAlignment
+               -> Either L.ByteString MultiSequenceAlignment
 -- left right.
 msaConcatenate l r
   | msaNSequences l == msaNSequences r &&
     msaCode l == msaCode r = Right $ MSA (msaNames l) (msaCode l) (lD ||| rD)
-  | otherwise = Left $ B.pack "msaConcatenate: Multi sequence alignments do not have equal length."
+  | otherwise = Left $ L.pack "msaConcatenate: Multi sequence alignments do not have equal length."
   where
     lD = msaData l
     rD = msaData r
 
 -- | Concatenate a list of 'MultiSequenceAlignment's horizontally. See
 -- 'msaConcatenate'.
-msasConcatenate :: [MultiSequenceAlignment] -> Either B.ByteString MultiSequenceAlignment
-msasConcatenate []    = Left $ B.pack "Nothing to concatenate."
+msasConcatenate :: [MultiSequenceAlignment] -> Either L.ByteString MultiSequenceAlignment
+msasConcatenate []    = Left $ L.pack "Nothing to concatenate."
 msasConcatenate [msa] = Right msa
 msasConcatenate msas  = foldM msaConcatenate (head msas) (tail msas)
 

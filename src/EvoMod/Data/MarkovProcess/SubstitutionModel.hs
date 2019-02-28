@@ -17,7 +17,7 @@ module EvoMod.Data.MarkovProcess.SubstitutionModel
   , summarizeSubstitutionModel
   ) where
 
-import qualified Data.ByteString.Lazy.Char8           as B
+import qualified Data.ByteString.Lazy.Char8           as L
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.RateMatrix
@@ -25,7 +25,7 @@ import           EvoMod.Data.MarkovProcess.RateMatrix
 -- | Complete definition of a substitution model.
 data SubstitutionModel = SubstitutionModel
   { smCode                   :: Code
-  , smName                   :: B.ByteString
+  , smName                   :: L.ByteString
   , smParams                 :: [Double]
   , smStationaryDistribution :: StationaryDistribution
   , smExchMatrix             :: ExchMatrix
@@ -33,9 +33,9 @@ data SubstitutionModel = SubstitutionModel
   }
 
 -- | Summarize a substitution model; lines to be printed to screen or log.
-summarizeSubstitutionModel :: SubstitutionModel -> [B.ByteString]
-summarizeSubstitutionModel sm = map B.pack $
-  (show (smCode sm) ++ " substitution model: " ++ B.unpack (smName sm) ++ ".") :
+summarizeSubstitutionModel :: SubstitutionModel -> [L.ByteString]
+summarizeSubstitutionModel sm = map L.pack $
+  (show (smCode sm) ++ " substitution model: " ++ L.unpack (smName sm) ++ ".") :
   [ "Parameters: " ++ show (smParams sm) ++ "." | not (null (smParams sm))] ++
   case smCode sm of
     DNA -> [ "Stationary distribution: " ++ show (smStationaryDistribution sm) ++ "."

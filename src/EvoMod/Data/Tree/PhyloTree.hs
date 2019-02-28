@@ -25,8 +25,8 @@ module EvoMod.Data.Tree.PhyloTree
   , PhyloByteStringLabel (..)
   ) where
 
-import           Data.ByteString.Lazy.Builder
-import           Data.ByteString.Lazy.Char8
+import qualified Data.ByteString.Lazy.Builder    as L
+import qualified Data.ByteString.Lazy.Char8      as L
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.NamedTree
 
@@ -43,14 +43,14 @@ data PhyloIntLabel = PhyloIntLabel { piLabel :: Int
 
 --
 instance Named PhyloIntLabel where
-  name = toLazyByteString . intDec . piLabel
+  name = L.toLazyByteString . L.intDec . piLabel
 
 instance Measurable PhyloIntLabel where
   measure = piBrLen
 
 -- | Tree node with 'ByteString' label. Important for parsing
 -- 'EvoMod.Import.Tree.Newick' files.
-data PhyloByteStringLabel = PhyloByteStringLabel { pbsLabel :: ByteString
+data PhyloByteStringLabel = PhyloByteStringLabel { pbsLabel :: L.ByteString
                                                  , pbsBrLen :: Double }
   deriving (Show, Eq)
 

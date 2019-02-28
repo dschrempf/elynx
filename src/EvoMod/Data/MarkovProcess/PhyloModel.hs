@@ -22,7 +22,7 @@ module EvoMod.Data.MarkovProcess.PhyloModel
   , pmSummarize
   ) where
 
-import qualified Data.ByteString.Lazy.Char8                  as B
+import qualified Data.ByteString.Lazy.Char8                  as L
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.MixtureModel
@@ -38,6 +38,6 @@ pmCode (PhyloMixtureModel mm)      = mmCode mm
 pmCode (PhyloSubstitutionModel sm) = smCode sm
 
 -- | Summarize a phylogenetic model; lines to be printed to screen or log.
-pmSummarize :: PhyloModel -> [B.ByteString]
+pmSummarize :: PhyloModel -> [L.ByteString]
 pmSummarize (PhyloMixtureModel mm)      = summarizeMixtureModel mm
 pmSummarize (PhyloSubstitutionModel sm) = summarizeSubstitutionModel sm

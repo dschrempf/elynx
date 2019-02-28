@@ -21,7 +21,7 @@ module EvoMod.Data.MarkovProcess.AminoAcid
   , poissonCustom
   ) where
 
-import qualified Data.ByteString.Lazy.Char8                  as B
+import qualified Data.ByteString.Lazy.Char8                  as L
 import           Data.List                                   (elemIndex)
 import           Data.Maybe                                  (fromMaybe)
 import           Data.Word                                   (Word8)
@@ -163,16 +163,16 @@ lgRM = lgRMCustom lgStatDist
 
 -- | LG substitution model.
 lg :: SubstitutionModel
-lg = SubstitutionModel Protein (B.pack "LG") [] lgStatDist lgExch lgRM
+lg = SubstitutionModel Protein (L.pack "LG") [] lgStatDist lgExch lgRM
 
 -- | LG rate matrix with custom stationary distribution.
 lgRMCustom :: StationaryDistribution -> RateMatrix
 lgRMCustom = fromExchMatrix lgExch
 
 -- | LG substitution model with custom stationary distribution and maybe a name.
-lgCustom :: StationaryDistribution -> Maybe B.ByteString -> SubstitutionModel
+lgCustom :: StationaryDistribution -> Maybe L.ByteString -> SubstitutionModel
 lgCustom f mn = SubstitutionModel Protein name [] f lgExch (lgRMCustom f)
-  where name = fromMaybe (B.pack "LG-Custom") mn
+  where name = fromMaybe (L.pack "LG-Custom") mn
 
 uniformExch :: ExchMatrix
 uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n*n) 1.0
@@ -186,13 +186,13 @@ poissonRM = poissonRMCustom $ uniformVec n
 
 -- | Poisson substitution model.
 poisson :: SubstitutionModel
-poisson = SubstitutionModel Protein (B.pack "Poisson") [] (uniformVec n) poissonExch poissonRM
+poisson = SubstitutionModel Protein (L.pack "Poisson") [] (uniformVec n) poissonExch poissonRM
 
 -- | Poisson rate matrix with custom stationary distribution.
 poissonRMCustom :: StationaryDistribution -> RateMatrix
 poissonRMCustom = fromExchMatrix uniformExch
 
 -- | Poisson substitution model with custom stationary distribution and maybe a name.
-poissonCustom :: StationaryDistribution -> Maybe B.ByteString -> SubstitutionModel
+poissonCustom :: StationaryDistribution -> Maybe L.ByteString -> SubstitutionModel
 poissonCustom f mn = SubstitutionModel Protein name [] f poissonExch (poissonRMCustom f)
-  where name = fromMaybe (B.pack "Poisson-Custom") mn
+  where name = fromMaybe (L.pack "Poisson-Custom") mn

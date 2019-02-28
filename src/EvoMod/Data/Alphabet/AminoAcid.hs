@@ -92,7 +92,7 @@ instance Character AminoAcid where
 -- Amino Acid Code:  Three letter Code:  Amino Acid:
 -- ----------------  ------------------  -----------
 -- A.................Ala.................Alanine
--- B.................Asx.................Aspartic acid or Asparagine
+-- L.................Asx.................Aspartic acid or Asparagine
 -- C.................Cys.................Cysteine
 -- D.................Asp.................Aspartic Acid
 -- E.................Glu.................Glutamic Acid

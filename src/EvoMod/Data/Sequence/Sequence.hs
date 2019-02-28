@@ -35,11 +35,10 @@ module EvoMod.Data.Sequence.Sequence
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8      as B
+import qualified Data.ByteString.Lazy.Char8      as L
 import           Data.List                       (maximumBy)
 import           Data.Ord                        (comparing)
 import qualified Data.Vector.Storable            as V
--- import qualified Data.Vector.Storable.ByteString as V
 import           Data.Word8                      (Word8)
 
 import           EvoMod.Data.Alphabet.Alphabet
@@ -51,7 +50,7 @@ import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality
 
 -- | For now, 'SequenceId's are just 'String's.
-type SequenceId = B.ByteString
+type SequenceId = L.ByteString
 
 -- | By choosing specific types for the identifier and the characters is of
 -- course limiting but also eases handling of types a lot.
@@ -60,73 +59,72 @@ data Sequence = Sequence { seqId   :: SequenceId
                          , seqCs   :: V.Vector Word8 }
   deriving (Eq)
 
--- | Conversion from 'B.ByteString'.
-toSequence :: B.ByteString -> Code -> B.ByteString -> Sequence
+-- | Conversion from 'L.ByteString'.
+toSequence :: L.ByteString -> Code -> L.ByteString -> Sequence
 toSequence i c cs = Sequence i c v
-  where v = V.fromList . map c2w . B.unpack $ cs
-  -- where v = V.byteStringToVector cs
+  where v = V.fromList . map c2w . L.unpack $ cs
 
--- | Conversion of data to 'B.ByteString'.
-seqToCsByteString :: Sequence -> B.ByteString
-seqToCsByteString = B.pack . map w2c . V.toList . seqCs
+-- | Conversion of data to 'L.ByteString'.
+seqToCsByteString :: Sequence -> L.ByteString
+seqToCsByteString = L.pack . map w2c . V.toList . seqCs
 
 -- | Extract 'SequenceId' and data.
-fromSequence :: Sequence -> (SequenceId, B.ByteString)
+fromSequence :: Sequence -> (SequenceId, L.ByteString)
 fromSequence s = (seqId s, seqToCsByteString s)
 
-showCharacters :: Sequence -> B.ByteString
+showCharacters :: Sequence -> L.ByteString
 showCharacters = seqToCsByteString
 
-showInfo :: Sequence -> B.ByteString
-showInfo s = B.unwords [ alignLeft defSequenceNameWidth (seqId s)
+showInfo :: Sequence -> L.ByteString
+showInfo s = L.unwords [ alignLeft defSequenceNameWidth (seqId s)
                        , alignLeft defFieldWidth l ]
-  where l = B.pack . show $ lengthSequence s
+  where l = L.pack . show $ lengthSequence s
 
 instance Show Sequence where
-  show s = B.unpack $ showSequence s
+  show s = L.unpack $ showSequence s
 
-showSequence :: Sequence -> B.ByteString
-showSequence s = B.unwords [showInfo s, showCharacters s]
+showSequence :: Sequence -> L.ByteString
+showSequence s = L.unwords [showInfo s, showCharacters s]
 
 -- | Show a list of 'Sequence's, untrimmed.
-showSequenceList :: [Sequence] -> B.ByteString
-showSequenceList = B.unlines . map showSequence
+showSequenceList :: [Sequence] -> L.ByteString
+showSequenceList = L.unlines . map showSequence
 
 -- | Header printed before 'Sequence' list.
-sequenceListHeader :: B.ByteString
-sequenceListHeader = B.unwords [ alignLeft defSequenceNameWidth (B.pack "Identifier")
-                               , alignLeft defFieldWidth (B.pack "Length")
-                               , B.pack "Sequence" ]
+sequenceListHeader :: L.ByteString
+sequenceListHeader = L.unwords [ alignLeft defSequenceNameWidth (L.pack "Identifier")
+                               , alignLeft defFieldWidth (L.pack "Length")
+                               , L.pack "Sequence" ]
 
 -- | Trim and show a 'Sequence'.
-summarizeSequence :: Sequence -> B.ByteString
-summarizeSequence s = B.unwords [ showInfo s
+summarizeSequence :: Sequence -> L.ByteString
+summarizeSequence s = L.unwords [ showInfo s
                                 , summarizeByteString defSequenceSummaryLength (showCharacters s) ]
 
 -- TODO: Print codes! Then, MSAs have to be printed differently, because code
 -- has to be the same in this case.
 -- | Trim and show a list of 'Sequence's.
-summarizeSequenceList :: [Sequence] -> B.ByteString
+summarizeSequenceList :: [Sequence] -> L.ByteString
 summarizeSequenceList ss = summarizeSequenceListHeader ss <>
                            summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
 
-summarizeSequenceListHeader :: [Sequence] -> B.ByteString
-summarizeSequenceListHeader ss = B.unlines $
+summarizeSequenceListHeader :: [Sequence] -> L.ByteString
+summarizeSequenceListHeader ss = L.unlines $
   reportIfSubsetIsShown ++
-  [ B.pack $ "For each sequence the " ++ show defSequenceSummaryLength ++ " first bases are shown."
-  , B.pack $ "List contains " ++ show (length ss) ++ " sequences."
-  , B.pack ""
+  [ L.pack $ "For each sequence the " ++ show defSequenceSummaryLength ++ " first bases are shown."
+  , L.pack $ "List contains " ++ show (length ss) ++ " sequences."
+  , L.pack ""
   , sequenceListHeader ]
   where l = length ss
         s = show defSequenceListSummaryNumber ++ " out of " ++
             show (length ss) ++ " sequences are shown."
         reportIfSubsetIsShown
-          | l > defSequenceListSummaryNumber = [B.pack s]
+          | l > defSequenceListSummaryNumber = [L.pack s]
           | otherwise = []
 
 -- | Trim and show a list of 'Sequence's.
-summarizeSequenceListBody :: [Sequence] -> B.ByteString
-summarizeSequenceListBody ss = B.unlines $ map summarizeSequence ss
+summarizeSequenceListBody :: [Sequence] -> L.ByteString
+summarizeSequenceListBody ss = L.unlines $ map summarizeSequence ss
 
 -- | Calculate length of 'Sequence'.
 lengthSequence :: Sequence -> Int
@@ -145,14 +143,14 @@ trimSequence :: Int -> Sequence -> Sequence
 trimSequence n s@Sequence{seqCs=cs} = s {seqCs = V.take n cs}
 
 -- | Concatenate two sequences. 'SequenceId's have to match.
-concatenate :: Sequence -> Sequence -> Either B.ByteString Sequence
+concatenate :: Sequence -> Sequence -> Either L.ByteString Sequence
 concatenate (Sequence i code cs) (Sequence j kode ks)
   | i == j && code == kode = Right $ Sequence i code (cs V.++ ks)
-  | otherwise              = Left $ B.pack "concatenate: Sequences do not have equal IDs: "
-                             <> i <> B.pack ", " <> j <> B.pack "."
+  | otherwise              = Left $ L.pack "concatenate: Sequences do not have equal IDs: "
+                             <> i <> L.pack ", " <> j <> L.pack "."
 
 -- | Concatenate a list of sequences, see 'concatenate'.
-concatenateSeqs :: [[Sequence]] -> Either B.ByteString [Sequence]
-concatenateSeqs []   = Left $ B.pack "Nothing to concatenate."
+concatenateSeqs :: [[Sequence]] -> Either L.ByteString [Sequence]
+concatenateSeqs []   = Left $ L.pack "Nothing to concatenate."
 concatenateSeqs [ss] = Right ss
 concatenateSeqs sss  = foldM (zipWithM concatenate) (head sss) (tail sss)

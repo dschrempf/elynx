@@ -23,7 +23,7 @@ module ParsePhyloModel
   ( phyloModelString
   ) where
 
-import qualified Data.ByteString.Lazy.Char8                     as B
+import qualified Data.ByteString.Lazy.Char8                     as L
 import           Data.Maybe
 import           Data.Void
 import           Data.Word                                      (Word8)
@@ -45,10 +45,10 @@ import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes (EDMComponent)
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality
 
-type Parser = Parsec Void B.ByteString
+type Parser = Parsec Void L.ByteString
 
-bs :: String -> B.ByteString
-bs = B.pack
+bs :: String -> L.ByteString
+bs = L.pack
 
 nNuc :: Int
 nNuc = cardinalityFromCode DNA
@@ -69,7 +69,7 @@ sdEnd :: Word8
 sdEnd = c2w '}'
 
 name :: Parser String
-name = B.unpack <$>
+name = L.unpack <$>
   takeWhile1P (Just "Substitution model name") (`notElem` [paramsStart, paramsEnd, sdStart])
 
 params :: Parser [Double]
@@ -126,7 +126,7 @@ parseEDM cs mws = do
   mps <- optional params
   _ <- char paramsEnd
   let sms = map (\c -> assembleSubstitutionModel n mps (Just $ snd c)) cs
-      edmName = B.pack $ "EDM" ++ show (length cs)
+      edmName = L.pack $ "EDM" ++ show (length cs)
       ws = fromMaybe (map fst cs) mws
   return $ MixtureModel edmName
     [ MixtureModelComponent w sm | (w, Right sm) <- zip ws sms ]

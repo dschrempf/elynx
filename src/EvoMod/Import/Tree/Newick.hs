@@ -30,7 +30,7 @@ module EvoMod.Import.Tree.Newick
   , branchLength
   ) where
 
-import qualified Data.ByteString.Lazy       as B
+import qualified Data.ByteString.Lazy       as L
 import           Data.Tree
 import           Data.Void
 import           Data.Word
@@ -42,7 +42,7 @@ import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Tools.ByteString    (c2w)
 
 -- | Shortcut.
-type Parser = Parsec Void B.ByteString
+type Parser = Parsec Void L.ByteString
 
 -- | Parse many Newick trees.
 manyNewick :: Parser [Tree PhyloByteStringLabel]
@@ -86,8 +86,8 @@ checkNameCharacter c = c `notElem` map c2w " :;()[],"
 
 -- | A name can be any string of printable characters except blanks, colons,
 -- semicolons, parentheses, and square brackets (and commas).
-name :: Parser B.ByteString
-name = B.pack <$> many (satisfy checkNameCharacter) <?> "name"
+name :: Parser L.ByteString
+name = L.pack <$> many (satisfy checkNameCharacter) <?> "name"
 
 -- | Branch lengths default to 0.
 branchLength :: Parser Double

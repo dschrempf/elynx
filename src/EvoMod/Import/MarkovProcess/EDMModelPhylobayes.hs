@@ -19,7 +19,7 @@ module EvoMod.Import.MarkovProcess.EDMModelPhylobayes
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8 as B
+import qualified Data.ByteString.Lazy.Char8 as L
 import           Data.Void
 import           Numeric.LinearAlgebra      (R, Vector, vector)
 import           Text.Megaparsec
@@ -29,7 +29,7 @@ import           Text.Megaparsec.Byte.Lexer
 import           EvoMod.Tools.ByteString    (c2w)
 
 -- | Shortcut.
-type Parser = Parsec Void B.ByteString
+type Parser = Parsec Void L.ByteString
 
 -- | An empirical mixture model component has a weight and a stationary
 -- distribution.
@@ -52,7 +52,7 @@ headerLine :: Parser Int
 headerLine = do
   n <- decimal
   _ <- horizontalSpace
-  _ <- chunk (B.pack "A C D E F G H I K L M N P Q R S T V W Y")
+  _ <- chunk (L.pack "A C D E F G H I K L M N P Q R S T V W Y")
   _ <- many newline
     <?> "headerLine"
   return n

@@ -22,7 +22,7 @@ module EvoMod.Data.Tree.MeasurableTree
 
 import           Data.Foldable
 import           Data.Tree
-import qualified Data.ByteString.Lazy.Char8 as B
+import qualified Data.ByteString.Lazy.Char8 as L
 
 import           EvoMod.Data.Tree.Tree
 
@@ -44,8 +44,8 @@ height :: (Measurable a) => Tree a -> Double
 height = maximum . distancesRootLeaves
 
 -- | Summarize a tree with measureable branch lengths.
-summarize :: (Measurable a) => Tree a -> B.ByteString
-summarize t = B.unlines $ map B.pack
+summarize :: (Measurable a) => Tree a -> L.ByteString
+summarize t = L.unlines $ map L.pack
   [ "Leafs: " ++ show n ++ "."
   , "Height: " ++ show h ++ "."
   , "Average distance root to leafs: " ++ show h' ++ "."

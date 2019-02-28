@@ -18,7 +18,7 @@ module ArgParseSim
   , parseEvoModSimArgs
   ) where
 
-import qualified Data.ByteString.Lazy.Char8 as B
+import qualified Data.ByteString.Lazy.Char8 as L
 import           Data.Word
 import           Options.Applicative
 
@@ -37,7 +37,7 @@ import           EvoMod.ArgParse
 
 data EvoModSimArgs = EvoModSimArgs
   { argsTreeFile            :: FilePath
-  , argsPhyloModelString    :: B.ByteString
+  , argsPhyloModelString    :: L.ByteString
   , argsLength              :: Int
   , argsMaybeEDMFile        :: Maybe FilePath
   , argsMaybeMixtureWeights :: Maybe [Double]
@@ -49,7 +49,7 @@ data EvoModSimArgs = EvoModSimArgs
 evoModSimArgs :: Parser EvoModSimArgs
 evoModSimArgs = EvoModSimArgs
   <$> treeFileOpt
-  <*> (B.pack <$> phyloModelOpt)
+  <*> (L.pack <$> phyloModelOpt)
   <*> lengthOpt
   <*> maybeEDMFileOpt
   <*> maybeMixtureWeights

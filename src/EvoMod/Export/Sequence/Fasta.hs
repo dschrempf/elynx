@@ -21,19 +21,19 @@ module EvoMod.Export.Sequence.Fasta
   , sequencesToFasta
   ) where
 
-import qualified Data.ByteString.Lazy.Char8    as B
+import qualified Data.ByteString.Lazy.Char8    as L
 
 import           EvoMod.Data.Sequence.Sequence
 
-fastaHeader :: B.ByteString -> B.ByteString
-fastaHeader i = B.singleton '>' <> i
+fastaHeader :: L.ByteString -> L.ByteString
+fastaHeader i = L.singleton '>' <> i
 
 -- | Convert a 'Sequence' to Fasta format.
-sequenceToFasta :: Sequence -> B.ByteString
-sequenceToFasta s = B.unlines [ fastaHeader i , cs ]
+sequenceToFasta :: Sequence -> L.ByteString
+sequenceToFasta s = L.unlines [ fastaHeader i , cs ]
   where (i, cs) = fromSequence s
 
 -- | Convert a list 'Sequence's to Fasta format. A newline is added between any
 -- two 'Sequence's.
-sequencesToFasta :: [Sequence] -> B.ByteString
-sequencesToFasta ss = B.unlines $ map sequenceToFasta ss
+sequencesToFasta :: [Sequence] -> L.ByteString
+sequencesToFasta ss = L.unlines $ map sequenceToFasta ss

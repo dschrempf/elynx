@@ -24,7 +24,7 @@ module EvoMod.Import.Sequence.Fasta
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8    as B
+import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.Void
 import           Data.Word                     (Word8)
 import           Text.Megaparsec
@@ -35,7 +35,7 @@ import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Tools.ByteString       (c2w, w2c)
 
 -- | Shortcut.
-type Parser = Parsec Void B.ByteString
+type Parser = Parsec Void L.ByteString
 
 allowedHeaderChar :: Parser Word8
 allowedHeaderChar = alphaNumChar <|> oneOf (map c2w ['_', '|', '.'])
@@ -43,7 +43,7 @@ allowedHeaderChar = alphaNumChar <|> oneOf (map c2w ['_', '|', '.'])
 sequenceHeader :: Parser [Word8]
 sequenceHeader = char (c2w '>') *> some allowedHeaderChar <* eol
 
-sequenceLine :: Code -> Parser B.ByteString
+sequenceLine :: Code -> Parser L.ByteString
 sequenceLine code = do
   xs <- takeWhile1P (Just "Alphabet character") (inAlphabet code)
   _  <- void eol <|> eof
@@ -54,8 +54,8 @@ fastaSequence :: Code -> Parser Sequence
 fastaSequence code = do hd <- sequenceHeader
                         cs <- some (sequenceLine code)
                         _  <- many eol
-                        let hd' = B.pack $ map w2c hd
-                        return $ toSequence hd' code (B.concat cs)
+                        let hd' = L.pack $ map w2c hd
+                        return $ toSequence hd' code (L.concat cs)
 
 -- | Parse a Fasta file assuming 'Code'.
 fasta :: Code -> Parser [Sequence]

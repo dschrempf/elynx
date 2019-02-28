@@ -32,8 +32,8 @@ module EvoMod.Data.MarkovProcess.CXXModels
   , c60CustomWeights
   ) where
 
-import qualified Data.ByteString.Builder                     as B
-import qualified Data.ByteString.Lazy.Char8                  as B
+import qualified Data.ByteString.Builder                     as L
+import qualified Data.ByteString.Lazy.Char8                  as L
 
 import           EvoMod.Data.MarkovProcess.AminoAcid
 import           EvoMod.Data.MarkovProcess.CXXModelsData
@@ -107,12 +107,12 @@ c60CustomWeights (Just ws)
   | otherwise       = error "Number of weights does not match C60 model."
 c60CustomWeights Nothing = c60
 
-cxxName :: Int -> B.Builder
-cxxName nComps = B.char8 'C' <> B.intDec nComps
+cxxName :: Int -> L.Builder
+cxxName nComps = L.char8 'C' <> L.intDec nComps
 
-componentName :: Int -> Int -> B.ByteString
-componentName nComps comp = B.toLazyByteString $
-  cxxName nComps <> B.string8 "Comp" <> B.intDec comp
+componentName :: Int -> Int -> L.ByteString
+componentName nComps comp = L.toLazyByteString $
+  cxxName nComps <> L.string8 "Comp" <> L.intDec comp
 
 cxxSubstitutionModelFromStatDist :: Int -> Int -> StationaryDistribution -> SubstitutionModel
 cxxSubstitutionModelFromStatDist nComps comp d = poissonCustom d (Just name)
@@ -123,7 +123,7 @@ cxxSubstitutionModelsFromStatDists ds = zipWith (cxxSubstitutionModelFromStatDis
   where nComp = length ds
 
 cxxFromStatDistsAndWeights :: [Weight] -> [StationaryDistribution] -> MixtureModel
-cxxFromStatDistsAndWeights ws ds = MixtureModel (B.toLazyByteString $ cxxName nComps) comps
+cxxFromStatDistsAndWeights ws ds = MixtureModel (L.toLazyByteString $ cxxName nComps) comps
   where
     nComps = length ds
     comps = zipWith MixtureModelComponent ws (cxxSubstitutionModelsFromStatDists ds)

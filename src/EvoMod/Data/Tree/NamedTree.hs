@@ -16,8 +16,8 @@ module EvoMod.Data.Tree.NamedTree
   ( Named (..)
   ) where
 
-import           Data.ByteString.Lazy.Char8
+import qualified Data.ByteString.Lazy.Char8 as L
 
 -- | Data types with names.
 class Named a where
-  name :: a -> ByteString
+  name :: a -> L.ByteString

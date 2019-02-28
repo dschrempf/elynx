@@ -31,7 +31,7 @@ module EvoMod.Data.Alphabet.BoundaryMutationModel
   , neighbors
   ) where
 
-import qualified Data.ByteString.Lazy.Char8      as B
+import qualified Data.ByteString.Lazy.Char8      as L
 
 import           Numeric.SpecFunctions           (choose)
 
@@ -71,20 +71,20 @@ data State = Bnd { bndN :: PopSize     -- | Population size.
                  , plyB :: Allele }
            deriving (Read, Eq)
 
--- | B.ByteString representation of 'State'; without surrounding brackets.
-showCounts :: State -> B.ByteString
-showCounts (Bnd n a) = B.intersperse ',' $ B.concat $ map (B.pack . toCounts) allValues
+-- | L.ByteString representation of 'State'; without surrounding brackets.
+showCounts :: State -> L.ByteString
+showCounts (Bnd n a) = L.intersperse ',' $ L.concat $ map (L.pack . toCounts) allValues
   where toCounts b
           | a == b    = show n
           | otherwise = "0"
-showCounts (Ply n i a b) = B.intersperse ',' $ B.concat $ map (B.pack . toCounts) allValues
+showCounts (Ply n i a b) = L.intersperse ',' $ L.concat $ map (L.pack . toCounts) allValues
   where toCounts c
           | c == a    = show i
           | c == b    = show (n-i)
           | otherwise = "0"
 
-showState :: State -> B.ByteString
-showState s = B.singleton '(' <> showCounts s <> B.singleton ')'
+showState :: State -> L.ByteString
+showState s = L.singleton '(' <> showCounts s <> L.singleton ')'
 
 -- instance Show State where
 --   show s = "(" ++ showCounts s ++ ")"
@@ -159,7 +159,7 @@ toIndex (Ply n i a b) = nAlleles + enumCombination a b * (n-1) + i-1
 -- 'fromIndexWith', and 'toIndex', as well as, 'setPopSize'.
 instance Enum State where
   fromEnum s = if getPopSize s /= nFixed
-    then error $ "State is not enumerable: " ++ (B.unpack . showState) s ++ "."
+    then error $ "State is not enumerable: " ++ (L.unpack . showState) s ++ "."
     else toIndex s
   toEnum = fromIndexWith nFixed
 

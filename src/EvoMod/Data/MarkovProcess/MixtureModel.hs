@@ -24,8 +24,8 @@ module EvoMod.Data.MarkovProcess.MixtureModel
   , getRateMatrices
   ) where
 
-import qualified Data.ByteString.Builder                     as B
-import qualified Data.ByteString.Lazy.Char8                  as B
+import qualified Data.ByteString.Builder                     as L
+import qualified Data.ByteString.Lazy.Char8                  as L
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.RateMatrix
@@ -42,22 +42,22 @@ data MixtureModelComponent = MixtureModelComponent
   }
 
 -- | Summarize a mixture model component; lines to be printed to screen or log.
-summarizeMixtureModelComponent :: MixtureModelComponent -> [B.ByteString]
+summarizeMixtureModelComponent :: MixtureModelComponent -> [L.ByteString]
 summarizeMixtureModelComponent mmc =
-  B.pack "Weight: " <> (B.toLazyByteString . B.doubleDec $ mmcWeight mmc)
+  L.pack "Weight: " <> (L.toLazyByteString . L.doubleDec $ mmcWeight mmc)
   : summarizeSubstitutionModel (mmcSubstitutionModel mmc)
 
 -- | A mixture model with its components.
 data MixtureModel = MixtureModel
-  { mmName       :: B.ByteString
+  { mmName       :: L.ByteString
   , mmComponents :: [MixtureModelComponent]
   }
 
 -- | Summarize a mixture model; lines to be printed to screen or log.
-summarizeMixtureModel :: MixtureModel -> [B.ByteString]
+summarizeMixtureModel :: MixtureModel -> [L.ByteString]
 summarizeMixtureModel mm =
-  B.pack "Mixture model: " <> mmName mm <> B.pack "."
-  : concat [ B.pack ("Component " ++ show i ++ ":") : summarizeMixtureModelComponent c
+  L.pack "Mixture model: " <> mmName mm <> L.pack "."
+  : concat [ L.pack ("Component " ++ show i ++ ":") : summarizeMixtureModelComponent c
             | (i, c) <- zip [1 :: Int ..] (mmComponents mm) ]
 
 -- | Checks if a mixture model is valid.
