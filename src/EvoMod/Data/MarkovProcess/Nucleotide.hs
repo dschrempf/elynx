@@ -45,7 +45,7 @@ import           EvoMod.Tools.Vector
 -- data AASubstitutionModel = LG | ...
 
 n :: Int
-n = cardinality (alphabet DNA)
+n = cardinalityFromCode DNA
 
 -- | JC model matrix.
 rmJC :: RateMatrix

@@ -35,17 +35,18 @@ module EvoMod.Data.Sequence.Sequence
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8    as B
-import           Data.List                     (maximumBy)
-import           Data.Ord                      (comparing)
-import qualified Data.Vector.Storable          as V
-import           Data.Word8                    (Word8)
+import qualified Data.ByteString.Lazy.Char8      as B
+import           Data.List                       (maximumBy)
+import           Data.Ord                        (comparing)
+import qualified Data.Vector.Storable            as V
+-- import qualified Data.Vector.Storable.ByteString as V
+import           Data.Word8                      (Word8)
 
 import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Data.Sequence.Defaults (defFieldWidth,
-                                                defSequenceListSummaryNumber,
-                                                defSequenceNameWidth,
-                                                defSequenceSummaryLength)
+import           EvoMod.Data.Sequence.Defaults   (defFieldWidth,
+                                                  defSequenceListSummaryNumber,
+                                                  defSequenceNameWidth,
+                                                  defSequenceSummaryLength)
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality
 
@@ -63,6 +64,7 @@ data Sequence = Sequence { seqId   :: SequenceId
 toSequence :: B.ByteString -> Code -> B.ByteString -> Sequence
 toSequence i c cs = Sequence i c v
   where v = V.fromList . map c2w . B.unpack $ cs
+  -- where v = V.byteStringToVector cs
 
 -- | Conversion of data to 'B.ByteString'.
 seqToCsByteString :: Sequence -> B.ByteString

@@ -35,9 +35,8 @@ import           EvoMod.Tools.ByteString                     (c2w)
 import           EvoMod.Tools.Vector
 import           EvoMod.Tools.LinearAlgebra
 
--- XXX: Hardcoded here, to reduce intermodule dependencies.
 n :: Int
-n = 20
+n = cardinalityFromCode Protein
 
 -- Some matrices have to be converted from PAML order to alphabetical order. See
 -- 'pamlToAlphaVec' and 'pamlToAlphaMat'.

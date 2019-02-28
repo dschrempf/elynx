@@ -28,6 +28,7 @@ dependencies:
   - async
   - base
   - bytestring
+  - bytestring-to-vector
   - containers
   - hmatrix
   - math-functions

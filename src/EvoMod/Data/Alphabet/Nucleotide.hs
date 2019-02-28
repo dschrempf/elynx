@@ -29,7 +29,6 @@ import           Data.Word8                     (Word8, toUpper)
 
 import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Tools.ByteString        (c2w, w2c)
-
 -- | Nucleotide data type. Actually, only two bits are needed, but 'Word8' is
 -- the smallest available data type. One could use a /pack/ function like it is
 -- done with /ByteString/s to decrease memory usage and pack a number of
@@ -56,7 +55,6 @@ nucleotideToWord T = c2w 'T'
 instance Character Nucleotide where
   fromWord = wordToNucleotide
   toWord   = nucleotideToWord
-  alphabet = [minBound :: Nucleotide ..]
 
 -- | Nucleotides with IUPAC code (ordering according to list on Wikipedia).
 --
@@ -134,7 +132,6 @@ nucleotideIUPACToWord Gap     = c2w '-'
 instance Character NucleotideIUPAC where
   fromWord = wordToNucleotideIUPAC
   toWord   = nucleotideIUPACToWord
-  alphabet = [minBound :: NucleotideIUPAC ..]
 
 -- | Convert IUPAC code to set of normal nucleotides.
 fromIUPACNucleotide :: NucleotideIUPAC -> [Nucleotide]

@@ -25,9 +25,8 @@ module EvoMod.Import.Sequence.Fasta
 
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8    as B
-import qualified Data.Set                      as S
 import           Data.Void
-import           Data.Word8                    (Word8, toUpper)
+import           Data.Word                     (Word8)
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 
@@ -44,22 +43,19 @@ allowedHeaderChar = alphaNumChar <|> oneOf (map c2w ['_', '|', '.'])
 sequenceHeader :: Parser [Word8]
 sequenceHeader = char (c2w '>') *> some allowedHeaderChar <* eol
 
-checkWord8 :: Alphabet -> Word8 -> Bool
-checkWord8 a w = toUpper w `S.member` fromAlphabet a
-
-sequenceLine :: Alphabet -> Parser B.ByteString
-sequenceLine a = do xs <- takeWhile1P (Just "Alphabet character") (checkWord8 a)
-                    _  <- void eol <|> eof
-                    return xs
+sequenceLine :: Code -> Parser B.ByteString
+sequenceLine code = do
+  xs <- takeWhile1P (Just "Alphabet character") (inAlphabet code)
+  _  <- void eol <|> eof
+  return xs
 
 -- | Parse a sequence of 'Alphabet' 'EvoMod.Data.Alphabet.Character's.
 fastaSequence :: Code -> Parser Sequence
-fastaSequence c = do hd <- sequenceHeader
-                     cs <- some (sequenceLine a)
-                     _  <- many eol
-                     let hd' = B.pack $ map w2c hd
-                     return $ toSequence hd' c (B.concat cs)
-  where a = alphabet c
+fastaSequence code = do hd <- sequenceHeader
+                        cs <- some (sequenceLine code)
+                        _  <- many eol
+                        let hd' = B.pack $ map w2c hd
+                        return $ toSequence hd' code (B.concat cs)
 
 -- | Parse a Fasta file assuming 'Code'.
 fasta :: Code -> Parser [Sequence]

@@ -26,6 +26,9 @@ module EvoMod.Data.Alphabet.Alphabet
   , codeNameVerbose
   , Alphabet (..)
   , alphabet
+  , AlphabetLookup (..)
+  , alphabetLookup
+  , inAlphabet
   , cardinality
   , cardinalityFromCode
   , indexToCharacter
@@ -36,11 +39,13 @@ module EvoMod.Data.Alphabet.Alphabet
 where
 
 import qualified Data.Set                        as S
-import           Data.Word                       (Word8)
+import qualified Data.Vector.Storable            as V
+import           Data.Word8                      (Word8, toUpper)
 
 import           EvoMod.Data.Alphabet.AminoAcid
 import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Nucleotide
+import           EvoMod.Tools.Misc               (allValues)
 
 -- | The used genetic code. Could include Protein_IUPAC, CountsFile for
 -- population data and so on.
@@ -54,30 +59,42 @@ codeNameVerbose DNA_IUPAC    = show DNA_IUPAC ++ " (nucleotides including IUPAC 
 codeNameVerbose Protein      = show Protein ++ " (amino acids)"
 codeNameVerbose ProteinIUPAC = show ProteinIUPAC ++ " (amino acids including IUPAC codes)"
 
--- | 'Data.Set' is used because it uses an ordered, tree-like structure with
--- fast queries. When parsing characters, they have to be checked for validity
--- and so, the query speed is very important when reading in large data files.
-newtype Alphabet = Alphabet { fromAlphabet :: S.Set Word8 }
+-- | An alphabet is a vector of characters with a specific order.
+newtype Alphabet = Alphabet { fromAlphabet :: V.Vector Word8 }
   deriving (Show, Read, Eq, Ord)
 
--- | Since Characters are required to be enumerated and bounded, we can
--- calculate the corresponding alphabet.
 toAlphabet :: Character a => [a] -> Alphabet
-toAlphabet = Alphabet . S.fromList . map toWord
+toAlphabet = Alphabet . V.fromList . map toWord
 
--- | New codes have to be added manually here. I tried to use type classes, so
--- that each character has to supply an alphabet, but then the language
--- extension TypeApplications has to be added. Like this, new codes have to be
--- added manually, but the type handling is cleaner.
+-- | Create alphabet from 'Code'. New codes have to be added manually here. I
+-- tried to use type classes, so that each character has to supply an alphabet,
+-- but then the language extension TypeApplications has to be added. Like this,
+-- new codes have to be added manually, but the type handling is cleaner.
 alphabet :: Code -> Alphabet
-alphabet DNA          = toAlphabet [(minBound :: Nucleotide) .. ]
-alphabet DNA_IUPAC    = toAlphabet [(minBound :: NucleotideIUPAC) .. ]
-alphabet Protein      = toAlphabet [(minBound :: AminoAcid) .. ]
-alphabet ProteinIUPAC = toAlphabet [(minBound :: AminoAcidIUPAC) .. ]
+alphabet DNA          = toAlphabet (allValues :: [Nucleotide])
+alphabet DNA_IUPAC    = toAlphabet (allValues :: [NucleotideIUPAC])
+alphabet Protein      = toAlphabet (allValues :: [AminoAcid])
+alphabet ProteinIUPAC = toAlphabet (allValues :: [AminoAcidIUPAC])
+
+-- | Alphabet optimized for lookups (i.e., "Is this character in the
+-- alphabet?"). Order of characters is not preserved. 'Data.Set' is used because
+-- it uses an ordered, tree-like structure with fast queries. When parsing
+-- characters, they have to be checked for validity and so, the query speed is
+-- very important when reading in large data files.
+newtype AlphabetLookup = AlphabetLookup { fromAlphabetLookup :: S.Set Word8 }
+  deriving (Show, Read, Eq, Ord)
+
+-- | Create an alphabet for lookups from 'Code'.
+alphabetLookup :: Code -> AlphabetLookup
+alphabetLookup = AlphabetLookup . S.fromList . V.toList . fromAlphabet . alphabet
+
+-- | For a given code, check if character is in alphabet.
+inAlphabet :: Code -> Word8 -> Bool
+inAlphabet code char = toUpper char `S.member` fromAlphabetLookup (alphabetLookup code)
 
 -- | The cardinality of an alphabet is the number of entries.
 cardinality :: Alphabet -> Int
-cardinality = S.size . fromAlphabet
+cardinality = V.length . fromAlphabet
 
 -- | Number of characters
 cardinalityFromCode :: Code -> Int
@@ -85,7 +102,7 @@ cardinalityFromCode = cardinality . alphabet
 
 -- | Convert integer index to 'Character'.
 indexToCharacter :: Code -> Int -> Word8
-indexToCharacter c i = S.elemAt i (fromAlphabet . alphabet $ c)
+indexToCharacter code i = (fromAlphabet . alphabet $ code) V.! i
 
 -- | Convert a character (Word8) to integer index in alphabet.
 characterToIndex :: Code -> Word8 -> Int
@@ -100,7 +117,9 @@ indicesToCharacters c = map (indexToCharacter c)
 
 -- | Convert from IUPAC.
 fromIUPAC :: Code -> Word8 -> (Code, [Word8])
-fromIUPAC DNA          c = (DNA,     [c])
-fromIUPAC DNA_IUPAC    c = (DNA,     map toWord $ fromIUPACNucleotide (fromWord c :: NucleotideIUPAC))
-fromIUPAC Protein      c = (Protein, [c])
-fromIUPAC ProteinIUPAC c = (Protein, map toWord $ fromIUPACAminoAcid (fromWord c :: AminoAcidIUPAC))
+fromIUPAC DNA          char = (DNA,     [char])
+fromIUPAC DNA_IUPAC    char = (DNA,     map toWord $ fromIUPACNucleotide
+                                (fromWord char :: NucleotideIUPAC))
+fromIUPAC Protein      char = (Protein, [char])
+fromIUPAC ProteinIUPAC char = (Protein, map toWord $ fromIUPACAminoAcid
+                                (fromWord char :: AminoAcidIUPAC))

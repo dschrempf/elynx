@@ -51,10 +51,10 @@ bs :: String -> B.ByteString
 bs = B.pack
 
 nNuc :: Int
-nNuc = cardinality (alphabet DNA)
+nNuc = cardinalityFromCode DNA
 
 nAA :: Int
-nAA = cardinality (alphabet Protein)
+nAA = cardinalityFromCode Protein
 
 paramsStart :: Word8
 paramsStart = c2w '['
