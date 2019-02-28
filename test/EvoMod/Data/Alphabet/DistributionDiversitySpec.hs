@@ -15,11 +15,11 @@ module EvoMod.Data.Alphabet.DistributionDiversitySpec
   (spec
   ) where
 
-import Test.Hspec
-import qualified Data.Vector.Storable as V
+import qualified Data.Vector.Storable                       as V
+import           Test.Hspec
 
-import EvoMod.Data.Alphabet.DistributionDiversity
-import EvoMod.Tools.Equality
+import           EvoMod.Data.Alphabet.DistributionDiversity
+import           EvoMod.Tools.Equality
 
 testArr1 :: V.Vector Double
 testArr1 = V.replicate 20 0.0

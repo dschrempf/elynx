@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+while IFS= read -r -d '' file
+do
+    stylish-haskell -i "$file"
+done < <(find ../src/ ../test/ ../app/ -name '*.hs' -print0)

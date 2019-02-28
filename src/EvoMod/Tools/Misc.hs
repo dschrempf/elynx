@@ -30,11 +30,11 @@ module EvoMod.Tools.Misc
   ) where
 
 import           Control.Monad
+import           Control.Parallel.Strategies
 import           Data.List
-import qualified Data.Vector       as V
+import qualified Data.Vector                 as V
 import           Data.Word
 import           System.Random.MWC
-import Control.Parallel.Strategies
 
 -- | Chain a list of functions together. See https://wiki.haskell.org/Compose.
 compose :: [a -> a] -> a -> a

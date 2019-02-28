@@ -15,16 +15,16 @@ Creation date: Fri Oct  5 08:41:05 2018.
 module Main where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8    as L
-import           Data.Maybe                    (fromMaybe)
+import qualified Data.ByteString.Lazy.Char8                  as L
+import           Data.Maybe                                  (fromMaybe)
 import           System.IO
 
 import           ArgParseSeq
 
 import           EvoMod.ArgParse
 import           EvoMod.Data.Sequence.Filter
-import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
+import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.InputOutput

@@ -35,17 +35,17 @@ module EvoMod.Data.Sequence.Sequence
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8      as L
-import           Data.List                       (maximumBy)
-import           Data.Ord                        (comparing)
-import qualified Data.Vector.Storable            as V
-import           Data.Word8                      (Word8)
+import qualified Data.ByteString.Lazy.Char8    as L
+import           Data.List                     (maximumBy)
+import           Data.Ord                      (comparing)
+import qualified Data.Vector.Storable          as V
+import           Data.Word8                    (Word8)
 
 import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Data.Sequence.Defaults   (defFieldWidth,
-                                                  defSequenceListSummaryNumber,
-                                                  defSequenceNameWidth,
-                                                  defSequenceSummaryLength)
+import           EvoMod.Data.Sequence.Defaults (defFieldWidth,
+                                                defSequenceListSummaryNumber,
+                                                defSequenceNameWidth,
+                                                defSequenceSummaryLength)
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality
 

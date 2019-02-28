@@ -20,7 +20,7 @@ module EvoMod.Data.Sequence.Filter
   , filterLongerThan
   ) where
 
-import EvoMod.Data.Sequence.Sequence
+import           EvoMod.Data.Sequence.Sequence
 
 -- | Only take 'Sequence's that are shorter than a given number.
 filterShorterThan :: Int -> [Sequence] -> [Sequence]

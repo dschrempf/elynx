@@ -20,9 +20,9 @@ module EvoMod.Data.Tree.MeasurableTree
   , summarize
   ) where
 
+import qualified Data.ByteString.Lazy.Char8 as L
 import           Data.Foldable
 import           Data.Tree
-import qualified Data.ByteString.Lazy.Char8 as L
 
 import           EvoMod.Data.Tree.Tree
 

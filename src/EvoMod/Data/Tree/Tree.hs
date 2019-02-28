@@ -40,7 +40,7 @@ module EvoMod.Data.Tree.Tree
   -- , rootNodesAgreeWith
   ) where
 
-import Data.Tree
+import           Data.Tree
 -- import qualified Data.Set as S
 
 -- | The simplest tree. Usually an extant leaf.

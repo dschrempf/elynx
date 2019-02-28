@@ -31,7 +31,7 @@ module EvoMod.Data.MarkovProcess.CXXModelsData
   , c60Weights
   ) where
 
-import qualified Data.Vector.Storable                   as V
+import qualified Data.Vector.Storable                 as V
 
 import           EvoMod.Data.MarkovProcess.RateMatrix
 

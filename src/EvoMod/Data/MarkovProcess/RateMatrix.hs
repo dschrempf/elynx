@@ -27,8 +27,8 @@ module EvoMod.Data.MarkovProcess.RateMatrix
   )
 where
 
-import           Numeric.LinearAlgebra hiding (normalize)
-import           Prelude               hiding ((<>))
+import           Numeric.LinearAlgebra      hiding (normalize)
+import           Prelude                    hiding ((<>))
 
 import           EvoMod.Tools.Equality
 import           EvoMod.Tools.LinearAlgebra
