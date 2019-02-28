@@ -18,7 +18,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2018-12-20
+resolver: lts-13.9
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -39,7 +39,6 @@ packages:
 # using the same syntax as the packages field.
 # (e.g., acme-missiles-0.3)
 # extra-deps: []
-extra-deps: ["bytestring-to-vector-0.3.0.1@sha256:fb902424b3fdcc31a4b37b9071a5fa224c07f044df8b411fa1a5c2373ff30d7f"]
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
