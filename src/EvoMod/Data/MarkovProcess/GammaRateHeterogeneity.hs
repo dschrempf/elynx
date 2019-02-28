@@ -10,6 +10,12 @@ Portability :  portable
 
 Creation date: Thu Feb 28 14:09:11 2019.
 
+TODO: Improve code (ugly).
+
+TODO: Improve output (ugly).
+
+TODO: Improve world :) (ugly).
+
 -}
 
 module EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
