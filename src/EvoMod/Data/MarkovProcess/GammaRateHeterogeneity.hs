@@ -10,16 +10,15 @@ Portability :  portable
 
 Creation date: Thu Feb 28 14:09:11 2019.
 
-TODO: Improve code (ugly).
-
-TODO: Improve output (ugly).
-
-TODO: Improve world :) (ugly).
+At the moment, a mixture model is used to emulate gamma rate heterogeneity. This
+does not come with huge run time increases when simulating data. For inference
+however, it would make a lot of sense to reuse the Eigendecomposition for all
+rate heterogeneity components though.
 
 -}
 
 module EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
-  ( addGammaRateHeterogeneity
+  ( expand
   ) where
 
 import qualified Data.ByteString.Lazy.Char8                  as L
@@ -34,36 +33,37 @@ import           EvoMod.Data.MarkovProcess.SubstitutionModel
 -- | For a given number of rate categories, a gamma shape parameter alpha and a
 -- substitution model, compute the scaled substitution models corresponding to
 -- the gamma rates.
-addGammaRateHeterogeneity :: Int -> Double -> PhyloModel -> PhyloModel
-addGammaRateHeterogeneity n alpha (PhyloSubstitutionModel sm)
-  = PhyloMixtureModel $ addGammaRateHeterogeneitySubstitutionModel n alpha sm
-addGammaRateHeterogeneity n alpha (PhyloMixtureModel mm)
-  = PhyloMixtureModel $ addGammaRateHeterogeneityMixtureModel n alpha mm
+expand :: Int -> Double -> PhyloModel -> PhyloModel
+expand n alpha (PhyloSubstitutionModel sm)
+  = PhyloMixtureModel $ expandSubstitutionModel n alpha sm
+expand n alpha (PhyloMixtureModel mm)
+  = PhyloMixtureModel $ expandMixtureModel n alpha mm
 
 getName :: Int -> Double -> L.ByteString
 getName n alpha = L.pack (" with discrete gamma rate heterogeneity; "
                            ++ show n ++ " categories; "
                            ++ "shape parameter " ++ show alpha)
 
-splitSubstitutionModels :: Int -> Double -> SubstitutionModel -> [SubstitutionModel]
-splitSubstitutionModels n alpha sm = renamedSMs
+splitSubstitutionModel :: Int -> Double -> SubstitutionModel -> [SubstitutionModel]
+splitSubstitutionModel n alpha sm = renamedSMs
   where
     means = getMeans n alpha
     scaledSMs = map (scaleSubstitutionModel sm) means
     names = map (L.pack . ("; gamma rate category " ++) . show) [1 :: Int ..]
     renamedSMs = zipWith appendNameSubstitutionModel scaledSMs names
 
-addGammaRateHeterogeneitySubstitutionModel :: Int -> Double -> SubstitutionModel -> MixtureModel
-addGammaRateHeterogeneitySubstitutionModel n alpha sm = fromSubstitutionModels name (repeat 1.0) sms
+expandSubstitutionModel :: Int -> Double -> SubstitutionModel -> MixtureModel
+expandSubstitutionModel n alpha sm = fromSubstitutionModels name (repeat 1.0) sms
   where
     name = smName sm <> getName n alpha
-    sms  = splitSubstitutionModels n alpha sm
+    sms  = splitSubstitutionModel n alpha sm
 
-addGammaRateHeterogeneityMixtureModel :: Int -> Double -> MixtureModel -> MixtureModel
-addGammaRateHeterogeneityMixtureModel n alpha mm = concatenateMixtureModels name renamedMMs
+expandMixtureModel :: Int -> Double -> MixtureModel -> MixtureModel
+expandMixtureModel n alpha mm = concatenateMixtureModels name renamedMMs
   where
     name = mmName mm <> getName n alpha
-    scaledMMs = [scaleMixtureModel mm m | m <- getMeans n alpha]
+    means = getMeans n alpha
+    scaledMMs = map (scaleMixtureModel mm) means
     names = map (L.pack . ("; gamma rate category " ++) . show) [1 :: Int ..]
     renamedMMs = zipWith appendNameMixtureModel scaledMMs names
 

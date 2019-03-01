@@ -84,9 +84,11 @@ summarizeMixtureModel mm =
 -- and providing an algebraic way of creating mixture models (empty and
 -- addComponent which performs necessary checks).
 isValidMixtureModel :: MixtureModel -> Bool
-isValidMixtureModel mm = allEqual (map (smCode . mmcSubstitutionModel) cs)
-                         && not (null cs)
+isValidMixtureModel mm = not (null cs)
+                         && allEqual codes
   where cs = mmComponents mm
+        sms = map mmcSubstitutionModel cs
+        codes = map smCode sms
 
 -- | Throws error if components use different 'Code's.
 mmCode :: MixtureModel -> Code
@@ -94,15 +96,15 @@ mmCode mm = if isValidMixtureModel mm
             then smCode . mmcSubstitutionModel $ head (mmComponents mm)
             else error "Mixture model is invalid."
 
--- | Extract weights.
+-- | Get weights.
 getWeights :: MixtureModel -> [Double]
 getWeights mm = map mmcWeight $ mmComponents mm
 
--- | Extract substitution models.
+-- | Get substitution models.
 getSubstitutionModels :: MixtureModel -> [SubstitutionModel]
 getSubstitutionModels m = map mmcSubstitutionModel $ mmComponents m
 
--- | Extract rate matrices.
+-- | Get rate matrices.
 getRateMatrices :: MixtureModel -> [RateMatrix]
 getRateMatrices mm = map (smRateMatrix . mmcSubstitutionModel) (mmComponents mm)
 
@@ -118,12 +120,12 @@ scaleMixtureModel mm s = mm { mmComponents = scaledMMCs }
     scaledMMCs = map (`scaleMixtureModelComponent` s) (mmComponents mm)
 
 -- Append byte string to substitution model of mixture model component.
-appendNameSubstitutionModelMMC :: MixtureModelComponent -> L.ByteString -> MixtureModelComponent
-appendNameSubstitutionModelMMC mmc n = mmc { mmcSubstitutionModel = sm' }
+appendNameMMC :: MixtureModelComponent -> L.ByteString -> MixtureModelComponent
+appendNameMMC mmc n = mmc { mmcSubstitutionModel = sm' }
   where sm' = appendNameSubstitutionModel (mmcSubstitutionModel mmc) n
 
 -- | Append byte string to all substitution models of mixture model.
 appendNameMixtureModel :: MixtureModel -> L.ByteString -> MixtureModel
 appendNameMixtureModel mm n = mm { mmComponents = renamedComps }
   where comps = mmComponents mm
-        renamedComps = [ appendNameSubstitutionModelMMC c n | c <- comps ]
+        renamedComps = [ appendNameMMC c n | c <- comps ]

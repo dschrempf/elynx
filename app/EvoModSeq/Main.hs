@@ -56,5 +56,5 @@ main = do (EvoModSeqArgs cmd c mofn q fns) <- parseEvoModSeqArgs
           case mofn of
             Nothing -> io eRes stdout
             Just fn -> do
-              unless q $ putStrLn ("Results written to file '" ++ fn ++ "'.")
               withFile fn WriteMode (io eRes)
+              unless q $ putStrLn ("Results written to file '" ++ fn ++ "'.")

@@ -15,7 +15,7 @@ Phylogenetic nodes have a branch length and a label.
 
 The easiest label type is 'Int': 'PhyloIntLabel'.
 
-Also, the 'ByteString' label is needed often: 'PhyloByteStringLabel'.
+Also, the 'L.ByteString' label is needed often: 'PhyloByteStringLabel'.
 
 -}
 
@@ -48,7 +48,7 @@ instance Named PhyloIntLabel where
 instance Measurable PhyloIntLabel where
   measure = piBrLen
 
--- | Tree node with 'ByteString' label. Important for parsing
+-- | Tree node with 'L.ByteString' label. Important for parsing
 -- 'EvoMod.Import.Tree.Newick' files.
 data PhyloByteStringLabel = PhyloByteStringLabel { pbsLabel :: L.ByteString
                                                  , pbsBrLen :: Double }

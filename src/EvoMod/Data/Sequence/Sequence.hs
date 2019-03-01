@@ -17,7 +17,7 @@ there are many column operations that would be awfully slow otherwise.
 -}
 
 module EvoMod.Data.Sequence.Sequence
-  ( SequenceId
+  ( SequenceName
   , Sequence(..)
   -- * Input
   , toSequence
@@ -53,12 +53,11 @@ import           EvoMod.Data.Sequence.Defaults (defFieldWidth,
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality
 
--- | For now, 'SequenceId's are just 'String's.
-type SequenceId = L.ByteString
+-- | For now, 'SequenceName's are just 'L.ByteString's.
+type SequenceName = L.ByteString
 
--- | By choosing specific types for the identifier and the characters is of
--- course limiting but also eases handling of types a lot.
-data Sequence = Sequence { seqId   :: SequenceId
+-- | Sequences have a name, a code and hopefully a lot of data.
+data Sequence = Sequence { seqName :: SequenceName
                          , seqCode :: Code
                          , seqCs   :: V.Vector Word8 }
   deriving (Eq)
@@ -72,15 +71,15 @@ toSequence i c cs = Sequence i c v
 seqToCsByteString :: Sequence -> L.ByteString
 seqToCsByteString = L.pack . map w2c . V.toList . seqCs
 
--- | Extract 'SequenceId' and data.
-fromSequence :: Sequence -> (SequenceId, L.ByteString)
-fromSequence s = (seqId s, seqToCsByteString s)
+-- | Extract 'SequenceName' and data.
+fromSequence :: Sequence -> (SequenceName, L.ByteString)
+fromSequence s = (seqName s, seqToCsByteString s)
 
 showCharacters :: Sequence -> L.ByteString
 showCharacters = seqToCsByteString
 
 showInfo :: Sequence -> L.ByteString
-showInfo s = L.unwords [ alignLeft defSequenceNameWidth (seqId s)
+showInfo s = L.unwords [ alignLeft defSequenceNameWidth (seqName s)
                        , alignLeft defFieldWidth l ]
   where l = L.pack . show $ lengthSequence s
 
@@ -96,7 +95,7 @@ showSequenceList = L.unlines . map showSequence
 
 -- | Header printed before 'Sequence' list.
 sequenceListHeader :: L.ByteString
-sequenceListHeader = L.unwords [ alignLeft defSequenceNameWidth (L.pack "Identifier")
+sequenceListHeader = L.unwords [ alignLeft defSequenceNameWidth (L.pack "Name")
                                , alignLeft defFieldWidth (L.pack "Length")
                                , L.pack "Sequence" ]
 
@@ -146,11 +145,11 @@ longest = maximumBy (comparing lengthSequence)
 trimSequence :: Int -> Sequence -> Sequence
 trimSequence n s@Sequence{seqCs=cs} = s {seqCs = V.take n cs}
 
--- | Concatenate two sequences. 'SequenceId's have to match.
+-- | Concatenate two sequences. 'SequenceName's have to match.
 concatenate :: Sequence -> Sequence -> Either L.ByteString Sequence
 concatenate (Sequence i code cs) (Sequence j kode ks)
   | i == j && code == kode = Right $ Sequence i code (cs V.++ ks)
-  | otherwise              = Left $ L.pack "concatenate: Sequences do not have equal IDs: "
+  | otherwise              = Left $ L.pack "concatenate: Sequences do not have equal names: "
                              <> i <> L.pack ", " <> j <> L.pack "."
 
 -- | Concatenate a list of sequences, see 'concatenate'.

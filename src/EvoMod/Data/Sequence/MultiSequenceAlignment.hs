@@ -46,7 +46,7 @@ import           EvoMod.Tools.Matrix
 import           EvoMod.Tools.Misc
 
 -- | A collection of sequences.
-data MultiSequenceAlignment = MSA { msaNames :: [SequenceId]
+data MultiSequenceAlignment = MSA { msaNames :: [SequenceName]
                                   , msaCode  :: Code
                                   , msaData  :: M.Matrix Word8
                                   }
@@ -65,7 +65,7 @@ fromSequenceList ss
   | equalLength ss && allEqual (map seqCode ss) = MSA names code d
   | otherwise = error "Sequences do not have equal length."
   where
-    names = map seqId ss
+    names = map seqName ss
     code  = seqCode $ head ss
     vecs  = map seqCs ss
     d     = M.fromRows vecs
@@ -123,7 +123,8 @@ msasConcatenate []    = Left $ L.pack "Nothing to concatenate."
 msasConcatenate [msa] = Right msa
 msasConcatenate msas  = foldM msaConcatenate (head msas) (tail msas)
 
--- Convert alignment to frequency data.
+-- | Frequency data; do not store the actual characters, but only their
+-- frequencies.
 type FrequencyData = M.Matrix Double
 
 -- | Calculcate frequency of characters in multi sequence alignment.

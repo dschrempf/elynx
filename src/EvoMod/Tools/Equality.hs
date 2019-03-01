@@ -27,8 +27,11 @@ module EvoMod.Tools.Equality
 import           EvoMod.Definitions
 import           Numeric.LinearAlgebra
 
--- | Test if all elements of a list are equal.
+-- | Test if all elements of a list are equal; returns True for empty list.
 allEqual :: Eq a => [a] -> Bool
+-- Well, maybe it should be False, but then, it is True that all elements are
+-- equal :).
+allEqual [] = True
 allEqual xs = all (== head xs) (tail xs)
 
 -- | Test for equality with given tolerance (needed because of machine precision).

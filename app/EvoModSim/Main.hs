@@ -17,7 +17,8 @@ module Main where
 import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8                       as L
+import qualified Data.ByteString.Lazy                             as L
+import qualified Data.ByteString.Lazy.Char8                       as LC
 import           Data.Tree
 import qualified Data.Vector                                      as V
 import           Numeric.LinearAlgebra
@@ -42,9 +43,15 @@ import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes   hiding
                                                                    (Parser)
 import           EvoMod.Import.Tree.Newick                        hiding (name)
 import           EvoMod.Simulate.MarkovProcessAlongTree
-import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.InputOutput
 import           EvoMod.Tools.Misc
+
+-- For a given number of capabilities and values, get the chunk sizes.
+getChunks :: Int -> Int -> [Int]
+getChunks c n = ns
+  where n'  = n `div` c
+        r = n `mod` c
+        ns = replicate r (n'+1) ++ replicate (c - r) n'
 
 -- | Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
@@ -54,17 +61,14 @@ simulateMSA :: (Measurable a, Named a)
 simulateMSA pm t n g = do
   c  <- getNumCapabilities
   gs <- splitGen c g
-  -- XXX: This way of parallelization should be abstracted at some point.
-  let n' = n `div` c
-      nR = n `mod` c
-      ns = replicate nR (n'+1) ++ replicate (c - nR) n'
+  let chunks = getChunks c n
   leafStatesS <- case pm of
     PhyloSubstitutionModel sm -> mapConcurrently
       (\(num, gen) -> simulateAndFlattenNSitesAlongTree num (smRateMatrix sm) t gen)
-      (zip ns gs)
+      (zip chunks gs)
     PhyloMixtureModel mm      -> mapConcurrently
       (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws qs t gen)
-      (zip ns gs)
+      (zip chunks gs)
       where
         ws = vector $ getWeights mm
         qs = getRateMatrices mm
@@ -73,14 +77,13 @@ simulateMSA pm t n g = do
   let leafStates = horizontalConcat leafStatesS
       leafNames  = map name $ leafs t
       code       = pmCode pm
-      -- TODO: Make this more accessible.
-      sequences  = [ toSequence sId code (L.pack . map w2c $ indicesToCharacters code ss) |
-                    (sId, ss) <- zip leafNames leafStates ]
+      sequences  = [ toSequence sName code (L.pack $ indicesToCharacters code ss) |
+                    (sName, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
 
 -- | Summarize EDM components; line to be printed to screen or log.
 summarizeEDMComponents :: [EDMComponent] -> L.ByteString
-summarizeEDMComponents cs = L.pack
+summarizeEDMComponents cs = LC.pack
                             $ "Empiricial distribution mixture model with "
                             ++ show (length cs) ++ " components"
 
@@ -108,15 +111,15 @@ main = do
       Just <$> parseFileWith phylobayes edmF
   unless quiet $ do
     -- Is there a better way?
-    maybe (return ()) (L.putStrLn . summarizeEDMComponents) edmCs
+    maybe (return ()) (LC.putStrLn . summarizeEDMComponents) edmCs
     putStrLn ""
     putStrLn "Read model string."
   let phyloModel' = parseByteStringWith (phyloModelString edmCs mWs) phyloModelStr
       phyloModel = case mGammaPs of
         Nothing         -> phyloModel'
-        Just (n, alpha) -> addGammaRateHeterogeneity n alpha phyloModel'
+        Just (n, alpha) -> expand n alpha phyloModel'
   unless quiet $ do
-    L.putStr . L.unlines $ pmSummarize phyloModel
+    L.putStr . LC.unlines $ pmSummarize phyloModel
     putStrLn ""
     putStrLn "Simulate alignment."
     putStrLn $ "Length: " ++ show len ++ "."
