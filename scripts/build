@@ -14,24 +14,29 @@ profile_build() {
     stack build "${flags[@]}" --profile --work-dir "$prof_dir" || exit 1
 }
 
-test_build() {
-    msg "Test suite."
-    msg "Flags: ${flags[*]}"
-    stack build "${flags[@]}" --test --work-dir "$test_dir" || exit 1
-}
+# test_build() {
+#     msg "Test suite."
+#     msg "Flags: ${flags[*]}"
+#     stack build "${flags[@]}" --test --work-dir "$test_dir" || exit 1
+# }
 
 if [[ $2 == "clean" ]]
 then
     stack clean --full
+    stack clean --full --work-dir "$prof_dir"
 fi
 
 if [[ -z $1 ]]
 then
-    echo "Usage: ./build (fast|prod|prof|test|all)"
+    echo "Usage: ./build (fast|test|prod|prof)"
     exit 1
 elif [[ $1 == "fast" ]]
 then
     flags=(--fast)
+    normal_build
+elif [[ $1 == "test" ]]
+then
+    flags=(--fast --test)
     normal_build
 elif [[ $1 == "prod" ]]
 then
@@ -41,16 +46,4 @@ elif [[ $1 == "prof" ]]
 then
     flags=()
     profile_build
-elif [[ $1 == "test" ]]
-then
-    flags=(--fast)
-    test_build
-elif [[ $1 == "all" ]]
-then
-    flags=(--haddock --test)
-    normal_build
-    flags=()
-    profile_build
-    flags=(--fast)
-    test_build
 fi
