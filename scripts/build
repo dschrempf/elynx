@@ -27,7 +27,7 @@ fi
 
 if [[ -z $1 ]]
 then
-    echo "Usage: ./build (fast|prod|prof|test)"
+    echo "Usage: ./build (fast|prod|prof|test|all)"
     exit 1
 elif [[ $1 == "fast" ]]
 then
@@ -43,6 +43,14 @@ then
     profile_build
 elif [[ $1 == "test" ]]
 then
+    flags=(--fast)
+    test_build
+elif [[ $1 == "all" ]]
+then
+    flags=(--haddock --test)
+    normal_build
+    flags=()
+    profile_build
     flags=(--fast)
     test_build
 fi
