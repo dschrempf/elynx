@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 {- |
 Module      :  Main
 Description :  Simulate multiple sequence alignments
@@ -17,16 +16,13 @@ module Main where
 
 import           Control.Concurrent
 import           Control.Concurrent.Async
-import           Control.Monad.IO.Class
-import           Control.Monad.Logger
+import           Control.Monad
 import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.State.Lazy
-import qualified Data.ByteString                                  as B
+import           Control.Monad.Trans.State
 import qualified Data.ByteString.Lazy                             as L
 import qualified Data.ByteString.Lazy.Char8                       as LC
-import qualified Data.Text                                        as T
-import           Data.Text.Encoding                               as E
 import           Data.Tree
+import           System.IO
 
 import qualified Data.Vector                                      as V
 import           Numeric.LinearAlgebra
@@ -61,7 +57,7 @@ getChunks c n = ns
         r = n `mod` c
         ns = replicate r (n'+1) ++ replicate (c - r) n'
 
--- | Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
+-- Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
 simulateMSA :: (Measurable a, Named a)
             => PhyloModel -> Tree a -> Int -> GenIO
@@ -89,76 +85,77 @@ simulateMSA pm t n g = do
                     (sName, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
 
--- | Summarize EDM components; line to be printed to screen or log.
-summarizeEDMComponents :: [EDMComponent] -> T.Text
-summarizeEDMComponents cs = T.pack
+-- Summarize EDM components; line to be printed to screen or log.
+summarizeEDMComponents :: [EDMComponent] -> L.ByteString
+summarizeEDMComponents cs = LC.pack
                             $ "Empiricial distribution mixture model with "
                             ++ show (length cs) ++ " components"
 
--- | The logging monad is wrapped around the actual state monad of the
--- simulator. However, this logging feature is not used at the moment (for
--- historical reasons).
-type Simulation = LoggingT (StateT EvoModSimArgs IO)
+type Simulation = StateT Params IO
 
-getP :: LoggingT (StateT EvoModSimArgs IO) EvoModSimArgs
-getP = lift get
+data Params = Params { arguments :: EvoModSimArgs
+                     , logHandle :: Handle }
 
-logT :: T.Text -> LoggingT (StateT EvoModSimArgs IO) ()
-logT = logInfoN
+logS :: String -> Simulation ()
+logS msg = do
+  q <- argsQuiet . arguments <$> get
+  h <- logHandle <$> get
+  unless q $ lift $ putStrLn msg
+  lift $ hPutStrLn h msg
 
-logS :: String -> LoggingT (StateT EvoModSimArgs IO) ()
-logS = logInfoN . T.pack
-
-logLBS :: LC.ByteString -> LoggingT (StateT EvoModSimArgs IO) ()
-logLBS = logInfoN . E.decodeUtf8 . LC.toStrict
-
-logSBS :: B.ByteString -> LoggingT (StateT EvoModSimArgs IO) ()
-logSBS = logInfoN . E.decodeUtf8
+logLBS :: LC.ByteString -> Simulation ()
+logLBS = logS . LC.unpack
 
 simulate :: Simulation ()
 simulate = do
-  header <- liftIO programHeader
+  args <- arguments <$> get
+  header <- lift programHeader
   logS header
   logS "Read tree."
-  treeFile <- argsTreeFile <$> getP
-  tree <- liftIO $ parseFileWith newick treeFile
+  let treeFile = argsTreeFile args
+  tree <- lift $ parseFileWith newick treeFile
   logLBS $ summarize tree
-  maybeEDMFile <- argsMaybeEDMFile <$> getP
+  let maybeEDMFile = argsMaybeEDMFile args
   edmCs <- case maybeEDMFile of
     Nothing   -> return Nothing
     Just edmF -> do
       logS "Read EDM file."
-      liftIO $ Just <$> parseFileWith phylobayes edmF
-  maybe (return ()) (logT . summarizeEDMComponents) edmCs
+      lift $ Just <$> parseFileWith phylobayes edmF
+  maybe (return ()) (logLBS . summarizeEDMComponents) edmCs
   logS "Read model string."
-  phyloModelStr <- argsPhyloModelString <$> getP
-  maybeWeights <- argsMaybeMixtureWeights <$> getP
-  maybeGammaParams <- argsMaybeGammaParams <$> getP
-  let phyloModel' = parseByteStringWith (phyloModelString edmCs maybeWeights) phyloModelStr
+  let phyloModelStr = argsPhyloModelString args
+      maybeWeights = argsMaybeMixtureWeights args
+      maybeGammaParams = argsMaybeGammaParams args
+      phyloModel' = parseByteStringWith (phyloModelString edmCs maybeWeights) phyloModelStr
       phyloModel = case maybeGammaParams of
         Nothing         -> phyloModel'
         Just (n, alpha) -> expand n alpha phyloModel'
-  alignmentLength <- argsLength <$> getP
+      alignmentLength = argsLength args
+  -- TODO: Summarize model before it is expanded and state that gamma rate heterogeneity is used.
+  -- TODO: Rigorous logging.
   logLBS $ LC.unlines $ pmSummarize phyloModel
   logS "Simulate alignment."
   logS $ "Length: " ++ show alignmentLength ++ "."
-  maybeSeed <- argsMaybeSeed <$> getP
+  let maybeSeed = argsMaybeSeed args
   gen <- case maybeSeed of
     Nothing -> logS "Seed: random"
-               >> liftIO createSystemRandom
+               >> lift createSystemRandom
     Just s  -> logS ("Seed: " ++ show s ++ ".")
-               >> liftIO (initialize (V.fromList s))
-  msa <- liftIO $ simulateMSA phyloModel tree alignmentLength gen
+               >> lift (initialize (V.fromList s))
+  msa <- lift $ simulateMSA phyloModel tree alignmentLength gen
   let output = sequencesToFasta $ toSequenceList msa
-  outFileAlignment <- argsFileOut <$> getP
-  liftIO $ L.writeFile outFileAlignment output
-  logS ("Output written to file '" ++ outFileAlignment ++ "'.")
+      outFile = argsFileOut args
+  lift $ L.writeFile outFile output
+  logS ("Output written to file '" ++ outFile ++ "'.")
 
 main :: IO ()
 main = do
-  params <- parseEvoModSimArgs
-  if argsQuiet params
-    -- TODO: Let error messages through.
-    -- TODO: But do not through errors in library functions.
-    then evalStateT (runStdoutLoggingT $ filterLogger (\_ _ -> True) simulate) params
-    else evalStateT (runStdoutLoggingT simulate) params
+  args <- parseEvoModSimArgs
+
+  let logFile = argsFileOut args ++ ".log"
+  logH <- openFile logFile WriteMode
+  let params = Params args logH
+
+  evalStateT simulate params
+
+  hClose logH

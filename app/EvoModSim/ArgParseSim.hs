@@ -22,6 +22,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 import           Data.Word
 import           Options.Applicative
 
+
 import           EvoMod.ArgParse
 
 -- -- Ugly convenience function to read in more complicated command line options
@@ -57,7 +58,7 @@ evoModSimArgs = EvoModSimArgs
   <*> maybeEDMFileOpt
   <*> maybeMixtureWeights
   <*> maybeGammaParams
-  <*> seedOpt
+  <*> maybeSeedOpt
   <*> quietOpt
   <*> fileOutOpt
 
@@ -95,8 +96,8 @@ lengthOpt = option auto
     <> metavar "NUMBER"
     <> help "Set alignment length to NUMBER" )
 
-seedOpt :: Parser (Maybe [Word32])
-seedOpt = optional $ option auto
+maybeSeedOpt :: Parser (Maybe [Word32])
+maybeSeedOpt = optional $ option auto
   ( long "seed"
     <> short 's'
     <> metavar "INT"
