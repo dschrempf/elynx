@@ -14,9 +14,7 @@ Creation date: Thu Jan 24 15:25:49 2019.
 module EvoMod.Simulate.MarkovProcessAlongTreeSpec
   (spec) where
 
--- import qualified Data.Text                            as T
 import           Data.Tree
--- import           Numeric.LinearAlgebra
 import           System.Random.MWC
 import           Test.Hspec
 

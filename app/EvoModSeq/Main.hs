@@ -46,7 +46,8 @@ io (Right res) h = L.hPutStr h res
 main :: IO ()
 main = do (EvoModSeqArgs cmd c mofn q fns) <- parseEvoModSeqArgs
           unless q $ do
-            programHeader
+            header <- programHeader
+            putStrLn header
             putStrLn "Read fasta file(s)."
             putStrLn $ "Code: " ++ show c ++ "."
             putStrLn ""

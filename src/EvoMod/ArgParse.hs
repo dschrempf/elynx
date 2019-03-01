@@ -68,9 +68,8 @@ parseEvoModArgs ftr p = execParser $
   where ftr' = ftr ++ evoModSuiteFooterEnd
 
 -- | Program header.
-programHeader :: IO ()
+programHeader :: IO String
 programHeader = do
   p  <- getProgName
   as <- getArgs
-  putStr evoModHeader
-  putStrLn $ "Command line: " ++ p ++ " " ++ unwords as
+  return $ unlines [evoModHeader, "Command line: " ++ p ++ " " ++ unwords as]

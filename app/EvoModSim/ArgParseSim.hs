@@ -44,7 +44,7 @@ data EvoModSimArgs = EvoModSimArgs
   , argsMaybeEDMFile        :: Maybe FilePath
   , argsMaybeMixtureWeights :: Maybe [Double]
   , argsMaybeGammaParams    :: Maybe GammaRateHeterogeneityParams
-  , argsSeed                :: Maybe [Word32]
+  , argsMaybeSeed           :: Maybe [Word32]
   , argsQuiet               :: Bool
   , argsFileOut             :: FilePath
   }

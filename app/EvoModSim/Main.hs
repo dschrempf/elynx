@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {- |
 Module      :  Main
 Description :  Simulate multiple sequence alignments
@@ -16,10 +17,17 @@ module Main where
 
 import           Control.Concurrent
 import           Control.Concurrent.Async
-import           Control.Monad
+import           Control.Monad.IO.Class
+import           Control.Monad.Logger
+import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.State.Lazy
+import qualified Data.ByteString                                  as B
 import qualified Data.ByteString.Lazy                             as L
 import qualified Data.ByteString.Lazy.Char8                       as LC
+import qualified Data.Text                                        as T
+import           Data.Text.Encoding                               as E
 import           Data.Tree
+
 import qualified Data.Vector                                      as V
 import           Numeric.LinearAlgebra
 import           System.Random.MWC
@@ -82,55 +90,75 @@ simulateMSA pm t n g = do
   return $ fromSequenceList sequences
 
 -- | Summarize EDM components; line to be printed to screen or log.
-summarizeEDMComponents :: [EDMComponent] -> L.ByteString
-summarizeEDMComponents cs = LC.pack
+summarizeEDMComponents :: [EDMComponent] -> T.Text
+summarizeEDMComponents cs = T.pack
                             $ "Empiricial distribution mixture model with "
                             ++ show (length cs) ++ " components"
 
--- TODO: Use ST (or Reader) to handle arguments, this will be especially useful
--- with 'phyloModelStr'.
+-- | The logging monad is wrapped around the actual state monad of the
+-- simulator. However, this logging feature is not used at the moment (for
+-- historical reasons).
+type Simulation = LoggingT (StateT EvoModSimArgs IO)
 
--- TODO: Proper log.
+getP :: LoggingT (StateT EvoModSimArgs IO) EvoModSimArgs
+getP = lift get
+
+logT :: T.Text -> LoggingT (StateT EvoModSimArgs IO) ()
+logT = logInfoN
+
+logS :: String -> LoggingT (StateT EvoModSimArgs IO) ()
+logS = logInfoN . T.pack
+
+logLBS :: LC.ByteString -> LoggingT (StateT EvoModSimArgs IO) ()
+logLBS = logInfoN . E.decodeUtf8 . LC.toStrict
+
+logSBS :: B.ByteString -> LoggingT (StateT EvoModSimArgs IO) ()
+logSBS = logInfoN . E.decodeUtf8
+
+simulate :: Simulation ()
+simulate = do
+  header <- liftIO programHeader
+  logS header
+  logS "Read tree."
+  treeFile <- argsTreeFile <$> getP
+  tree <- liftIO $ parseFileWith newick treeFile
+  logLBS $ summarize tree
+  maybeEDMFile <- argsMaybeEDMFile <$> getP
+  edmCs <- case maybeEDMFile of
+    Nothing   -> return Nothing
+    Just edmF -> do
+      logS "Read EDM file."
+      liftIO $ Just <$> parseFileWith phylobayes edmF
+  maybe (return ()) (logT . summarizeEDMComponents) edmCs
+  logS "Read model string."
+  phyloModelStr <- argsPhyloModelString <$> getP
+  maybeWeights <- argsMaybeMixtureWeights <$> getP
+  maybeGammaParams <- argsMaybeGammaParams <$> getP
+  let phyloModel' = parseByteStringWith (phyloModelString edmCs maybeWeights) phyloModelStr
+      phyloModel = case maybeGammaParams of
+        Nothing         -> phyloModel'
+        Just (n, alpha) -> expand n alpha phyloModel'
+  alignmentLength <- argsLength <$> getP
+  logLBS $ LC.unlines $ pmSummarize phyloModel
+  logS "Simulate alignment."
+  logS $ "Length: " ++ show alignmentLength ++ "."
+  maybeSeed <- argsMaybeSeed <$> getP
+  gen <- case maybeSeed of
+    Nothing -> logS "Seed: random"
+               >> liftIO createSystemRandom
+    Just s  -> logS ("Seed: " ++ show s ++ ".")
+               >> liftIO (initialize (V.fromList s))
+  msa <- liftIO $ simulateMSA phyloModel tree alignmentLength gen
+  let output = sequencesToFasta $ toSequenceList msa
+  outFileAlignment <- argsFileOut <$> getP
+  liftIO $ L.writeFile outFileAlignment output
+  logS ("Output written to file '" ++ outFileAlignment ++ "'.")
 
 main :: IO ()
 main = do
-  EvoModSimArgs treeFile phyloModelStr len mEDMFile mWs mGammaPs mSeed quiet outFile <- parseEvoModSimArgs
-  unless quiet $ do
-    programHeader
-    putStrLn ""
-    putStrLn "Read tree."
-  tree <- parseFileWith newick treeFile
-  unless quiet $
-    L.putStr $ summarize tree
-  edmCs <- case mEDMFile of
-    Nothing   -> return Nothing
-    Just edmF -> do
-      unless quiet $ do
-        putStrLn ""
-        putStrLn "Read EDM file."
-      Just <$> parseFileWith phylobayes edmF
-  unless quiet $ do
-    -- Is there a better way?
-    maybe (return ()) (LC.putStrLn . summarizeEDMComponents) edmCs
-    putStrLn ""
-    putStrLn "Read model string."
-  let phyloModel' = parseByteStringWith (phyloModelString edmCs mWs) phyloModelStr
-      phyloModel = case mGammaPs of
-        Nothing         -> phyloModel'
-        Just (n, alpha) -> expand n alpha phyloModel'
-  unless quiet $ do
-    L.putStr . LC.unlines $ pmSummarize phyloModel
-    putStrLn ""
-    putStrLn "Simulate alignment."
-    putStrLn $ "Length: " ++ show len ++ "."
-  gen <- case mSeed of
-    Nothing -> putStrLn "Seed: random"
-               >> createSystemRandom
-    Just s  -> putStrLn ("Seed: " ++ show s ++ ".")
-               >> initialize (V.fromList s)
-  msa <- simulateMSA phyloModel tree len gen
-  let output = sequencesToFasta $ toSequenceList msa
-  L.writeFile outFile output
-  unless quiet $ do
-    putStrLn ""
-    putStrLn ("Output written to file '" ++ outFile ++ "'.")
+  params <- parseEvoModSimArgs
+  if argsQuiet params
+    -- TODO: Let error messages through.
+    -- TODO: But do not through errors in library functions.
+    then evalStateT (runStdoutLoggingT $ filterLogger (\_ _ -> True) simulate) params
+    else evalStateT (runStdoutLoggingT simulate) params
