@@ -147,6 +147,15 @@ mixtureModel :: Maybe [EDMComponent] -> Maybe [Double] -> Parser MixtureModel
 mixtureModel Nothing   mws = parseCXX mws
 mixtureModel (Just cs) mws = parseEDM cs mws
 
+-- TODO. Much cleaner like this.
+-- phyloModelString :: EvoModSimArgs -> PhyloModel
+
+-- TODO: Probably separate mixture models from substitution mdoels like so
+-- -m MIXTUREMODEL (may be complemented with -g, -e and -w flags)
+-- -s SUBSTITUTIONMODEL (may be complemented with -g flag only)
+
+-- XXX: Already keep partition models in mind.
+
 -- | Parse the phylogenetic model string.
 phyloModelString :: Maybe [EDMComponent] -> Maybe [Double] -> Parser PhyloModel
 -- XXX: The EDM components have to be given. Make this more general.

@@ -106,6 +106,11 @@ logS msg = do
 logLBS :: LC.ByteString -> Simulation ()
 logLBS = logS . LC.unpack
 
+-- XXX: The state transformer is nice here, but not needed. The only problem
+-- that arises then is with 'logS' and 'logLBS', because they do not have access
+-- to the log handle.
+--
+-- simulate :: Params -> IO ()
 simulate :: Simulation ()
 simulate = do
   args <- arguments <$> get
@@ -131,8 +136,13 @@ simulate = do
         Nothing         -> phyloModel'
         Just (n, alpha) -> expand n alpha phyloModel'
       alignmentLength = argsLength args
+
   -- TODO: Summarize model before it is expanded and state that gamma rate heterogeneity is used.
+
   -- TODO: Rigorous logging.
+
+  -- TODO: Write exact phylomodel into "outFile.model". Probably use Show type class?
+
   logLBS $ LC.unlines $ pmSummarize phyloModel
   logS "Simulate alignment."
   logS $ "Length: " ++ show alignmentLength ++ "."
