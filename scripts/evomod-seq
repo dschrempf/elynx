@@ -7,17 +7,17 @@ source include
 file_DNA=../data/Nucleotide.fasta
 file_AA=../data/AminoAcid.fasta
 
-msg "EvoMod-Seq DNA."
+msg "EvoMod-Seq; summarize DNA."
 stack exec evomod-seq -- summarize -a DNA $file_DNA || exit 1
 
-msg "EvoMod-Seq protein."
+msg "EvoMod-Seq; summarize protein data."
 stack exec evomod-seq -- summarize -a Protein $file_AA || exit 1
 
-msg "EvoMod-Seq concatenate DNA."
+msg "EvoMod-Seq; concatenate DNA."
 stack exec evomod-seq -- concatenate -a DNA $file_DNA $file_DNA || exit 1
 
-msg "EvoMod-Seq; test if quiet."
+msg "EvoMod-Seq; summarize; test if quiet."
 stack exec evomod-seq -- summarize -a DNA -q $file_DNA || exit 1
 
-msg "EvoMod-Seq; analyze."
-stack exec evomod-seq -- analyze -a DNA -q $file_DNA || exit 1
+msg "EvoMod-Seq; analyze DNA."
+stack exec evomod-seq -- analyze -a DNA $file_DNA || exit 1

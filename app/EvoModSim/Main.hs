@@ -16,9 +16,8 @@ module Main where
 
 import           Control.Concurrent
 import           Control.Concurrent.Async
-import           Control.Monad
 import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.State
+import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy                             as L
 import qualified Data.ByteString.Lazy.Char8                       as LC
 import           Data.Tree
@@ -48,6 +47,7 @@ import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes   hiding
 import           EvoMod.Import.Tree.Newick                        hiding (name)
 import           EvoMod.Simulate.MarkovProcessAlongTree
 import           EvoMod.Tools.InputOutput
+import           EvoMod.Tools.Logger
 import           EvoMod.Tools.Misc
 
 -- For a given number of capabilities and values, get the chunk sizes.
@@ -91,29 +91,18 @@ summarizeEDMComponents cs = LC.pack
                             $ "Empiricial distribution mixture model with "
                             ++ show (length cs) ++ " components"
 
-type Simulation = StateT Params IO
+type Simulation = ReaderT Params IO
 
-data Params = Params { arguments :: EvoModSimArgs
-                     , logHandle :: Handle }
+data Params = Params { arguments  :: EvoModSimArgs
+                     , mLogHandle :: Maybe Handle }
 
-logS :: String -> Simulation ()
-logS msg = do
-  q <- argsQuiet . arguments <$> get
-  h <- logHandle <$> get
-  unless q $ lift $ putStrLn msg
-  lift $ hPutStrLn h msg
+instance Logger Params where
+  quiet   = argsQuiet . arguments
+  mHandle = mLogHandle
 
-logLBS :: LC.ByteString -> Simulation ()
-logLBS = logS . LC.unpack
-
--- XXX: The state transformer is nice here, but not needed. The only problem
--- that arises then is with 'logS' and 'logLBS', because they do not have access
--- to the log handle.
---
--- simulate :: Params -> IO ()
 simulate :: Simulation ()
 simulate = do
-  args <- arguments <$> get
+  args <- arguments <$> ask
   header <- lift programHeader
   logS header
   logS "Read tree."
@@ -127,6 +116,7 @@ simulate = do
       logS "Read EDM file."
       lift $ Just <$> parseFileWith phylobayes edmF
   maybe (return ()) (logLBS . summarizeEDMComponents) edmCs
+  logS ""
   logS "Read model string."
   let phyloModelStr = argsPhyloModelString args
       maybeWeights = argsMaybeMixtureWeights args
@@ -138,8 +128,6 @@ simulate = do
       alignmentLength = argsLength args
 
   -- TODO: Summarize model before it is expanded and state that gamma rate heterogeneity is used.
-
-  -- TODO: Rigorous logging.
 
   -- TODO: Write exact phylomodel into "outFile.model". Probably use Show type class?
 
@@ -163,9 +151,12 @@ main = do
   args <- parseEvoModSimArgs
 
   let logFile = argsFileOut args ++ ".log"
-  logH <- openFile logFile WriteMode
+  logH <- if argsQuiet args
+          then return Nothing
+          else Just <$> openFile logFile WriteMode
   let params = Params args logH
 
-  evalStateT simulate params
+  runReaderT simulate params
 
-  hClose logH
+  -- It took me quite a while to find this out.
+  mapM_ hClose logH

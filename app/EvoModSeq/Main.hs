@@ -10,13 +10,12 @@ Portability :  portable
 
 Creation date: Fri Oct  5 08:41:05 2018.
 
-TODO: Same logging facility as in sim (add to library).
-
 -}
 
 module Main where
 
-import           Control.Monad
+import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8                  as L
 import           Data.Maybe                                  (fromMaybe)
 import           System.IO
@@ -30,7 +29,17 @@ import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.InputOutput
+import           EvoMod.Tools.Logger
 import           EvoMod.Tools.Misc
+
+data Params = Params { arguments  :: EvoModSeqArgs
+                     , mLogHandle :: Maybe Handle }
+
+instance Logger Params where
+  quiet = argsQuiet . arguments
+  mHandle = mLogHandle
+
+type Seq = ReaderT Params IO
 
 act :: Command -> [[Sequence]] -> Either L.ByteString L.ByteString
 act Summarize sss      = Right . L.intercalate (L.pack "\n") $ map summarizeSequenceList sss
@@ -41,23 +50,43 @@ act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
 act Analyze sss        = Right . L.intercalate (L.pack "\n") $ map (L.pack . show . kEffAll . toFrequencyData) msas
   where msas = map fromSequenceList sss
 
-io :: Either L.ByteString L.ByteString -> Handle -> IO ()
-io (Left  s)   _ = L.putStrLn s
-io (Right res) h = L.hPutStr h res
+io :: Either L.ByteString L.ByteString -> Seq ()
+io (Left  s)   = logLBS s
+io (Right res) = do
+  mFileOut <- argsMaybeFileNameOut . arguments <$> ask
+  case mFileOut of
+    Nothing -> logLBSForce res
+    Just fn -> do
+      lift $ withFile fn WriteMode (`L.hPutStr` res)
+      logS $ "Results written to file '" ++ fn ++ "'."
+
+work :: Seq ()
+work = do
+  args <- arguments <$> ask
+  header <- lift programHeader
+  logS header
+  logS "Read fasta file(s)."
+  let c = argsCode args
+  logS $ "Code: " ++ show c ++ "."
+  logS ""
+  let fns = argsFileNames args
+  -- 'sss' is a little weird, but it is a list of a list of sequences.
+  sss <- lift $ sequence $ parseFileWith (fasta c) <$> fns
+  let eRes = act (argsCommand args) sss
+  io eRes
 
 main :: IO ()
-main = do (EvoModSeqArgs cmd c mofn q fns) <- parseEvoModSeqArgs
-          unless q $ do
-            header <- programHeader
-            putStrLn header
-            putStrLn "Read fasta file(s)."
-            putStrLn $ "Code: " ++ show c ++ "."
-            putStrLn ""
-          -- 'sss' is a little weird, but it is a list of a list of sequences.
-          sss <- sequence $ parseFileWith (fasta c) <$> fns
-          let eRes = act cmd sss
-          case mofn of
-            Nothing -> io eRes stdout
-            Just fn -> do
-              withFile fn WriteMode (io eRes)
-              unless q $ putStrLn ("Results written to file '" ++ fn ++ "'.")
+main = do
+  args <- parseEvoModSeqArgs
+
+  logH <- if argsQuiet args
+          then return Nothing
+          else case argsMaybeFileNameOut args of
+            Nothing -> return Nothing
+            Just fn -> Just <$> openFile (fn ++ ".log") WriteMode
+  let params = Params args logH
+
+  runReaderT work params
+
+  -- It took me quite a while to find this out.
+  mapM_ hClose logH

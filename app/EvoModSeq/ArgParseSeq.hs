@@ -32,11 +32,11 @@ data Command = Summarize
              | Analyze
 
 data EvoModSeqArgs = EvoModSeqArgs
-  { argsCommand     :: Command
-  , argsAlphabet    :: Code
-  , argsFileNameOut :: Maybe FilePath
-  , argsQuiet       :: Bool
-  , argsFileNames   :: [FilePath]
+  { argsCommand          :: Command
+  , argsCode             :: Code
+  , argsMaybeFileNameOut :: Maybe FilePath
+  , argsQuiet            :: Bool
+  , argsFileNames        :: [FilePath]
   }
 
 evoModSeqArgs :: Parser EvoModSeqArgs
