@@ -77,16 +77,7 @@ work = do
 
 main :: IO ()
 main = do
-  args <- parseEvoModSeqArgs
-
-  logH <- if argsQuiet args
-          then return Nothing
-          else case argsMaybeFileNameOut args of
-            Nothing -> return Nothing
-            Just fn -> Just <$> openFile (fn ++ ".log") WriteMode
-  let params = Params args logH
-
-  runReaderT work params
-
-  -- It took me quite a while to find this out.
-  mapM_ hClose logH
+  a <- parseEvoModSeqArgs
+  h <- setupLogger (argsQuiet a) (argsMaybeFileNameOut a)
+  runReaderT work (Params a h)
+  closeLogger h

@@ -148,15 +148,7 @@ simulate = do
 
 main :: IO ()
 main = do
-  args <- parseEvoModSimArgs
-
-  let logFile = argsFileOut args ++ ".log"
-  logH <- if argsQuiet args
-          then return Nothing
-          else Just <$> openFile logFile WriteMode
-  let params = Params args logH
-
-  runReaderT simulate params
-
-  -- It took me quite a while to find this out.
-  mapM_ hClose logH
+  a <- parseEvoModSimArgs
+  h <- setupLogger (argsQuiet a) (Just $ argsFileOut a)
+  runReaderT simulate (Params a h)
+  closeLogger h

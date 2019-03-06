@@ -16,6 +16,12 @@ Monad that supports some basic logging features.
 
 module EvoMod.Tools.Logger
   ( Logger (..)
+  , logS
+  , logSForce
+  , logLBS
+  , logLBSForce
+  , setupLogger
+  , closeLogger
   ) where
 
 import           Control.Monad
@@ -40,21 +46,36 @@ class Logger l where
   quiet  :: l -> Bool
   mHandle :: l -> Maybe Handle
 
-  logS :: String -> ReaderT l IO ()
-  logS msg = do
-    q <- quiet <$> ask
-    unless q $ logSForce msg
+-- | If not quiet, log string.
+logS :: Logger l => String -> ReaderT l IO ()
+logS msg = do
+  q <- quiet <$> ask
+  unless q $ logSForce msg
 
-  logSForce :: String -> ReaderT l IO ()
-  logSForce msg = do
-    mh <- mHandle <$> ask
-    lift $ putStrLn msg
-    case mh of
-      Nothing -> return ()
-      Just h  -> lift $ hPutStrLn h msg
+-- | Log string, ignore quiet option.
+logSForce :: Logger l => String -> ReaderT l IO ()
+logSForce msg = do
+  mh <- mHandle <$> ask
+  lift $ putStrLn msg
+  case mh of
+    Nothing -> return ()
+    Just h  -> lift $ hPutStrLn h msg
 
-  logLBS :: LC.ByteString -> ReaderT l IO ()
-  logLBS = logS . LC.unpack
+-- | See 'logS' but for lazy byte strings.
+logLBS :: Logger l => LC.ByteString -> ReaderT l IO ()
+logLBS = logS . LC.unpack
 
-  logLBSForce :: LC.ByteString -> ReaderT l IO ()
-  logLBSForce = logSForce . LC.unpack
+-- | See 'logSForce' but for lazy byte strings.
+logLBSForce :: Logger l => LC.ByteString -> ReaderT l IO ()
+logLBSForce = logSForce . LC.unpack
+
+-- | Setup log handle, if not quiet and if filename is given.
+setupLogger :: Bool -> Maybe FilePath -> IO (Maybe Handle)
+setupLogger True _          = return Nothing
+setupLogger False Nothing   = return Nothing
+setupLogger False (Just fn) = Just <$> openFile (fn ++ ".log") WriteMode
+
+-- | Close the logging file handle.
+closeLogger :: Maybe Handle -> IO ()
+-- It took me quite a while to find this out.
+closeLogger = mapM_ hClose
