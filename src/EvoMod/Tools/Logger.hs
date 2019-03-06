@@ -43,7 +43,7 @@ import           System.IO
 -- @
 
 class Logger l where
-  quiet  :: l -> Bool
+  quiet   :: l -> Bool
   mHandle :: l -> Maybe Handle
 
 -- | If not quiet, log string.
@@ -52,14 +52,16 @@ logS msg = do
   q <- quiet <$> ask
   unless q $ logSForce msg
 
+logHandle :: Maybe Handle -> String -> IO ()
+logHandle Nothing  _   = return ()
+logHandle (Just h) msg = hPutStrLn h msg
+
 -- | Log string, ignore quiet option.
 logSForce :: Logger l => String -> ReaderT l IO ()
 logSForce msg = do
   mh <- mHandle <$> ask
   lift $ putStrLn msg
-  case mh of
-    Nothing -> return ()
-    Just h  -> lift $ hPutStrLn h msg
+  lift $ logHandle mh msg
 
 -- | See 'logS' but for lazy byte strings.
 logLBS :: Logger l => LC.ByteString -> ReaderT l IO ()
