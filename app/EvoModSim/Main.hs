@@ -16,15 +16,15 @@ module Main where
 
 import           Control.Concurrent
 import           Control.Concurrent.Async
+import           Control.Lens
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy                             as L
 import qualified Data.ByteString.Lazy.Char8                       as LC
 import           Data.Tree
-import           System.IO
-
 import qualified Data.Vector                                      as V
 import           Numeric.LinearAlgebra
+import           System.IO
 import           System.Random.MWC
 
 import           ArgParseSim
@@ -68,14 +68,15 @@ simulateMSA pm t n g = do
   let chunks = getChunks c n
   leafStatesS <- case pm of
     PhyloSubstitutionModel sm -> mapConcurrently
-      (\(num, gen) -> simulateAndFlattenNSitesAlongTree num (smRateMatrix sm) t gen)
-      (zip chunks gs)
+      (\(num, gen) -> simulateAndFlattenNSitesAlongTree num d e t gen) (zip chunks gs)
+      where d = sm ^. smStationaryDistribution
+            e = sm ^. smExchangeabilityMatrix
     PhyloMixtureModel mm      -> mapConcurrently
-      (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws qs t gen)
-      (zip chunks gs)
+      (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws ds es t gen) (zip chunks gs)
       where
         ws = vector $ getWeights mm
-        qs = getRateMatrices mm
+        ds = map (view smStationaryDistribution) $ getSubstitutionModels mm
+        es = map (view smExchangeabilityMatrix) $ getSubstitutionModels mm
   -- XXX: The horizontal concatenation might be slow. If so, 'concatenateSeqs'
   -- or 'concatenateMSAs' can be used, which directly appends vectors.
   let leafStates = horizontalConcat leafStatesS

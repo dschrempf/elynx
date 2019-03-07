@@ -40,7 +40,7 @@ import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.Nucleotide
 import           EvoMod.Data.MarkovProcess.PhyloModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
-import           EvoMod.Data.MarkovProcess.SubstitutionModel    hiding (substitutionModel)
+import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes (EDMComponent)
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality
@@ -83,7 +83,6 @@ stationaryDistribution = do
     else error $ "Sum of stationary distribution is " ++ show (norm_1 f)
          ++ " but should be 1.0."
 
-type Name = String
 type Params = [Double]
 
 assertLength :: StationaryDistribution -> Int -> a -> a
@@ -92,7 +91,7 @@ assertLength f n r = if size f /= n
                          ++ " but should be " ++ show n ++ "."
                     else r
 
-assembleSubstitutionModel :: Name -> Maybe Params -> Maybe StationaryDistribution
+assembleSubstitutionModel :: String -> Maybe Params -> Maybe StationaryDistribution
                           -> Either String SubstitutionModel
 -- DNA models.
 assembleSubstitutionModel "JC" Nothing Nothing = Right jc

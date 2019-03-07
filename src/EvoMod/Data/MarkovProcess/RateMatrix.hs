@@ -16,13 +16,13 @@ continuous-time discrete-state Markov processes.
 
 module EvoMod.Data.MarkovProcess.RateMatrix
   ( RateMatrix
-  , ExchMatrix
+  , ExchangeabilityMatrix
   , StationaryDistribution
   , normalize
   , normalizeWith
   , setDiagonal
-  , toExchMatrix
-  , fromExchMatrix
+  , toExchangeabilityMatrix
+  , fromExchangeabilityMatrix
   , getStationaryDistribution
   )
 where
@@ -40,7 +40,7 @@ type RateMatrix = Matrix R
 -- | A matrix of exchangeabilities, we have q = e * pi, where q is a rate
 -- matrix, e is the exchangeability matrix and pi is the diagonal matrix
 -- containing the stationary frequency distribution.
-type ExchMatrix = Matrix R
+type ExchangeabilityMatrix = Matrix R
 
 -- | Stationary distribution of a rate matrix.
 type StationaryDistribution = Vector R
@@ -63,13 +63,13 @@ setDiagonal m = diagZeroes - diag (fromList rowSums)
         rowSums    = map norm_1 $ toRows diagZeroes
 
 -- | Extract the exchangeability matrix from a rate matrix.
-toExchMatrix :: RateMatrix -> StationaryDistribution -> ExchMatrix
-toExchMatrix m f = m <> diag oneOverF
+toExchangeabilityMatrix :: RateMatrix -> StationaryDistribution -> ExchangeabilityMatrix
+toExchangeabilityMatrix m f = m <> diag oneOverF
   where oneOverF = cmap (1.0/) f
 
 -- | Convert exchangeability matrix to rate matrix.
-fromExchMatrix :: ExchMatrix -> StationaryDistribution -> RateMatrix
-fromExchMatrix em d = normalizeWith d $ setDiagonal $ em <> diag d
+fromExchangeabilityMatrix :: ExchangeabilityMatrix -> StationaryDistribution -> RateMatrix
+fromExchangeabilityMatrix em d = normalizeWith d $ setDiagonal $ em <> diag d
 
 -- | Get stationary distribution from 'RateMatrix'. Involves eigendecomposition.
 -- If the given matrix does not satisfy the required properties of transition

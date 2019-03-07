@@ -40,19 +40,18 @@ measureableTreeToProbTree :: (Measurable a) => RateMatrix -> Tree a -> Tree Prob
 measureableTreeToProbTree q = fmap (probMatrix q . measure)
 
 getRootStates :: PrimMonad m
-  => Int -> RateMatrix -> Gen (PrimState m) -> m [State]
-getRootStates n q g = do
-  let d = getStationaryDistribution q
-  replicateM n $ categorical d g
+  => Int -> StationaryDistribution -> Gen (PrimState m) -> m [State]
+getRootStates n d g = replicateM n $ categorical d g
 
 -- | Simulate a number of sites for a given substitution model. Only the states
 -- at the leafs are retained. The states at internal nodes are removed. This has
 -- a lower memory footprint.
 simulateAndFlattenNSitesAlongTree :: (PrimMonad m, Measurable a)
-  => Int -> RateMatrix -> Tree a -> Gen (PrimState m) -> m [[State]]
-simulateAndFlattenNSitesAlongTree n q t g = do
-  let pt = measureableTreeToProbTree q t
-  is <- getRootStates n q g
+  => Int -> StationaryDistribution -> ExchangeabilityMatrix -> Tree a -> Gen (PrimState m) -> m [[State]]
+simulateAndFlattenNSitesAlongTree n d e t g = do
+  let q = fromExchangeabilityMatrix e d
+      pt = measureableTreeToProbTree q t
+  is <- getRootStates n d g
   simulateAndFlattenAlongProbTree is pt g
 
 -- This is the heart of the simulation. Take a tree and a list of root states.
@@ -69,10 +68,11 @@ simulateAndFlattenAlongProbTree is (Node p f) g = do
 -- internal nodes. The result is a tree with the list of simulated states as
 -- node labels.
 simulateNSitesAlongTree :: (PrimMonad m, Measurable a)
-  => Int -> RateMatrix -> Tree a -> Gen (PrimState m) -> m (Tree [State])
-simulateNSitesAlongTree n q t g = do
-  let pt = measureableTreeToProbTree q t
-  is <- getRootStates n q g
+  => Int -> StationaryDistribution -> ExchangeabilityMatrix -> Tree a -> Gen (PrimState m) -> m (Tree [State])
+simulateNSitesAlongTree n d e t g = do
+  let q = fromExchangeabilityMatrix e d
+      pt = measureableTreeToProbTree q t
+  is <- getRootStates n d g
   simulateAlongProbTree is pt g
 
 -- This is the heart of the simulation. Take a tree and a list of root states.
@@ -90,9 +90,8 @@ measureableTreeToProbTreeMixtureModel qs =
   fmap (\a -> [probMatrix q . measure $ a | q <- qs])
 
 getComponentsAndRootStates :: PrimMonad m
-  => Int -> Vector R -> [RateMatrix] -> Gen (PrimState m) -> m ([Int], [State])
-getComponentsAndRootStates n ws qs g = do
-  let ds = map getStationaryDistribution qs
+  => Int -> Vector R -> [StationaryDistribution] -> Gen (PrimState m) -> m ([Int], [State])
+getComponentsAndRootStates n ws ds g = do
   cs <- replicateM n $ categorical ws g
   is <- sequence [ categorical (ds !! c) g | c <- cs ]
   return (cs, is)
@@ -101,10 +100,12 @@ getComponentsAndRootStates n ws qs g = do
 -- corresponding weights. Forget states at internal nodes. See also
 -- 'simulateAndFlattenNSitesAlongTree'.
 simulateAndFlattenNSitesAlongTreeMixtureModel :: (PrimMonad m, Measurable a)
-  => Int -> Vector R -> [RateMatrix] -> Tree a -> Gen (PrimState m) -> m [[State]]
-simulateAndFlattenNSitesAlongTreeMixtureModel n ws qs t g = do
-  let pt = measureableTreeToProbTreeMixtureModel qs t
-  (cs, is) <- getComponentsAndRootStates n ws qs g
+  => Int -> Vector R -> [StationaryDistribution] -> [ExchangeabilityMatrix] -> Tree a
+  -> Gen (PrimState m) -> m [[State]]
+simulateAndFlattenNSitesAlongTreeMixtureModel n ws ds es t g = do
+  let qs = zipWith fromExchangeabilityMatrix es ds
+      pt = measureableTreeToProbTreeMixtureModel qs t
+  (cs, is) <- getComponentsAndRootStates n ws ds g
   simulateAndFlattenAlongProbTreeMixtureModel is cs pt g
 
 simulateAndFlattenAlongProbTreeMixtureModel :: (PrimMonad m)
@@ -119,10 +120,12 @@ simulateAndFlattenAlongProbTreeMixtureModel is cs (Node ps f) g
 -- corresponding weights. Keep states at internal nodes. See also
 -- 'simulateNSitesAlongTree'.
 simulateNSitesAlongTreeMixtureModel :: (PrimMonad m, Measurable a)
-  => Int -> Vector R -> [RateMatrix] -> Tree a -> Gen (PrimState m) -> m (Tree [State])
-simulateNSitesAlongTreeMixtureModel n ws qs t g = do
-  let pt = measureableTreeToProbTreeMixtureModel qs t
-  (cs, is) <- getComponentsAndRootStates n ws qs g
+  => Int -> Vector R -> [StationaryDistribution] -> [ExchangeabilityMatrix] -> Tree a
+  -> Gen (PrimState m) -> m (Tree [State])
+simulateNSitesAlongTreeMixtureModel n ws ds es t g = do
+  let qs = zipWith fromExchangeabilityMatrix es ds
+      pt = measureableTreeToProbTreeMixtureModel qs t
+  (cs, is) <- getComponentsAndRootStates n ws ds g
   simulateAlongProbTreeMixtureModel is cs pt g
 
 -- See 'simulateAlongProbTree', only we have a number of mixture components. The

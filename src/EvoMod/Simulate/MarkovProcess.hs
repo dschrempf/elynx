@@ -20,12 +20,11 @@ module EvoMod.Simulate.MarkovProcess
   ) where
 
 import           Control.Monad.Primitive
--- import           Foreign.Storable
--- import           Foreign.Storable.Tuple ()
 import           Numeric.LinearAlgebra
 import           System.Random.MWC
--- import           System.Random.MWC.CondensedTable
 import           System.Random.MWC.Distributions
+
+import EvoMod.Data.MarkovProcess.RateMatrix
 
 -- | A probability matrix, P_ij(t) = Pr (X_t = j | X_0 = i).
 type ProbMatrix = Matrix R
@@ -35,7 +34,7 @@ type State = Int
 
 -- | The important matrix that gives the probabilities to move from one state to
 -- another in a specific time (branch length).
-probMatrix :: Matrix R -> Double -> ProbMatrix
+probMatrix :: RateMatrix -> Double -> ProbMatrix
 probMatrix q t | t == 0 = if rows q == cols q
                           then ident (rows q)
                           else error "Matrix is not square."

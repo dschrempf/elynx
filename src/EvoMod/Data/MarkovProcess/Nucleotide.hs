@@ -48,7 +48,7 @@ n :: Int
 n = cardinalityFromCode DNA
 
 -- | JC model matrix.
-jcExch :: ExchMatrix
+jcExch :: ExchangeabilityMatrix
 jcExch =
   (n><n)
   [ 0.0, 1.0, 1.0, 1.0
@@ -58,10 +58,10 @@ jcExch =
 
 -- | JC substitution model.
 jc :: SubstitutionModel
-jc = substitutionModel DNA (L.pack "JC") [] f jcExch
+jc = SubstitutionModel DNA (L.pack "JC") [] f jcExch
   where f = uniformVec n
 
-hkyExch :: Double -> ExchMatrix
+hkyExch :: Double -> ExchangeabilityMatrix
 hkyExch k =
   (n><n)
   [ 0.0, 1.0,   k, 1.0
@@ -71,5 +71,5 @@ hkyExch k =
 
 -- | HKY substitution model.
 hky :: Double -> StationaryDistribution -> SubstitutionModel
-hky k f = substitutionModel DNA (L.pack "HKY") [k] f e
+hky k f = SubstitutionModel DNA (L.pack "HKY") [k] f e
   where e = hkyExch k

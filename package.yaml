@@ -31,6 +31,7 @@ dependencies:
   - containers
   - hmatrix
   - integration
+  - lens
   - math-functions
   - matrices
   - megaparsec

@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 {- |
 Module      :  EvoMod.Data.MarkovProcess.MixtureModel
 Description :  Mixture models are a set of substitution models with weights
@@ -13,69 +15,75 @@ Creation date: Tue Jan 29 19:17:40 2019.
 -}
 
 module EvoMod.Data.MarkovProcess.MixtureModel
-  ( Weight
-  , MixtureModelComponent (..)
+  ( Name
+  , Weight
+  , MixtureModelComponent (MixtureModelComponent)
   , summarizeMixtureModelComponent
-  , MixtureModel (..)
+  , MixtureModel (MixtureModel)
+  , mmName
   , fromSubstitutionModels
   , concatenateMixtureModels
   , summarizeMixtureModel
   , isValidMixtureModel
-  , mmCode
+  , getCodeMixtureModel
   , getWeights
   , getSubstitutionModels
-  , getRateMatrices
   , scaleMixtureModel
   , appendNameMixtureModel
   ) where
 
+import           Control.Lens
 import qualified Data.ByteString.Builder                     as L
 import qualified Data.ByteString.Lazy.Char8                  as L
 
 import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools.Equality                       (allEqual)
 
 -- | Mixture model component weight.
 type Weight = Double
 
--- XXX.
--- type Name = L.ByteString
-
 -- | A mixture model component has a weight and a substitution model.
 data MixtureModelComponent = MixtureModelComponent
-  { mmcWeight            :: Weight
-  , mmcSubstitutionModel :: SubstitutionModel
+  { _weight            :: Weight
+  , _substitutionModel :: SubstitutionModel
   }
+
+makeLenses ''MixtureModelComponent
 
 -- | Summarize a mixture model component; lines to be printed to screen or log.
 summarizeMixtureModelComponent :: MixtureModelComponent -> [L.ByteString]
 summarizeMixtureModelComponent mmc =
-  L.pack "Weight: " <> (L.toLazyByteString . L.doubleDec $ mmcWeight mmc)
-  : summarizeSubstitutionModel (mmcSubstitutionModel mmc)
+  L.pack "Weight: " <> (L.toLazyByteString . L.doubleDec $ mmc ^. weight)
+  : summarizeSubstitutionModel (mmc ^. substitutionModel)
 
 -- | A mixture model with its components.
 data MixtureModel = MixtureModel
-  { mmName       :: L.ByteString
-  , mmComponents :: [MixtureModelComponent]
+  { _name       :: Name
+  , _components :: [MixtureModelComponent]
   }
 
+makeLenses ''MixtureModel
+
+-- | Access name.
+mmName :: Lens' MixtureModel Name
+mmName = name
+
 -- | Create a mixture model from a list of substitution models.
-fromSubstitutionModels :: L.ByteString -> [Weight] -> [SubstitutionModel] -> MixtureModel
-fromSubstitutionModels name ws sms = MixtureModel name comps
+fromSubstitutionModels :: Name -> [Weight] -> [SubstitutionModel] -> MixtureModel
+fromSubstitutionModels n ws sms = MixtureModel n comps
   where comps = zipWith MixtureModelComponent ws sms
 
 -- | Concatenate mixture models.
-concatenateMixtureModels :: L.ByteString -> [MixtureModel] -> MixtureModel
-concatenateMixtureModels n mms = MixtureModel n $ concatMap mmComponents mms
+concatenateMixtureModels :: Name -> [MixtureModel] -> MixtureModel
+concatenateMixtureModels n mms = MixtureModel n $ concatMap (view components) mms
 
 -- | Summarize a mixture model; lines to be printed to screen or log.
 summarizeMixtureModel :: MixtureModel -> [L.ByteString]
 summarizeMixtureModel mm =
-  L.pack "Mixture model: " <> mmName mm <> L.pack "."
+  L.pack "Mixture model: " <> mm ^. name <> L.pack "."
   : concat [ L.pack ("Component " ++ show i ++ ":") : summarizeMixtureModelComponent c
-            | (i, c) <- zip [1 :: Int ..] (mmComponents mm) ]
+            | (i, c) <- zip [1 :: Int ..] (mm ^. components) ]
 
 -- | Checks if a mixture model is valid.
 --
@@ -84,48 +92,30 @@ summarizeMixtureModel mm =
 -- and providing an algebraic way of creating mixture models (empty and
 -- addComponent which performs necessary checks).
 isValidMixtureModel :: MixtureModel -> Bool
-isValidMixtureModel mm = not (null cs)
+isValidMixtureModel mm = not (null $ mm ^. components)
                          && allEqual codes
-  where cs = mmComponents mm
-        sms = map mmcSubstitutionModel cs
-        codes = map smCode sms
+  where codes = mm ^.. components . traverse . substitutionModel . smCode
 
--- | Throws error if components use different 'Code's.
-mmCode :: MixtureModel -> Code
-mmCode mm = if isValidMixtureModel mm
-            then smCode . mmcSubstitutionModel $ head (mmComponents mm)
+-- | Get code used with mixture model. Throws error if components use different
+-- 'Code's.
+getCodeMixtureModel :: MixtureModel -> Code
+getCodeMixtureModel mm = if isValidMixtureModel mm
+            -- then smCode . substitutionModel $ head (components mm)
+            then head $ mm ^.. components . traverse . substitutionModel . smCode
             else error "Mixture model is invalid."
 
 -- | Get weights.
-getWeights :: MixtureModel -> [Double]
-getWeights mm = map mmcWeight $ mmComponents mm
+getWeights :: MixtureModel -> [Weight]
+getWeights m = m ^.. components . traverse . weight
 
 -- | Get substitution models.
 getSubstitutionModels :: MixtureModel -> [SubstitutionModel]
-getSubstitutionModels m = map mmcSubstitutionModel $ mmComponents m
-
--- | Get rate matrices.
-getRateMatrices :: MixtureModel -> [RateMatrix]
-getRateMatrices mm = map (smRateMatrix . mmcSubstitutionModel) (mmComponents mm)
-
--- Scale substitution model of mixture model component.
-scaleMixtureModelComponent :: MixtureModelComponent -> Double -> MixtureModelComponent
-scaleMixtureModelComponent mmc s = mmc { mmcSubstitutionModel = scaledSM }
-  where scaledSM = scaleSubstitutionModel (mmcSubstitutionModel mmc) s
+getSubstitutionModels m = m ^.. components . traverse . substitutionModel
 
 -- | Scale all substitution models of the mixture model.
-scaleMixtureModel :: MixtureModel -> Double -> MixtureModel
-scaleMixtureModel mm s = mm { mmComponents = scaledMMCs }
-  where
-    scaledMMCs = map (`scaleMixtureModelComponent` s) (mmComponents mm)
-
--- Append byte string to substitution model of mixture model component.
-appendNameMMC :: MixtureModelComponent -> L.ByteString -> MixtureModelComponent
-appendNameMMC mmc n = mmc { mmcSubstitutionModel = sm' }
-  where sm' = appendNameSubstitutionModel (mmcSubstitutionModel mmc) n
+scaleMixtureModel :: Double -> MixtureModel -> MixtureModel
+scaleMixtureModel s = over (components . traverse . substitutionModel) (scaleSubstitutionModel s)
 
 -- | Append byte string to all substitution models of mixture model.
-appendNameMixtureModel :: MixtureModel -> L.ByteString -> MixtureModel
-appendNameMixtureModel mm n = mm { mmComponents = renamedComps }
-  where comps = mmComponents mm
-        renamedComps = [ appendNameMMC c n | c <- comps ]
+appendNameMixtureModel :: Name -> MixtureModel -> MixtureModel
+appendNameMixtureModel n = over (components . traverse . substitutionModel) (appendNameSubstitutionModel n)

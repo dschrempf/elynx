@@ -21,6 +21,7 @@ module EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
   ( expand
   ) where
 
+import           Control.Lens
 import qualified Data.ByteString.Lazy.Char8                  as L
 import           Numeric.Integration.TanhSinh
 import           Statistics.Distribution
@@ -48,24 +49,24 @@ splitSubstitutionModel :: Int -> Double -> SubstitutionModel -> [SubstitutionMod
 splitSubstitutionModel n alpha sm = renamedSMs
   where
     means = getMeans n alpha
-    scaledSMs = map (scaleSubstitutionModel sm) means
+    scaledSMs = map (`scaleSubstitutionModel` sm) means
     names = map (L.pack . ("; gamma rate category " ++) . show) [1 :: Int ..]
-    renamedSMs = zipWith appendNameSubstitutionModel scaledSMs names
+    renamedSMs = zipWith appendNameSubstitutionModel names scaledSMs
 
 expandSubstitutionModel :: Int -> Double -> SubstitutionModel -> MixtureModel
 expandSubstitutionModel n alpha sm = fromSubstitutionModels name (repeat 1.0) sms
   where
-    name = smName sm <> getName n alpha
+    name = sm ^. smName <> getName n alpha
     sms  = splitSubstitutionModel n alpha sm
 
 expandMixtureModel :: Int -> Double -> MixtureModel -> MixtureModel
 expandMixtureModel n alpha mm = concatenateMixtureModels name renamedMMs
   where
-    name = mmName mm <> getName n alpha
+    name = mm ^. mmName <> getName n alpha
     means = getMeans n alpha
-    scaledMMs = map (scaleMixtureModel mm) means
+    scaledMMs = map (`scaleMixtureModel` mm) means
     names = map (L.pack . ("; gamma rate category " ++) . show) [1 :: Int ..]
-    renamedMMs = zipWith appendNameMixtureModel scaledMMs names
+    renamedMMs = zipWith appendNameMixtureModel names scaledMMs
 
 -- For a given number of rate categories 'n' and a shape parameter 'alpha' (the
 -- rate or scale is set such that the mean is 1.0), return a list of rates that

@@ -19,10 +19,6 @@ module EvoMod.Tools.Misc
     compose
   , allValues
   , horizontalConcat
-    -- * Tuples.
-  , fstTriple
-  , sndTriple
-  , trdTriple
     -- * MWC.
   , splitGen
    -- * Parallel stuff.
@@ -51,18 +47,6 @@ allValues = [minBound..]
 horizontalConcat :: [[[a]]] -> [[a]]
 horizontalConcat [xs] = xs
 horizontalConcat xss  = foldl' (zipWith (++)) (head xss) (tail xss)
-
--- | Extract first element of triple.
-fstTriple :: (a, b, c) -> a
-fstTriple (x, _, _) = x
-
--- | Extract second element of triple.
-sndTriple :: (a, b, c) -> b
-sndTriple (_, x, _) = x
-
--- | Extract third element of triple.
-trdTriple :: (a, b, c) -> c
-trdTriple (_, _, x) = x
 
 -- | Should be in the library...
 splitGen :: Int -> GenIO -> IO [GenIO]

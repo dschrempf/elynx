@@ -14,6 +14,7 @@ Creation date: Tue Jan 29 10:47:40 2019.
 module EvoMod.Data.MarkovProcess.AminoAcidSpec
   (spec) where
 
+import           Control.Lens
 import           Numeric.LinearAlgebra
 import           Test.Hspec
 
@@ -29,7 +30,7 @@ statDistLGPython = normalizeSumVec 1.0 $
            , 0.062157, 0.064600, 0.099081, 0.022951, 0.041977, 0.044040, 0.040767
            , 0.055941, 0.061197, 0.053287, 0.069147, 0.012066, 0.034155]
 
-exchLGPython :: ExchMatrix
+exchLGPython :: ExchangeabilityMatrix
 exchLGPython = fromLists
   [ [ 0.0000000e+00, 2.4890840e+00, 3.9514400e-01, 1.0385450e+00, 2.5370100e-01
     , 2.0660400e+00, 3.5885800e-01, 1.4983000e-01, 5.3651800e-01, 3.9533700e-01
@@ -116,13 +117,13 @@ statDistUniform :: StationaryDistribution
 statDistUniform = vector $ replicate 20 0.05
 
 statDistLG :: StationaryDistribution
-statDistLG = smStationaryDistribution lg
+statDistLG = lg ^. smStationaryDistribution
 
-exchLG :: ExchMatrix
-exchLG = smExchMatrix lg
+exchLG :: ExchangeabilityMatrix
+exchLG = lg ^. smExchangeabilityMatrix
 
 rmLG :: RateMatrix
-rmLG = smRateMatrix lg
+rmLG = getRateMatrix lg
 
 spec :: Spec
 spec = do
@@ -141,14 +142,14 @@ spec = do
 
   describe "lgCustom" $
     it "stationary distribution can be recovered" $ do
-    let f = getStationaryDistribution $ smRateMatrix $ lgCustom statDistUniform Nothing
+    let f = getStationaryDistribution $ getRateMatrix $ lgCustom statDistUniform Nothing
     f `nearlyEqVec` statDistUniform `shouldBe` True
 
   describe "poisson" $
     it "stationary distribution is uniform 1/20" $
-    getStationaryDistribution (smRateMatrix poisson) `nearlyEqVec` statDistUniform `shouldBe` True
+    getStationaryDistribution (getRateMatrix poisson) `nearlyEqVec` statDistUniform `shouldBe` True
 
   describe "poissonCustom" $
     it "stationary distribution can be recovered" $ do
-    let f = getStationaryDistribution $ smRateMatrix $ poissonCustom statDistLGPython Nothing
+    let f = getStationaryDistribution $ getRateMatrix $ poissonCustom statDistLGPython Nothing
     f `nearlyEqVec` statDistLGPython `shouldBe` True

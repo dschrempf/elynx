@@ -138,11 +138,11 @@ lgExchPamlBuilder i j | i > j  = lgExchRawPaml !! ijToK iI jI
         jI = round j :: Int
 
 -- Exchangeability matrix of LG model in PAML order.
-lgExchPaml :: ExchMatrix
+lgExchPaml :: ExchangeabilityMatrix
 lgExchPaml = build (n,n) lgExchPamlBuilder
 
 -- | Exchangeabilities of LG model in alphabetical order.
-lgExch :: ExchMatrix
+lgExch :: ExchangeabilityMatrix
 lgExch = pamlToAlphaMat lgExchPaml
 
 -- Stationary distribution in PAML order.
@@ -159,24 +159,24 @@ lgStatDist = pamlToAlphaVec lgStatDistPaml
 
 -- | LG substitution model.
 lg :: SubstitutionModel
-lg = substitutionModel Protein (L.pack "LG") [] lgStatDist lgExch
+lg = SubstitutionModel Protein (L.pack "LG") [] lgStatDist lgExch
 
 -- | LG substitution model with custom stationary distribution and maybe a name.
 lgCustom :: StationaryDistribution -> Maybe L.ByteString -> SubstitutionModel
-lgCustom f mn = substitutionModel Protein name [] f lgExch
+lgCustom f mn = SubstitutionModel Protein name [] f lgExch
   where name = fromMaybe (L.pack "LG-Custom") mn
 
-uniformExch :: ExchMatrix
+uniformExch :: ExchangeabilityMatrix
 uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n*n) 1.0
 
-poissonExch :: ExchMatrix
+poissonExch :: ExchangeabilityMatrix
 poissonExch = uniformExch
 
 -- | Poisson substitution model.
 poisson :: SubstitutionModel
-poisson = substitutionModel Protein (L.pack "Poisson") [] (uniformVec n) poissonExch
+poisson = SubstitutionModel Protein (L.pack "Poisson") [] (uniformVec n) poissonExch
 
 -- | Poisson substitution model with custom stationary distribution and maybe a name.
 poissonCustom :: StationaryDistribution -> Maybe L.ByteString -> SubstitutionModel
-poissonCustom f mn = substitutionModel Protein name [] f poissonExch
+poissonCustom f mn = SubstitutionModel Protein name [] f poissonExch
   where name = fromMaybe (L.pack "Poisson-Custom") mn

@@ -14,6 +14,10 @@ XXX: Maybe it is better to use a ByteString for sequences. This would probably
 reduce memory overhead a lot. MSAs still need to be saved as matrices, because
 there are many column operations that would be awfully slow otherwise.
 
+XXX: Do not export record functions, but provide getters and setters (using
+lenses). This way, a change in the data structure does not involve further
+refactoring.
+
 -}
 
 module EvoMod.Data.Sequence.Sequence

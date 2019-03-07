@@ -17,13 +17,13 @@ that allows mutations only when the population is monomorphic.
 module EvoMod.Data.Alphabet.BoundaryMutationModel
   ( -- * Types
     Allele
-  , PopSize
+  , PopulationSize
   , AlleleCount
   , State(..)
   , showCounts
   , nFixed
     -- * Functions
-  , setPopSize
+  , setPopulationSize
   , fromIndexWith
   , toIndex
   , stateSpace
@@ -31,8 +31,8 @@ module EvoMod.Data.Alphabet.BoundaryMutationModel
   , neighbors
   ) where
 
+import           Control.Lens
 import qualified Data.ByteString.Lazy.Char8      as L
-
 import           Numeric.SpecFunctions           (choose)
 
 import           EvoMod.Data.Alphabet.Character
@@ -43,7 +43,7 @@ import           EvoMod.Tools.Misc
 -- code such that it can be extended easily to codons or amino acids.
 type Allele = Nucleotide
 -- | The population size has to be larger than one otherwise there be dragons.
-type PopSize = Int
+type PopulationSize = Int
 -- | The absolute frequency of an allele.
 type AlleleCount = Int
 
@@ -59,13 +59,13 @@ nAlleles = 1 + fromEnum (maxBound :: Allele)
 -- Another possibility would be:
 -- @
 --  data State = Bnd Allele | Ply AlleleCount Allele Allele
---  data StateComplete = StateComplete PopSize State
+--  data StateComplete = StateComplete PopulationSize State
 -- @
 -- But then, I think it is more important that the information is kept in one,
 -- at the cost of some overhead.
-data State = Bnd { bndN :: PopSize     -- | Population size.
+data State = Bnd { bndN :: PopulationSize     -- | Population size.
                  , bndA :: Allele }
-           | Ply { plyN :: PopSize     -- | Population size.
+           | Ply { plyN :: PopulationSize     -- | Population size.
                  , plyI :: AlleleCount -- | Allele count.
                  , plyA :: Allele
                  , plyB :: Allele }
@@ -123,29 +123,29 @@ nFixed :: Int
 nFixed = 43
 
 -- | Set the population size of a 'State'; validity of resulting 'State' is checked.
-setPopSize :: PopSize -> State -> Maybe State
-setPopSize n s = if valid s' then Just s' else Nothing
-  where s' = unsafeSetPopSize n s
+setPopulationSize :: PopulationSize -> State -> Maybe State
+setPopulationSize n s = if valid s' then Just s' else Nothing
+  where s' = unsafeSetPopulationSize n s
 
--- | See 'setPopSize'. Does not check if resulting 'State' is valid.
-unsafeSetPopSize :: Int -> State -> State
-unsafeSetPopSize n (Bnd _ s)     = Bnd n s
-unsafeSetPopSize n (Ply _ i a b) = Ply n i a b
+-- | See 'setPopulationSize'. Does not check if resulting 'State' is valid.
+unsafeSetPopulationSize :: Int -> State -> State
+unsafeSetPopulationSize n (Bnd _ s)     = Bnd n s
+unsafeSetPopulationSize n (Ply _ i a b) = Ply n i a b
 
--- | For a given population size 'PopSize', convert a number 'Int' to 'State'.
-fromIndexWith :: PopSize -> Int -> State
+-- | For a given population size 'PopulationSize', convert a number 'Int' to 'State'.
+fromIndexWith :: PopulationSize -> Int -> State
 fromIndexWith n i
   | i >= stateSpaceSize n = error $
     "Index " ++ show i ++ "out of bounds when population size is " ++ show n ++ "."
   | i < nAlleles = Bnd n (toEnum i)
-  | otherwise = Ply n (i' - fstTriple p + 1) (sndTriple p) (trdTriple p)
+  | otherwise = Ply n (i' - p^._1 + 1) (p^._2) (p^._3)
   where i' = i - nAlleles
         l = [ (enumCombination a b * (n-1), a, b)
             | a <- [minBound .. pred maxBound]
             , b <- [succ a ..]]
-        p = last $ takeWhile (\e -> fstTriple e <= i') l
+        p = last $ takeWhile (\e -> e^._1 <= i') l
 
--- | Convert 'State' to a number 'Int' for the given population size 'PopSize'.
+-- | Convert 'State' to a number 'Int' for the given population size 'PopulationSize'.
 -- Back conversion can be done with 'fromIndexWith', with the same population size.
 toIndex :: State -> Int
 toIndex (Bnd _ a)     = fromEnum a
@@ -156,9 +156,9 @@ toIndex (Ply n i a b) = nAlleles + enumCombination a b * (n-1) + i-1
 -- | Enumeration only works when the population size is 'nFixed'. Only then,
 -- @toEnum . fromEnum == id@ can be guaranteed. This is because @toEnum ::
 -- State@ is only defined if the population size is known. See also
--- 'fromIndexWith', and 'toIndex', as well as, 'setPopSize'.
+-- 'fromIndexWith', and 'toIndex', as well as, 'setPopulationSize'.
 instance Enum State where
-  fromEnum s = if getPopSize s /= nFixed
+  fromEnum s = if getPopulationSize s /= nFixed
     then error $ "State is not enumerable: " ++ (L.unpack . showState) s ++ "."
     else toIndex s
   toEnum = fromIndexWith nFixed
@@ -216,14 +216,14 @@ valid (Ply n i a b)
 filterValidStates :: [State] -> [State]
 filterValidStates = filter valid
 
-getPopSize :: State -> PopSize
-getPopSize (Bnd n _)     = n
-getPopSize (Ply n _ _ _) = n
+getPopulationSize :: State -> PopulationSize
+getPopulationSize (Bnd n _)     = n
+getPopulationSize (Ply n _ _ _) = n
 
 -- CCC: This function is a not very efficient. A better would be something like:
 -- @
 -- | Sorted list of all possible PoMo states for a specific population size.
-stateSpace :: PopSize -> [State]
+stateSpace :: PopulationSize -> [State]
 stateSpace n = map (fromIndexWith n) [0 .. stateSpaceSize n - 1]
 
 -- An easier, but slower implementation.
@@ -239,7 +239,7 @@ stateSpace n = map (fromIndexWith n) [0 .. stateSpaceSize n - 1]
 
 -- | The state space of the boundary mutation model for four alleles and a
 -- population size N is 4 + 6*(N-1).
-stateSpaceSize :: PopSize -> Int
+stateSpaceSize :: PopulationSize -> Int
 stateSpaceSize n = k + k*(k-1) `div` 2 * (n-1)
   where k = nAlleles
 
@@ -247,11 +247,11 @@ stateSpaceSize n = k + k*(k-1) `div` 2 * (n-1)
 -- -- that the state space is sorted the same way?
 -- -- | Convert a boundary state to its ID (integer). See also 'idToState'.
 -- stateToId :: State -> Maybe Int
--- stateToId s = elemIndex s (stateSpace $ getPopSize s)
+-- stateToId s = elemIndex s (stateSpace $ getPopulationSize s)
 
 -- -- Same here.
 -- -- | Convert an ID to a boundary state. See also 'stateID'.
--- idToState :: PopSize -> Int -> State
+-- idToState :: PopulationSize -> Int -> State
 -- idToState n i = stateSpace n !! i
 
 -- | Check if two states are connected. By definition, states are NOT connected

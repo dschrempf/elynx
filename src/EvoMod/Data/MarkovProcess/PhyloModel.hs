@@ -22,6 +22,7 @@ module EvoMod.Data.MarkovProcess.PhyloModel
   , pmSummarize
   ) where
 
+import           Control.Lens
 import qualified Data.ByteString.Lazy.Char8                  as L
 
 import           EvoMod.Data.Alphabet.Alphabet
@@ -34,8 +35,8 @@ data PhyloModel = PhyloMixtureModel MixtureModel | PhyloSubstitutionModel Substi
 
 -- | Extract code from phylogenetic model.
 pmCode :: PhyloModel -> Code
-pmCode (PhyloMixtureModel mm)      = mmCode mm
-pmCode (PhyloSubstitutionModel sm) = smCode sm
+pmCode (PhyloMixtureModel mm)      = getCodeMixtureModel mm
+pmCode (PhyloSubstitutionModel sm) = sm ^. smCode
 
 -- | Summarize a phylogenetic model; lines to be printed to screen or log.
 pmSummarize :: PhyloModel -> [L.ByteString]

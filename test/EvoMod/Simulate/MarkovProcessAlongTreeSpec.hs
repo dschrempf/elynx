@@ -14,6 +14,7 @@ Creation date: Thu Jan 24 15:25:49 2019.
 module EvoMod.Simulate.MarkovProcessAlongTreeSpec
   (spec) where
 
+import           Control.Lens
 import           Data.Tree
 import           System.Random.MWC
 import           Test.Hspec
@@ -47,13 +48,13 @@ spec =
   describe "simulateNSitesAlongTree" $ do
     it "simulates one site along an easy tree" $ do
       gen <- create
-      tr <- simulateNSitesAlongTree 1 (smRateMatrix jc) nullTree gen
+      tr <- simulateNSitesAlongTree 1 d e nullTree gen
       fmap head tr `shouldBe` nullStateTree
 
     it "simulates some sites along a harder tree" $ do
       gen <- create
-      tr <- simulateNSitesAlongTree 10 (smRateMatrix jc) testTree gen
+      tr <- simulateNSitesAlongTree 10 d e testTree gen
       (length . rootLabel $ tr) `shouldBe` 10
-      -- XXX: Too fragile of a test, since random numbers change.
-      -- fmap head tr `shouldBe` testStateTree
+        where d = jc ^. smStationaryDistribution
+              e = jc ^. smExchangeabilityMatrix
 
