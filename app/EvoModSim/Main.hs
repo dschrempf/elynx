@@ -26,6 +26,7 @@ import qualified Data.Vector                                      as V
 import           Numeric.LinearAlgebra
 import           System.IO
 import           System.Random.MWC
+import           Text.Groom
 
 import           ArgParseSim
 import           ParsePhyloModel
@@ -101,13 +102,12 @@ instance Logger Params where
   quiet   = argsQuiet . arguments
   mHandle = mLogHandle
 
--- TODO: Improve Show instance!
 reportModel :: PhyloModel -> Simulation ()
 reportModel m = do
   args <- arguments <$> ask
   let fnOut = argsFileOut args
       modelFn = fnOut ++ ".model"
-  lift $ writeFile modelFn (show m)
+  lift $ writeFile modelFn (groom m)
   logS $ "Exact model definition written to '" ++ modelFn ++ "'."
   logS ""
 
