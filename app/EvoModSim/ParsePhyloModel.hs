@@ -10,13 +10,6 @@ Portability :  portable
 
 Creation date: Fri Feb  1 13:32:16 2019.
 
-TODO: This is super ugly. Isn't there a better way to define models?
-
-Maybe:
--e exchangeabilities
--d stationary distribution
-But how to define a mixture model then?
-
 -}
 
 module ParsePhyloModel
@@ -147,11 +140,17 @@ mixtureModel Nothing   mws = parseCXX mws
 mixtureModel (Just cs) mws = parseEDM cs mws
 
 -- TODO. Much cleaner like this.
--- phyloModelString :: EvoModSimArgs -> PhyloModel
+-- phyloModelString :: Simulation PhyloModel
 
--- TODO: Probably separate mixture models from substitution mdoels like so
--- -m MIXTUREMODEL (may be complemented with -g, -e and -w flags)
--- -s SUBSTITUTIONMODEL (may be complemented with -g flag only)
+-- TODO: Improve model string handling.
+-- Maybe:
+-- -e exchangeabilities
+-- -d stationary distribution
+-- But how to define a mixture model then?
+--
+-- Probably separate mixture models from substitution mdoels like so -m
+-- MIXTUREMODEL (may be complemented with -g, -e and -w flags) -s
+-- SUBSTITUTIONMODEL (may be complemented with -g flag only)
 
 -- XXX: Already keep partition models in mind.
 
