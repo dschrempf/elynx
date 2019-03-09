@@ -2,42 +2,40 @@
 
 source include
 
-./build fast || exit 1
-
-file_tree=../data/Newick.tree
+file_tree="${project_root}/data/Newick.tree"
 
 if [[ $1 == "s" ]]
 then
     msg "EvoMod-Sim; substitution model."
     stack exec evomod-sim -- \
-          -t $file_tree -o evomod-sim.out -m "HKY[6.0]{0.2,0.3,0.3,0.2}" -l 10000 -s [0] || exit 1
+          -t "$file_tree" -o evomod-sim.out -m "HKY[6.0]{0.2,0.3,0.3,0.2}" -l 10000 -s [0] || exit 1
 elif [[ $1 == "e" ]]
 then
     msg "EvoMod-Sim; empirical distribution mixture model."
     file_edm=../data/EDMDistsPhylobayes.txt
     stack exec evomod-sim -- \
-          -t $file_tree -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -l 1000 -s [0] || exit 1
+          -t "$file_tree" -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -l 1000 -s [0] || exit 1
 elif [[ $1 == "w" ]]
 then
     msg "EvoMod-Sim; empirical distribution mixture model with custom weights."
     file_edm=../data/EDMDistsPhylobayes.txt
     stack exec evomod-sim -- \
-          -t $file_tree -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -w "[0.9,0.05,0.03,0.02]" -l 1000 -s [0] || exit 1
+          -t "$file_tree" -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -w "[0.9,0.05,0.03,0.02]" -l 1000 -s [0] || exit 1
 elif [[ $1 == "c" ]]
 then
     msg "EvoMod-Sim; CXX distribution mixture model."
     stack exec evomod-sim -- \
-          -t $file_tree -o evomod-sim.out -m "C20" -l 1000 -s [0] || exit 1
+          -t "$file_tree" -o evomod-sim.out -m "C20" -l 1000 -s [0] || exit 1
 elif [[ $1 == "g" ]]
 then
     msg "EvoMod-Sim; gamma rate heterogeneity."
     stack exec evomod-sim -- \
-          -t $file_tree -o evomod-sim.out -g "(4,0.2)" -m "HKY[6.0]{0.2,0.3,0.3,0.2}" -l 10000 -s [0] || exit 1
+          -t "$file_tree" -o evomod-sim.out -g "(4,0.2)" -m "HKY[6.0]{0.2,0.3,0.3,0.2}" -l 10000 -s [0] || exit 1
 elif [[ $1 == "cg" ]]
 then
     msg "EvoMod-Sim; CXX distribution mixture model with gamma rate heterogeneity."
     stack exec evomod-sim -- \
-          -t $file_tree -o evomod-sim.out -m "C10" -g "(4,0.2)" -l 1000 -s [0] || exit 1
+          -t "$file_tree" -o evomod-sim.out -m "C10" -g "(4,0.2)" -l 1000 -s [0] || exit 1
 else
     msg "Usage: ./evomod-sim (s|e|w|c|g|cg)"
     exit 1

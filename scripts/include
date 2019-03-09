@@ -32,5 +32,13 @@ if [[ -t 2 ]]; then
 fi
 readonly ALL_OFF BOLD BLUE GREEN RED YELLOW
 
+project_root=$(stack path | grep project-root | cut -d " " -f 2)
+if [[ -z $project_root ]]
+then
+    echo "Error during project root determination."
+    exit 1
+fi
+export project_root
+
 export prof_dir=".stack-work-profiling"
-export test_dir=".stack-work-testing"
+export prod_dir=".stack-work-production"

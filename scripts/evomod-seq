@@ -2,22 +2,20 @@
 
 source include
 
-./build fast || exit 1
-
-file_DNA=../data/Nucleotide.fasta
-file_AA=../data/AminoAcid.fasta
+file_DNA="${project_root}/data/Nucleotide.fasta"
+file_AA="${project_root}/data/AminoAcid.fasta"
 
 msg "EvoMod-Seq; summarize DNA."
-stack exec evomod-seq -- summarize -a DNA $file_DNA || exit 1
+stack exec evomod-seq -- summarize -a DNA "$file_DNA" || exit 1
 
 msg "EvoMod-Seq; summarize protein data."
-stack exec evomod-seq -- summarize -a Protein $file_AA || exit 1
+stack exec evomod-seq -- summarize -a Protein "$file_AA" || exit 1
 
 msg "EvoMod-Seq; concatenate DNA."
-stack exec evomod-seq -- concatenate -a DNA $file_DNA $file_DNA || exit 1
+stack exec evomod-seq -- concatenate -a DNA "$file_DNA" "$file_DNA" || exit 1
 
 msg "EvoMod-Seq; summarize; test if quiet."
-stack exec evomod-seq -- summarize -a DNA -q $file_DNA || exit 1
+stack exec evomod-seq -- summarize -a DNA -q "$file_DNA" || exit 1
 
 msg "EvoMod-Seq; analyze DNA."
-stack exec evomod-seq -- analyze -a DNA $file_DNA || exit 1
+stack exec evomod-seq -- analyze -a DNA "$file_DNA" || exit 1

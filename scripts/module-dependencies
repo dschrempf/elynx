@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 
-cwd=$(pwd)
+source include
 
-cd .. || exit 1
+cd "${project_root}" || exit 1
 
-graphmod -q -a \
+dot_file="${project_root}/scripts/module-dependencies.dot"
+
+graphmod -q \
          -r Main \
          -r ParseModuleString \
          -r EvoMod.ArgParse \
-         -r EvoMod.Tools \
+         -R EvoMod.Tools \
          -r EvoMod.Definitions \
-         . > "${cwd}/module-dependencies.dot" \
+         . > "$dot_file" \
     || exit 1
 
-cd "$cwd" || exit 1
-
-xdot module-dependencies.dot
+xdot "$dot_file"

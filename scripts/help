@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 source include
-./build fast || exit 1
 
 msg "EvoMod-Seq help text."
 stack exec evomod-seq -- --help || exit 1

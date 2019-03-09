@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
+source include
+
+pr="$project_root"
+
 while IFS= read -r -d '' file
 do
     stylish-haskell -i "$file"
-done < <(find ../src/ ../test/ ../app/ -name '*.hs' -print0)
+done < <(find "${pr}/src"/ "${pr}/test"/ "${pr}/app/" -name '*.hs' -print0)

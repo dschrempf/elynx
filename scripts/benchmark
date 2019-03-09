@@ -2,9 +2,7 @@
 
 source include
 
-./build prod || exit 1
-
-file_benchmark=../data/BenchmarkEnsemblMouse.fa.gz
+file_benchmark="${project_root}/data/BenchmarkEnsemblMouse.fa.gz"
 
 msg "EvoMod-Seq benchmark."
-stack exec evomod-seq -- summarize -a DNA_IUPAC $file_benchmark  +RTS -s || exit 1
+stack --work-dir "$prod_dir" exec evomod-seq -- summarize -a DNAIUPAC "$file_benchmark"  +RTS -s || exit 1

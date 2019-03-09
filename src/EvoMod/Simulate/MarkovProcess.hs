@@ -24,7 +24,7 @@ import           Numeric.LinearAlgebra
 import           System.Random.MWC
 import           System.Random.MWC.Distributions
 
-import EvoMod.Data.MarkovProcess.RateMatrix
+import           EvoMod.Data.MarkovProcess.RateMatrix
 
 -- | A probability matrix, P_ij(t) = Pr (X_t = j | X_0 = i).
 type ProbMatrix = Matrix R
