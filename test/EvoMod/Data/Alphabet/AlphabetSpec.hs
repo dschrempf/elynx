@@ -22,7 +22,7 @@ import qualified Data.Vector.Storable          as V
 import           EvoMod.Data.Alphabet.Alphabet
 
 codes :: [Code]
-codes = [DNA, DNA_IUPAC, Protein, ProteinIUPAC]
+codes = [DNA, DNAIUPAC, Protein, ProteinIUPAC]
 
 alphabets :: [Alphabet]
 alphabets = map alphabet codes

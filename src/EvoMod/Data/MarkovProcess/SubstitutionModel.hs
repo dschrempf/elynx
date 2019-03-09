@@ -15,7 +15,7 @@ Creation date: Tue Jan 29 19:10:46 2019.
 -}
 
 module EvoMod.Data.MarkovProcess.SubstitutionModel
-  ( Name
+  ( SubstitutionModelName
   , SubstitutionModel (SubstitutionModel)
   , smCode
   , smName
@@ -36,12 +36,12 @@ import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.RateMatrix
 
 -- | Name of substitution model; abstracted and subject to change.
-type Name = L.ByteString
+type SubstitutionModelName = L.ByteString
 
 -- | Complete definition of a substitution model.
 data SubstitutionModel = SubstitutionModel
   { _code                   :: Code
-  , _name                   :: Name
+  , _name                   :: SubstitutionModelName
   , _params                 :: [Double]
   , _stationaryDistribution :: StationaryDistribution
   , _exchangeabilityMatrix             :: ExchangeabilityMatrix
@@ -59,7 +59,7 @@ smCode :: Lens' SubstitutionModel Code
 smCode = code
 
 -- | Access name.
-smName :: Lens' SubstitutionModel Name
+smName :: Lens' SubstitutionModel SubstitutionModelName
 smName = name
 
 -- | Access stationary distribution.
@@ -75,11 +75,11 @@ scaleSubstitutionModel :: Double -> SubstitutionModel -> SubstitutionModel
 scaleSubstitutionModel s = over exchangeabilityMatrix (scale s)
 
 -- | Rename a substitution model.
-renameSubstitutionModel :: Name -> SubstitutionModel -> SubstitutionModel
+renameSubstitutionModel :: SubstitutionModelName -> SubstitutionModel -> SubstitutionModel
 renameSubstitutionModel = set name
 
 -- | Abbend to name.
-appendNameSubstitutionModel :: Name -> SubstitutionModel -> SubstitutionModel
+appendNameSubstitutionModel :: SubstitutionModelName -> SubstitutionModel -> SubstitutionModel
 appendNameSubstitutionModel n = over name (<> n)
 
 -- | Summarize a substitution model; lines to be printed to screen or log.

@@ -10,6 +10,10 @@ Portability :  portable
 
 Creation date: Fri Oct  5 08:41:05 2018.
 
+XXX: Somehow this implementation still uses 2.5 times the memory that it
+actually needs to use. I think that when parsing the sequences, the lines are
+copied into the complete sequence (see the function 'fastaSequence').
+
 -}
 
 module Main where
@@ -42,7 +46,8 @@ instance Logger Params where
 type Seq = ReaderT Params IO
 
 act :: Command -> [[Sequence]] -> Either L.ByteString L.ByteString
-act Summarize sss      = Right . L.intercalate (L.pack "\n") $ map summarizeSequenceList sss
+-- act Summarize sss      = Right . L.intercalate (L.pack "\n") $ map summarizeSequenceList sss
+act Summarize sss      = Right . L.intercalate (L.pack "\n") $ map (summarizeMSA . fromSequenceList) sss
 act Concatenate sss    = sequencesToFasta <$> concatenateSeqs sss
 act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
   where filters        = map (fromMaybe id) [ filterLongerThan <$> ml

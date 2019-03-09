@@ -20,7 +20,8 @@ msg "EvoMode-Seq profiling run."
 file_profile=../data/Profile.fa.gz
 stack exec evomod-seq --work-dir $prof_dir -- \
       summarize -a DNA_IUPAC $file_profile \
-      +RTS -p -hy -l -s || exit 1
+      +RTS -p -l -s || exit 1
+      # +RTS -p -hy -l -s || exit 1
 
 msg "EvoMode-Sim profiling run."
 file_tree=../data/Newick.tree

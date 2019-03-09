@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 {- |
 Module      :  EvoMod.Import.Sequence.Fasta
 Description :  Import Fasta sequences.
@@ -25,6 +27,7 @@ module EvoMod.Import.Sequence.Fasta
 
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8    as L
+import qualified Data.Set                      as S
 import           Data.Void
 import           Data.Word                     (Word8)
 import           Text.Megaparsec
@@ -43,19 +46,27 @@ allowedHeaderChar = alphaNumChar <|> oneOf (map c2w ['_', '|', '.'])
 sequenceHeader :: Parser [Word8]
 sequenceHeader = char (c2w '>') *> some allowedHeaderChar <* eol
 
-sequenceLine :: Code -> Parser L.ByteString
-sequenceLine code = do
-  xs <- takeWhile1P (Just "Alphabet character") (inAlphabet code)
+-- It is a little faster to directly pass the set of allowed characters. Then,
+-- this set only has to be calculcated once per sequence in 'fastaSequence'.
+sequenceLine :: S.Set Word8 -> Parser L.ByteString
+sequenceLine s = do
+  !xs <- takeWhile1P (Just "Alphabet character") (`S.member` s)
   _  <- void eol <|> eof
   return xs
 
+-- XXX: If sequences are parsed line by line, the lines have to be copied when
+-- forming the complete sequence. This is not very memory efficient.
+
 -- | Parse a sequence of 'Alphabet' 'EvoMod.Data.Alphabet.Character's.
 fastaSequence :: Code -> Parser Sequence
-fastaSequence code = do hd <- sequenceHeader
-                        cs <- some (sequenceLine code)
-                        _  <- many eol
-                        let hd' = L.pack $ map w2c hd
-                        return $ toSequence hd' code (L.concat cs)
+fastaSequence c = do hd <- sequenceHeader
+                     let hd' = L.pack $ map w2c hd
+                         -- The formation of the alphabet could be pulled into
+                         -- 'fasta'.
+                         !a  = fromAlphabetLookup $ alphabetLookup c
+                     cs <- some (sequenceLine a)
+                     _  <- many eol
+                     return $ Sequence hd' c (L.concat cs)
 
 -- | Parse a Fasta file assuming 'Code'.
 fasta :: Code -> Parser [Sequence]

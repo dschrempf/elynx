@@ -38,6 +38,7 @@ module EvoMod.Data.Alphabet.Alphabet
   )
 where
 
+import qualified Data.MemoCombinators            as Memo
 import qualified Data.Set                        as S
 import qualified Data.Vector.Storable            as V
 import           Data.Word8                      (Word8, toUpper)
@@ -49,13 +50,13 @@ import           EvoMod.Tools.Misc               (allValues)
 
 -- | The used genetic code. Could include Protein_IUPAC, CountsFile for
 -- population data and so on.
-data Code = DNA | DNA_IUPAC | Protein | ProteinIUPAC
+data Code = DNA | DNAIUPAC | Protein | ProteinIUPAC
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 -- | Verbose version of code name.
 codeNameVerbose :: Code -> String
 codeNameVerbose DNA          = show DNA ++ " (nucleotides)"
-codeNameVerbose DNA_IUPAC    = show DNA_IUPAC ++ " (nucleotides including IUPAC codes)"
+codeNameVerbose DNAIUPAC     = show DNAIUPAC ++ " (nucleotides including IUPAC codes)"
 codeNameVerbose Protein      = show Protein ++ " (amino acids)"
 codeNameVerbose ProteinIUPAC = show ProteinIUPAC ++ " (amino acids including IUPAC codes)"
 
@@ -72,7 +73,7 @@ toAlphabet = Alphabet . V.fromList . map toWord
 -- new codes have to be added manually, but the type handling is cleaner.
 alphabet :: Code -> Alphabet
 alphabet DNA          = toAlphabet (allValues :: [Nucleotide])
-alphabet DNA_IUPAC    = toAlphabet (allValues :: [NucleotideIUPAC])
+alphabet DNAIUPAC     = toAlphabet (allValues :: [NucleotideIUPAC])
 alphabet Protein      = toAlphabet (allValues :: [AminoAcid])
 alphabet ProteinIUPAC = toAlphabet (allValues :: [AminoAcidIUPAC])
 
@@ -84,11 +85,16 @@ alphabet ProteinIUPAC = toAlphabet (allValues :: [AminoAcidIUPAC])
 newtype AlphabetLookup = AlphabetLookup { fromAlphabetLookup :: S.Set Word8 }
   deriving (Show, Read, Eq, Ord)
 
--- | Create an alphabet for lookups from 'Code'.
-alphabetLookup :: Code -> AlphabetLookup
-alphabetLookup = AlphabetLookup . S.fromList . V.toList . fromAlphabet . alphabet
+-- Create an alphabet for lookups from 'Code'.
+alphabetLookup' :: Code -> AlphabetLookup
+alphabetLookup' = AlphabetLookup . S.fromList . V.toList . fromAlphabet . alphabet
 
--- | For a given code, check if character is in alphabet.
+-- | Create an alphabet for lookups from 'Code'; memoized.
+alphabetLookup :: Code -> AlphabetLookup
+alphabetLookup = Memo.enum alphabetLookup'
+
+-- | For a given code, check if character is in alphabet. Although sets and
+-- memoization is used, a direct check with 'S.member' is faster!
 inAlphabet :: Code -> Word8 -> Bool
 inAlphabet code char = toUpper char `S.member` fromAlphabetLookup (alphabetLookup code)
 
@@ -107,7 +113,7 @@ indexToCharacter code i = (fromAlphabet . alphabet $ code) V.! i
 -- | Convert a character (Word8) to integer index in alphabet.
 characterToIndex :: Code -> Word8 -> Int
 characterToIndex DNA          char = fromEnum (fromWord char :: Nucleotide)
-characterToIndex DNA_IUPAC    char = fromEnum (fromWord char :: NucleotideIUPAC)
+characterToIndex DNAIUPAC     char = fromEnum (fromWord char :: NucleotideIUPAC)
 characterToIndex Protein      char = fromEnum (fromWord char :: AminoAcid)
 characterToIndex ProteinIUPAC char = fromEnum (fromWord char :: AminoAcidIUPAC)
 
@@ -118,7 +124,7 @@ indicesToCharacters c = map (indexToCharacter c)
 -- | Convert from IUPAC.
 fromIUPAC :: Code -> Word8 -> (Code, [Word8])
 fromIUPAC DNA          char = (DNA,     [char])
-fromIUPAC DNA_IUPAC    char = (DNA,     map toWord $ fromIUPACNucleotide
+fromIUPAC DNAIUPAC     char = (DNA,     map toWord $ fromIUPACNucleotide
                                 (fromWord char :: NucleotideIUPAC))
 fromIUPAC Protein      char = (Protein, [char])
 fromIUPAC ProteinIUPAC char = (Protein, map toWord $ fromIUPACAminoAcid

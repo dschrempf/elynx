@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 {- |
 Module      :  EvoMod.Data.MultiSequenceAlignment
 Description :  Multi sequence alignment related types and functions.
@@ -14,7 +16,7 @@ Creation date: Thu Oct  4 18:40:18 2018.
 
 
 module EvoMod.Data.Sequence.MultiSequenceAlignment
-  ( MultiSequenceAlignment (..)
+  ( MultiSequenceAlignment (MultiSequenceAlignment)
   , msaLength
   , msaNSequences
   -- | * Input, output
@@ -33,59 +35,103 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , kEffMean
   ) where
 
+import           Control.Lens
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8                 as L
 import qualified Data.Matrix.Storable                       as M
+import qualified Data.Vector.Storable                       as V
 import           Data.Word8                                 (Word8)
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Alphabet.DistributionDiversity
+import           EvoMod.Data.Sequence.Defaults
 import           EvoMod.Data.Sequence.Sequence
+import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality
 import           EvoMod.Tools.Matrix
 import           EvoMod.Tools.Misc
 
 -- | A collection of sequences.
-data MultiSequenceAlignment = MSA { msaNames :: [SequenceName]
-                                  , msaCode  :: Code
-                                  , msaData  :: M.Matrix Word8
-                                  }
+data MultiSequenceAlignment = MultiSequenceAlignment
+  { _names  :: [SequenceName]
+  , _code   :: Code
+  , _matrix :: M.Matrix Word8
+  }
+
+makeLenses ''MultiSequenceAlignment
 
 -- | Number of sites.
 msaLength :: MultiSequenceAlignment -> Int
-msaLength (MSA _ _ d) = M.cols d
+msaLength = M.cols . view matrix
 
 -- | Number of sequences.
 msaNSequences :: MultiSequenceAlignment -> Int
-msaNSequences (MSA _ _ d) = M.rows d
+msaNSequences = M.rows . view matrix
 
 -- | Create 'MultiSequenceAlignment' from a list of 'Sequence's.
 fromSequenceList :: [Sequence] -> MultiSequenceAlignment
 fromSequenceList ss
-  | equalLength ss && allEqual (map seqCode ss) = MSA names code d
+  | equalLength ss && allEqual (map (view seqCode) ss) = MultiSequenceAlignment ns cd d
   | otherwise = error "Sequences do not have equal length."
   where
-    names = map seqName ss
-    code  = seqCode $ head ss
-    vecs  = map seqCs ss
-    d     = M.fromRows vecs
+    ns   = map (view seqName) ss
+    cd   = head ss ^. seqCode
+    bss  = map (view seqCharacters) ss
+    vecs = map (V.fromList . map c2w . L.unpack) bss
+    d    = M.fromRows vecs
+
+vecToByteString :: V.Vector Word8 -> L.ByteString
+vecToByteString = L.pack . map w2c . V.toList
 
 -- | Conversion to list of 'Sequence's.
 toSequenceList :: MultiSequenceAlignment -> [Sequence]
-toSequenceList (MSA ns c d) = zipWith (\n r -> Sequence n c r) ns rows
+toSequenceList (MultiSequenceAlignment ns c d) = zipWith (\n r -> Sequence n c r) ns bss
   where
     rows  = M.toRows d
+    bss   = map vecToByteString rows
 
 msaHeader :: L.ByteString
-msaHeader = sequenceListHeader
+msaHeader = L.unwords [ alignLeft defSequenceNameWidth (L.pack "Name")
+                      , L.pack "Sequence" ]
+
+-- | Show a 'Sequence', untrimmed.
+showSequenceOfMultiSequenceAlignment :: MultiSequenceAlignment -> Int -> L.ByteString
+showSequenceOfMultiSequenceAlignment m i =
+  L.unwords [ alignLeft defSequenceNameWidth $ (m ^. names) !! i
+            , vecToByteString $ M.takeRow (m ^. matrix) i ]
+
+-- | Show a 'Sequence', untrimmed.
+summarizeSequenceOfMultiSequenceAlignment :: MultiSequenceAlignment -> Int -> L.ByteString
+summarizeSequenceOfMultiSequenceAlignment m i =
+  L.unwords [ alignLeft defSequenceNameWidth $ (m ^. names) !! i
+            , summarizeByteString defSequenceSummaryLength $
+              vecToByteString $ M.takeRow (m ^. matrix) i ]
 
 -- | Show a 'MultiSequenceAlignment' in text form.
 showMSA :: MultiSequenceAlignment -> L.ByteString
-showMSA msa = msaHeader <> showSequenceList (toSequenceList msa)
+showMSA msa = L.unlines $ msaHeader :
+  map (showSequenceOfMultiSequenceAlignment msa) [0 .. (msaNSequences msa - 1)]
+
+summarizeMSAHeader :: MultiSequenceAlignment -> L.ByteString
+summarizeMSAHeader msa = L.unlines $
+  [ L.pack "Multi sequence alignment."
+  , L.pack $ "Code: " ++ codeNameVerbose (msa ^. code) ++ "."
+  , L.pack $ "Length: " ++ show (msaLength msa) ++ "." ]
+  ++ reportLengthSummary ++ reportNumberSummary
+  where reportLengthSummary =
+          [ L.pack $ "For each sequence, the "
+            ++ show defSequenceSummaryLength ++ " first bases are shown."
+          | msaLength msa > defSequenceSummaryLength ]
+        reportNumberSummary =
+          [ L.pack $ show defSequenceListSummaryNumber ++ " out of " ++
+            show (msaNSequences msa) ++ " sequences are shown."
+          | msaNSequences msa > defSequenceListSummaryNumber ]
 
 -- | Similar to 'summarizeSequenceList' but with different Header.
 summarizeMSA :: MultiSequenceAlignment -> L.ByteString
-summarizeMSA msa = L.pack "Multi sequence alignment.\n" <> summarizeSequenceList (toSequenceList msa)
+summarizeMSA msa = L.unlines $ summarizeMSAHeader msa :
+  map (summarizeSequenceOfMultiSequenceAlignment msa) [0 .. n - 1]
+  where n = min (msaNSequences msa) defSequenceListSummaryNumber
 
 -- | Join two 'MultiSequenceAlignment's vertically. That is, add more sequences
 -- to an alignment. See also 'msaConcatenate'.
@@ -95,12 +141,12 @@ msaJoin :: MultiSequenceAlignment
 -- top bottom.
 msaJoin t b
   | msaLength t == msaLength b &&
-    msaCode t == msaCode b = Right $ MSA names (msaCode t) (tD === bD)
+    t ^. code   == b ^. code = Right $ MultiSequenceAlignment ns (t ^. code) (tD === bD)
   | otherwise  = Left $ L.pack "msaJoin: Multi sequence alignments do not have equal length."
   where
-    names = msaNames t ++ msaNames b
-    tD    = msaData t
-    bD    = msaData b
+    ns = t ^. names ++ b ^. names
+    tD = t ^. matrix
+    bD = t ^. matrix
 
 -- | Concatenate two 'MultiSequenceAlignment's horizontally. That is, add more
 -- sites to an alignment. See also 'msaJoin'.
@@ -110,11 +156,11 @@ msaConcatenate :: MultiSequenceAlignment
 -- left right.
 msaConcatenate l r
   | msaNSequences l == msaNSequences r &&
-    msaCode l == msaCode r = Right $ MSA (msaNames l) (msaCode l) (lD ||| rD)
+    l ^. code == r ^. code = Right $ MultiSequenceAlignment (l ^. names) (l ^. code) (lD ||| rD)
   | otherwise = Left $ L.pack "msaConcatenate: Multi sequence alignments do not have equal length."
   where
-    lD = msaData l
-    rD = msaData r
+    lD = l ^. matrix
+    rD = r ^. matrix
 
 -- | Concatenate a list of 'MultiSequenceAlignment's horizontally. See
 -- 'msaConcatenate'.
@@ -129,7 +175,7 @@ type FrequencyData = M.Matrix Double
 
 -- | Calculcate frequency of characters in multi sequence alignment.
 toFrequencyData :: MultiSequenceAlignment -> FrequencyData
-toFrequencyData (MSA _ c d) = fMapColParChunk 100 (frequencyCharacters c) d
+toFrequencyData (MultiSequenceAlignment _ c d) = fMapColParChunk 100 (frequencyCharacters c) d
 
 -- | Diversity analysis. See 'kEffEntropy'.
 kEffAll :: FrequencyData -> [Double]

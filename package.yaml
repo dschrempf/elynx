@@ -29,6 +29,7 @@ dependencies:
   - base
   - bytestring
   - containers
+  - data-memocombinators
   - hmatrix
   - integration
   - lens

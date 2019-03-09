@@ -15,7 +15,7 @@ Creation date: Tue Jan 29 19:17:40 2019.
 -}
 
 module EvoMod.Data.MarkovProcess.MixtureModel
-  ( Name
+  ( MixtureModelName
   , Weight
   , MixtureModelComponent (MixtureModelComponent)
   , summarizeMixtureModelComponent
@@ -57,25 +57,28 @@ summarizeMixtureModelComponent mmc =
   L.pack "Weight: " <> (L.toLazyByteString . L.doubleDec $ mmc ^. weight)
   : summarizeSubstitutionModel (mmc ^. substitutionModel)
 
+-- | Abstracted because may change in the future.
+type MixtureModelName = SubstitutionModelName
+
 -- | A mixture model with its components.
 data MixtureModel = MixtureModel
-  { _name       :: Name
+  { _name       :: MixtureModelName
   , _components :: [MixtureModelComponent]
   }
 
 makeLenses ''MixtureModel
 
 -- | Access name.
-mmName :: Lens' MixtureModel Name
+mmName :: Lens' MixtureModel MixtureModelName
 mmName = name
 
 -- | Create a mixture model from a list of substitution models.
-fromSubstitutionModels :: Name -> [Weight] -> [SubstitutionModel] -> MixtureModel
+fromSubstitutionModels :: MixtureModelName -> [Weight] -> [SubstitutionModel] -> MixtureModel
 fromSubstitutionModels n ws sms = MixtureModel n comps
   where comps = zipWith MixtureModelComponent ws sms
 
 -- | Concatenate mixture models.
-concatenateMixtureModels :: Name -> [MixtureModel] -> MixtureModel
+concatenateMixtureModels :: MixtureModelName -> [MixtureModel] -> MixtureModel
 concatenateMixtureModels n mms = MixtureModel n $ concatMap (view components) mms
 
 -- | Summarize a mixture model; lines to be printed to screen or log.
@@ -117,5 +120,5 @@ scaleMixtureModel :: Double -> MixtureModel -> MixtureModel
 scaleMixtureModel s = over (components . traverse . substitutionModel) (scaleSubstitutionModel s)
 
 -- | Append byte string to all substitution models of mixture model.
-appendNameMixtureModel :: Name -> MixtureModel -> MixtureModel
+appendNameMixtureModel :: MixtureModelName -> MixtureModel -> MixtureModel
 appendNameMixtureModel n = over (components . traverse . substitutionModel) (appendNameSubstitutionModel n)

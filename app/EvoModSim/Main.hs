@@ -82,7 +82,7 @@ simulateMSA pm t n g = do
   let leafStates = horizontalConcat leafStatesS
       leafNames  = map name $ leafs t
       code       = pmCode pm
-      sequences  = [ toSequence sName code (L.pack $ indicesToCharacters code ss) |
+      sequences  = [ Sequence sName code (L.pack $ indicesToCharacters code ss) |
                     (sName, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
 
