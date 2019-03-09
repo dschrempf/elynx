@@ -44,8 +44,9 @@ data SubstitutionModel = SubstitutionModel
   , _name                   :: SubstitutionModelName
   , _params                 :: [Double]
   , _stationaryDistribution :: StationaryDistribution
-  , _exchangeabilityMatrix             :: ExchangeabilityMatrix
+  , _exchangeabilityMatrix  :: ExchangeabilityMatrix
   }
+  deriving (Show, Read)
 
 makeLenses ''SubstitutionModel
 

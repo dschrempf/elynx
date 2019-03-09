@@ -48,6 +48,7 @@ data MixtureModelComponent = MixtureModelComponent
   { _weight            :: Weight
   , _substitutionModel :: SubstitutionModel
   }
+  deriving (Show, Read)
 
 makeLenses ''MixtureModelComponent
 
@@ -65,6 +66,7 @@ data MixtureModel = MixtureModel
   { _name       :: MixtureModelName
   , _components :: [MixtureModelComponent]
   }
+  deriving (Show, Read)
 
 makeLenses ''MixtureModel
 

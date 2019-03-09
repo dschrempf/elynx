@@ -101,6 +101,16 @@ instance Logger Params where
   quiet   = argsQuiet . arguments
   mHandle = mLogHandle
 
+-- TODO: Improve Show instance!
+reportModel :: PhyloModel -> Simulation ()
+reportModel m = do
+  args <- arguments <$> ask
+  let fnOut = argsFileOut args
+      modelFn = fnOut ++ ".model"
+  lift $ writeFile modelFn (show m)
+  logS $ "Exact model definition written to '" ++ modelFn ++ "'."
+  logS ""
+
 simulate :: Simulation ()
 simulate = do
   args <- arguments <$> ask
@@ -131,8 +141,7 @@ simulate = do
     Just (n, alpha) -> do
       logLBS $ LC.unlines $ pmSummarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
       return $ expand n alpha phyloModel'
-
-  -- TODO: Write exact phylomodel into "outFile.model". Probably use Show type class?
+  reportModel phyloModel
 
   logS "Simulate alignment."
   logS $ "Length: " ++ show alignmentLength ++ "."

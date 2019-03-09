@@ -16,6 +16,8 @@ evomod-sim.hp
 evomod-sim.prof
 evomod-sim.ps
 evomod-sim.out
+evomod-sim.out.log
+evomod-sim.out.model
 /scripts/iqtree-verify.*
 
 # IQ-TREE files.
