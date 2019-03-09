@@ -24,6 +24,7 @@ refactoring.
 
 module EvoMod.Data.Sequence.Sequence
   ( SequenceName
+  , SequenceCharacters
   , Sequence (Sequence)
   , seqName
   , seqCode

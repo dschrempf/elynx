@@ -18,7 +18,8 @@ rate heterogeneity components though.
 -}
 
 module EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
-  ( expand
+  ( summarizeGammaRateHeterogeneity
+  , expand
   ) where
 
 import           Control.Lens
@@ -30,6 +31,13 @@ import           Statistics.Distribution.Gamma
 import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.PhyloModel
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
+
+-- | Short summary of gamma rate heterogeneity parameters.
+summarizeGammaRateHeterogeneity :: Int -> Double -> [L.ByteString]
+summarizeGammaRateHeterogeneity n alpha = map L.pack
+  [ "Discrete gamma rate heterogeneity."
+  , "Number of categories: " ++ show n ++ "."
+  , "Shape parameter of gamma distribution: "++ show alpha ++ "." ]
 
 -- | For a given number of rate categories, a gamma shape parameter alpha and a
 -- substitution model, compute the scaled substitution models corresponding to

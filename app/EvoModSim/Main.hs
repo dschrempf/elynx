@@ -117,22 +117,23 @@ simulate = do
       logS "Read EDM file."
       lift $ Just <$> parseFileWith phylobayes edmF
   maybe (return ()) (logLBS . summarizeEDMComponents) edmCs
-  logS ""
+
   logS "Read model string."
   let phyloModelStr = argsPhyloModelString args
       maybeWeights = argsMaybeMixtureWeights args
       maybeGammaParams = argsMaybeGammaParams args
       phyloModel' = parseByteStringWith (phyloModelString edmCs maybeWeights) phyloModelStr
-      phyloModel = case maybeGammaParams of
-        Nothing         -> phyloModel'
-        Just (n, alpha) -> expand n alpha phyloModel'
       alignmentLength = argsLength args
-
-  -- TODO: Summarize model before it is expanded and state that gamma rate heterogeneity is used.
+  phyloModel <- case maybeGammaParams of
+    Nothing         -> do
+      logLBS $ LC.unlines $ pmSummarize phyloModel'
+      return phyloModel'
+    Just (n, alpha) -> do
+      logLBS $ LC.unlines $ pmSummarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
+      return $ expand n alpha phyloModel'
 
   -- TODO: Write exact phylomodel into "outFile.model". Probably use Show type class?
 
-  logLBS $ LC.unlines $ pmSummarize phyloModel
   logS "Simulate alignment."
   logS $ "Length: " ++ show alignmentLength ++ "."
   let maybeSeed = argsMaybeSeed args

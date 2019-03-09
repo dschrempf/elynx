@@ -14,6 +14,8 @@ XXX: Somehow this implementation still uses 2.5 times the memory that it
 actually needs to use. I think that when parsing the sequences, the lines are
 copied into the complete sequence (see the function 'fastaSequence').
 
+XXX: Provide possibility to parse and handle sequences with different codes.
+
 -}
 
 module Main where
@@ -46,8 +48,7 @@ instance Logger Params where
 type Seq = ReaderT Params IO
 
 act :: Command -> [[Sequence]] -> Either L.ByteString L.ByteString
--- act Summarize sss      = Right . L.intercalate (L.pack "\n") $ map summarizeSequenceList sss
-act Summarize sss      = Right . L.intercalate (L.pack "\n") $ map (summarizeMSA . fromSequenceList) sss
+act Summarize sss      = Right . L.intercalate (L.pack "\n") $ map summarizeSequenceList sss
 act Concatenate sss    = sequencesToFasta <$> concatenateSeqs sss
 act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
   where filters        = map (fromMaybe id) [ filterLongerThan <$> ml
@@ -70,9 +71,8 @@ work = do
   args <- arguments <$> ask
   header <- lift programHeader
   logS header
-  logS "Read fasta file(s)."
   let c = argsCode args
-  logS $ "Code: " ++ show c ++ "."
+  logS $ "Read fasta file(s); code " ++ show c ++ "."
   logS ""
   let fns = argsFileNames args
   -- 'sss' is a little weird, but it is a list of a list of sequences.
