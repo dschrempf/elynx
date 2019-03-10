@@ -52,7 +52,7 @@ if [[ $1 == "m" || $1 == "a" ]]
 then
     msg "EvoMod-Sim; standard mixture model."
     stack exec evomod-sim -- \
-          -t "$file_tree" -o evomod-sim.out -m "MIXTURE(JC,HKY[6.0]{0.3,0.2,0.2,0.3})" -w "[0.4,0.6]" -l 1000 -S [0] || exit 1
+          -t "$file_tree" -o evomod-sim.out -m "MIXTURE(JC,HKY[6.0]{0.25,0.25,0.25,0.25})" -w "[0.4,0.6]" -l 20000 -S [0] || exit 1
 fi
 
 if [[ $1 == "h" ]]
