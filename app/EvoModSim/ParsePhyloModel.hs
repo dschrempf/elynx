@@ -71,16 +71,19 @@ mmStart = c2w '('
 mmEnd :: Word8
 mmEnd = c2w ')'
 
+separator :: Word8
+separator = c2w ','
+
 name :: Parser String
 name = L.unpack <$>
-  takeWhile1P (Just "Model name") (`notElem` [paramsStart, paramsEnd, sdStart, sdEnd, mmStart, mmEnd])
+  takeWhile1P (Just "Model name") (`notElem` [paramsStart, paramsEnd, sdStart, sdEnd, mmStart, mmEnd, separator])
 
 params :: Parser [Double]
-params = between (char paramsStart) (char paramsEnd) (sepBy1 float (char $ c2w ','))
+params = between (char paramsStart) (char paramsEnd) (sepBy1 float (char separator))
 
 stationaryDistribution :: Parser StationaryDistribution
 stationaryDistribution = do
-  f <- vector <$> between (char sdStart) (char sdEnd) (sepBy1 float (char $ c2w ','))
+  f <- vector <$> between (char sdStart) (char sdEnd) (sepBy1 float (char separator))
   if nearlyEq (norm_1 f) 1.0
     then return f
     else error $ "Sum of stationary distribution is " ++ show (norm_1 f)
@@ -136,20 +139,30 @@ edmModel cs mws = do
 
 cxxModel :: Maybe [Weight] -> Parser MixtureModel
 cxxModel mws = do
-  n <- name
+  _ <- char (c2w 'C')
+  n <- decimal :: Parser Int
   case n of
-    "C10" -> return $ c10CustomWeights mws
-    "C20" -> return $ c20CustomWeights mws
-    "C30" -> return $ c30CustomWeights mws
-    "C40" -> return $ c40CustomWeights mws
-    "C50" -> return $ c50CustomWeights mws
-    "C60" -> return $ c60CustomWeights mws
-    _     -> fail "Not a CXX model."
+    10 -> return $ c10CustomWeights mws
+    20 -> return $ c20CustomWeights mws
+    30 -> return $ c30CustomWeights mws
+    40 -> return $ c40CustomWeights mws
+    50 -> return $ c50CustomWeights mws
+    60 -> return $ c60CustomWeights mws
+    _     -> fail "Only 10, 20, 30, 40, 50, and 60 components are supported."
 
--- TODO. MIX(...).
+standardMixtureModel :: [Weight] -> Parser MixtureModel
+standardMixtureModel ws = do
+  _ <- chunk (bs "MIXTURE")
+  _ <- char mmStart
+  sms <- substitutionModel `sepBy1` char separator
+  _ <- char mmEnd
+  return $ MixtureModel (L.pack "MIXTURE")
+    [ MixtureModelComponent w sm | (w, sm) <- zip ws sms]
+
 mixtureModel :: Maybe [EDMComponent] -> Maybe [Weight] -> Parser MixtureModel
-mixtureModel Nothing   = cxxModel
-mixtureModel (Just cs) = edmModel cs
+mixtureModel Nothing   Nothing       = try (cxxModel Nothing) <|> fail "No weights provided."
+mixtureModel Nothing   mws@(Just ws) = try (cxxModel mws) <|> standardMixtureModel ws
+mixtureModel (Just cs) mws           = edmModel cs mws
 
 -- | Parse the phylogenetic model string. The argument list is somewhat long,
 -- but models can have many parameters and we have to check for redundant
