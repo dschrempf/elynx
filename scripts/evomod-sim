@@ -4,40 +4,51 @@ source include
 
 file_tree="${project_root}/data/Newick.tree"
 
-if [[ $1 == "s" ]]
+if [[ $1 == "s" || $1 == "a" ]]
 then
     msg "EvoMod-Sim; substitution model."
     stack exec evomod-sim -- \
           -t "$file_tree" -o evomod-sim.out -s "HKY[6.0]{0.2,0.3,0.3,0.2}" -l 10000 -S [0] || exit 1
-elif [[ $1 == "e" ]]
+fi
+
+if [[ $1 == "e" || $1 == "a" ]]
 then
     msg "EvoMod-Sim; empirical distribution mixture model."
     file_edm=../data/EDMDistsPhylobayes.txt
     stack exec evomod-sim -- \
-          -t "$file_tree" -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -l 1000 -S [0] || exit 1
-elif [[ $1 == "w" ]]
+          -t "$file_tree" -o evomod-sim.out -e $file_edm -m "EDM(LG-Custom)" -l 1000 -S [0] || exit 1
+fi
+
+if [[ $1 == "w" || $1 == "a" ]]
 then
     msg "EvoMod-Sim; empirical distribution mixture model with custom weights."
     file_edm=../data/EDMDistsPhylobayes.txt
     stack exec evomod-sim -- \
-          -t "$file_tree" -o evomod-sim.out -e $file_edm -m "EDM[LG-Custom]" -w "[0.9,0.05,0.03,0.02]" -l 1000 -S [0] || exit 1
-elif [[ $1 == "c" ]]
+          -t "$file_tree" -o evomod-sim.out -e $file_edm -m "EDM(LG-Custom)" -w "[0.9,0.05,0.03,0.02]" -l 1000 -S [0] || exit 1
+fi
+
+if [[ $1 == "c" || $1 == "a" ]]
 then
     msg "EvoMod-Sim; CXX distribution mixture model."
     stack exec evomod-sim -- \
           -t "$file_tree" -o evomod-sim.out -m "C20" -l 1000 -S [0] || exit 1
-elif [[ $1 == "g" ]]
+fi
+
+if [[ $1 == "g" || $1 == "a" ]]
 then
     msg "EvoMod-Sim; gamma rate heterogeneity."
     stack exec evomod-sim -- \
           -t "$file_tree" -o evomod-sim.out -g "(4,0.2)" -s "HKY[6.0]{0.2,0.3,0.3,0.2}" -l 10000 -S [0] || exit 1
-elif [[ $1 == "cg" ]]
+fi
+
+if [[ $1 == "cg" || $1 == "a" ]]
 then
     msg "EvoMod-Sim; CXX distribution mixture model with gamma rate heterogeneity."
     stack exec evomod-sim -- \
           -t "$file_tree" -o evomod-sim.out -m "C10" -g "(4,0.2)" -l 1000 -S [0] || exit 1
-else
-    msg "Usage: ./evomod-sim (s|e|w|c|g|cg)"
-    exit 1
 fi
 
+if [[ $1 == "h" ]]
+then
+    msg "Usage: ./evomod-sim (a|s|e|w|c|g|cg)"
+fi

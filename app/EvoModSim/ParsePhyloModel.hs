@@ -73,7 +73,7 @@ mmEnd = c2w ')'
 
 name :: Parser String
 name = L.unpack <$>
-  takeWhile1P (Just "Model name") (`notElem` [paramsStart, paramsEnd, sdStart])
+  takeWhile1P (Just "Model name") (`notElem` [paramsStart, paramsEnd, sdStart, sdEnd, mmStart, mmEnd])
 
 params :: Parser [Double]
 params = between (char paramsStart) (char paramsEnd) (sepBy1 float (char $ c2w ','))
