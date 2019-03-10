@@ -13,7 +13,7 @@ Creation date: Fri Feb  1 13:32:16 2019.
 -}
 
 module ParsePhyloModel
-  ( phyloModelString
+  ( getPhyloModel
   ) where
 
 import qualified Data.ByteString.Lazy.Char8                     as L
@@ -26,6 +26,8 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
+import           ArgParseSim
+
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.AminoAcid
 import           EvoMod.Data.MarkovProcess.CXXModels
@@ -37,6 +39,7 @@ import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes (EDMComponent)
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality
+import           EvoMod.Tools.InputOutput
 
 type Parser = Parsec Void L.ByteString
 
@@ -49,21 +52,31 @@ nNuc = cardinalityFromCode DNA
 nAA :: Int
 nAA = cardinalityFromCode Protein
 
+-- Model parameters between square brackets.
 paramsStart :: Word8
 paramsStart = c2w '['
 
 paramsEnd :: Word8
 paramsEnd = c2w ']'
 
+-- Stationary distribution between curly brackets.
 sdStart :: Word8
 sdStart = c2w '{'
 
 sdEnd :: Word8
 sdEnd = c2w '}'
 
+-- TODO. MIX(...).
+-- Mixture model components between round brackets.
+-- mmStart :: Word8
+-- mmStart = c2w '('
+
+-- mmEnd :: Word8
+-- mmEnd = c2w ')'
+
 name :: Parser String
 name = L.unpack <$>
-  takeWhile1P (Just "Substitution model name") (`notElem` [paramsStart, paramsEnd, sdStart])
+  takeWhile1P (Just "Model name") (`notElem` [paramsStart, paramsEnd, sdStart])
 
 params :: Parser [Double]
 params = between (char paramsStart) (char paramsEnd) (sepBy1 float (char $ c2w ','))
@@ -76,15 +89,15 @@ stationaryDistribution = do
     else error $ "Sum of stationary distribution is " ++ show (norm_1 f)
          ++ " but should be 1.0."
 
-type Params = [Double]
-
 assertLength :: StationaryDistribution -> Int -> a -> a
 assertLength f n r = if size f /= n
                     then error $ "Length of stationary distribution is " ++ show (size f)
                          ++ " but should be " ++ show n ++ "."
                     else r
 
-assembleSubstitutionModel :: String -> Maybe Params -> Maybe StationaryDistribution
+-- This is the main function that connects the model string, the parameters and
+-- the stationary distribution. It should check that the model is valid.
+assembleSubstitutionModel :: String -> Maybe SubstitutionModelParams -> Maybe StationaryDistribution
                           -> Either String SubstitutionModel
 -- DNA models.
 assembleSubstitutionModel "JC" Nothing Nothing = Right jc
@@ -94,6 +107,7 @@ assembleSubstitutionModel "LG" Nothing Nothing = Right lg
 assembleSubstitutionModel "LG-Custom" Nothing (Just f) = Right $ assertLength f nAA $ lgCustom f Nothing
 assembleSubstitutionModel "Poisson" Nothing Nothing = Right poisson
 assembleSubstitutionModel "Poisson-Custom" Nothing (Just f) = Right $ assertLength f nAA $ poissonCustom f Nothing
+-- Ohterwisse, we cannot assemble the model.
 assembleSubstitutionModel n mps mf = Left $ unlines
   [ "Cannot assemble substitution model. "
   , "Name: " ++ show n
@@ -110,8 +124,8 @@ substitutionModel = do
     Left err -> fail err
     Right sm -> return sm
 
-parseEDM :: [EDMComponent] -> Maybe [Double] -> Parser MixtureModel
-parseEDM cs mws = do
+edmModel :: [EDMComponent] -> Maybe [Weight] -> Parser MixtureModel
+edmModel cs mws = do
   _ <- chunk (bs "EDM")
   _ <- char paramsStart
   n <- name
@@ -123,8 +137,8 @@ parseEDM cs mws = do
   return $ MixtureModel edmName
     [ MixtureModelComponent w sm | (w, Right sm) <- zip ws sms ]
 
-parseCXX :: Maybe [Double] -> Parser MixtureModel
-parseCXX mws = do
+cxxModel :: Maybe [Weight] -> Parser MixtureModel
+cxxModel mws = do
   n <- name
   case n of
     "C10" -> return $ c10CustomWeights mws
@@ -135,27 +149,22 @@ parseCXX mws = do
     "C60" -> return $ c60CustomWeights mws
     _     -> fail "Not a CXX model."
 
-mixtureModel :: Maybe [EDMComponent] -> Maybe [Double] -> Parser MixtureModel
-mixtureModel Nothing   mws = parseCXX mws
-mixtureModel (Just cs) mws = parseEDM cs mws
+mixtureModel :: Maybe [EDMComponent] -> Maybe [Weight] -> Parser MixtureModel
+mixtureModel Nothing   = cxxModel
+mixtureModel (Just cs) = edmModel cs
 
--- TODO. Much cleaner like this.
--- phyloModelString :: Simulation PhyloModel
-
--- TODO: Improve model string handling.
--- Maybe:
--- -e exchangeabilities
--- -d stationary distribution
--- But how to define a mixture model then?
+-- | Parse the phylogenetic model string. The argument list is somewhat long,
+-- but models can have many parameters and we have to check for redundant
+-- parameters.
 --
--- Probably separate mixture models from substitution mdoels like so -m
--- MIXTUREMODEL (may be complemented with -g, -e and -w flags) -s
--- SUBSTITUTIONMODEL (may be complemented with -g flag only)
+-- @
+-- getPhyloModel maybeSubstitutionModelString maybeMixtureModelString maybeEDMComponents
+-- @
+getPhyloModel :: Maybe String -> Maybe String -> Maybe [Weight] -> Maybe [EDMComponent] -> Either String PhyloModel
+getPhyloModel Nothing Nothing _ _              = Left "No model was given. See help."
+getPhyloModel (Just _) (Just _) _ _            = Left "Both, substitution and mixture model string given; use only one."
+getPhyloModel (Just s) Nothing Nothing Nothing = Right $ PhyloSubstitutionModel $ parseStringWith substitutionModel s
+getPhyloModel (Just _) Nothing (Just _) _      = Left "Weights given; but cannot be used with substitution model."
+getPhyloModel (Just _) Nothing _ (Just _)      = Left "Empirical distribution mixture model components given; but cannot be used with substitution model."
+getPhyloModel Nothing (Just m) mws mcs         = Right $ PhyloMixtureModel $ parseStringWith (mixtureModel mcs mws) m
 
--- XXX: Already keep partition models in mind.
-
--- | Parse the phylogenetic model string.
-phyloModelString :: Maybe [EDMComponent] -> Maybe [Double] -> Parser PhyloModel
--- XXX: The EDM components have to be given. Make this more general.
-phyloModelString mcs mws = try (PhyloSubstitutionModel <$> substitutionModel)
-                           <|> (PhyloMixtureModel <$> mixtureModel mcs mws)

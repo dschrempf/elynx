@@ -120,6 +120,7 @@ simulate = do
   let treeFile = argsTreeFile args
   tree <- lift $ parseFileWith newick treeFile
   logLBS $ summarize tree
+
   let maybeEDMFile = argsMaybeEDMFile args
   edmCs <- case maybeEDMFile of
     Nothing   -> return Nothing
@@ -129,11 +130,15 @@ simulate = do
   maybe (return ()) (logLBS . summarizeEDMComponents) edmCs
 
   logS "Read model string."
-  let phyloModelStr = argsPhyloModelString args
-      maybeWeights = argsMaybeMixtureWeights args
-      maybeGammaParams = argsMaybeGammaParams args
-      phyloModel' = parseByteStringWith (phyloModelString edmCs maybeWeights) phyloModelStr
-      alignmentLength = argsLength args
+  let ms = argsMaybeSubstitutionModelString args
+      mm = argsMaybeMixtureModelString args
+      mws = argsMaybeMixtureWeights args
+      eitherPhyloModel' = getPhyloModel ms mm mws edmCs
+  phyloModel' <- case eitherPhyloModel' of
+    Left err -> lift $ error err
+    Right pm -> return pm
+
+  let maybeGammaParams = argsMaybeGammaParams args
   phyloModel <- case maybeGammaParams of
     Nothing         -> do
       logLBS $ LC.unlines $ pmSummarize phyloModel'
@@ -144,6 +149,7 @@ simulate = do
   reportModel phyloModel
 
   logS "Simulate alignment."
+  let alignmentLength = argsLength args
   logS $ "Length: " ++ show alignmentLength ++ "."
   let maybeSeed = argsMaybeSeed args
   gen <- case maybeSeed of

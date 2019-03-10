@@ -16,6 +16,7 @@ Creation date: Tue Jan 29 19:10:46 2019.
 
 module EvoMod.Data.MarkovProcess.SubstitutionModel
   ( SubstitutionModelName
+  , SubstitutionModelParams
   , SubstitutionModel (SubstitutionModel)
   , smCode
   , smName
@@ -38,11 +39,14 @@ import           EvoMod.Data.MarkovProcess.RateMatrix
 -- | Name of substitution model; abstracted and subject to change.
 type SubstitutionModelName = L.ByteString
 
+-- | Parameters of substitution model. May be the empty list.
+type SubstitutionModelParams = [Double]
+
 -- | Complete definition of a substitution model.
 data SubstitutionModel = SubstitutionModel
   { _code                   :: Code
   , _name                   :: SubstitutionModelName
-  , _params                 :: [Double]
+  , _params                 :: SubstitutionModelParams
   , _stationaryDistribution :: StationaryDistribution
   , _exchangeabilityMatrix  :: ExchangeabilityMatrix
   }

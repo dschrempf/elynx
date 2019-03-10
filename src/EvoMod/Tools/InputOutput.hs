@@ -21,6 +21,7 @@ module EvoMod.Tools.InputOutput
     -- * Parsing.
   , runParserOnFile
   , parseFileWith
+  , parseStringWith
   , parseByteStringWith
   ) where
 
@@ -52,8 +53,12 @@ parseFileWith p f = do res <- runParserOnFile p f
                          Left  err -> error $ errorBundlePretty err
                          Right val -> return val
 
+-- | Parse a 'String' and extract the result.
+parseStringWith :: (ShowErrorComponent e) => Parsec e L.ByteString a -> String -> a
+parseStringWith p s = parseByteStringWith p (L.pack s)
+
 -- | Parse a 'L.ByteString' and extract the result.
 parseByteStringWith :: (ShowErrorComponent e) => Parsec e L.ByteString a -> L.ByteString -> a
-parseByteStringWith p f = case parse p "" f of
+parseByteStringWith p s = case parse p "" s of
                             Left  err -> error $ errorBundlePretty err
                             Right val -> val

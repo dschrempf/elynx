@@ -10,6 +10,28 @@ Portability :  portable
 
 Creation date: Sun Oct  7 17:29:45 2018.
 
+Available options:
+  -h,--help                Show this help text
+  -v,--version             Show version
+  -t,--tree-file NAME      Specify tree file NAME
+  -s,--substitution-model MODEL
+                           Set the phylogenetic substitution model; available
+                           models are shown below
+  -m,--mixture-model MODEL Set the phylogenetic mixture model; available models
+                           are shown below
+  -l,--length NUMBER       Set alignment length to NUMBER
+  -e,--edm-file NAME       empirical distribution model file NAME in Phylobayes
+                           format
+  -w,--mixture-model-weights [DOUBLE,DOUBLE,...]
+                           weights of mixture model components
+  -g,--gamma-rate-heterogeneity (NCAT, SHAPE)
+                           number of gamma rate categories and shape parameter
+  -e,--seed INT            Set seed for the random number generator; list of 32
+                           bit integers with up to 256 elements (default: [0])
+  -q,--quiet               Be quiet
+  -o,--output-file NAME    Specify output file NAME
+
+
 -}
 
 
@@ -18,7 +40,6 @@ module ArgParseSim
   , parseEvoModSimArgs
   ) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
 import           Data.Word
 import           Options.Applicative
 
@@ -39,25 +60,27 @@ import           EvoMod.ArgParse
 type GammaRateHeterogeneityParams = (Int, Double)
 
 data EvoModSimArgs = EvoModSimArgs
-  { argsTreeFile            :: FilePath
-  , argsPhyloModelString    :: L.ByteString
-  , argsLength              :: Int
-  , argsMaybeEDMFile        :: Maybe FilePath
-  , argsMaybeMixtureWeights :: Maybe [Double]
-  , argsMaybeGammaParams    :: Maybe GammaRateHeterogeneityParams
-  , argsMaybeSeed           :: Maybe [Word32]
-  , argsQuiet               :: Bool
-  , argsFileOut             :: FilePath
+  { argsTreeFile                     :: FilePath
+  , argsMaybeSubstitutionModelString :: Maybe String
+  , argsMaybeMixtureModelString      :: Maybe String
+  , argsMaybeEDMFile                 :: Maybe FilePath
+  , argsMaybeMixtureWeights          :: Maybe [Double]
+  , argsMaybeGammaParams             :: Maybe GammaRateHeterogeneityParams
+  , argsLength                       :: Int
+  , argsMaybeSeed                    :: Maybe [Word32]
+  , argsQuiet                        :: Bool
+  , argsFileOut                      :: FilePath
   }
 
 evoModSimArgs :: Parser EvoModSimArgs
 evoModSimArgs = EvoModSimArgs
   <$> treeFileOpt
-  <*> (L.pack <$> phyloModelOpt)
-  <*> lengthOpt
+  <*> phyloSubstitutionModelOpt
+  <*> phyloMixtureModelOpt
   <*> maybeEDMFileOpt
   <*> maybeMixtureWeights
   <*> maybeGammaParams
+  <*> lengthOpt
   <*> maybeSeedOpt
   <*> quietOpt
   <*> fileOutOpt
@@ -82,29 +105,19 @@ fileOutOpt = strOption
     <> metavar "NAME"
     <> help "Specify output file NAME")
 
-phyloModelOpt :: Parser String
-phyloModelOpt = strOption
-  ( long "phylogenetic-model"
+phyloSubstitutionModelOpt :: Parser (Maybe String)
+phyloSubstitutionModelOpt = optional $ strOption
+  ( long "substitution-model"
+    <> short 's'
+    <> metavar "MODEL"
+    <> help "Set the phylogenetic substitution model; available models are shown below" )
+
+phyloMixtureModelOpt :: Parser (Maybe String)
+phyloMixtureModelOpt = optional $ strOption
+  ( long "mixture-model"
     <> short 'm'
     <> metavar "MODEL"
-    <> help "Set the phylogenetic model; available models are shown below" )
-
-lengthOpt :: Parser Int
-lengthOpt = option auto
-  ( long "length"
-    <> short 'l'
-    <> metavar "NUMBER"
-    <> help "Set alignment length to NUMBER" )
-
-maybeSeedOpt :: Parser (Maybe [Word32])
-maybeSeedOpt = optional $ option auto
-  ( long "seed"
-    <> short 's'
-    <> metavar "INT"
-    <> value [ 0 :: Word32 ]
-    <> showDefault
-    <> help ( "Set seed for the random number generator; "
-              ++ "list of 32 bit integers with up to 256 elements" ) )
+    <> help "Set the phylogenetic mixture model; available models are shown below" )
 
 maybeEDMFileOpt :: Parser (Maybe FilePath)
 maybeEDMFileOpt = optional $ strOption
@@ -126,6 +139,23 @@ maybeGammaParams = optional $ option auto
     <> short 'g'
     <> metavar "(NCAT, SHAPE)"
     <> help "number of gamma rate categories and shape parameter" )
+
+lengthOpt :: Parser Int
+lengthOpt = option auto
+  ( long "length"
+    <> short 'l'
+    <> metavar "NUMBER"
+    <> help "Set alignment length to NUMBER" )
+
+maybeSeedOpt :: Parser (Maybe [Word32])
+maybeSeedOpt = optional $ option auto
+  ( long "seed"
+    <> short 'S'
+    <> metavar "INT"
+    <> value [ 0 :: Word32 ]
+    <> showDefault
+    <> help ( "Set seed for the random number generator; "
+              ++ "list of 32 bit integers with up to 256 elements" ) )
 
 -- | Read the arguments and prints out help if needed.
 parseEvoModSimArgs :: IO EvoModSimArgs
