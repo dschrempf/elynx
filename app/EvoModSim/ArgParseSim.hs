@@ -110,14 +110,14 @@ phyloSubstitutionModelOpt = optional $ strOption
   ( long "substitution-model"
     <> short 's'
     <> metavar "MODEL"
-    <> help "Set the phylogenetic substitution model; available models are shown below" )
+    <> help "Set the phylogenetic substitution model; available models are shown below (mutually exclusive with -m option)" )
 
 phyloMixtureModelOpt :: Parser (Maybe String)
 phyloMixtureModelOpt = optional $ strOption
   ( long "mixture-model"
     <> short 'm'
     <> metavar "MODEL"
-    <> help "Set the phylogenetic mixture model; available models are shown below" )
+    <> help "Set the phylogenetic mixture model; available models are shown below (mutually exclusive with -s option)" )
 
 maybeEDMFileOpt :: Parser (Maybe FilePath)
 maybeEDMFileOpt = optional $ strOption
@@ -166,18 +166,32 @@ evoModSimFooter = sms ++ mms
   where
     sms =
       [ "Substitution models:"
-      , "  MODELNAME[PARAMETER,PARAMETER,...]{PI_A,PI_C,PI_G,PI_T}"
-      , "  Supported DNA models: JC, HKY."
-      , "  Supported Protein models: Poisson, Poisson-Custom, LG, LG-Custom."
-      , "  MODELNAME-Custom means that a custom stationary distribution is provided."
-      , "  For example,"
-      , "    HKY model with parameter KAPPA and stationary distribution:"
-      , "      -m HKY[KAPPA]{DOUBLE,DOUBLE,DOUBLE,DOUBLE}"
+      , "-s MODEL[PARAMETER,PARAMETER,...]{STATIONARY_DISTRIBUTION}"
+      , "   Supported DNA models: JC, HKY."
+      , "     For example,"
+      , "       -s HKY[KAPPA]{DOUBLE,DOUBLE,DOUBLE,DOUBLE}"
+      , "   Supported Protein models: Poisson, Poisson-Custom, LG, LG-Custom."
+      , "     MODEL-Custom means that only the exchangeabilities of MODEL are used,"
+      , "     and a custom stationary distribution is provided."
+      , "     For example,"
+      , "       -s LG-Custom{...}"
       ]
     mms =
       [ ""
       , "Mixture models:"
-      , "  Empirical distribution mixture (EDM) models."
-      , "  For example,"
-      , "    EDM LG model with distributions given in FILE (see -e option)."
-      , "      -m EDM[LG-Custom] -e FILE" ]
+      , "-m MIXTURE(SUBSTITUTION_MODEL_1,SUBSTITUTION_MODEL_2)"
+      , "   For example,"
+      , "     -m MIXTURE(JC,HKY[6.0]{0.3,0.2,0.2,0.3})"
+      , "Mixture weights have to be provided with the -w option."
+      , ""
+      , "Special mixture models:"
+      , "-m CXX"
+      , "   where XX is 10, 20, 30, 40, 50, or 60; CXX models, Quang et al., 2008."
+      , "-m EDM(EXCHANGEABILITIES)"
+      , "   Arbitrary empirical distribution mixture (EDM) models."
+      , "   Stationary distributions have to be provided with the -e option."
+      , "   For example,"
+      , "     LG exchangeabilities with stationary distributions given in FILE."
+      , "     -m EDM(LG-Custom) -e FILE"
+      , "For special mixture models, mixture weights are optional."
+      ]

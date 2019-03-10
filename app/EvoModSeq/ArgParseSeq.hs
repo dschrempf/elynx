@@ -83,7 +83,7 @@ filterShorterThanOpt = optional $ option auto
 analyzeCommand :: Mod CommandFields Command
 analyzeCommand = command "analyze" $
   info (pure Analyze)
-  (progDesc "Analyze multi sequence alignment (error if sequences have different length).")
+  (progDesc "Analyze multi sequence alignments (error if sequences have different length).")
 
 alphabetOpt :: Parser Code
 alphabetOpt = option auto

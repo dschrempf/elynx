@@ -64,13 +64,12 @@ sdStart = c2w '{'
 sdEnd :: Word8
 sdEnd = c2w '}'
 
--- TODO. MIX(...).
 -- Mixture model components between round brackets.
--- mmStart :: Word8
--- mmStart = c2w '('
+mmStart :: Word8
+mmStart = c2w '('
 
--- mmEnd :: Word8
--- mmEnd = c2w ')'
+mmEnd :: Word8
+mmEnd = c2w ')'
 
 name :: Parser String
 name = L.unpack <$>
@@ -125,10 +124,10 @@ substitutionModel = do
 edmModel :: [EDMComponent] -> Maybe [Weight] -> Parser MixtureModel
 edmModel cs mws = do
   _ <- chunk (bs "EDM")
-  _ <- char paramsStart
+  _ <- char mmStart
   n <- name
   mps <- optional params
-  _ <- char paramsEnd
+  _ <- char mmEnd
   let sms = map (\c -> assembleSubstitutionModel n mps (Just $ snd c)) cs
       edmName = L.pack $ "EDM" ++ show (length cs)
       ws = fromMaybe (map fst cs) mws
@@ -147,6 +146,7 @@ cxxModel mws = do
     "C60" -> return $ c60CustomWeights mws
     _     -> fail "Not a CXX model."
 
+-- TODO. MIX(...).
 mixtureModel :: Maybe [EDMComponent] -> Maybe [Weight] -> Parser MixtureModel
 mixtureModel Nothing   = cxxModel
 mixtureModel (Just cs) = edmModel cs
