@@ -26,8 +26,6 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
-import           ArgParseSim
-
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.AminoAcid
 import           EvoMod.Data.MarkovProcess.CXXModels
@@ -167,4 +165,3 @@ getPhyloModel (Just s) Nothing Nothing Nothing = Right $ PhyloSubstitutionModel 
 getPhyloModel (Just _) Nothing (Just _) _      = Left "Weights given; but cannot be used with substitution model."
 getPhyloModel (Just _) Nothing _ (Just _)      = Left "Empirical distribution mixture model components given; but cannot be used with substitution model."
 getPhyloModel Nothing (Just m) mws mcs         = Right $ PhyloMixtureModel $ parseStringWith (mixtureModel mcs mws) m
-
