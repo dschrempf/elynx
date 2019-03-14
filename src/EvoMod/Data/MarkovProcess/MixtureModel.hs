@@ -46,7 +46,7 @@ type Weight = Double
 -- | A mixture model component has a weight and a substitution model.
 data MixtureModelComponent = MixtureModelComponent
   { _weight            :: Weight
-  , _substitutionModel :: SubstitutionModel
+  , _substModel :: SubstitutionModel
   }
   deriving (Show, Read)
 
@@ -56,7 +56,7 @@ makeLenses ''MixtureModelComponent
 summarizeMixtureModelComponent :: MixtureModelComponent -> [L.ByteString]
 summarizeMixtureModelComponent mmc =
   L.pack "Weight: " <> (L.toLazyByteString . L.doubleDec $ mmc ^. weight)
-  : summarizeSubstitutionModel (mmc ^. substitutionModel)
+  : summarizeSubstitutionModel (mmc ^. substModel)
 
 -- | Abstracted because may change in the future.
 type MixtureModelName = SubstitutionModelName
@@ -99,14 +99,14 @@ summarizeMixtureModel mm =
 isValidMixtureModel :: MixtureModel -> Bool
 isValidMixtureModel mm = not (null $ mm ^. components)
                          && allEqual codes
-  where codes = mm ^.. components . traverse . substitutionModel . smCode
+  where codes = mm ^.. components . traverse . substModel . smCode
 
 -- | Get code used with mixture model. Throws error if components use different
 -- 'Code's.
 getCodeMixtureModel :: MixtureModel -> Code
 getCodeMixtureModel mm = if isValidMixtureModel mm
-            -- then smCode . substitutionModel $ head (components mm)
-            then head $ mm ^.. components . traverse . substitutionModel . smCode
+            -- then smCode . substModel $ head (components mm)
+            then head $ mm ^.. components . traverse . substModel . smCode
             else error "Mixture model is invalid."
 
 -- | Get weights.
@@ -115,12 +115,12 @@ getWeights m = m ^.. components . traverse . weight
 
 -- | Get substitution models.
 getSubstitutionModels :: MixtureModel -> [SubstitutionModel]
-getSubstitutionModels m = m ^.. components . traverse . substitutionModel
+getSubstitutionModels m = m ^.. components . traverse . substModel
 
 -- | Scale all substitution models of the mixture model.
 scaleMixtureModel :: Double -> MixtureModel -> MixtureModel
-scaleMixtureModel s = over (components . traverse . substitutionModel) (scaleSubstitutionModel s)
+scaleMixtureModel s = over (components . traverse . substModel) (scaleSubstitutionModel s)
 
 -- | Append byte string to all substitution models of mixture model.
 appendNameMixtureModel :: MixtureModelName -> MixtureModel -> MixtureModel
-appendNameMixtureModel n = over (components . traverse . substitutionModel) (appendNameSubstitutionModel n)
+appendNameMixtureModel n = over (components . traverse . substModel) (appendNameSubstitutionModel n)

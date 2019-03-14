@@ -45,10 +45,10 @@ bs :: String -> L.ByteString
 bs = L.pack
 
 nNuc :: Int
-nNuc = cardinalityFromCode DNA
+nNuc = cardinality DNA
 
 nAA :: Int
-nAA = cardinalityFromCode Protein
+nAA = cardinality Protein
 
 -- Model parameters between square brackets.
 paramsStart :: Word8
@@ -116,8 +116,8 @@ assembleSubstitutionModel n mps mf = Left $ unlines
   , "Parameters: " ++ show mps
   , "Stationary distribution: " ++ show mf ]
 
-substitutionModel :: Parser SubstitutionModel
-substitutionModel = do
+parseSubstitutionModel :: Parser SubstitutionModel
+parseSubstitutionModel = do
   n  <- name
   mps <- optional params
   mf <- optional stationaryDistribution
@@ -156,7 +156,7 @@ standardMixtureModel :: [Weight] -> Parser MixtureModel
 standardMixtureModel ws = do
   _ <- chunk (bs "MIXTURE")
   _ <- char mmStart
-  sms <- substitutionModel `sepBy1` char separator
+  sms <- parseSubstitutionModel `sepBy1` char separator
   _ <- char mmEnd
   return $ MixtureModel (L.pack "MIXTURE")
     [ MixtureModelComponent w sm | (w, sm) <- zip ws sms]
@@ -176,7 +176,7 @@ mixtureModel (Just cs) mws           = edmModel cs mws
 getPhyloModel :: Maybe String -> Maybe String -> Maybe [Weight] -> Maybe [EDMComponent] -> Either String PhyloModel
 getPhyloModel Nothing Nothing _ _              = Left "No model was given. See help."
 getPhyloModel (Just _) (Just _) _ _            = Left "Both, substitution and mixture model string given; use only one."
-getPhyloModel (Just s) Nothing Nothing Nothing = Right $ PhyloSubstitutionModel $ parseStringWith substitutionModel s
+getPhyloModel (Just s) Nothing Nothing Nothing = Right $ PhyloSubstitutionModel $ parseStringWith parseSubstitutionModel s
 getPhyloModel (Just _) Nothing (Just _) _      = Left "Weights given; but cannot be used with substitution model."
 getPhyloModel (Just _) Nothing _ (Just _)      = Left "Empirical distribution mixture model components given; but cannot be used with substitution model."
 getPhyloModel Nothing (Just m) mws mcs         = Right $ PhyloMixtureModel $ parseStringWith (mixtureModel mcs mws) m

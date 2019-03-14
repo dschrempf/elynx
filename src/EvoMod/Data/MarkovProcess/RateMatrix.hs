@@ -18,6 +18,7 @@ module EvoMod.Data.MarkovProcess.RateMatrix
   ( RateMatrix
   , ExchangeabilityMatrix
   , StationaryDistribution
+  , totalRate
   , normalize
   , normalizeWith
   , setDiagonal
@@ -45,6 +46,10 @@ type ExchangeabilityMatrix = Matrix R
 -- | Stationary distribution of a rate matrix.
 type StationaryDistribution = Vector R
 
+-- | Get average number of substitutions per unit time.
+totalRate :: StationaryDistribution -> RateMatrix -> Double
+totalRate d m = norm_1 $ d <# matrixSetDiagToZero m
+
 -- | Normalizes a Markov process generator such that one event happens per unit
 -- time. Calculates stationary distribution from rate matrix.
 normalize :: RateMatrix -> RateMatrix
@@ -53,8 +58,7 @@ normalize m = normalizeWith (getStationaryDistribution m) m
 -- | Normalizes a Markov process generator such that one event happens per unit
 -- time. Stationary distribution has to be given.
 normalizeWith :: StationaryDistribution -> RateMatrix -> RateMatrix
-normalizeWith f m = scale (1.0 / totalRate) m
-  where totalRate = norm_1 $ f <# matrixSetDiagToZero m
+normalizeWith d m = scale (1.0 / totalRate d m) m
 
 -- | Set the diagonal entries of a matrix such that the rows sum to 0.
 setDiagonal :: RateMatrix -> RateMatrix
@@ -69,7 +73,7 @@ toExchangeabilityMatrix m f = m <> diag oneOverF
 
 -- | Convert exchangeability matrix to rate matrix.
 fromExchangeabilityMatrix :: ExchangeabilityMatrix -> StationaryDistribution -> RateMatrix
-fromExchangeabilityMatrix em d = normalizeWith d $ setDiagonal $ em <> diag d
+fromExchangeabilityMatrix em d = setDiagonal $ em <> diag d
 
 -- | Get stationary distribution from 'RateMatrix'. Involves eigendecomposition.
 -- If the given matrix does not satisfy the required properties of transition

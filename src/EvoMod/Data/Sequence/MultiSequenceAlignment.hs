@@ -28,6 +28,7 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , msaJoin
   , msaConcatenate
   , msasConcatenate
+  , filterColumnsIUPAC
   -- | * Analysis
   , FrequencyData
   , toFrequencyData
@@ -168,6 +169,16 @@ msasConcatenate :: [MultiSequenceAlignment] -> Either L.ByteString MultiSequence
 msasConcatenate []    = Left $ L.pack "Nothing to concatenate."
 msasConcatenate [msa] = Right msa
 msasConcatenate msas  = foldM msaConcatenate (head msas) (tail msas)
+
+-- Only keep columns from alignment that satisfy given predicate.
+filterColumns :: (V.Vector Word8 -> Bool) -> MultiSequenceAlignment -> MultiSequenceAlignment
+filterColumns p = over matrix (M.fromColumns . filter p . M.toColumns)
+
+-- | Only keep columns with standard characters. Alignment columns with IUPAC
+-- characters are removed.
+filterColumnsIUPAC :: MultiSequenceAlignment -> MultiSequenceAlignment
+filterColumnsIUPAC msa = filterColumns (V.all $ inAlphabet c) msa
+  where c = fromIUPAC $ msa ^. code
 
 -- | Frequency data; do not store the actual characters, but only their
 -- frequencies.

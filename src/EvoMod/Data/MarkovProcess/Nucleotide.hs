@@ -45,7 +45,7 @@ import           EvoMod.Tools.Vector
 -- data AASubstitutionModel = LG | ...
 
 n :: Int
-n = cardinalityFromCode DNA
+n = cardinality DNA
 
 -- | JC model matrix.
 jcExch :: ExchangeabilityMatrix
@@ -58,7 +58,7 @@ jcExch =
 
 -- | JC substitution model.
 jc :: SubstitutionModel
-jc = SubstitutionModel DNA (L.pack "JC") [] f jcExch
+jc = substitutionModel DNA (L.pack "JC") [] f jcExch
   where f = uniformVec n
 
 hkyExch :: Double -> ExchangeabilityMatrix
@@ -71,5 +71,5 @@ hkyExch k =
 
 -- | HKY substitution model.
 hky :: Double -> StationaryDistribution -> SubstitutionModel
-hky k f = SubstitutionModel DNA (L.pack "HKY") [k] f e
+hky k f = substitutionModel DNA (L.pack "HKY") [k] f e
   where e = hkyExch k

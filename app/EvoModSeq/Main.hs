@@ -53,8 +53,12 @@ act Concatenate sss    = sequencesToFasta <$> concatenateSeqs sss
 act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
   where filters        = map (fromMaybe id) [ filterLongerThan <$> ml
                                     , filterShorterThan <$> ms ]
-act Analyze sss        = Right . L.intercalate (L.pack "\n") $ map (L.pack . show . kEffAll . toFrequencyData) msas
+-- XXX: For now, columns including IUPAC characters are removed before analysis.
+act (Analyze dr) sss = Right . L.intercalate (L.pack "\n") $ map ana msas
   where msas = map fromSequenceList sss
+        ana  = if dr
+               then L.pack . show . kEffAll . toFrequencyData . filterColumnsIUPAC
+               else L.pack . show . kEffAll . toFrequencyData
 
 io :: Either L.ByteString L.ByteString -> Seq ()
 io (Left  s)   = logLBS s

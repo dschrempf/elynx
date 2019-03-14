@@ -133,7 +133,7 @@ spec = do
 
   describe "exchLG" $
     it "matches exchangeability matrix from python library" $ do
-    exchLG `nearlyEqMat` exchLGPython `shouldBe` True
+    exchLG `shouldSatisfy` nearlyEqMatWith 1e-4 exchLGPython
     exchLG `nearlyEqMat` rmLG `shouldBe` False
 
   describe "lg" $

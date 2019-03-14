@@ -115,7 +115,11 @@ componentName nComps comp = L.toLazyByteString $
   cxxName nComps <> L.string8 "; component " <> L.intDec comp
 
 cxxSubstitutionModelFromStatDist :: Int -> Int -> StationaryDistribution -> SubstitutionModel
-cxxSubstitutionModelFromStatDist nComps comp d = poissonCustom d (Just name)
+-- XXX: Is it necessary (or even correct) to normalize the substitution model
+-- here? For Poisson exchangeabilities, it doesn't make any difference, but for
+-- other exchangeabilities, it will make a difference. How is this implemented
+-- in other software packages?
+cxxSubstitutionModelFromStatDist nComps comp d = normalizeSubstitutionModel $ poissonCustom d (Just name)
   where name = componentName nComps comp
 
 cxxSubstitutionModelsFromStatDists :: [StationaryDistribution] -> [SubstitutionModel]

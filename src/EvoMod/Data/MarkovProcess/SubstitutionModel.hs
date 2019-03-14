@@ -17,12 +17,14 @@ Creation date: Tue Jan 29 19:10:46 2019.
 module EvoMod.Data.MarkovProcess.SubstitutionModel
   ( SubstitutionModelName
   , SubstitutionModelParams
-  , SubstitutionModel (SubstitutionModel)
+  , SubstitutionModel
+  , substitutionModel
   , smCode
   , smName
   , smStationaryDistribution
   , smExchangeabilityMatrix
   , scaleSubstitutionModel
+  , normalizeSubstitutionModel
   , renameSubstitutionModel
   , appendNameSubstitutionModel
   , summarizeSubstitutionModel
@@ -42,7 +44,8 @@ type SubstitutionModelName = L.ByteString
 -- | Parameters of substitution model. May be the empty list.
 type SubstitutionModelParams = [Double]
 
--- | Complete definition of a substitution model.
+-- | Complete definition of a substitution model. Create instances with
+-- 'substitutionModel'.
 data SubstitutionModel = SubstitutionModel
   { _code                   :: Code
   , _name                   :: SubstitutionModelName
@@ -53,6 +56,12 @@ data SubstitutionModel = SubstitutionModel
   deriving (Show, Read)
 
 makeLenses ''SubstitutionModel
+
+-- | Create normalized 'SubstitutionModel'. See 'normalizeSubstitutionModel'.
+substitutionModel :: Code -> SubstitutionModelName -> SubstitutionModelParams
+                  -> StationaryDistribution -> ExchangeabilityMatrix
+                  -> SubstitutionModel
+substitutionModel c n ps d e = normalizeSubstitutionModel $ SubstitutionModel c n ps d e
 
 -- This is annoying, but this is the easiest way to provide Haddock comments.
 -- Another way would be to use 'makeLensesWith' and a custom 'LensRules' that
@@ -77,7 +86,14 @@ smExchangeabilityMatrix = exchangeabilityMatrix
 
 -- | Scale the rate of a substitution model by given factor.
 scaleSubstitutionModel :: Double -> SubstitutionModel -> SubstitutionModel
-scaleSubstitutionModel s = over exchangeabilityMatrix (scale s)
+scaleSubstitutionModel r = over exchangeabilityMatrix (scale r)
+
+-- | Normalize a substitution model, so that, on average, one substitution
+-- happens per unit time.
+normalizeSubstitutionModel :: SubstitutionModel -> SubstitutionModel
+normalizeSubstitutionModel sm = scaleSubstitutionModel (1.0/r) sm
+  where m = getRateMatrix sm
+        r = totalRate (sm ^. stationaryDistribution) m
 
 -- | Rename a substitution model.
 renameSubstitutionModel :: SubstitutionModelName -> SubstitutionModel -> SubstitutionModel

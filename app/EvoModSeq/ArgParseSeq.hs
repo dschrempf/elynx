@@ -29,7 +29,7 @@ data Command = Summarize
              | Concatenate
              | Filter { longer  :: Maybe Int
                       , shorter :: Maybe Int}
-             | Analyze
+             | Analyze { drop :: Bool }
 
 data EvoModSeqArgs = EvoModSeqArgs
   { argsCommand          :: Command
@@ -72,18 +72,23 @@ filterLongerThanOpt :: Parser (Maybe Int)
 filterLongerThanOpt = optional $ option auto
   ( long "longer-than"
     <> metavar "LENGTH"
-    <> help "Only keep sequences longer than LENGTH." )
+    <> help "Only keep sequences longer than LENGTH" )
 
 filterShorterThanOpt :: Parser (Maybe Int)
 filterShorterThanOpt = optional $ option auto
   ( long "shorter-than"
     <> metavar "LENGTH"
-    <> help "Only keep sequences shorter than LENGTH." )
+    <> help "Only keep sequences shorter than LENGTH" )
 
 analyzeCommand :: Mod CommandFields Command
 analyzeCommand = command "analyze" $
-  info (pure Analyze)
-  (progDesc "Analyze multi sequence alignments (error if sequences have different length).")
+  info (Analyze <$> analyzeDropNonStandard)
+  (progDesc "Analyze multi sequence alignments (error if sequences have different length)")
+
+analyzeDropNonStandard :: Parser Bool
+analyzeDropNonStandard = switch
+  ( long "drop-non-standard"
+    <> help "Drop columns in alignment that contain non-standard characters such as gaps or IUPAC codes")
 
 alphabetOpt :: Parser Code
 alphabetOpt = option auto

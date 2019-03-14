@@ -66,14 +66,15 @@ incrementElemIndexByOne is v = v V.// zip is es'
 acc :: Code -> V.Vector Int -> Word8 -> V.Vector Int
 acc code vec char = incrementElemIndexByOne is vec
   where
-    (codeNonIupac, charsNonIupac) = fromIUPAC code char
-    is = map (characterToIndex codeNonIupac) charsNonIupac
+    codeNonIupac  = fromIUPAC code
+    charsNonIupac = charFromIUPAC code char
+    is            = map (characterToIndex codeNonIupac) charsNonIupac
 
 countCharacters :: Code -> V.Vector Word8 -> V.Vector Int
 countCharacters code =
   V.foldl' (acc code) zeroCounts
   where
-    nChars     = cardinalityFromCode code
+    nChars     = cardinality code
     zeroCounts = V.replicate nChars (0 :: Int)
 
 -- | For a given code vector of characters, calculate frequency of characters.

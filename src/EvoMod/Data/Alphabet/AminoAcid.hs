@@ -92,7 +92,7 @@ instance Character AminoAcid where
 -- Amino Acid Code:  Three letter Code:  Amino Acid:
 -- ----------------  ------------------  -----------
 -- A.................Ala.................Alanine
--- L.................Asx.................Aspartic acid or Asparagine
+-- B.................Asx.................Aspartic acid or Asparagine
 -- C.................Cys.................Cysteine
 -- D.................Asp.................Aspartic Acid
 -- E.................Glu.................Glutamic Acid
@@ -115,7 +115,7 @@ instance Character AminoAcid where
 -- Y.................Tyr.................Tyrosine
 -- Z.................Glx.................Glutamine or Glutamic acid
 -- Additionally, I add:
--- - Gap (same as X)
+-- -.................Gap.................No amino acid
 data AminoAcidIUPAC = A_IUPAC | C_IUPAC | D_IUPAC | E_IUPAC
                     | F_IUPAC | G_IUPAC | H_IUPAC | I_IUPAC
                     | K_IUPAC | L_IUPAC | M_IUPAC | N_IUPAC
@@ -209,5 +209,7 @@ fromIUPACAminoAcid Y_IUPAC = [Y]
 fromIUPACAminoAcid B       = [D, N]
 fromIUPACAminoAcid X       = [A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y]
 fromIUPACAminoAcid Z       = [E, Q]
+-- XXX: This makes a huge difference when analyzing data for the effective
+-- number of used amino acids. See 'DistributionDiversity'.
 -- fromIUPACAminoAcid Gap     = [A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y]
 fromIUPACAminoAcid Gap     = []

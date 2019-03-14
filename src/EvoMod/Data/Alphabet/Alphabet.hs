@@ -30,11 +30,11 @@ module EvoMod.Data.Alphabet.Alphabet
   , alphabetLookup
   , inAlphabet
   , cardinality
-  , cardinalityFromCode
   , indexToCharacter
   , characterToIndex
   , indicesToCharacters
   , fromIUPAC
+  , charFromIUPAC
   )
 where
 
@@ -98,13 +98,14 @@ alphabetLookup = Memo.enum alphabetLookup'
 inAlphabet :: Code -> Word8 -> Bool
 inAlphabet code char = toUpper char `S.member` fromAlphabetLookup (alphabetLookup code)
 
--- | The cardinality of an alphabet is the number of entries.
-cardinality :: Alphabet -> Int
-cardinality = V.length . fromAlphabet
-
--- | Number of characters
-cardinalityFromCode :: Code -> Int
-cardinalityFromCode = cardinality . alphabet
+-- | Number of characters. Since for IUPAC codes, the cardinality is not
+-- directly related to the number of characters in the alphabet, we have to set
+-- it manually.
+cardinality :: Code -> Int
+cardinality DNA          = 4
+cardinality DNAIUPAC     = 4
+cardinality Protein      = 20
+cardinality ProteinIUPAC = 20
 
 -- | Convert integer index to 'Character'.
 indexToCharacter :: Code -> Int -> Word8
@@ -121,11 +122,16 @@ characterToIndex ProteinIUPAC char = fromEnum (fromWord char :: AminoAcidIUPAC)
 indicesToCharacters :: Code -> [Int] -> [Word8]
 indicesToCharacters c = map (indexToCharacter c)
 
--- | Convert from IUPAC.
-fromIUPAC :: Code -> Word8 -> (Code, [Word8])
-fromIUPAC DNA          char = (DNA,     [char])
-fromIUPAC DNAIUPAC     char = (DNA,     map toWord $ fromIUPACNucleotide
-                                (fromWord char :: NucleotideIUPAC))
-fromIUPAC Protein      char = (Protein, [char])
-fromIUPAC ProteinIUPAC char = (Protein, map toWord $ fromIUPACAminoAcid
-                                (fromWord char :: AminoAcidIUPAC))
+-- | Get normal code from IUPAC code.
+fromIUPAC :: Code -> Code
+fromIUPAC DNA          = DNA
+fromIUPAC DNAIUPAC     = DNA
+fromIUPAC Protein      = Protein
+fromIUPAC ProteinIUPAC = Protein
+
+-- | Convert from IUPAC character.
+charFromIUPAC :: Code -> Word8 -> [Word8]
+charFromIUPAC DNA          char = [char]
+charFromIUPAC DNAIUPAC     char = map toWord $ fromIUPACNucleotide (fromWord char :: NucleotideIUPAC)
+charFromIUPAC Protein      char = [char]
+charFromIUPAC ProteinIUPAC char = map toWord $ fromIUPACAminoAcid (fromWord char :: AminoAcidIUPAC)
