@@ -170,7 +170,7 @@ evoModSimFooter = sms ++ mms
       , "   Supported DNA models: JC, HKY."
       , "     For example,"
       , "       -s HKY[KAPPA]{DOUBLE,DOUBLE,DOUBLE,DOUBLE}"
-      , "   Supported Protein models: Poisson, Poisson-Custom, LG, LG-Custom."
+      , "   Supported Protein models: Poisson, Poisson-Custom, LG, LG-Custom, WAG, WAG-Custom."
       , "     MODEL-Custom means that only the exchangeabilities of MODEL are used,"
       , "     and a custom stationary distribution is provided."
       , "     For example,"

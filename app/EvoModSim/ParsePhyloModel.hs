@@ -105,6 +105,8 @@ assembleSubstitutionModel "HKY" (Just [k]) (Just f) = Right $ assertLength f nNu
 -- Protein models.
 assembleSubstitutionModel "LG" Nothing Nothing = Right lg
 assembleSubstitutionModel "LG-Custom" Nothing (Just f) = Right $ assertLength f nAA $ lgCustom f Nothing
+assembleSubstitutionModel "WAG" Nothing Nothing = Right wag
+assembleSubstitutionModel "WAG-Custom" Nothing (Just f) = Right $ assertLength f nAA $ wagCustom f Nothing
 assembleSubstitutionModel "Poisson" Nothing Nothing = Right poisson
 assembleSubstitutionModel "Poisson-Custom" Nothing (Just f) = Right $ assertLength f nAA $ poissonCustom f Nothing
 -- Ohterwisse, we cannot assemble the model.

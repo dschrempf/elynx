@@ -17,6 +17,8 @@ The order of amino acids is alphabetic.
 module EvoMod.Data.MarkovProcess.AminoAcid
   ( lg
   , lgCustom
+  , wag
+  , wagCustom
   , poisson
   , poissonCustom
   ) where
@@ -78,6 +80,39 @@ pamlToAlphaMat m = build (n,n) (\i j -> m
                                  ! alphaIndexToPamlIndex (round i)
                                  ! alphaIndexToPamlIndex (round j))
 
+-- The next functions tackle the somewhat stupid, but not easy solvable problem
+-- of converting a lower triangular matrix (excluding the diagonal) given as a
+-- list into a symmetric matrix. The diagonal entries are set to zero. This is
+-- how the exchangeabilities are specified in PAML.
+
+-- Conversion from matrix indices (i,j) to list index k.
+-- (i,j) k
+--
+-- (0,0) -
+-- (1,0) 0  (1,1) -
+-- (2,0) 1  (2,1) 2  (2,2) -
+-- (3,0) 3  (3,1) 4  (3,2) 5 (3,3) -
+-- (4,0) 6  (4,1) 7  (4,2) 8 (4,3) 9 (4,4) -
+--
+-- k = (i choose 2) + j.
+ijToK :: Int -> Int -> Int
+ijToK i j = round (i `choose` 2) + j
+
+-- The function is a little weird because HMatrix uses Double indices for Matrix
+-- Double builders.
+fromListBuilder :: [Double] -> Double -> Double -> Double
+fromListBuilder es i j | i > j  = es !! ijToK iI jI
+                       | i == j = 0.0
+                       | i < j  = es !! ijToK jI iI
+                       | otherwise = error "Float indices could not be compared during matrix creation."
+  where iI = round i :: Int
+        jI = round j :: Int
+
+-- Exchangeability matrix from list denoting lower triangular matrix, and
+-- excluding diagonal. This is how the exchangeabilities are specified in PAML.
+exchFromList :: [Double] -> ExchangeabilityMatrix
+exchFromList es = build (n,n) (fromListBuilder es)
+
 -- Lower triangular matrix of LG exchangeabilities in PAML order and in form of
 -- a list.
 lgExchRawPaml :: [Double]
@@ -114,36 +149,10 @@ lgExchRawPaml = [0.425093, 0.276818, 0.751878, 0.395144, 0.123954, 5.076149,
                  10.649107, 1.702745, 0.185202, 1.898718, 0.654683, 0.296501,
                  0.098369, 2.188158, 0.189510, 0.249313]
 
--- Conversion from matrix indices (i,j) to list index k.
--- (i,j) k
---
--- (0,0) -
--- (1,0) 0  (1,1) -
--- (2,0) 1  (2,1) 2  (2,2) -
--- (3,0) 3  (3,1) 4  (3,2) 5 (3,3) -
--- (4,0) 6  (4,1) 7  (4,2) 8 (4,3) 9 (4,4) -
---
--- k = (i choose 2) + j.
-ijToK :: Int -> Int -> Int
-ijToK i j = round (i `choose` 2) + j
 
--- The function is a little weird because HMatrix uses Double indices for Matrix
--- Double builders.
-lgExchPamlBuilder :: Double -> Double -> Double
-lgExchPamlBuilder i j | i > j  = lgExchRawPaml !! ijToK iI jI
-                      | i == j = 0.0
-                      | i < j  = lgExchRawPaml !! ijToK jI iI
-                      | otherwise = error "Float indices could not be compared during matrix creation."
-  where iI = round i :: Int
-        jI = round j :: Int
-
--- Exchangeability matrix of LG model in PAML order.
-lgExchPaml :: ExchangeabilityMatrix
-lgExchPaml = build (n,n) lgExchPamlBuilder
-
--- | Exchangeabilities of LG model in alphabetical order.
+-- Exchangeabilities of LG model in alphabetical order.
 lgExch :: ExchangeabilityMatrix
-lgExch = pamlToAlphaMat lgExchPaml
+lgExch = pamlToAlphaMat $ exchFromList lgExchRawPaml
 
 -- Stationary distribution in PAML order.
 lgStatDistPaml :: StationaryDistribution
@@ -153,7 +162,7 @@ lgStatDistPaml = normalizeSumVec 1.0 $
            , 0.022951, 0.042302, 0.044040, 0.061197, 0.053287, 0.012066
            , 0.034155, 0.069147 ]
 
--- | Stationary distribution of LG model in alphabetical order.
+-- Stationary distribution of LG model in alphabetical order.
 lgStatDist :: StationaryDistribution
 lgStatDist = pamlToAlphaVec lgStatDistPaml
 
@@ -165,6 +174,55 @@ lg = SubstitutionModel Protein (L.pack "LG") [] lgStatDist lgExch
 lgCustom :: StationaryDistribution -> Maybe L.ByteString -> SubstitutionModel
 lgCustom f mn = SubstitutionModel Protein name [] f lgExch
   where name = fromMaybe (L.pack "LG-Custom") mn
+
+-- WAG exchangeability list in PAML order.
+wagExchRawPaml :: [Double]
+wagExchRawPaml =
+  [ 55.15710
+  , 50.98480, 63.53460
+  , 73.89980, 14.73040, 542.94200
+  , 102.70400, 52.81910, 26.52560, 3.02949
+  , 90.85980, 303.55000, 154.36400, 61.67830, 9.88179
+  , 158.28500, 43.91570, 94.71980, 617.41600, 2.13520, 546.94700
+  , 141.67200, 58.46650, 112.55600, 86.55840, 30.66740, 33.00520, 56.77170
+  , 31.69540, 213.71500, 395.62900, 93.06760, 24.89720, 429.41100, 57.00250, 24.94100
+  , 19.33350, 18.69790, 55.42360, 3.94370, 17.01350, 11.39170, 12.73950, 3.04501, 13.81900
+  , 39.79150, 49.76710, 13.15280, 8.48047, 38.42870, 86.94890, 15.42630, 6.13037, 49.94620, 317.09700
+  , 90.62650, 535.14200, 301.20100, 47.98550, 7.40339, 389.49000, 258.44300, 37.35580, 89.04320, 32.38320, 25.75550
+  , 89.34960, 68.31620, 19.82210, 10.37540, 39.04820, 154.52600, 31.51240, 17.41000, 40.41410, 425.74600, 485.40200, 93.42760
+  , 21.04940, 10.27110, 9.61621, 4.67304, 39.80200, 9.99208, 8.11339, 4.99310, 67.93710, 105.94700, 211.51700, 8.88360, 119.06300
+  , 143.85500, 67.94890, 19.50810, 42.39840, 10.94040, 93.33720, 68.23550, 24.35700, 69.61980, 9.99288, 41.58440, 55.68960, 17.13290, 16.14440
+  , 337.07900, 122.41900, 397.42300, 107.17600, 140.76600, 102.88700, 70.49390, 134.18200, 74.01690, 31.94400, 34.47390, 96.71300, 49.39050, 54.59310, 161.32800
+  , 212.11100, 55.44130, 203.00600, 37.48660, 51.29840, 85.79280, 82.27650, 22.58330, 47.33070, 145.81600, 32.66220, 138.69800, 151.61200, 17.19030, 79.53840, 437.80200
+  , 11.31330, 116.39200, 7.19167, 12.97670, 71.70700, 21.57370, 15.65570, 33.69830, 26.25690, 21.24830, 66.53090, 13.75050, 51.57060, 152.96400, 13.94050, 52.37420, 11.08640
+  , 24.07350, 38.15330, 108.60000, 32.57110, 54.38330, 22.77100, 19.63030, 10.36040, 387.34400, 42.01700, 39.86180, 13.32640, 42.84370, 645.42800, 21.60460, 78.69930, 29.11480, 248.53900
+  , 200.60100, 25.18490, 19.62460, 15.23350, 100.21400, 30.12810, 58.87310, 18.72470, 11.83580, 782.13000, 180.03400, 30.54340, 205.84500, 64.98920, 31.48870, 23.27390, 138.82300, 36.53690, 31.47300 ]
+
+-- WAG exchangeability matrix n alphabetical order.
+wagExch :: ExchangeabilityMatrix
+wagExch = pamlToAlphaMat $ exchFromList wagExchRawPaml
+
+-- WAG stationary distribution in PAML order.
+wagStatDistPaml :: StationaryDistribution
+wagStatDistPaml = normalizeSumVec 1.0 $
+  fromList [ 0.0866279, 0.043972,  0.0390894, 0.0570451, 0.0193078, 0.0367281
+           , 0.0580589, 0.0832518, 0.0244313, 0.048466,  0.086209,  0.0620286
+           , 0.0195027, 0.0384319, 0.0457631, 0.0695179, 0.0610127, 0.0143859
+           , 0.0352742, 0.0708957 ]
+
+-- WAG stationary distribution in alphabetical order.
+wagStatDist :: StationaryDistribution
+wagStatDist = pamlToAlphaVec wagStatDistPaml
+
+
+-- | LG substitution model.
+wag :: SubstitutionModel
+wag = SubstitutionModel Protein (L.pack "WAG") [] wagStatDist wagExch
+
+-- | LG substitution model with custom stationary distribution and maybe a name.
+wagCustom :: StationaryDistribution -> Maybe L.ByteString -> SubstitutionModel
+wagCustom f mn = SubstitutionModel Protein name [] f wagExch
+  where name = fromMaybe (L.pack "WAG-Custom") mn
 
 uniformExch :: ExchangeabilityMatrix
 uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n*n) 1.0
