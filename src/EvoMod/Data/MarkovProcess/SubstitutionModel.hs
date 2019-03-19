@@ -25,7 +25,7 @@ module EvoMod.Data.MarkovProcess.SubstitutionModel
   , smStationaryDistribution
   , smExchangeabilityMatrix
   , scaleSubstitutionModel
-  , getScaleSubstitutionModel
+  , totalRateSubstitutionModel
   , normalizeSubstitutionModel
   , appendNameSubstitutionModel
   , summarizeSubstitutionModel
@@ -75,7 +75,7 @@ substitutionModelUnnormalized = SubstitutionModel
 
 -- This is annoying, but this is the easiest way to provide Haddock comments.
 -- Another way would be to use 'makeLensesWith' and a custom 'LensRules' that
--- does not create type signatures. The create the type signature manually and
+-- does not create type signatures. Then create the type signature manually and
 -- document them.
 
 -- | Access code.
@@ -99,8 +99,8 @@ scaleSubstitutionModel :: Double -> SubstitutionModel -> SubstitutionModel
 scaleSubstitutionModel r = over exchangeabilityMatrix (scale r)
 
 -- | Get scale of substitution model.
-getScaleSubstitutionModel :: SubstitutionModel -> Double
-getScaleSubstitutionModel sm = totalRate (sm ^. stationaryDistribution) (getRateMatrix sm)
+totalRateSubstitutionModel :: SubstitutionModel -> Double
+totalRateSubstitutionModel sm = totalRate (sm ^. stationaryDistribution) (getRateMatrix sm)
 
 -- | Normalize a substitution model, so that, on average, one substitution
 -- happens per unit time.
@@ -121,10 +121,10 @@ summarizeSubstitutionModel sm = map L.pack $
   case sm ^. code of
     DNA -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
            , "Exchangeability matrix:\n" ++ dispmi 2 precision (sm ^. exchangeabilityMatrix) ++ "."
-           , "Scale: " ++ show (roundN precision $ getScaleSubstitutionModel sm) ++ "."
+           , "Scale: " ++ show (roundN precision $ totalRateSubstitutionModel sm) ++ "."
            ]
     Protein -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
-               , "Scale: " ++ show (roundN precision $ getScaleSubstitutionModel sm) ++ "."
+               , "Scale: " ++ show (roundN precision $ totalRateSubstitutionModel sm) ++ "."
                ]
     _ -> []
 

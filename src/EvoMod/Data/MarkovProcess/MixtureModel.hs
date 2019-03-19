@@ -128,7 +128,7 @@ normalizeMixtureModel :: MixtureModel -> MixtureModel
 normalizeMixtureModel mm = scaleMixtureModel (1/c) mm
   where c = sum $ zipWith (*) weights scales
         weights = getWeights mm
-        scales  = map getScaleSubstitutionModel $ getSubstitutionModels mm
+        scales  = map totalRateSubstitutionModel $ getSubstitutionModels mm
 
 -- | Append byte string to all substitution models of mixture model.
 appendNameMixtureModel :: MixtureModelName -> MixtureModel -> MixtureModel
