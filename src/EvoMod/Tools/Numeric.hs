@@ -16,6 +16,7 @@ Numerical functions.
 module EvoMod.Tools.Numeric
   ( harmonic
   , xLogX
+  , roundN
   ) where
 
 import           EvoMod.Definitions
@@ -30,3 +31,7 @@ xLogX :: Double -> Double
 xLogX x | x < 0.0   = error "Argument lower than zero."
         | x < eps   = 0.0
         | otherwise = x * log x
+
+-- | Round double to a given precision.
+roundN :: Int -> Double -> Double
+roundN n v = fromInteger (round $ v * (10^n)) / (10.0^^n)

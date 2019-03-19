@@ -170,9 +170,9 @@ lgStatDist = pamlToAlphaVec lgStatDistPaml
 lg :: SubstitutionModel
 lg = substitutionModel Protein (L.pack "LG") [] lgStatDist lgExch
 
--- | LG substitution model with custom stationary distribution and maybe a name.
-lgCustom :: StationaryDistribution -> Maybe L.ByteString -> SubstitutionModel
-lgCustom f mn = substitutionModel Protein name [] f lgExch
+-- | LG substitution model with maybe a name and a custom stationary distribution.
+lgCustom :: Maybe L.ByteString -> StationaryDistribution -> SubstitutionModel
+lgCustom mn d = substitutionModel Protein name [] d lgExch
   where name = fromMaybe (L.pack "LG-Custom") mn
 
 -- WAG exchangeability list in PAML order.
@@ -218,9 +218,9 @@ wagStatDist = pamlToAlphaVec wagStatDistPaml
 wag :: SubstitutionModel
 wag = substitutionModel Protein (L.pack "WAG") [] wagStatDist wagExch
 
--- | LG substitution model with custom stationary distribution and maybe a name.
-wagCustom :: StationaryDistribution -> Maybe L.ByteString -> SubstitutionModel
-wagCustom f mn = substitutionModel Protein name [] f wagExch
+-- | LG substitution model with maybe a name and a custom stationary distribution.
+wagCustom :: Maybe L.ByteString -> StationaryDistribution -> SubstitutionModel
+wagCustom mn d = substitutionModel Protein name [] d wagExch
   where name = fromMaybe (L.pack "WAG-Custom") mn
 
 uniformExch :: ExchangeabilityMatrix
@@ -233,7 +233,7 @@ poissonExch = uniformExch
 poisson :: SubstitutionModel
 poisson = substitutionModel Protein (L.pack "Poisson") [] (uniformVec n) poissonExch
 
--- | Poisson substitution model with custom stationary distribution and maybe a name.
-poissonCustom :: StationaryDistribution -> Maybe L.ByteString -> SubstitutionModel
-poissonCustom f mn = substitutionModel Protein name [] f poissonExch
+-- | Poisson substitution model with maybe a name and a custom stationary distribution.
+poissonCustom :: Maybe L.ByteString -> StationaryDistribution -> SubstitutionModel
+poissonCustom mn d = substitutionModel Protein name [] d poissonExch
   where name = fromMaybe (L.pack "Poisson-Custom") mn

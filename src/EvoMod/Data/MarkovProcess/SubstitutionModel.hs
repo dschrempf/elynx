@@ -19,13 +19,14 @@ module EvoMod.Data.MarkovProcess.SubstitutionModel
   , SubstitutionModelParams
   , SubstitutionModel
   , substitutionModel
+  , substitutionModelUnnormalized
   , smCode
   , smName
   , smStationaryDistribution
   , smExchangeabilityMatrix
   , scaleSubstitutionModel
+  , getScaleSubstitutionModel
   , normalizeSubstitutionModel
-  , renameSubstitutionModel
   , appendNameSubstitutionModel
   , summarizeSubstitutionModel
   , getRateMatrix
@@ -37,6 +38,9 @@ import           Numeric.LinearAlgebra                hiding ((<>))
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.RateMatrix
+import           EvoMod.Definitions
+import           EvoMod.Tools.LinearAlgebra
+import           EvoMod.Tools.Numeric
 
 -- | Name of substitution model; abstracted and subject to change.
 type SubstitutionModelName = L.ByteString
@@ -63,6 +67,12 @@ substitutionModel :: Code -> SubstitutionModelName -> SubstitutionModelParams
                   -> SubstitutionModel
 substitutionModel c n ps d e = normalizeSubstitutionModel $ SubstitutionModel c n ps d e
 
+-- | Create UNNORMALIZED 'SubstitutionModel'. See 'substitutionModel'.
+substitutionModelUnnormalized :: Code -> SubstitutionModelName -> SubstitutionModelParams
+                  -> StationaryDistribution -> ExchangeabilityMatrix
+                  -> SubstitutionModel
+substitutionModelUnnormalized = SubstitutionModel
+
 -- This is annoying, but this is the easiest way to provide Haddock comments.
 -- Another way would be to use 'makeLensesWith' and a custom 'LensRules' that
 -- does not create type signatures. The create the type signature manually and
@@ -88,16 +98,16 @@ smExchangeabilityMatrix = exchangeabilityMatrix
 scaleSubstitutionModel :: Double -> SubstitutionModel -> SubstitutionModel
 scaleSubstitutionModel r = over exchangeabilityMatrix (scale r)
 
+-- | Get scale of substitution model.
+getScaleSubstitutionModel :: SubstitutionModel -> Double
+getScaleSubstitutionModel sm = totalRate (sm ^. stationaryDistribution) (getRateMatrix sm)
+
 -- | Normalize a substitution model, so that, on average, one substitution
 -- happens per unit time.
 normalizeSubstitutionModel :: SubstitutionModel -> SubstitutionModel
 normalizeSubstitutionModel sm = scaleSubstitutionModel (1.0/r) sm
   where m = getRateMatrix sm
         r = totalRate (sm ^. stationaryDistribution) m
-
--- | Rename a substitution model.
-renameSubstitutionModel :: SubstitutionModelName -> SubstitutionModel -> SubstitutionModel
-renameSubstitutionModel = set name
 
 -- | Abbend to name.
 appendNameSubstitutionModel :: SubstitutionModelName -> SubstitutionModel -> SubstitutionModel
@@ -109,9 +119,13 @@ summarizeSubstitutionModel sm = map L.pack $
   (show (sm ^. code) ++ " substitution model: " ++ L.unpack (sm ^. name) ++ ".") :
   [ "Parameters: " ++ show (sm ^. params) ++ "." | not (null (sm ^. params))] ++
   case sm ^. code of
-    DNA -> [ "Stationary distribution: " ++ show (sm ^. stationaryDistribution) ++ "."
-           , "Exchangeability matrix: " ++ show (sm ^. exchangeabilityMatrix) ++ "." ]
-    Protein -> [ "Stationary distribution: " ++ show (sm ^. stationaryDistribution) ++ "." ]
+    DNA -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
+           , "Exchangeability matrix:\n" ++ dispmi 2 precision (sm ^. exchangeabilityMatrix) ++ "."
+           , "Scale: " ++ show (roundN precision $ getScaleSubstitutionModel sm) ++ "."
+           ]
+    Protein -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
+               , "Scale: " ++ show (roundN precision $ getScaleSubstitutionModel sm) ++ "."
+               ]
     _ -> []
 
 -- | Calculate rate matrix from substitution model.

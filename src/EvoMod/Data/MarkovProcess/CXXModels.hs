@@ -18,18 +18,8 @@ XXX: For now, I only provide Poisson exchangeabilities.
 -}
 
 module EvoMod.Data.MarkovProcess.CXXModels
-  ( c10
-  , c10CustomWeights
-  , c20
-  , c20CustomWeights
-  , c30
-  , c30CustomWeights
-  , c40
-  , c40CustomWeights
-  , c50
-  , c50CustomWeights
-  , c60
-  , c60CustomWeights
+  (
+    cxx
   ) where
 
 import qualified Data.ByteString.Builder                     as L
@@ -40,6 +30,23 @@ import           EvoMod.Data.MarkovProcess.CXXModelsData
 import           EvoMod.Data.MarkovProcess.MixtureModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
+
+-- | Create CXX model with given number of components and probably with custom
+-- weights.
+cxx :: Int -> Maybe [Weight] -> Maybe MixtureModel
+cxx 10 (Just ws) = Just $ c10CustomWeights ws
+cxx 20 (Just ws) = Just $ c20CustomWeights ws
+cxx 30 (Just ws) = Just $ c30CustomWeights ws
+cxx 40 (Just ws) = Just $ c40CustomWeights ws
+cxx 50 (Just ws) = Just $ c50CustomWeights ws
+cxx 60 (Just ws) = Just $ c60CustomWeights ws
+cxx 10 Nothing   = Just c10
+cxx 20 Nothing   = Just c20
+cxx 30 Nothing   = Just c30
+cxx 40 Nothing   = Just c40
+cxx 50 Nothing   = Just c50
+cxx 60 Nothing   = Just c60
+cxx _ _          = Nothing
 
 -- | C10 model.
 c10 :: MixtureModel
@@ -66,46 +73,40 @@ c60 :: MixtureModel
 c60 = cxxFromStatDistsAndWeights c60Weights c60StatDists
 
 -- | C10 model with custom weights.
-c10CustomWeights :: Maybe [Weight] -> MixtureModel
-c10CustomWeights (Just ws)
+c10CustomWeights :: [Weight] -> MixtureModel
+c10CustomWeights ws
   | length ws == 10 = cxxFromStatDistsAndWeights ws c10StatDists
   | otherwise       = error "Number of weights does not match C10 model."
-c10CustomWeights Nothing = c10
 
 -- | C20 model with custom weights.
-c20CustomWeights :: Maybe [Weight] -> MixtureModel
-c20CustomWeights (Just ws)
+c20CustomWeights :: [Weight] -> MixtureModel
+c20CustomWeights ws
   | length ws == 20 = cxxFromStatDistsAndWeights ws c20StatDists
   | otherwise       = error "Number of weights does not match C20 model."
-c20CustomWeights Nothing = c20
 
 -- | C30 model with custom weights.
-c30CustomWeights :: Maybe [Weight] -> MixtureModel
-c30CustomWeights (Just ws)
+c30CustomWeights :: [Weight] -> MixtureModel
+c30CustomWeights ws
   | length ws == 30 = cxxFromStatDistsAndWeights ws c30StatDists
   | otherwise       = error "Number of weights does not match C30 model."
-c30CustomWeights Nothing = c30
 
 -- | C40 model with custom weights.
-c40CustomWeights :: Maybe [Weight] -> MixtureModel
-c40CustomWeights (Just ws)
+c40CustomWeights :: [Weight] -> MixtureModel
+c40CustomWeights ws
   | length ws == 40 = cxxFromStatDistsAndWeights ws c40StatDists
   | otherwise       = error "Number of weights does not match C40 model."
-c40CustomWeights Nothing = c40
 
 -- | C50 model with custom weights.
-c50CustomWeights :: Maybe [Weight] -> MixtureModel
-c50CustomWeights (Just ws)
+c50CustomWeights :: [Weight] -> MixtureModel
+c50CustomWeights ws
   | length ws == 50 = cxxFromStatDistsAndWeights ws c50StatDists
   | otherwise       = error "Number of weights does not match C50 model."
-c50CustomWeights Nothing = c50
 
 -- | C60 model with custom weights.
-c60CustomWeights :: Maybe [Weight] -> MixtureModel
-c60CustomWeights (Just ws)
+c60CustomWeights :: [Weight] -> MixtureModel
+c60CustomWeights ws
   | length ws == 60 = cxxFromStatDistsAndWeights ws c60StatDists
   | otherwise       = error "Number of weights does not match C60 model."
-c60CustomWeights Nothing = c60
 
 cxxName :: Int -> L.Builder
 cxxName nComps = L.char8 'C' <> L.intDec nComps
@@ -119,7 +120,8 @@ cxxSubstitutionModelFromStatDist :: Int -> Int -> StationaryDistribution -> Subs
 -- here? For Poisson exchangeabilities, it doesn't make any difference, but for
 -- other exchangeabilities, it will make a difference. How is this implemented
 -- in other software packages?
-cxxSubstitutionModelFromStatDist nComps comp d = normalizeSubstitutionModel $ poissonCustom d (Just name)
+cxxSubstitutionModelFromStatDist nComps comp d = normalizeSubstitutionModel $
+                                                 poissonCustom (Just name) d
   where name = componentName nComps comp
 
 cxxSubstitutionModelsFromStatDists :: [StationaryDistribution] -> [SubstitutionModel]

@@ -90,8 +90,8 @@ stationaryDistribution = do
          ++ " but should be 1.0."
 
 assertLength :: StationaryDistribution -> Int -> a -> a
-assertLength f n r = if size f /= n
-                    then error $ "Length of stationary distribution is " ++ show (size f)
+assertLength d n r = if size d /= n
+                    then error $ "Length of stationary distribution is " ++ show (size d)
                          ++ " but should be " ++ show n ++ "."
                     else r
 
@@ -101,14 +101,14 @@ assembleSubstitutionModel :: String -> Maybe SubstitutionModelParams -> Maybe St
                           -> Either String SubstitutionModel
 -- DNA models.
 assembleSubstitutionModel "JC" Nothing Nothing = Right jc
-assembleSubstitutionModel "HKY" (Just [k]) (Just f) = Right $ assertLength f nNuc $ hky k f
+assembleSubstitutionModel "HKY" (Just [k]) (Just d) = Right $ assertLength d nNuc $ hky k d
 -- Protein models.
 assembleSubstitutionModel "LG" Nothing Nothing = Right lg
-assembleSubstitutionModel "LG-Custom" Nothing (Just f) = Right $ assertLength f nAA $ lgCustom f Nothing
+assembleSubstitutionModel "LG-Custom" Nothing (Just d) = Right $ assertLength d nAA $ lgCustom Nothing d
 assembleSubstitutionModel "WAG" Nothing Nothing = Right wag
-assembleSubstitutionModel "WAG-Custom" Nothing (Just f) = Right $ assertLength f nAA $ wagCustom f Nothing
+assembleSubstitutionModel "WAG-Custom" Nothing (Just d) = Right $ assertLength d nAA $ wagCustom Nothing d
 assembleSubstitutionModel "Poisson" Nothing Nothing = Right poisson
-assembleSubstitutionModel "Poisson-Custom" Nothing (Just f) = Right $ assertLength f nAA $ poissonCustom f Nothing
+assembleSubstitutionModel "Poisson-Custom" Nothing (Just d) = Right $ assertLength d nAA $ poissonCustom Nothing d
 -- Ohterwisse, we cannot assemble the model.
 assembleSubstitutionModel n mps mf = Left $ unlines
   [ "Cannot assemble substitution model. "
@@ -143,14 +143,9 @@ cxxModel :: Maybe [Weight] -> Parser MixtureModel
 cxxModel mws = do
   _ <- char (c2w 'C')
   n <- decimal :: Parser Int
-  case n of
-    10 -> return $ c10CustomWeights mws
-    20 -> return $ c20CustomWeights mws
-    30 -> return $ c30CustomWeights mws
-    40 -> return $ c40CustomWeights mws
-    50 -> return $ c50CustomWeights mws
-    60 -> return $ c60CustomWeights mws
-    _     -> fail "Only 10, 20, 30, 40, 50, and 60 components are supported."
+  case cxx n mws of
+    Nothing -> fail "Only 10, 20, 30, 40, 50, and 60 components are supported."
+    Just m -> return m
 
 standardMixtureModel :: [Weight] -> Parser MixtureModel
 standardMixtureModel ws = do

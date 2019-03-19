@@ -30,7 +30,6 @@ dependencies:
   - bytestring
   - containers
   - data-memocombinators
-  - groom
   - hmatrix
   - integration
   - lens

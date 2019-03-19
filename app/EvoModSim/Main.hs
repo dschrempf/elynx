@@ -26,7 +26,6 @@ import qualified Data.Vector                                      as V
 import           Numeric.LinearAlgebra
 import           System.IO
 import           System.Random.MWC
-import           Text.Groom
 
 import           ArgParseSim
 import           ParsePhyloModel
@@ -107,8 +106,9 @@ reportModel m = do
   args <- arguments <$> ask
   let fnOut = argsFileOut args
       modelFn = fnOut ++ ".model"
-  lift $ writeFile modelFn (groom m)
-  logS $ "Exact model definition written to '" ++ modelFn ++ "'."
+  -- TODO. Provide human readable model file.
+  lift $ writeFile modelFn (show m)
+  logS $ "Exact model definition written to '" ++ modelFn ++ "' (machine readable)."
   logS ""
 
 simulate :: Simulation ()

@@ -29,6 +29,7 @@ module EvoMod.Data.MarkovProcess.MixtureModel
   , getWeights
   , getSubstitutionModels
   , scaleMixtureModel
+  , normalizeMixtureModel
   , appendNameMixtureModel
   ) where
 
@@ -45,7 +46,7 @@ type Weight = Double
 
 -- | A mixture model component has a weight and a substitution model.
 data MixtureModelComponent = MixtureModelComponent
-  { _weight            :: Weight
+  { _weight     :: Weight
   , _substModel :: SubstitutionModel
   }
   deriving (Show, Read)
@@ -120,6 +121,14 @@ getSubstitutionModels m = m ^.. components . traverse . substModel
 -- | Scale all substitution models of the mixture model.
 scaleMixtureModel :: Double -> MixtureModel -> MixtureModel
 scaleMixtureModel s = over (components . traverse . substModel) (scaleSubstitutionModel s)
+
+-- | Globally normalize a mixture model so that on average one event happens per
+-- unit time.
+normalizeMixtureModel :: MixtureModel -> MixtureModel
+normalizeMixtureModel mm = scaleMixtureModel (1/c) mm
+  where c = sum $ zipWith (*) weights scales
+        weights = getWeights mm
+        scales  = map getScaleSubstitutionModel $ getSubstitutionModels mm
 
 -- | Append byte string to all substitution models of mixture model.
 appendNameMixtureModel :: MixtureModelName -> MixtureModel -> MixtureModel

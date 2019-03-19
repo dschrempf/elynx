@@ -18,7 +18,12 @@ module EvoMod.Tools.LinearAlgebra
     -- * Matrices.
     matrixSeparateSymSkew
   , matrixSetDiagToZero
+  , dispv
+  , dispm
+  , dispmi
   ) where
+
+import           Data.List
 
 import           Numeric.LinearAlgebra
 
@@ -32,3 +37,15 @@ matrixSeparateSymSkew m = (mSym, mSkew)
 -- | Set the diagonal entries of a matrix to zero.
 matrixSetDiagToZero :: Matrix R -> Matrix R
 matrixSetDiagToZero m = m - diag (takeDiag m)
+
+-- | Display a vector with given precision.
+dispv :: Int -> Vector R -> String
+dispv p v = head $ tail $ lines $ dispf p (asRow v)
+
+-- | Display a matrix with given precision.
+dispm :: Int -> Matrix R -> String
+dispm p m = intercalate "\n" $ init $ lines $ dispf p m
+
+-- | Display a matrix with given precision and indent.
+dispmi :: Int -> Int -> Matrix R -> String
+dispmi p i m = intercalate "\n" $ map (replicate i ' ' ++) $ tail $ lines $ dispf p m
