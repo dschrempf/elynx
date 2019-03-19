@@ -115,13 +115,10 @@ componentName :: Int -> Int -> L.ByteString
 componentName nComps comp = L.toLazyByteString $
   cxxName nComps <> L.string8 "; component " <> L.intDec comp
 
+-- Keep in mind, that when using different exchangeabilities, I have to decide
+-- about global or local normalization.
 cxxSubstitutionModelFromStatDist :: Int -> Int -> StationaryDistribution -> SubstitutionModel
--- XXX: Is it necessary (or even correct) to normalize the substitution model
--- here? For Poisson exchangeabilities, it doesn't make any difference, but for
--- other exchangeabilities, it will make a difference. How is this implemented
--- in other software packages?
-cxxSubstitutionModelFromStatDist nComps comp d = normalizeSubstitutionModel $
-                                                 poissonCustom (Just name) d
+cxxSubstitutionModelFromStatDist nComps comp = poissonCustom (Just name)
   where name = componentName nComps comp
 
 cxxSubstitutionModelsFromStatDists :: [StationaryDistribution] -> [SubstitutionModel]

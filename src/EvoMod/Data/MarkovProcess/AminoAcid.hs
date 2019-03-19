@@ -17,8 +17,10 @@ The order of amino acids is alphabetic.
 module EvoMod.Data.MarkovProcess.AminoAcid
   ( lg
   , lgCustom
+  , lgCustomUnnormalized
   , wag
   , wagCustom
+  , wagCustomUnnormalized
   , poisson
   , poissonCustom
   ) where
@@ -175,6 +177,11 @@ lgCustom :: Maybe L.ByteString -> StationaryDistribution -> SubstitutionModel
 lgCustom mn d = substitutionModel Protein name [] d lgExch
   where name = fromMaybe (L.pack "LG-Custom") mn
 
+-- | LG substitution model with maybe a name and a custom stationary distribution.
+lgCustomUnnormalized :: Maybe L.ByteString -> StationaryDistribution -> SubstitutionModel
+lgCustomUnnormalized mn d = substitutionModelUnnormalized Protein name [] d lgExch
+  where name = fromMaybe (L.pack "LG-Custom-Unnormalized") mn
+
 -- WAG exchangeability list in PAML order.
 wagExchRawPaml :: [Double]
 wagExchRawPaml =
@@ -222,6 +229,11 @@ wag = substitutionModel Protein (L.pack "WAG") [] wagStatDist wagExch
 wagCustom :: Maybe L.ByteString -> StationaryDistribution -> SubstitutionModel
 wagCustom mn d = substitutionModel Protein name [] d wagExch
   where name = fromMaybe (L.pack "WAG-Custom") mn
+
+-- | LG substitution model with maybe a name and a custom stationary distribution.
+wagCustomUnnormalized :: Maybe L.ByteString -> StationaryDistribution -> SubstitutionModel
+wagCustomUnnormalized mn d = substitutionModelUnnormalized Protein name [] d wagExch
+  where name = fromMaybe (L.pack "WAG-Custom-Unnormalized") mn
 
 uniformExch :: ExchangeabilityMatrix
 uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n*n) 1.0
