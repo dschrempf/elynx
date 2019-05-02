@@ -1,0 +1,258 @@
+
+./src/EvoMod/Export/Tree/Newick.hs,210
+module EvoMod.Export.Tree.NewickEvoMod.Export.Tree.Newick18,19
+toNewickWith toNewickWith35,36
+toNewickPhyloIntTree toNewickPhyloIntTree50,51
+toNewickPhyloByteStringTree toNewickPhyloByteStringTree55,56
+
+./src/EvoMod/Import/Tree/Newick.hs,376
+module EvoMod.Import.Tree.NewickEvoMod.Import.Tree.Newick21,22
+type Parser Parser44,45
+manyNewick manyNewick47,48
+newick newick51,52
+tree tree54,55
+branched branched57,58
+forest forest65,66
+leaf leaf69,70
+node node76,77
+checkNameCharacter checkNameCharacter83,84
+name name88,89
+branchLength branchLength92,93
+branchLengthGiven branchLengthGiven95,96
+
+./src/EvoMod/Data/Tree/PhyloTree.hs,856
+module EvoMod.Data.Tree.PhyloTreeEvoMod.Data.Tree.PhyloTree22,23
+data PhyloIntLabel PhyloIntLabel39,40
+data PhyloIntLabel = PhyloIntLabel PhyloIntLabel39,40
+data PhyloIntLabel = PhyloIntLabel { piLabel piLabel39,40
+                                   , piBrLen piBrLen40,41
+instance Named Named PhyloIntLabel44,45
+  name name45,46
+instance Measurable Measurable PhyloIntLabel47,48
+  measure measure48,49
+data PhyloByteStringLabel PhyloByteStringLabel52,53
+data PhyloByteStringLabel = PhyloByteStringLabel PhyloByteStringLabel52,53
+data PhyloByteStringLabel = PhyloByteStringLabel { pbsLabel pbsLabel52,53
+                                                 , pbsBrLen pbsBrLen53,54
+instance Named Named PhyloByteStringLabel56,57
+  name name57,58
+instance Measurable Measurable PhyloByteStringLabel59,60
+  measure measure60,61
+
+./src/EvoMod/Data/Tree/NamedTree.hs,111
+module EvoMod.Data.Tree.NamedTreeEvoMod.Data.Tree.NamedTree14,15
+class Named Named21,22
+  name name22,23
+
+./src/EvoMod/Data/Tree/MeasurableTree.hs,275
+module EvoMod.Data.Tree.MeasurableTreeEvoMod.Data.Tree.MeasurableTree15,16
+class Measurable Measurable29,30
+  measure measure30,31
+totalBranchLength totalBranchLength33,34
+distancesRootLeaves distancesRootLeaves37,38
+height height42,43
+summarize summarize46,47
+
+./src/EvoMod/Data/Tree/EvoTree.hs,196
+module EvoMod.Data.Tree.EvoTreeEvoMod.Data.Tree.EvoTree16,17
+class EvoLabel EvoLabel24,25
+  extant extant25,26
+  extinct extinct26,27
+  internal internal28,29
+  external external30,31
+
+./src/EvoMod/Data/Tree/Tree.hs,124
+module EvoMod.Data.Tree.TreeEvoMod.Data.Tree.Tree35,36
+singleton singleton46,47
+degree degree50,51
+leafs leafs54,55
+
+./src/EvoMod/Definitions.hs,93
+module EvoMod.DefinitionsEvoMod.Definitions14,15
+eps eps20,21
+precision precision24,25
+
+./src/EvoMod/Simulate/Coalescent.hs,119
+module EvoMod.Simulate.CoalescentEvoMod.Simulate.Coalescent15,16
+simulate simulate27,28
+simulate' simulate'35,36
+
+./src/EvoMod/Simulate/PointProcess.hs,654
+module EvoMod.Simulate.PointProcessEvoMod.Simulate.PointProcess22,23
+epsNearCriticalPointProcess epsNearCriticalPointProcess49,50
+epsNearCriticalTimeOfOrigin epsNearCriticalTimeOfOrigin52,53
+data PointProcess PointProcess61,62
+data PointProcess a b = PointProcessPointProcess61,62
+  { points points62,63
+  , values values63,64
+  , origin origin64,65
+simulate simulate68,69
+simulate simulate76,77
+sort sort119,120
+flattenIndices flattenIndices126,127
+fAcc fAcc131,132
+simulateReconstructedTree simulateReconstructedTree147,148
+toReconstructedTree toReconstructedTree159,160
+toReconstructedTree' toReconstructedTree'175,176
+
+./src/EvoMod/Distribution/TimeOfOriginNearCritical.hs,717
+module EvoMod.Distribution.TimeOfOriginNearCriticalEvoMod.Distribution.TimeOfOriginNearCritical23,24
+data TimeOfOriginNearCriticalDistribution TimeOfOriginNearCriticalDistribution37,38
+data TimeOfOriginNearCriticalDistribution = TONCDTONCD37,38
+  { todTN todTN38,39
+  , todLa todLa39,40
+  , todMu todMu40,41
+instance D.Distribution D-Distribution TimeOfOriginNearCriticalDistribution43,44
+    cumulative cumulative44,45
+instance D.ContDistr D-ContDistr TimeOfOriginNearCriticalDistribution56,57
+  density density57,58
+  quantile quantile58,59
+density density61,62
+quantile quantile71,72
+instance D.ContGen D-ContGen TimeOfOriginNearCriticalDistribution81,82
+  genContVar genContVar82,83
+
+./src/EvoMod/Distribution/TimeOfOrigin.hs,617
+module EvoMod.Distribution.TimeOfOriginEvoMod.Distribution.TimeOfOrigin23,24
+data TimeOfOriginDistribution TimeOfOriginDistribution37,38
+data TimeOfOriginDistribution = TODTOD37,38
+  { todTN todTN38,39
+  , todLa todLa39,40
+  , todMu todMu40,41
+instance D.Distribution D-Distribution TimeOfOriginDistribution43,44
+    cumulative cumulative44,45
+instance D.ContDistr D-ContDistr TimeOfOriginDistribution54,55
+  density density55,56
+  quantile quantile56,57
+density density59,60
+quantile quantile71,72
+instance D.ContGen D-ContGen TimeOfOriginDistribution81,82
+  genContVar genContVar82,83
+
+./src/EvoMod/Distribution/BirthDeathCritical.hs,650
+module EvoMod.Distribution.BirthDeathCriticalEvoMod.Distribution.BirthDeathCritical24,25
+data BirthDeathCriticalDistribution BirthDeathCriticalDistribution39,40
+data BirthDeathCriticalDistribution = BDCDBDCD39,40
+  { bdcdTOr bdcdTOr40,41
+  , bdcdLa bdcdLa41,42
+instance D.Distribution D-Distribution BirthDeathCriticalDistribution44,45
+    cumulative cumulative45,46
+instance D.ContDistr D-ContDistr BirthDeathCriticalDistribution54,55
+  density density55,56
+  quantile quantile56,57
+density density59,60
+quantile quantile67,68
+instance D.ContGen D-ContGen BirthDeathCriticalDistribution74,75
+  genContVar genContVar75,76
+
+./src/EvoMod/Distribution/BirthDeath.hs,603
+module EvoMod.Distribution.BirthDeathEvoMod.Distribution.BirthDeath23,24
+data BirthDeathDistribution BirthDeathDistribution37,38
+data BirthDeathDistribution = BDDBDD37,38
+  { bddTOr bddTOr38,39
+  , bddLa bddLa39,40
+  , bddMu bddMu40,41
+instance D.Distribution D-Distribution BirthDeathDistribution43,44
+    cumulative cumulative44,45
+instance D.ContDistr D-ContDistr BirthDeathDistribution56,57
+  density density57,58
+  quantile quantile58,59
+density density61,62
+quantile quantile72,73
+instance D.ContGen D-ContGen BirthDeathDistribution81,82
+  genContVar genContVar82,83
+
+./src/EvoMod/Distribution/BirthDeathCriticalNoTime.hs,685
+module EvoMod.Distribution.BirthDeathCriticalNoTimeEvoMod.Distribution.BirthDeathCriticalNoTime24,25
+newtype BirthDeathCriticalNoTimeDistribution BirthDeathCriticalNoTimeDistribution38,39
+newtype BirthDeathCriticalNoTimeDistribution = BDCNTDBDCNTD38,39
+  { bdcntdLa bdcntdLa39,40
+instance D.Distribution D-Distribution BirthDeathCriticalNoTimeDistribution42,43
+    cumulative cumulative43,44
+instance D.ContDistr D-ContDistr BirthDeathCriticalNoTimeDistribution51,52
+  density density52,53
+  quantile quantile53,54
+density density57,58
+quantile quantile64,65
+instance D.ContGen D-ContGen BirthDeathCriticalNoTimeDistribution70,71
+  genContVar genContVar71,72
+
+./src/EvoMod/Distribution/BirthDeathNearlyCritical.hs,731
+module EvoMod.Distribution.BirthDeathNearlyCriticalEvoMod.Distribution.BirthDeathNearlyCritical26,27
+data BirthDeathNearlyCriticalDistribution BirthDeathNearlyCriticalDistribution40,41
+data BirthDeathNearlyCriticalDistribution = BDNCDBDNCD40,41
+  { bdncdTOr bdncdTOr41,42
+  , bdncdLa bdncdLa42,43
+  , bdncdMu bdncdMu43,44
+instance D.Distribution D-Distribution BirthDeathNearlyCriticalDistribution46,47
+    cumulative cumulative47,48
+instance D.ContDistr D-ContDistr BirthDeathNearlyCriticalDistribution58,59
+  density density59,60
+  quantile quantile60,61
+density density63,64
+quantile quantile74,75
+instance D.ContGen D-ContGen BirthDeathNearlyCriticalDistribution86,87
+  genContVar genContVar87,88
+
+./src/EvoMod/Distribution/CoalescentContinuous.hs,156
+module EvoMod.Distribution.CoalescentContinuousEvoMod.Distribution.CoalescentContinuous14,15
+coalescentDistributionCont coalescentDistributionCont23,24
+
+./src/EvoMod/Distribution/Types.hs,109
+module EvoMod.Distribution.TypesEvoMod.Distribution.Types15,16
+type Time Time21,22
+type Rate Rate24,25
+
+./app/TreeSim/Main.hs,925
+module Main Main23,24
+data Args Args47,48
+data Args = ArgsArgs47,48
+  { nTrees nTrees48,49
+  , nLeaves nLeaves49,50
+  , height height50,51
+  , lambda lambda51,52
+  , mu mu52,53
+  , rho rho53,54
+  , sumStat sumStat54,55
+  , verbosity verbosity55,56
+  , quiet quiet56,57
+  , seed seed57,58
+reportArgs reportArgs60,61
+parseArgs parseArgs79,80
+argsParser argsParser96,97
+nTreeOpt nTreeOpt109,110
+nLeavesOpt nLeavesOpt118,119
+treeHeightOpt treeHeightOpt127,128
+lambdaOpt lambdaOpt135,136
+muOpt muOpt144,145
+rhoOpt rhoOpt153,154
+sumStatOpt sumStatOpt161,162
+verbosityOpt verbosityOpt168,169
+quietOpt quietOpt175,176
+seedOpt seedOpt182,183
+getCommandLineStr getCommandLineStr189,190
+newSection newSection194,195
+main main199,200
+simulateNTreesConcurrently simulateNTreesConcurrently220,221
+simulateNTrees simulateNTrees231,232
+reportCapability reportCapability262,263
+
+./test/Spec.hs,0
+
+./test/EvoMod/Export/Tree/NewickSpec.hs,204
+module EvoMod.Export.Tree.NewickSpecEvoMod.Export.Tree.NewickSpec13,14
+samplePhyloByteStringTree samplePhyloByteStringTree26,27
+sampleNewickByteString1 sampleNewickByteString129,30
+spec spec32,33
+
+./test/EvoMod/Import/Tree/NewickSpec.hs,474
+module EvoMod.Import.Tree.NewickSpecEvoMod.Import.Tree.NewickSpec13,14
+sampleLabelByteString sampleLabelByteString24,25
+sampleLabel sampleLabel27,28
+sampleForestByteString sampleForestByteString30,31
+sampleForest sampleForest33,34
+sampleNewickByteString1 sampleNewickByteString149,50
+sampleNewickByteString2 sampleNewickByteString252,53
+sampleNewickEmptyByteString sampleNewickEmptyByteString56,57
+sampleNewickEmpty sampleNewickEmpty59,60
+spec spec74,75

@@ -30,3 +30,14 @@ class EvoLabel n where
   internal n = not $ extant n || extinct n
   external        :: n -> Bool
   external   = not . internal
+
+-- -- | Glue branches together, so that one new tree emerges. It's root node is
+-- -- new, the sub-forest has to be given (a list of trees).
+-- glue :: (NodeType c)
+--      => PhyloLabel a b c       -- ^ New root node.
+--      -> [PhyloTree a b c]      -- ^ Sub-forest.
+--      -> PhyloTree a b c
+-- glue s@(PhyloLabel _ _ n) ts
+--   | extant n  = error "Root node cannot be of type 'Exant'."
+--   | extinct n = error "Root node cannot be of type 'Extinct'."
+--   | otherwise = Node s ts

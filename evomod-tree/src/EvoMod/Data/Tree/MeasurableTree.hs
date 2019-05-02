@@ -15,9 +15,11 @@ Creation date: Thu Jan 17 14:16:34 2019.
 
 module EvoMod.Data.Tree.MeasurableTree
   ( Measurable (..)
-  , totalBranchLength
   , height
+  , lengthen
+  , shorten
   , summarize
+  , totalBranchLength
   ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -26,13 +28,12 @@ import           Data.Tree
 
 import           EvoMod.Data.Tree.Tree
 
--- | A 'Node' label with measurable branch length to the parent.
+-- | A 'Node' label with measurable and modifiable branch length to the parent.
 class Measurable a where
+  -- | Length of attached branch.
   measure :: a -> Double
-
--- | Total branch length of a tree.
-totalBranchLength :: (Measurable a) => Tree a -> Double
-totalBranchLength = foldl' (\acc n -> acc + measure n) 0
+  -- | Set attached branch length.
+  set :: Double -> a -> a
 
 -- | Distances from the root of the tree to its leafs.
 distancesRootLeaves :: (Measurable a) => Tree a -> [Double]
@@ -42,6 +43,15 @@ distancesRootLeaves (Node l f ) = concatMap (map (+ measure l) . distancesRootLe
 -- | Height of a tree.
 height :: (Measurable a) => Tree a -> Double
 height = maximum . distancesRootLeaves
+
+-- | Lengthen the distance between root and origin.
+lengthen :: (Measurable a) => Double -> Tree a -> Tree a
+lengthen dl (Node lbl ts) = Node (set (l+dl) lbl) ts
+  where l = measure lbl
+
+-- | Shorten the distance between root and origin.
+shorten :: (Measurable a) => Double -> Tree a -> Tree a
+shorten dl = lengthen (-dl)
 
 -- | Summarize a tree with measureable branch lengths.
 summarize :: (Measurable a) => Tree a -> L.ByteString
@@ -55,3 +65,6 @@ summarize t = L.unlines $ map L.pack
         b = totalBranchLength t
         h' = sum (distancesRootLeaves t) / fromIntegral n
 
+-- | Total branch length of a tree.
+totalBranchLength :: (Measurable a) => Tree a -> Double
+totalBranchLength = foldl' (\acc n -> acc + measure n) 0

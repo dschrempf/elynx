@@ -19,6 +19,7 @@ module EvoMod.Tools.Equality
   , nearlyEqWith
   , eps
   , nearlyEq
+  , (=~=)
   , nearlyEqVecWith
   , nearlyEqVec
   , nearlyEqMatWith
@@ -48,6 +49,10 @@ eps = 1e-12
 -- machine precision).
 nearlyEq :: Double -> Double -> Bool
 nearlyEq = nearlyEqWith eps
+
+-- | Infix synonym for 'nearlyEq'.
+(=~=) :: Double -> Double -> Bool
+(=~=) = nearlyEq
 
 -- Test if the given number is nearly equal to all elements of a vector.
 nearlyEqValListWith :: Double -> Double -> [Double] -> Bool

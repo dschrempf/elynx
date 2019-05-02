@@ -63,25 +63,25 @@ _defaults: &defaults
     - -with-rtsopts=-N
 
 executables:
-  evomod-seq:
+  seq-ana:
     <<: *defaults
     main:                Main.hs
-    source-dirs:         app/EvoModSeq
+    source-dirs:         app/SeqAna
     dependencies:
       - evomod-seq
       - evomod-tools
 
-  evomod-sim:
+  seq-sim:
     <<: *defaults
     main:                Main.hs
-    source-dirs:         app/EvoModSim
+    source-dirs:         app/SeqSim
     dependencies:
       - evomod-seq
       - evomod-tools
       - evomod-tree
 
 tests:
-  evomod-seq-test:
+  seq-test:
     <<: *defaults
     main:                Spec.hs
     source-dirs:         test

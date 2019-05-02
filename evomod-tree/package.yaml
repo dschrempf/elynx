@@ -25,22 +25,23 @@ ghc-options:
   - -fllvm
 
 dependencies:
-  # - async
+  - async
   - base
   - bytestring
   - containers
   # - data-memocombinators
+  # - distribution
   # - hmatrix
   # - integration
   # - lens
-  # - math-functions
+  - math-functions
   # - matrices
   - megaparsec
-  # - mwc-random
+  - mwc-random
   # - optparse-applicative
-  # - parallel
-  # - primitive
-  # - statistics
+  - parallel
+  - primitive
+  - statistics
   # - transformers
   # - vector
   # - word8
@@ -61,8 +62,16 @@ _defaults: &defaults
     - -rtsopts
     - -with-rtsopts=-N
 
+executables:
+  tree-sim:
+    <<: *defaults
+    main:                Main.hs
+    source-dirs:         app/TreeSim
+    dependencies:
+      - evomod-tools
+
 tests:
-  evomod-tree-test:
+  tree-test:
     <<: *defaults
     main:                Spec.hs
     source-dirs:         test
