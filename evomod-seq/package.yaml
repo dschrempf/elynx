@@ -44,7 +44,7 @@ dependencies:
   - transformers
   - vector
   - word8
-  - zlib
+  # - zlib
 
 library:
   source-dirs: src

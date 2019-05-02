@@ -25,25 +25,25 @@ category:            Bioinformatics
 description:         Please see the README on GitHub at <https://github.com/dschrempf/evomod>.
 
 dependencies:
-  - async
+  # - async
   - base
   - bytestring
-  - containers
-  - data-memocombinators
+  # - containers
+  # - data-memocombinators
   - hmatrix
-  - integration
-  - lens
-  - math-functions
+  # - integration
+  # - lens
+  # - math-functions
   - matrices
   - megaparsec
   - mwc-random
-  - optparse-applicative
+  # - optparse-applicative
   - parallel
-  - primitive
-  - statistics
+  # - primitive
+  # - statistics
   - transformers
   - vector
-  - word8
+  # - word8
   - zlib
 
 library:

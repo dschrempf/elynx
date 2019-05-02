@@ -25,26 +25,26 @@ ghc-options:
   - -fllvm
 
 dependencies:
-  - async
+  # - async
   - base
   - bytestring
   - containers
-  - data-memocombinators
-  - hmatrix
-  - integration
-  - lens
-  - math-functions
-  - matrices
+  # - data-memocombinators
+  # - hmatrix
+  # - integration
+  # - lens
+  # - math-functions
+  # - matrices
   - megaparsec
-  - mwc-random
-  - optparse-applicative
-  - parallel
-  - primitive
-  - statistics
-  - transformers
-  - vector
-  - word8
-  - zlib
+  # - mwc-random
+  # - optparse-applicative
+  # - parallel
+  # - primitive
+  # - statistics
+  # - transformers
+  # - vector
+  # - word8
+  # - zlib
 
 library:
   source-dirs: src
