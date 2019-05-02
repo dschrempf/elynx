@@ -90,7 +90,7 @@ simulateMSA pm t n g = do
 summarizeEDMComponents :: [EDMComponent] -> L.ByteString
 summarizeEDMComponents cs = LC.pack
                             $ "Empiricial distribution mixture model with "
-                            ++ show (length cs) ++ " components"
+                            ++ show (length cs) ++ " components."
 
 type Simulation = ReaderT Params IO
 

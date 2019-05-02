@@ -136,7 +136,10 @@ edmModel cs mws = do
   let sms = map (\c -> assembleSubstitutionModel n mps (Just $ snd c)) cs
       edmName = L.pack $ "EDM" ++ show (length cs)
       ws = fromMaybe (map fst cs) mws
-  return $ MixtureModel edmName
+      errs = [ e | (Left e) <- sms ]
+  if not $ null errs
+  then fail $ head errs
+  else return $ MixtureModel edmName
     [ MixtureModelComponent w sm | (w, Right sm) <- zip ws sms ]
 
 cxxModel :: Maybe [Weight] -> Parser MixtureModel

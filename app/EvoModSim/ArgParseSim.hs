@@ -151,7 +151,7 @@ maybeSeedOpt :: Parser (Maybe [Word32])
 maybeSeedOpt = optional $ option auto
   ( long "seed"
     <> short 'S'
-    <> metavar "INT"
+    <> metavar "[INT]"
     <> value [ 0 :: Word32 ]
     <> showDefault
     <> help ( "Set seed for the random number generator; "

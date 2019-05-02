@@ -40,9 +40,11 @@ import           EvoMod.Tools.ByteString       (c2w, w2c)
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString
 
-allowedHeaderChar :: Parser Word8
-allowedHeaderChar = alphaNumChar <|> oneOf (map c2w ['_', '|', '.'])
 
+allowedHeaderChar :: Parser Word8
+allowedHeaderChar = alphaNumChar <|> oneOf (map c2w ['_', '|', '.', '-'])
+
+-- XXX: Allow description.
 sequenceHeader :: Parser [Word8]
 sequenceHeader = char (c2w '>') *> some allowedHeaderChar <* eol
 
@@ -55,7 +57,7 @@ sequenceLine s = do
   return xs
 
 -- XXX: If sequences are parsed line by line, the lines have to be copied when
--- forming the complete sequence. This is not very memory efficient.
+-- forming the complete sequence. This is not memory efficient.
 
 -- | Parse a sequence of 'Alphabet' 'EvoMod.Data.Alphabet.Character's.
 fastaSequence :: Code -> Parser Sequence
