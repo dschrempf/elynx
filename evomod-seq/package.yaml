@@ -81,7 +81,7 @@ executables:
       - evomod-tree
 
 tests:
-  evomod-test:
+  evomod-seq-test:
     <<: *defaults
     main:                Spec.hs
     source-dirs:         test
