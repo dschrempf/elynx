@@ -24,7 +24,6 @@ module EvoMod.Tools.Equality
   , nearlyEqMat
   ) where
 
-import           EvoMod.Definitions
 import           Numeric.LinearAlgebra
 
 -- | Test if all elements of a list are equal; returns True for empty list.
@@ -38,7 +37,14 @@ allEqual xs = all (== head xs) (tail xs)
 nearlyEqWith :: Double -> Double -> Double -> Bool
 nearlyEqWith tol a b = tol > abs (a-b)
 
--- | Test for equality with predefined tolerance (needed because of machine precision).
+-- XXX: Move this to a separate file, so that it is more exposed and can be set
+-- more easily?
+-- | Required precision when comparing 'Double' values.
+eps :: Double
+eps = 1e-12
+
+-- | Test for equality with predefined tolerance 'eps' (needed because of
+-- machine precision).
 nearlyEq :: Double -> Double -> Bool
 nearlyEq = nearlyEqWith eps
 
@@ -50,7 +56,7 @@ nearlyEqValListWith tol a = all (nearlyEqWith tol a)
 nearlyEqVecWith :: Double -> Vector R -> Vector R -> Bool
 nearlyEqVecWith tol a b = nearlyEqValListWith tol 0 (toList $ a - b)
 
--- | Test if two vectors are nearly equal.
+-- | Test if two vectors are nearly equal; use tolerance 'eps'.
 nearlyEqVec :: Vector R -> Vector R -> Bool
 nearlyEqVec = nearlyEqVecWith eps
 
@@ -58,6 +64,6 @@ nearlyEqVec = nearlyEqVecWith eps
 nearlyEqMatWith :: Double -> Matrix R -> Matrix R -> Bool
 nearlyEqMatWith tol a b = nearlyEqValListWith tol 0 (concat . toLists $ a - b)
 
--- | Test if two vectors are nearly equal.
+-- | Test if two vectors are nearly equal; use tolerance 'eps'.
 nearlyEqMat :: Matrix R -> Matrix R -> Bool
 nearlyEqMat = nearlyEqMatWith eps

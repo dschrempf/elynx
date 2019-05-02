@@ -1,0 +1,45 @@
+name:                evomod-tools
+version:             0.2
+github:              "dschrempf/evomod"
+license:             GPL-3
+author:              "Dominik Schrempf"
+maintainer:          "dominik.schrempf@gmail.com"
+copyright:           "Dominik Schrempf (2018)"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+synopsis:            Tools for EvoMod.
+category:            Bioinformatics
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/dschrempf/evomod>.
+
+dependencies:
+  - async
+  - base
+  - bytestring
+  - containers
+  - data-memocombinators
+  - hmatrix
+  - integration
+  - lens
+  - math-functions
+  - matrices
+  - megaparsec
+  - mwc-random
+  - optparse-applicative
+  - parallel
+  - primitive
+  - statistics
+  - transformers
+  - vector
+  - word8
+  - zlib
+
+library:
+  source-dirs: src

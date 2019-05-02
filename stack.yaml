@@ -34,7 +34,9 @@ resolver: lts-13.11
 #  - auto-update
 #  - wai
 packages:
-- .
+  - evomod-seq
+  - evomod-tools
+  - evomod-tree
 
 # Dependency packages to be pulled from upstream that are not in the resolver
 # using the same syntax as the packages field.
@@ -64,3 +66,8 @@ packages:
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
+
+# See https://docs.haskellstack.org/en/stable/yaml_configuration/.
+# Deactivate 'eventlog' for production.
+ghc-options:
+    "$locals": -Wall -O2 -fllvm -eventlog -threaded -rtsopts -with-rtsopts=-N
