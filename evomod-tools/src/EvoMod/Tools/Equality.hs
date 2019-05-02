@@ -17,6 +17,7 @@ module EvoMod.Tools.Equality
   (
     allEqual
   , nearlyEqWith
+  , eps
   , nearlyEq
   , nearlyEqVecWith
   , nearlyEqVec

@@ -2,7 +2,9 @@
 .stack-work/
 .stack-work-profiling/
 .stack-work-production/
-evomod.cabal
+evomod-seq.cabal
+evomod-tools.cabal
+evomod-tree.cabal
 
 # Profile files.
 evomod-seq.aux

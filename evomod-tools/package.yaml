@@ -6,6 +6,11 @@ author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
 copyright:           "Dominik Schrempf (2018)"
 
+ghc-options:
+  - -Wall
+  - -O2
+  - -fllvm
+
 extra-source-files:
 - README.md
 - ChangeLog.md

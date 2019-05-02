@@ -19,6 +19,11 @@ category:            Bioinformatics
 # common to point users to the README.md file.
 description:         Please see the README on GitHub at <https://github.com/dschrempf/evomod>.
 
+ghc-options:
+  - -Wall
+  - -O2
+  - -fllvm
+
 dependencies:
   - async
   - base
@@ -47,43 +52,19 @@ library:
     - evomod-tools
     - evomod-tree
 
-# # Defaults for executables.
-# _defaults: &defaults
-#   # Development options.
-#   ghc-options:
-#     # Deactivate eventlog for production.
-#     - -eventlog
-#     - -threaded
-#     - -rtsopts
-#     - -with-rtsopts=-N
-  
-# executables:
-#   evomod-seq:
-#     <<: *defaults
-#     main:                Main.hs
-#     source-dirs:         app/EvoModSeq
-#     dependencies:
-#       - evomod
-
-#   evomod-sim:
-#     <<: *defaults
-#     main:                Main.hs
-#     source-dirs:         app/EvoModSim
-#     dependencies:
-#       - evomod
-
-# tests:
-#   evomod-test:
-#     <<: *defaults
-#     main:                Spec.hs
-#     source-dirs:         test
-#     dependencies:
-#     - evomod
-#     - hspec
-#     - hspec-megaparsec
+# Defaults for executables.
+_defaults: &defaults
+  # Development options.
+  ghc-options:
+    # Deactivate eventlog for production.
+    - -eventlog
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
 
 executables:
   evomod-seq:
+    <<: *defaults
     main:                Main.hs
     source-dirs:         app/EvoModSeq
     dependencies:
@@ -91,6 +72,7 @@ executables:
       - evomod-tools
 
   evomod-sim:
+    <<: *defaults
     main:                Main.hs
     source-dirs:         app/EvoModSim
     dependencies:
@@ -100,6 +82,7 @@ executables:
 
 tests:
   evomod-test:
+    <<: *defaults
     main:                Spec.hs
     source-dirs:         test
     dependencies:
