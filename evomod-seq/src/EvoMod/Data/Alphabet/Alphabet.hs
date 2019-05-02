@@ -35,8 +35,7 @@ module EvoMod.Data.Alphabet.Alphabet
   , indicesToCharacters
   , fromIUPAC
   , charFromIUPAC
-  )
-where
+  ) where
 
 import qualified Data.MemoCombinators            as Memo
 import qualified Data.Set                        as S

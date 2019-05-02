@@ -14,8 +14,7 @@ Creation date: Thu May  2 18:57:39 2019.
 
 module EvoMod.Tools.List
   ( sortWithIndices
-  )
-where
+  ) where
 
 import           Data.Function
 import           Data.List

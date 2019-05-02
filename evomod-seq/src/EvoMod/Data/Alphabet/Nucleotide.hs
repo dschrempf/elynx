@@ -22,8 +22,7 @@ module EvoMod.Data.Alphabet.Nucleotide
   , wordToNucleotideIUPAC
   , nucleotideIUPACToWord
   , fromIUPACNucleotide
-  )
-where
+  ) where
 
 import           Data.Word8                     (Word8, toUpper)
 

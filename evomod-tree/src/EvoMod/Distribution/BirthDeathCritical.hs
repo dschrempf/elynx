@@ -27,8 +27,7 @@ module EvoMod.Distribution.BirthDeathCritical
   , cumulative
   , density
   , quantile
-  )
-where
+  ) where
 
 import           Data.Data                     (Data, Typeable)
 import           EvoMod.Distribution.Types

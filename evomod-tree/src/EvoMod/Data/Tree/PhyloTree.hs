@@ -29,8 +29,7 @@ module EvoMod.Data.Tree.PhyloTree
   ( PhyloLabel (..)
   , PhyloIntLabel
   , PhyloByteStringLabel
-  )
-where
+  ) where
 
 import qualified Data.ByteString.Lazy.Builder    as L
 import qualified Data.ByteString.Lazy.Char8      as L

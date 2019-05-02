@@ -25,8 +25,7 @@ module EvoMod.Data.MarkovProcess.RateMatrix
   , toExchangeabilityMatrix
   , fromExchangeabilityMatrix
   , getStationaryDistribution
-  )
-where
+  ) where
 
 import           Numeric.LinearAlgebra      hiding (normalize)
 import           Prelude                    hiding ((<>))
