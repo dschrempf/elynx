@@ -23,7 +23,6 @@ module EvoMod.Data.MarkovProcess.Nucleotide
   ) where
 
 import qualified Data.ByteString.Lazy.Char8                  as L
-
 import           Numeric.LinearAlgebra                       hiding (normalize)
 
 import           EvoMod.Data.Alphabet.Alphabet

@@ -29,9 +29,10 @@ module EvoMod.Distribution.TimeOfOriginNearCritical
   ) where
 
 import           Data.Data                 (Data, Typeable)
-import           EvoMod.Distribution.Types
 import           GHC.Generics              (Generic)
 import qualified Statistics.Distribution   as D
+
+import           EvoMod.Distribution.Types
 
 -- | Distribution of the time of origin for a phylogenetic tree evolving under
 -- the birth and death process and conditioned on observing n leaves today.

@@ -19,12 +19,13 @@ module EvoMod.Simulate.Coalescent
 
 import           Control.Monad.Primitive
 import           Data.Tree
+import           Statistics.Distribution
+import           System.Random.MWC
+
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Data.Tree.Tree
 import           EvoMod.Distribution.CoalescentContinuous
-import           Statistics.Distribution
-import           System.Random.MWC
 
 -- | Simulate a coalescent tree with @n@ leaves. The branch lengths are in units
 -- of effective population size.

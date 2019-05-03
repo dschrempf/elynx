@@ -33,6 +33,13 @@ module EvoMod.Simulate.PointProcess
 import           Control.Monad
 import           Control.Monad.Primitive
 import           Data.List                                    (mapAccumL)
+import           Data.Tree
+import qualified Statistics.Distribution                      as D (genContVar)
+import           System.Random.MWC
+
+import           EvoMod.Data.Tree.MeasurableTree
+import           EvoMod.Data.Tree.PhyloTree
+import           EvoMod.Data.Tree.Tree
 import           EvoMod.Distribution.BirthDeath
 import           EvoMod.Distribution.BirthDeathCritical
 import           EvoMod.Distribution.BirthDeathCriticalNoTime
@@ -42,13 +49,6 @@ import           EvoMod.Distribution.TimeOfOriginNearCritical
 import           EvoMod.Distribution.Types
 import           EvoMod.Tools.Equality
 import           EvoMod.Tools.List
--- import           EvoMod.Tree.Phylo
-import           Data.Tree
-import           EvoMod.Data.Tree.MeasurableTree
-import           EvoMod.Data.Tree.PhyloTree
-import           EvoMod.Data.Tree.Tree
-import qualified Statistics.Distribution                      as D (genContVar)
-import           System.Random.MWC
 
 epsNearCriticalPointProcess :: Double
 epsNearCriticalPointProcess = 1e-5

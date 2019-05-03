@@ -33,6 +33,7 @@ module EvoMod.Data.Tree.PhyloTree
 
 import qualified Data.ByteString.Lazy.Builder    as L
 import qualified Data.ByteString.Lazy.Char8      as L
+
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.NamedTree
 

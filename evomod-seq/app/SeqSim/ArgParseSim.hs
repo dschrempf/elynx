@@ -43,7 +43,6 @@ module ArgParseSim
 import           Data.Word
 import           Options.Applicative
 
-
 import           EvoMod.ArgParse
 
 -- -- Ugly convenience function to read in more complicated command line options

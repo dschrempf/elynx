@@ -29,9 +29,10 @@ module EvoMod.Distribution.BirthDeath
   ) where
 
 import           Data.Data                 (Data, Typeable)
-import           EvoMod.Distribution.Types
 import           GHC.Generics              (Generic)
 import qualified Statistics.Distribution   as D
+
+import           EvoMod.Distribution.Types
 
 -- | Distribution of the values of the point process such that it corresponds to
 -- a reconstructed tree of the birth and death process.
