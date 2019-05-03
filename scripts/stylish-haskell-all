@@ -6,7 +6,7 @@ pr="$project_root"
 
 cd "${pr}" || exit 1
 
-fd -e hs --exec stylish-haskell -i
+fd -e hs -x stylish-haskell -i
 
 # while IFS= read -r -d '' file
 # do

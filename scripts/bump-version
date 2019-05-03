@@ -2,6 +2,12 @@
 
 source include
 
-fd '.*package.yaml' "${project_root}" --exec \
-   sed -r 's/^version:\s+(\d\.\d)/\1+0.1/' | bc -q
+# Also removes whitespace.
+version_old=$(xargs < "${project_root}/version")
+version_new=$(echo "$version_old" 0.1 | awk '{printf "%.1f", $1 + $2}')
+
+echo "$version_new" > "${project_root}/version"
+
+fd '.*package.yaml' "${project_root}" -x \
+   sed -i -r '/^version:\s+/s/[0-9]+\.[0-9]+/'"${version_new}"'/'
 
