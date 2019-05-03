@@ -16,8 +16,8 @@ module EvoMod.Distribution.CoalescentContinuous
   ( coalescentDistributionCont
   ) where
 
-import Statistics.Distribution.Exponential
-import Numeric.SpecFunctions (choose)
+import           Numeric.SpecFunctions               (choose)
+import           Statistics.Distribution.Exponential
 
 -- | Distribution of the next coalescent event for a number of samples 's'. The
 -- time is measured in units of effective number of population size.

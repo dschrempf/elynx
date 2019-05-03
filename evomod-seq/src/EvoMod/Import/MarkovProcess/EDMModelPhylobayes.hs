@@ -19,15 +19,15 @@ module EvoMod.Import.MarkovProcess.EDMModelPhylobayes
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8                  as L
-import qualified Data.Vector.Storable                        as V
+import qualified Data.ByteString.Lazy.Char8         as L
+import qualified Data.Vector.Storable               as V
 import           Data.Void
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
 import           EvoMod.Data.MarkovProcess.EDMModel
-import           EvoMod.Tools.ByteString                     (c2w)
+import           EvoMod.Tools.ByteString            (c2w)
 
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString

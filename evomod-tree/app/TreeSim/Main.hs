@@ -23,28 +23,28 @@ Elsevier BV, 2009, 261, 58-66
 
 module Main where
 
-import           Control.Concurrent           (getNumCapabilities, myThreadId,
-                                               threadCapability)
-import           Control.Concurrent.Async     (replicateConcurrently)
-import           Control.Monad                (replicateM, unless, when)
+import           Control.Concurrent              (getNumCapabilities,
+                                                  myThreadId, threadCapability)
+import           Control.Concurrent.Async        (replicateConcurrently)
+import           Control.Monad                   (replicateM, unless, when)
 import           Control.Parallel.Strategies
-import qualified Data.ByteString.Lazy.Char8   as L
-import           Data.Semigroup               ((<>))
+import qualified Data.ByteString.Lazy.Char8      as L
+import           Data.Semigroup                  ((<>))
 -- import qualified Data.Text                    as T
 -- import qualified Data.Text.IO                 as T
 import           Data.Tree
-import           Data.Vector                  (singleton)
-import           Data.Version                 (showVersion)
-import           EvoMod.Data.Tree.PhyloTree   (PhyloIntLabel)
-import           EvoMod.Simulate.PointProcess (simulateReconstructedTree)
-import           EvoMod.Export.Tree.Newick    (toNewickPhyloIntTree)
-import           EvoMod.Data.Tree.SumStat     (formatNChildSumStat,
-                                               toNChildSumStat)
+import           Data.Vector                     (singleton)
+import           Data.Version                    (showVersion)
+import           EvoMod.Data.Tree.PhyloTree      (PhyloIntLabel)
+import           EvoMod.Data.Tree.SumStat        (formatNChildSumStat,
+                                                  toNChildSumStat)
+import           EvoMod.Export.Tree.Newick       (toNewickPhyloIntTree)
+import           EvoMod.Simulate.PointProcess    (simulateReconstructedTree)
 -- import           EvoMod.Tree.Species          (SNodeType)
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
-import           Paths_evomod_tree            (version)
-import qualified System.Environment           as Sys
+import           Paths_evomod_tree               (version)
+import qualified System.Environment              as Sys
 import           System.Random.MWC
 -- import qualified Text.PrettyPrint.ANSI.Leijen as Doc
 
