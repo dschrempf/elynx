@@ -19,12 +19,13 @@ module EvoMod.Options
     -- * Options parser
   , parseArgsWith
     -- * Reusable options
+  , Verbosity (..)
   , verbosityOpt
-  , quietOpt
   , seedOpt
   , fileNameOutOpt
   ) where
 
+import           Data.List
 import           Data.Maybe
 import           Data.Version                    (showVersion)
 import           Data.Word
@@ -32,6 +33,7 @@ import           Options.Applicative
 import           Options.Applicative.Help.Pretty
 import           System.Environment
 
+import           EvoMod.Tools.Misc
 import           Paths_evomod_tools              (version)
 
 -- Be careful; it is necessary to synchronize the evomod-xxx libraries, so that
@@ -42,11 +44,12 @@ versionString = "EvoMod suite version " ++ showVersion version ++ "."
 copyrightString :: String
 copyrightString = "Developed by Dominik Schrempf."
 
--- A short header to be used in executables.
+-- A short header to be used in executables. 'unlines' doesn't work here because
+-- it adds an additional newline at the end :(.
 hdr :: String
-hdr = unlines [ versionString
-              , copyrightString
-              ]
+hdr = intercalate "\n" [ versionString
+                       , copyrightString
+                       ]
 
 description :: String
 description = "The goal of the EvoMod suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without assuming anything about the data (e.g., the type of code), and without default values. The exact command with all arguments has to be stated by the user and are logged consistently. This leads to some work overhead in the beginning, but usually pays off in the end."
@@ -61,7 +64,8 @@ programHeader = do
 versionOpt :: Parser (a -> a)
 versionOpt = infoOption hdr
   ( long "version"
-    <> short 'v'
+    -- Lower case 'v' clashes with verbosity.
+    <> short 'V'
     <> help "Show version"
     <> hidden )
 
@@ -79,21 +83,31 @@ parseArgsWith md mf p = execParser $
     dsc' = maybe description (\d -> unlines $ d ++ [description]) md
     ftr' = fromMaybe [] mf
 
--- | Boolean option; be verbose; default NO?
-verbosityOpt :: Parser Bool
-verbosityOpt = switch
+-- | Verbosity levels. Default is 'Info'.
+data Verbosity = Quiet | Info | Debug
+  deriving (Show, Read, Eq, Enum, Bounded, Ord)
+
+-- | Boolean option; be verbose; default NO.
+verbosityOpt :: Parser Verbosity
+verbosityOpt = option auto
   ( long "verbosity"
     <> short 'v'
+    <> metavar "VALUE"
+    <> value Info
     <> showDefault
-    <> help "Be verbose; incompatible with -q" )
+    <> help ("Be verbose; one of: " ++ unwords (map show vs) ))
+  where
+    vs = allValues :: [Verbosity]
 
--- | Boolean option; be quiet; default NO?
-quietOpt :: Parser Bool
-quietOpt = switch
-  ( long "quiet"
-    <> short 'q'
-    <> showDefault
-    <> help "Be quiet; incompatible with -v" )
+-- Difficult to handle with the verbosity option. I decided to go with a
+-- verbosity data type that includes Quiet.
+-- -- | Boolean option; be quiet; default NO.
+-- quietOpt :: Parser Bool
+-- quietOpt = switch
+--   ( long "quiet"
+--     <> short 'q'
+--     <> showDefault
+--     <> help "Be quiet; incompatible with -v" )
 
 -- | Seed option for MWC. Defaults to RANDOM.
 seedOpt :: Parser (Maybe [Word32])

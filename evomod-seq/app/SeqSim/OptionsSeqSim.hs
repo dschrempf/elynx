@@ -67,8 +67,8 @@ data Args = Args
   , argsMaybeGammaParams             :: Maybe GammaRateHeterogeneityParams
   , argsLength                       :: Int
   , argsMaybeSeed                    :: Maybe [Word32]
-  , argsQuiet                        :: Bool
-  , argsFileOut                      :: FilePath
+  , argsVerbosity                    :: Verbosity
+  , argsFileNameOut                  :: FilePath
   }
 
 args :: Parser Args
@@ -81,7 +81,7 @@ args = Args
   <*> maybeGammaParams
   <*> lengthOpt
   <*> seedOpt
-  <*> quietOpt
+  <*> verbosityOpt
   <*> fileNameOutOpt
 
 treeFileOpt :: Parser FilePath

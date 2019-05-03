@@ -35,7 +35,7 @@ data Args = Args
   { argsCommand          :: Command
   , argsCode             :: Code
   , argsMaybeFileNameOut :: Maybe FilePath
-  , argsQuiet            :: Bool
+  , argsVerbosity        :: Verbosity
   , argsFileNames        :: [FilePath]
   }
 
@@ -44,7 +44,7 @@ args = Args
   <$> commandArg
   <*> alphabetOpt
   <*> optional fileNameOutOpt
-  <*> quietOpt
+  <*> verbosityOpt
   <*> some fileNameArg
 
 commandArg :: Parser Command

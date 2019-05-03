@@ -15,7 +15,7 @@ msg "Seq-Ana; concatenate DNA."
 stack exec seq-ana -- concatenate -a DNA "$file_DNA" "$file_DNA" || exit 1
 
 msg "Seq-Ana; summarize; test if quiet."
-stack exec seq-ana -- summarize -a DNA -q "$file_DNA" || exit 1
+stack exec seq-ana -- summarize -a DNA -v Quiet "$file_DNA" || exit 1
 
 msg "Seq-Ana; analyze DNA."
 stack exec seq-ana -- analyze -a DNA "$file_DNA" || exit 1

@@ -10,6 +10,8 @@ Portability :  portable
 
 Creation date: Mon Jan 28 14:12:52 2019.
 
+TODO: Use Quiet, Info, Debug.
+
 -}
 
 module Main where
@@ -98,13 +100,13 @@ data Params = Params { arguments  :: Args
                      , mLogHandle :: Maybe Handle }
 
 instance Logger Params where
-  quiet   = argsQuiet . arguments
-  mHandle = mLogHandle
+  verbosity = argsVerbosity . arguments
+  mHandle   = mLogHandle
 
 reportModel :: PhyloModel -> Simulation ()
 reportModel m = do
   args <- arguments <$> ask
-  let fnOut = argsFileOut args
+  let fnOut = argsFileNameOut args
       modelFn = fnOut ++ ".model"
   -- TODO. Provide human readable model file.
   lift $ writeFile modelFn (show m)
@@ -159,13 +161,13 @@ simulate = do
                >> lift (initialize (V.fromList s))
   msa <- lift $ simulateMSA phyloModel tree alignmentLength gen
   let output = sequencesToFasta $ toSequenceList msa
-      outFile = argsFileOut args
+      outFile = argsFileNameOut args
   lift $ L.writeFile outFile output
   logS ("Output written to file '" ++ outFile ++ "'.")
 
 main :: IO ()
 main = do
   a <- parseArgs
-  h <- setupLogger (argsQuiet a) (Just $ argsFileOut a)
+  h <- setupLogger (argsVerbosity a) (Just $ argsFileNameOut a)
   runReaderT simulate (Params a h)
   closeLogger h

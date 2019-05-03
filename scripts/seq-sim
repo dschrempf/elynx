@@ -55,7 +55,7 @@ then
           -t "$file_tree" -o seq-sim.out -m "MIXTURE(JC,HKY[6.0]{0.25,0.25,0.25,0.25})" -w "[0.4,0.6]" -l 20000 -S [0] || exit 1
 fi
 
-if [[ $1 == "h" ]]
+if [[ -z $1 ]] || [[ $1 == "h" ]]
 then
     msg "Usage: ./seq-sim (a|s|e|w|c|g|cg|m)"
 fi

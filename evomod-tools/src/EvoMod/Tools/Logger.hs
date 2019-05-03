@@ -16,10 +16,14 @@ Monad that supports some basic logging features.
 
 module EvoMod.Tools.Logger
   ( Logger (..)
+  , logSWith
+  , logSQuiet
   , logS
-  , logSForce
+  , logSDebug
+  , logLBSWith
+  , logLBSQuiet
   , logLBS
-  , logLBSForce
+  , logLBSDebug
   , setupLogger
   , closeLogger
   ) where
@@ -29,6 +33,8 @@ import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8 as LC
 import           System.IO
+
+import           EvoMod.Options             (Verbosity (..))
 
 -- | A logger knows if it has to be quiet and where it deposits more and less
 -- useful messages. It also comes with some convenience logging functions in the
@@ -43,39 +49,54 @@ import           System.IO
 -- @
 
 class Logger l where
-  quiet   :: l -> Bool
-  mHandle :: l -> Maybe Handle
-
--- | If not quiet, log string.
-logS :: Logger l => String -> ReaderT l IO ()
-logS msg = do
-  q <- quiet <$> ask
-  unless q $ logSForce msg
+  verbosity :: l -> Verbosity
+  mHandle   :: l -> Maybe Handle
 
 logHandle :: Maybe Handle -> String -> IO ()
 logHandle Nothing  _   = return ()
 logHandle (Just h) msg = hPutStrLn h msg
 
--- | Log string, ignore quiet option.
-logSForce :: Logger l => String -> ReaderT l IO ()
-logSForce msg = do
+-- | For a given 'Verbosity' level, log 'String'.
+logSWith :: Logger l => Verbosity -> String -> ReaderT l IO ()
+logSWith lvl msg = do
+  v  <- verbosity <$> ask
+  when (lvl <= v) (lift $ putStrLn msg)
   mh <- mHandle <$> ask
-  lift $ putStrLn msg
   lift $ logHandle mh msg
 
--- | See 'logS' but for lazy byte strings.
+-- | Always print 'String' to screen; even when verbosity level is 'Quiet'.
+logSQuiet :: Logger l => String -> ReaderT l IO ()
+logSQuiet = logSWith Quiet
+
+-- | If not quiet, print 'String' to screen.
+logS :: Logger l => String -> ReaderT l IO ()
+logS = logSWith Info
+
+-- | Only print 'String' to screen if verbosity level is 'Debug'.
+logSDebug :: Logger l => String -> ReaderT l IO ()
+logSDebug = logSWith Info
+
+-- | See 'logSWith'; but for lazy byte strings.
+logLBSWith :: Logger l => Verbosity -> LC.ByteString -> ReaderT l IO ()
+logLBSWith lvl = logSWith lvl . LC.unpack
+
+-- | See 'logSQuiet'; but for lazy byte strings.
+logLBSQuiet :: Logger l => LC.ByteString -> ReaderT l IO ()
+logLBSQuiet = logSQuiet . LC.unpack
+
+-- | See 'logS'; but for lazy byte strings.
 logLBS :: Logger l => LC.ByteString -> ReaderT l IO ()
 logLBS = logS . LC.unpack
 
--- | See 'logSForce' but for lazy byte strings.
-logLBSForce :: Logger l => LC.ByteString -> ReaderT l IO ()
-logLBSForce = logSForce . LC.unpack
+-- | See 'logSDebug'; but for lazy byte strings.
+logLBSDebug :: Logger l => LC.ByteString -> ReaderT l IO ()
+logLBSDebug = logSDebug . LC.unpack
 
 -- | Setup log handle, if not quiet and if filename is given.
-setupLogger :: Bool -> Maybe FilePath -> IO (Maybe Handle)
-setupLogger True _          = return Nothing
-setupLogger False Nothing   = return Nothing
-setupLogger False (Just fn) = Just <$> openFile (fn ++ ".log") WriteMode
+setupLogger :: Verbosity -> Maybe FilePath -> IO (Maybe Handle)
+setupLogger Quiet _         = return Nothing
+setupLogger _     Nothing   = return Nothing
+setupLogger _     (Just fn) = Just <$> openFile (fn ++ ".log") WriteMode
 
 -- | Close the logging file handle.
 closeLogger :: Maybe Handle -> IO ()

@@ -26,22 +26,26 @@ module Main where
 import           Control.Concurrent           (getNumCapabilities, myThreadId,
                                                threadCapability)
 import           Control.Concurrent.Async     (replicateConcurrently)
-import           Control.Monad                (replicateM, unless, when)
+import           Control.Monad                (replicateM, when)
+import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Reader
 import           Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8   as L
-import           Data.Word
 import           Data.Tree
 import           Data.Vector                  (fromList)
+import           Data.Word
+import           System.IO
 import           System.Random.MWC
 
-import           ArgParseTreeSim
+import           OptionsTreeSim
 
 import           EvoMod.Data.Tree.PhyloTree   (PhyloIntLabel)
 import           EvoMod.Data.Tree.SumStat     (formatNChildSumStat,
                                                toNChildSumStat)
-import           EvoMod.Options
 import           EvoMod.Export.Tree.Newick    (toNewickPhyloIntTree)
+import           EvoMod.Options
 import           EvoMod.Simulate.PointProcess (simulateReconstructedTree)
+import           EvoMod.Tools.Logger
 
 
 newSection :: String -> String
@@ -51,26 +55,33 @@ newSection h = unlines
 
 main :: IO ()
 main = do
-  args <- parseArgs
-  let v = verbosity args
-      q = quiet args
-      s = sumStat args
-  c <- getNumCapabilities
-  unless q $ do
-    -- p <- Sys.getProgName
-    -- a <- Sys.getArgs
-    hdr <- programHeader
-    putStr hdr
-    putStr $ newSection "Arguments"
-    putStr $ reportArgs args
-    putStr $ newSection "Simulation"
-  when v $ putStrLn $ "Number of used cores: " ++ show c
-  trs <- simulateNTreesConcurrently c args
+  a <- parseArgs
+  h <- setupLogger (argsVerbosity a) (argsFileNameOut a)
+  runReaderT simulate (Params a h)
+  closeLogger h
+
+simulate :: Simulation ()
+simulate = do
+  a <- arguments <$> ask
+  let s = argsSumStat a
+  c <- lift getNumCapabilities
+  hdr <- lift programHeader
+  logS hdr
+  logS $ newSection "Arguments"
+  logS $ reportArgs a
+  logS $ newSection "Simulation"
+  logSDebug $ "Number of used cores: " ++ show c
+  trs <- lift $ simulateNTreesConcurrently c a
   let ls = if s
            then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
            else parMap rpar toNewickPhyloIntTree trs
-  L.putStr $ L.unlines ls
+  -- TODO: Handle output file. Don't print actual output to screen then? Or how
+  -- do I want to handle this? This is a general question that affects all
+  -- EvoMod binaries.
+  logLBSQuiet $ L.unlines ls
 
+-- TODO: Handle output file; see comment above.
+-- TODO: Support logging framework.
 simulateNTreesConcurrently :: Int -> Args -> IO [Tree PhyloIntLabel]
 simulateNTreesConcurrently c (Args t n h l m r _ v _ s) = do
   -- when (l <= 0) (error "Speciation rate has to be larger than zero.")
@@ -78,10 +89,15 @@ simulateNTreesConcurrently c (Args t n h l m r _ v _ s) = do
   -- when ((r <= 0) || (r > 1)) (error "Sampling probability has to in (0,1].")
   let l' = l * r
       m' = m - l * (1.0 - r)
-  trsCon <- replicateConcurrently c (simulateNTrees (t `div` c) n h l' m' v s)
-  trsRem <- simulateNTrees (t `mod` c) n h l' m' v s
+      v' = case v of
+        Quiet -> False
+        Info  -> False
+        Debug -> True
+  trsCon <- replicateConcurrently c (simulateNTrees (t `div` c) n h l' m' v' s)
+  trsRem <- simulateNTrees (t `mod` c) n h l' m' v' s
   return $ concat trsCon ++ trsRem
 
+-- TODO: Support logging framework.
 simulateNTrees :: Int -> Int -> Maybe Double -> Double -> Double -> Bool
                -> Maybe [Word32]
                -> IO [Tree PhyloIntLabel]
@@ -118,3 +134,12 @@ reportCapability = do
   i <- myThreadId
   (c, _) <- threadCapability i
   putStrLn $ "Running on core: " ++ show c
+
+type Simulation = ReaderT Params IO
+
+data Params = Params { arguments  :: Args
+                     , mLogHandle :: Maybe Handle }
+
+instance Logger Params where
+  verbosity = argsVerbosity . arguments
+  mHandle = mLogHandle

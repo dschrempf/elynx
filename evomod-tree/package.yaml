@@ -42,7 +42,7 @@ dependencies:
   - parallel
   - primitive
   - statistics
-  # - transformers
+  - transformers
   - vector
   # - word8
   # - zlib

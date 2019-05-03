@@ -1,5 +1,5 @@
 {- |
-Module      :  ArgParseTreeSim
+Module      :  OptionsTreeSim
 Description :  Argument parser for seq-ana.
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -12,7 +12,7 @@ Creation date: Fri May  3 11:51:07 2019.
 
 -}
 
-module ArgParseTreeSim
+module OptionsTreeSim
   ( Args (..)
   , reportArgs
   , parseArgs
@@ -24,34 +24,36 @@ import           Options.Applicative
 import           EvoMod.Options
 
 data Args = Args
-  { nTrees    :: Int    -- ^ Simulated trees.
-  , nLeaves   :: Int    -- ^ Number of leaves.
-  , height    :: Maybe Double -- ^ Tree height (time to origin).
-  , lambda    :: Double -- ^ Birth rate.
-  , mu        :: Double -- ^ Death rate.
-  , rho       :: Double -- ^ Smapling rate.
-  , sumStat   :: Bool   -- ^ Only print summary statistics?
-  , verbosity :: Bool   -- ^ Verbosity.
-  , quiet     :: Bool   -- ^ Be quiet?
-  , seed      :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
+  { argsNTrees      :: Int    -- ^ Simulated trees.
+  , argsNLeaves     :: Int    -- ^ Number of leaves.
+  , argsHeight      :: Maybe Double -- ^ Tree height (time to origin).
+  , argsLambda      :: Double -- ^ Birth rate.
+  , argsMu          :: Double -- ^ Death rate.
+  , argsRho         :: Double -- ^ Smapling rate.
+  , argsSumStat     :: Bool   -- ^ Only print summary statistics?
+  , argsVerbosity   :: Verbosity   -- ^ Verbosity.
+  , argsFileNameOut :: Maybe FilePath
+  , argsSeed        :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
   }
 
 reportArgs :: Args -> String
 reportArgs a =
-  unlines [ "Number of simulated trees: " ++ show (nTrees a)
-          , "Number of leaves per tree: " ++ show (nLeaves a)
+  unlines [ "Number of simulated trees: " ++ show (argsNTrees a)
+          , "Number of leaves per tree: " ++ show (argsNLeaves a)
           , "Height of trees: " ++ hStr
-          , "Birth rate: " ++ show (lambda a)
-          , "Death rate: " ++ show (mu a)
-          , "Sampling probability: " ++ show (rho a)
-          , "Summary statistics only: " ++ show (sumStat a)
-          , "Verbosity: " ++ show (verbosity a)
-          , "Quiet: " ++ show (quiet a)
+          , "Birth rate: " ++ show (argsLambda a)
+          , "Death rate: " ++ show (argsMu a)
+          , "Sampling probability: " ++ show (argsRho a)
+          , "Summary statistics only: " ++ show (argsSumStat a)
+          , "Verbosity: " ++ show (argsVerbosity a)
+          , "Output file name: " ++ show fStr
           , "Seed: " ++ sStr ]
-  where hStr = case height a of Nothing -> "Random"
-                                Just h  -> show h
-        sStr = case seed a of Nothing -> "Random"
-                              Just i  -> show i
+  where hStr = case argsHeight a of Nothing -> "Random"
+                                    Just h  -> show h
+        fStr = case argsFileNameOut a of Nothing -> "None"
+                                         Just f -> show f
+        sStr = case argsSeed a of Nothing -> "Random"
+                                  Just i  -> show i
 
 argsParser :: Parser Args
 argsParser = Args
@@ -63,7 +65,7 @@ argsParser = Args
   <*> rhoOpt
   <*> sumStatOpt
   <*> verbosityOpt
-  <*> quietOpt
+  <*> optional fileNameOutOpt
   <*> seedOpt
 
 nTreeOpt :: Parser Int
@@ -140,8 +142,4 @@ ftr = [ "Height of Trees: If no tree height is given, the heights will be random
 -- | The impure IO action that reads the arguments and prints out help if
 -- needed.
 parseArgs :: IO Args
-parseArgs = do
-  a <- parseArgsWith (Just hdr) (Just ftr) argsParser
-  if verbosity a && quiet a
-    then error "Cannot be verbose and quiet at the same time."
-    else return a
+parseArgs = parseArgsWith (Just hdr) (Just ftr) argsParser

@@ -16,6 +16,8 @@ copied into the complete sequence (see the function 'fastaSequence').
 
 XXX: Provide possibility to parse and handle sequences with different codes.
 
+TODO: Use Quiet, Info, Debug.
+
 -}
 
 module Main where
@@ -42,8 +44,8 @@ data Params = Params { arguments  :: Args
                      , mLogHandle :: Maybe Handle }
 
 instance Logger Params where
-  quiet = argsQuiet . arguments
-  mHandle = mLogHandle
+  verbosity = argsVerbosity . arguments
+  mHandle   = mLogHandle
 
 type Seq = ReaderT Params IO
 
@@ -65,7 +67,7 @@ io (Left  s)   = logLBS s
 io (Right res) = do
   mFileOut <- argsMaybeFileNameOut . arguments <$> ask
   case mFileOut of
-    Nothing -> logLBSForce res
+    Nothing -> logLBSQuiet res
     Just fn -> do
       lift $ withFile fn WriteMode (`L.hPutStr` res)
       logS $ "Results written to file '" ++ fn ++ "'."
@@ -87,6 +89,6 @@ work = do
 main :: IO ()
 main = do
   a <- parseArgs
-  h <- setupLogger (argsQuiet a) (argsMaybeFileNameOut a)
+  h <- setupLogger (argsVerbosity a) (argsMaybeFileNameOut a)
   runReaderT work (Params a h)
   closeLogger h
