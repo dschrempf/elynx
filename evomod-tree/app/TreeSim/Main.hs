@@ -29,12 +29,9 @@ import           Control.Concurrent.Async     (replicateConcurrently)
 import           Control.Monad                (replicateM, unless, when)
 import           Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8   as L
--- import           Data.Semigroup               ((<>))
+import           Data.Word
 import           Data.Tree
-import           Data.Vector                  (singleton)
--- import           Data.Version                 (showVersion)
--- import           Paths_evomod_tree            (version)
--- import qualified System.Environment           as Sys
+import           Data.Vector                  (fromList)
 import           System.Random.MWC
 
 import           ArgParseTreeSim
@@ -88,13 +85,13 @@ simulateNTreesConcurrently c (Args t n h l m r _ v _ s) = do
   return $ concat trsCon ++ trsRem
 
 simulateNTrees :: Int -> Int -> Maybe Double -> Double -> Double -> Bool
-               -> Maybe Int
+               -> Maybe [Word32]
                -> IO [Tree PhyloIntLabel]
 simulateNTrees t n mH l m v s
   | t <= 0 = return []
   | otherwise = do
       when v reportCapability
-      g <- maybe createSystemRandom (initialize . singleton . fromIntegral) s
+      g <- maybe createSystemRandom (initialize . fromList) s
       let f = simulateReconstructedTree n mH l m g
       replicateM t f
 

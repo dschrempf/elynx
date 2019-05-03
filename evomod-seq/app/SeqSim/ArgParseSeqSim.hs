@@ -26,7 +26,7 @@ Available options:
                            weights of mixture model components
   -g,--gamma-rate-heterogeneity (NCAT, SHAPE)
                            number of gamma rate categories and shape parameter
-  -e,--seed INT            Set seed for the random number generator; list of 32
+  -e,--seed [INT]            Set seed for the random number generator; list of 32
                            bit integers with up to 256 elements (default: [0])
   -q,--quiet               Be quiet
   -o,--output-file NAME    Specify output file NAME
@@ -151,10 +151,10 @@ maybeSeedOpt = optional $ option auto
   ( long "seed"
     <> short 'S'
     <> metavar "[INT]"
-    <> value [ 0 :: Word32 ]
-    <> showDefault
+    -- <> value [ 0 :: Word32 ]
+    -- <> showDefault
     <> help ( "Set seed for the random number generator; "
-              ++ "list of 32 bit integers with up to 256 elements" ) )
+              ++ "list of 32 bit integers with up to 256 elements (default: random)" ) )
 
 -- | Read the arguments and prints out help if needed.
 parseArgs :: IO Args

@@ -18,6 +18,7 @@ module ArgParseTreeSim
   , parseArgs
   ) where
 
+import           Data.Word
 import           Options.Applicative
 
 import           EvoMod.Definitions
@@ -32,7 +33,7 @@ data Args = Args
   , sumStat   :: Bool   -- ^ Only print summary statistics?
   , verbosity :: Bool   -- ^ Verbosity.
   , quiet     :: Bool   -- ^ Be quiet?
-  , seed      :: Maybe Int -- ^ Seed of NRG, random if 'Nothing'.
+  , seed      :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
   }
 
 reportArgs :: Args -> String
@@ -138,12 +139,13 @@ quietOpt = switch
     <> showDefault
     <> help "Be quiet; incompatible with -v" )
 
-seedOpt :: Parser (Maybe Int)
+seedOpt :: Parser (Maybe [Word32])
 seedOpt = optional $ option auto
   ( long "seed"
     <> short 'S'
-    <> metavar "INT"
-    <> help "Seed for random number generator (default: random)" )
+    <> metavar "[INT]"
+    <> help ("Seed for random number generator; "
+             ++ "list of 32 bit integers with up to 256 elements (default: random)" ) )
 
 -- getCommandLineStr :: String -> [String] -> String
 -- getCommandLineStr n as = unlines
