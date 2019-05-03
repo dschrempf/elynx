@@ -149,16 +149,16 @@ simulateReconstructedTree
   -> m (Tree PhyloIntLabel)
 simulateReconstructedTree n t l m g =  toReconstructedTree <$> simulate n t l m g
 
--- | Convert a point process to a reconstructed tree. See Lemma 2.2. Of course,
--- I decided to only use one tree structure with extinct and extant leaves
--- (actually a complete tree). So a tree created here just does not contain
--- extinct leaves. A function 'isReconstructed' is provided to test if a tree is
--- reconstructed (and not complete) in this sense. However, a complete tree
--- might show up as "reconstructed", just because, by chance, it does not
--- contain extinct leaves.
+-- | Convert a point process to a reconstructed tree. See Lemma 2.2.
 
--- I wanted to use a Monoid constraint to get the unit element, but this
--- fails for classical 'Int's. So, I rather have another (useless) argument.
+-- Of course, I decided to only use one tree structure with extinct and extant
+-- leaves (actually a complete tree). So a tree created here just does not
+-- contain extinct leaves. A function 'isReconstructed' is provided to test if a
+-- tree is reconstructed (and not complete) in this sense. However, a complete
+-- tree might show up as "reconstructed", just because, by chance, it does not
+-- contain extinct leaves. I wanted to use a Monoid constraint to get the unit
+-- element, but this fails for classical 'Int's. So, I rather have another
+-- (useless) argument.
 toReconstructedTree :: PointProcess Int Double
                     -> Tree PhyloIntLabel
 toReconstructedTree pp@(PointProcess ps vs o)

@@ -46,10 +46,9 @@ stringsToDoc = vcat . map pretty
 
 evoModSuiteFooterEnd :: [String]
 evoModSuiteFooterEnd =
-  "" : evoModVersion : evoModCopyright :
-  [ "  - seq-ana: parse, view and modify evolutionary sequences"
-  , "  - seq-sim: simulate evolutionary sequences"
-  ]
+  [ ""
+  , evoModVersion
+  , evoModCopyright ]
 
 versionOpt :: Parser (a -> a)
 versionOpt = infoOption evoModHeader

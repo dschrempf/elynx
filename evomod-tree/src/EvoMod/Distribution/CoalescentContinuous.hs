@@ -19,7 +19,7 @@ module EvoMod.Distribution.CoalescentContinuous
 import           Numeric.SpecFunctions               (choose)
 import           Statistics.Distribution.Exponential
 
--- | Distribution of the next coalescent event for a number of samples 's'. The
+-- | Distribution of the next coalescent event for a number of samples @n@. The
 -- time is measured in units of effective number of population size.
 coalescentDistributionCont :: Int -- ^ Sample size.
                            -> ExponentialDistribution

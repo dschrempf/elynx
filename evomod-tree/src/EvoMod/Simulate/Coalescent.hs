@@ -26,7 +26,7 @@ import           EvoMod.Distribution.CoalescentContinuous
 import           Statistics.Distribution
 import           System.Random.MWC
 
--- | Simulate a coalescent tree with 'n' leaves. The branch lengths are in units
+-- | Simulate a coalescent tree with @n@ leaves. The branch lengths are in units
 -- of effective population size.
 simulate :: (PrimMonad m)
          => Int -- ^ Number of leaves.
