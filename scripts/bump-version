@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+source include
+
+fd '.*package.yaml' "${project_root}" --exec \
+   sed -r 's/^version:\s+(\d\.\d)/\1+0.1/' | bc -q
+
