@@ -117,7 +117,7 @@ quietOpt = switch
     <> help "Be quiet" )
 
 parseArgs :: IO Args
-parseArgs = parseArgsWith [] ftr args
+parseArgs = parseArgsWith Nothing (Just ftr) args
 
 ftr :: [String]
 ftr = [ "File formats:" ] ++ fs ++

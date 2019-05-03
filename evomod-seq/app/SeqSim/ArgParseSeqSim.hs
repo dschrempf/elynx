@@ -158,7 +158,7 @@ maybeSeedOpt = optional $ option auto
 
 -- | Read the arguments and prints out help if needed.
 parseArgs :: IO Args
-parseArgs = parseArgsWith [] ftr args
+parseArgs = parseArgsWith Nothing (Just ftr) args
 
 ftr :: [String]
 ftr = sms ++ mms

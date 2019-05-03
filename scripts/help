@@ -2,14 +2,15 @@
 
 source include
 
-msg "Seq-Ana help text."
-stack exec seq-ana -- --help || exit 1
+programs=("seq-ana" "seq-sim" "tree-sim")
 
-msg "Seq-Ana version text."
-stack exec seq-ana -- --version || exit 1
+for p in "${programs[@]}"
+do
+    msg "$p help text."
+    stack exec "$p" -- --help || exit 1
+    echo
 
-msg "Seq-Sim help text."
-stack exec seq-sim -- --help || exit 1
-
-msg "Seq-Sim version text."
-stack exec seq-sim -- --version || exit 1
+    msg "$p version text."
+    stack exec "$p" -- --version || exit 1
+    echo
+done

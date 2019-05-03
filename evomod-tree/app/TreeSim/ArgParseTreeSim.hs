@@ -161,7 +161,7 @@ ftr = [ "Height of Trees: If no tree height is given, the heights will be random
 -- needed.
 parseArgs :: IO Args
 parseArgs = do
-  a <- parseArgsWith hdr ftr argsParser
+  a <- parseArgsWith (Just hdr) (Just ftr) argsParser
   if verbosity a && quiet a
     then error "Cannot be verbose and quiet at the same time."
     else return a
