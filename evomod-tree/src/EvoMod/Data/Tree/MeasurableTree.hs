@@ -31,14 +31,14 @@ import           EvoMod.Data.Tree.Tree
 -- | A 'Node' label with measurable and modifiable branch length to the parent.
 class Measurable a where
   -- | Length of attached branch.
-  measure :: a -> Double
+  getLen :: a -> Double
   -- | Set attached branch length.
-  set :: Double -> a -> a
+  setLen :: Double -> a -> a
 
 -- | Distances from the root of the tree to its leafs.
 distancesRootLeaves :: (Measurable a) => Tree a -> [Double]
-distancesRootLeaves (Node l []) = [measure l]
-distancesRootLeaves (Node l f ) = concatMap (map (+ measure l) . distancesRootLeaves) f
+distancesRootLeaves (Node l []) = [getLen l]
+distancesRootLeaves (Node l f ) = concatMap (map (+ getLen l) . distancesRootLeaves) f
 
 -- | Height of a tree.
 height :: (Measurable a) => Tree a -> Double
@@ -46,8 +46,8 @@ height = maximum . distancesRootLeaves
 
 -- | Lengthen the distance between root and origin.
 lengthen :: (Measurable a) => Double -> Tree a -> Tree a
-lengthen dl (Node lbl ts) = Node (set (l+dl) lbl) ts
-  where l = measure lbl
+lengthen dl (Node lbl ts) = Node (setLen (l+dl) lbl) ts
+  where l = getLen lbl
 
 -- | Shorten the distance between root and origin.
 shorten :: (Measurable a) => Double -> Tree a -> Tree a
@@ -67,4 +67,4 @@ summarize t = L.unlines $ map L.pack
 
 -- | Total branch length of a tree.
 totalBranchLength :: (Measurable a) => Tree a -> Double
-totalBranchLength = foldl' (\acc n -> acc + measure n) 0
+totalBranchLength = foldl' (\acc n -> acc + getLen n) 0

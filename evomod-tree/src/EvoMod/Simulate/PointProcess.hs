@@ -164,8 +164,8 @@ toReconstructedTree :: PointProcess Int Double
 toReconstructedTree pp@(PointProcess ps vs o)
   | length ps /= length vs + 1 = error "Too few or too many points."
   | length vs <= 1             = error "Too few values."
-  -- XXX: Test is deactivated.
-  -- | otherwise = if isReconstructed treeOrigin then treeOrigin else error "Error in algorithm."
+  -- -- XXX: Test is deactivated.
+  -- -- | otherwise = if isReconstructed treeOrigin then treeOrigin else error "Error in algorithm."
   | otherwise = treeOrigin
   where (vsSorted, isSorted) = sort pp
         !leaves     = [ singleton (PhyloLabel p 0) | p <- ps ]

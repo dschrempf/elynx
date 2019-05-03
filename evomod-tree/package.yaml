@@ -38,12 +38,12 @@ dependencies:
   # - matrices
   - megaparsec
   - mwc-random
-  # - optparse-applicative
+  - optparse-applicative
   - parallel
   - primitive
   - statistics
   # - transformers
-  # - vector
+  - vector
   # - word8
   # - zlib
 
@@ -69,6 +69,7 @@ executables:
     source-dirs:         app/TreeSim
     dependencies:
       - evomod-tools
+      - evomod-tree
 
 tests:
   tree-test:

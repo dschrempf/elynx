@@ -17,28 +17,30 @@ module EvoMod.Simulate.Coalescent
   ( simulate
   ) where
 
-import Control.Monad.Primitive
-import Statistics.Distribution
-import EvoMod.Distribution.CoalescentContinuous
-import System.Random.MWC
-import EvoMod.Tree.Phylo
+import           Control.Monad.Primitive
+import           Data.Tree
+import           EvoMod.Data.Tree.MeasurableTree
+import           EvoMod.Data.Tree.PhyloTree
+import           EvoMod.Data.Tree.Tree
+import           EvoMod.Distribution.CoalescentContinuous
+import           Statistics.Distribution
+import           System.Random.MWC
 
 -- | Simulate a coalescent tree with 'n' leaves. The branch lengths are in units
 -- of effective population size.
-simulate :: (PrimMonad m, NodeType c)
+simulate :: (PrimMonad m)
          => Int -- ^ Number of leaves.
          -> Gen (PrimState m)
-         -> m (PhyloTree Int Double c)
+         -> m (Tree PhyloIntLabel)
 simulate n = simulate' n 0 trs
-  where trs = [ singleton i 0.0 defaultExternal | i <- [0..n-1] ]
+  where trs = [ singleton (PhyloLabel i 0.0) | i <- [0..n-1] ]
 
-
-simulate' :: (PrimMonad m, NodeType c)
+simulate' :: (PrimMonad m)
           => Int
           -> Int
-          -> [PhyloTree Int Double c]
+          -> [Tree PhyloIntLabel]
           -> Gen (PrimState m)
-          -> m (PhyloTree Int Double c)
+          -> m (Tree PhyloIntLabel)
 simulate' n a trs g
   | n <= 0                     = error "Cannot construct trees without leaves."
   | n == 1 && length trs /= 1  = error "Too many trees provided."
@@ -53,7 +55,7 @@ simulate' n a trs g
             tl    = trs' !! (i-1)
             tr    = trs' !! i
             -- Join the two chosen trees.
-            tm    = glue (PhyloLabel a 0.0 defaultInternal) [tl, tr]
+            tm    = Node (PhyloLabel a 0.0) [tl, tr]
             -- Take the trees on the left, the merged tree, and the trees on the right.
             trs'' = take (i-1) trs' ++ [tm] ++ drop (i+1) trs'
         simulate' (n-1) a trs'' g

@@ -37,7 +37,7 @@ import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Simulate.MarkovProcess
 
 measureableTreeToProbTree :: (Measurable a) => RateMatrix -> Tree a -> Tree ProbMatrix
-measureableTreeToProbTree q = fmap (probMatrix q . measure)
+measureableTreeToProbTree q = fmap (probMatrix q . getLen)
 
 getRootStates :: PrimMonad m
   => Int -> StationaryDistribution -> Gen (PrimState m) -> m [State]
@@ -87,7 +87,7 @@ simulateAlongProbTree is (Node p f) g = do
 measureableTreeToProbTreeMixtureModel :: (Measurable a)
   => [RateMatrix] -> Tree a -> Tree [ProbMatrix]
 measureableTreeToProbTreeMixtureModel qs =
-  fmap (\a -> [probMatrix q . measure $ a | q <- qs])
+  fmap (\a -> [probMatrix q . getLen $ a | q <- qs])
 
 getComponentsAndRootStates :: PrimMonad m
   => Int -> Vector R -> [StationaryDistribution] -> Gen (PrimState m) -> m ([Int], [State])

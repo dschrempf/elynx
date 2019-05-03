@@ -79,7 +79,7 @@ node = do
   n <- name
   b <- branchLength
     <?> "node"
-  return $ PhyloByteStringLabel n b
+  return $ PhyloLabel n b
 
 checkNameCharacter :: Word8 -> Bool
 checkNameCharacter c = c `notElem` map c2w " :;()[],"

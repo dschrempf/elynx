@@ -23,28 +23,30 @@ Elsevier BV, 2009, 261, 58-66
 
 module Main where
 
-import           Control.Concurrent               (getNumCapabilities,
-                                                   myThreadId, threadCapability)
-import           Control.Concurrent.Async         (replicateConcurrently)
-import           Control.Monad                    (replicateM, unless, when)
+import           Control.Concurrent           (getNumCapabilities, myThreadId,
+                                               threadCapability)
+import           Control.Concurrent.Async     (replicateConcurrently)
+import           Control.Monad                (replicateM, unless, when)
 import           Control.Parallel.Strategies
-import           Data.Semigroup                   ((<>))
--- TODO: Move to ByteString!
-import qualified Data.Text                        as T
-import qualified Data.Text.IO                     as T
-import           Data.Vector                      (singleton)
-import           Data.Version                     (showVersion)
+import qualified Data.ByteString.Lazy.Char8   as L
+import           Data.Semigroup               ((<>))
+-- import qualified Data.Text                    as T
+-- import qualified Data.Text.IO                 as T
+import           Data.Tree
+import           Data.Vector                  (singleton)
+import           Data.Version                 (showVersion)
+import           EvoMod.Data.Tree.PhyloTree   (PhyloIntLabel)
 import           EvoMod.Simulate.PointProcess (simulateReconstructedTree)
-import           EvoMod.Tree.Phylo            (PhyloTree)
-import           EvoMod.Tree.PhyloNewick      (toNewickIntegral)
-import           EvoMod.Tree.PhyloSumStat     (formatNChildSumStat,
-                                                   toNChildSumStat)
-import           EvoMod.Tree.Species          (SNodeType)
+import           EvoMod.Export.Tree.Newick    (toNewickPhyloIntTree)
+import           EvoMod.Data.Tree.SumStat     (formatNChildSumStat,
+                                               toNChildSumStat)
+-- import           EvoMod.Tree.Species          (SNodeType)
 import           Options.Applicative
-import           Paths_geneclocks                 (version)
-import qualified System.Environment               as Sys
+import           Options.Applicative.Help.Pretty
+import           Paths_evomod_tree            (version)
+import qualified System.Environment           as Sys
 import           System.Random.MWC
-import qualified Text.PrettyPrint.ANSI.Leijen     as Doc
+-- import qualified Text.PrettyPrint.ANSI.Leijen as Doc
 
 data Args = Args
   { nTrees    :: Int    -- ^ Simulated trees.
@@ -91,7 +93,7 @@ parseArgs = do
     else return a
   where
     desc = "Simulate reconstructed trees using the point process. See Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005"
-    remarks = Just $ foldl1 (Doc.<$>) (map Doc.text strs)
+    remarks = Just $ foldl1 (.$.) (map text strs)
     strs    = [ "Height of Trees: If no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate."
               , "Summary statistics only: Only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character."]
 
@@ -216,10 +218,10 @@ main = do
   trs <- simulateNTreesConcurrently c args
   let ls = if s
            then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
-           else parMap rpar toNewickIntegral trs
-  T.putStr $ T.unlines ls
+           else parMap rpar toNewickPhyloIntTree trs
+  L.putStr $ L.unlines ls
 
-simulateNTreesConcurrently :: Int -> Args -> IO [PhyloTree Int Double SNodeType]
+simulateNTreesConcurrently :: Int -> Args -> IO [Tree PhyloIntLabel]
 simulateNTreesConcurrently c (Args t n h l m r _ v _ s) = do
   -- when (l <= 0) (error "Speciation rate has to be larger than zero.")
   -- when (m <= 0) (error "Extinction rate has to be larger than zero.")
@@ -232,7 +234,7 @@ simulateNTreesConcurrently c (Args t n h l m r _ v _ s) = do
 
 simulateNTrees :: Int -> Int -> Maybe Double -> Double -> Double -> Bool
                -> Maybe Int
-               -> IO [PhyloTree Int Double SNodeType]
+               -> IO [Tree PhyloIntLabel]
 simulateNTrees t n mH l m v s
   | t <= 0 = return []
   | otherwise = do

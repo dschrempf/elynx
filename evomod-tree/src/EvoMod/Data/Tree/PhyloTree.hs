@@ -43,8 +43,8 @@ data PhyloLabel a = PhyloLabel { pLabel :: a
                  deriving (Show, Eq)
 
 instance Measurable (PhyloLabel a) where
-  measure = pBrLen
-  set l (PhyloLabel lbl _) | l >= 0 = PhyloLabel lbl l
+  getLen = pBrLen
+  setLen l (PhyloLabel lbl _) | l >= 0 = PhyloLabel lbl l
                            | otherwise = error "Branch lengths cannot be negative."
 
 -- | Tree node with 'Int' label.

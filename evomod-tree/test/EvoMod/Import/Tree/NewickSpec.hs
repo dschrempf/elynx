@@ -26,23 +26,23 @@ sampleLabelByteString :: L.ByteString
 sampleLabelByteString = L.pack "name:0.3"
 
 sampleLabel :: PhyloByteStringLabel
-sampleLabel = PhyloByteStringLabel (L.pack "name") 0.3
+sampleLabel = PhyloLabel (L.pack "name") 0.3
 
 sampleForestByteString :: L.ByteString
 sampleForestByteString = L.pack "(l,l,(a,b))"
 
 sampleForest :: [Tree PhyloByteStringLabel]
 sampleForest =
-  [ Node { rootLabel = PhyloByteStringLabel {pbsLabel = L.pack "l", pbsBrLen = 0.0}
+  [ Node { rootLabel = PhyloLabel {pLabel = L.pack "l", pBrLen = 0.0}
          , subForest = []
          }
-  , Node { rootLabel = PhyloByteStringLabel {pbsLabel = L.pack "l", pbsBrLen = 0.0}
+  , Node { rootLabel = PhyloLabel {pLabel = L.pack "l", pBrLen = 0.0}
          , subForest = []
          }
-  , Node { rootLabel = PhyloByteStringLabel {pbsLabel = L.pack "", pbsBrLen = 0.0}
+  , Node { rootLabel = PhyloLabel {pLabel = L.pack "", pBrLen = 0.0}
          , subForest =
-           [ Node {rootLabel = PhyloByteStringLabel {pbsLabel = L.pack "a", pbsBrLen = 0.0}, subForest = []}
-           , Node {rootLabel = PhyloByteStringLabel {pbsLabel = L.pack "b", pbsBrLen = 0.0}, subForest = []}
+           [ Node {rootLabel = PhyloLabel {pLabel = L.pack "a", pBrLen = 0.0}, subForest = []}
+           , Node {rootLabel = PhyloLabel {pLabel = L.pack "b", pBrLen = 0.0}, subForest = []}
            ]
          }
   ]
@@ -59,16 +59,16 @@ sampleNewickEmptyByteString = L.pack "(,(,,),);"
 
 sampleNewickEmpty :: Tree PhyloByteStringLabel
 sampleNewickEmpty =
-  Node { rootLabel = PhyloByteStringLabel {pbsLabel = L.pack "", pbsBrLen = 0.0}
+  Node { rootLabel = PhyloLabel {pLabel = L.pack "", pBrLen = 0.0}
        , subForest =
-           [ Node {rootLabel = PhyloByteStringLabel {pbsLabel = L.pack "", pbsBrLen = 0.0}, subForest = []}
-           , Node {rootLabel = PhyloByteStringLabel {pbsLabel = L.pack "", pbsBrLen = 0.0}, subForest =
-                      [ Node {rootLabel = PhyloByteStringLabel {pbsLabel = L.pack "", pbsBrLen = 0.0}, subForest = []}
-                      , Node {rootLabel = PhyloByteStringLabel {pbsLabel = L.pack "", pbsBrLen = 0.0}, subForest = []}
-                      , Node {rootLabel = PhyloByteStringLabel {pbsLabel = L.pack "", pbsBrLen = 0.0}, subForest = []}
+           [ Node {rootLabel = PhyloLabel {pLabel = L.pack "", pBrLen = 0.0}, subForest = []}
+           , Node {rootLabel = PhyloLabel {pLabel = L.pack "", pBrLen = 0.0}, subForest =
+                      [ Node {rootLabel = PhyloLabel {pLabel = L.pack "", pBrLen = 0.0}, subForest = []}
+                      , Node {rootLabel = PhyloLabel {pLabel = L.pack "", pBrLen = 0.0}, subForest = []}
+                      , Node {rootLabel = PhyloLabel {pLabel = L.pack "", pBrLen = 0.0}, subForest = []}
                       ]
                   }
-           , Node {rootLabel = PhyloByteStringLabel {pbsLabel = L.pack "", pbsBrLen = 0.0}, subForest = []}
+           , Node {rootLabel = PhyloLabel {pLabel = L.pack "", pBrLen = 0.0}, subForest = []}
            ]
        }
 
@@ -96,7 +96,7 @@ spec = do
       parse node "" sampleLabelByteString `shouldParse` sampleLabel
 
     it "parses tree nodes with empty names and branch lengths" $
-      parse node "" (L.pack "") `shouldParse` PhyloByteStringLabel (L.pack "") 0
+      parse node "" (L.pack "") `shouldParse` PhyloLabel (L.pack "") 0
 
   describe "leaf" $
     it "parses a leaf of a tree" $

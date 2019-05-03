@@ -49,9 +49,9 @@ toNewickWith labelBuilder branchLengthBuilder t =
 -- | Convenience function for exporting trees with 'Int' labels and 'Double'
 -- branch lengths.
 toNewickPhyloIntTree :: Tree PhyloIntLabel -> L.ByteString
-toNewickPhyloIntTree = toNewickWith (L.intDec . piLabel) (L.doubleDec . piBrLen)
+toNewickPhyloIntTree = toNewickWith (L.intDec . pLabel) (L.doubleDec . pBrLen)
 
 -- | Convenience function for exporting trees with 'L.ByteString' labels and
 -- 'Double' branch lengths.
 toNewickPhyloByteStringTree :: Tree PhyloByteStringLabel -> L.ByteString
-toNewickPhyloByteStringTree = toNewickWith (L.lazyByteString . pbsLabel) (L.doubleDec . pbsBrLen)
+toNewickPhyloByteStringTree = toNewickWith (L.lazyByteString . pLabel) (L.doubleDec . pBrLen)
