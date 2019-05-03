@@ -20,8 +20,9 @@ module EvoMod.ArgParse
 import           Data.Version                    (showVersion)
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
-import           Paths_evomod_seq                (version)
 import           System.Environment
+
+import           Paths_evomod_tools              (version)
 
 evoModVersion :: String
 evoModVersion = "EvoMod suite version " ++ showVersion version ++ "."
@@ -30,7 +31,7 @@ evoModCopyright :: String
 evoModCopyright = "Developed by Dominik Schrempf."
 
 evoModDescription :: String
-evoModDescription = "Parse, view, modify and simulate evolutionary sequences and phylogenetic trees. The goal of EvoMod is reproducible research. Nothing is assumed about the data (e.g., the type of code), and no default values set. Everything has to be stated by the user. This leads to some work overhead in the beginning, but usually pays off in the end."
+evoModDescription = "Parse, view, modify and simulate evolutionary sequences and phylogenetic trees. The goal of EvoMod is reproducible research. Nothing is assumed about the data (e.g., the type of code), and no default values are set. Everything has to be stated by the user. Command lines are logged consistently. This leads to some work overhead in the beginning, but usually pays off in the end."
 
 evoModHeaders :: [String]
 evoModHeaders = [ evoModVersion

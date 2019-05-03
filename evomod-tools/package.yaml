@@ -37,7 +37,7 @@ dependencies:
   - matrices
   - megaparsec
   - mwc-random
-  # - optparse-applicative
+  - optparse-applicative
   - parallel
   # - primitive
   # - statistics

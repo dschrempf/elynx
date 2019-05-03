@@ -171,7 +171,7 @@ verbosityOpt = switch
   ( long "verbosity"
     <> short 'v'
     <> showDefault
-    <> help "Verbosity; incompatible with -q" )
+    <> help "Be verbose; incompatible with -q" )
 
 quietOpt :: Parser Bool
 quietOpt = switch

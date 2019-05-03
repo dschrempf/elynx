@@ -28,6 +28,8 @@ module EvoMod.Tools.Equality
 
 import           Numeric.LinearAlgebra
 
+import           EvoMod.Definitions
+
 -- | Test if all elements of a list are equal; returns True for empty list.
 allEqual :: Eq a => [a] -> Bool
 -- Well, maybe it should be False, but then, it is True that all elements are
@@ -38,12 +40,6 @@ allEqual xs = all (== head xs) (tail xs)
 -- | Test for equality with given tolerance (needed because of machine precision).
 nearlyEqWith :: Double -> Double -> Double -> Bool
 nearlyEqWith tol a b = tol > abs (a-b)
-
--- XXX: Move this to a separate file, so that it is more exposed and can be set
--- more easily?
--- | Required precision when comparing 'Double' values.
-eps :: Double
-eps = 1e-12
 
 -- | Test for equality with predefined tolerance 'eps' (needed because of
 -- machine precision).
