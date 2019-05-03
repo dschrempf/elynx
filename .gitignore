@@ -7,19 +7,19 @@ evomod-tools.cabal
 evomod-tree.cabal
 
 # Profile files.
-evomod-seq.aux
-evomod-seq.eventlog
-evomod-seq.hp
-evomod-seq.prof
-evomod-seq.ps
-evomod-sim.aux
-evomod-sim.eventlog
-evomod-sim.hp
-evomod-sim.prof
-evomod-sim.ps
-evomod-sim.out
-evomod-sim.out.log
-evomod-sim.out.model
+seq-ana.aux
+seq-ana.eventlog
+seq-ana.hp
+seq-ana.prof
+seq-ana.ps
+seq-sim.aux
+seq-sim.eventlog
+seq-sim.hp
+seq-sim.prof
+seq-sim.ps
+seq-sim.out
+seq-sim.out.log
+seq-sim.out.model
 /scripts/iqtree-verify.*
 
 # IQ-TREE files.
