@@ -1,5 +1,5 @@
 {- |
-Module      :  ArgParseSeq
+Module      :  ArgParseSeqAna
 Description :  EvoModSeq argument parsing.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -13,16 +13,16 @@ Creation date: Sun Oct  7 17:29:45 2018.
 -}
 
 
-module ArgParseSeq
-  ( EvoModSeqArgs (..)
+module ArgParseSeqAna
+  ( Args (..)
   , Command (..)
-  , parseEvoModSeqArgs
+  , parseArgs
   ) where
 
 import           Control.Applicative
 import           Options.Applicative
 
-import           EvoMod.ArgParse
+import           EvoMod.Definitions
 import           EvoMod.Data.Alphabet.Alphabet
 
 data Command = Summarize
@@ -31,7 +31,7 @@ data Command = Summarize
                       , shorter :: Maybe Int}
              | Analyze { drop :: Bool }
 
-data EvoModSeqArgs = EvoModSeqArgs
+data Args = Args
   { argsCommand          :: Command
   , argsCode             :: Code
   , argsMaybeFileNameOut :: Maybe FilePath
@@ -39,8 +39,8 @@ data EvoModSeqArgs = EvoModSeqArgs
   , argsFileNames        :: [FilePath]
   }
 
-evoModSeqArgs :: Parser EvoModSeqArgs
-evoModSeqArgs = EvoModSeqArgs
+args :: Parser Args
+args = Args
   <$> commandArg
   <*> alphabetOpt
   <*> fileNameOutOpt
@@ -116,12 +116,12 @@ quietOpt = switch
     <> short 'q'
     <> help "Be quiet" )
 
-parseEvoModSeqArgs :: IO EvoModSeqArgs
-parseEvoModSeqArgs = parseEvoModArgs evoModSeqFooter evoModSeqArgs
+parseArgs :: IO Args
+parseArgs = parseArgsWith [] ftr args
 
-evoModSeqFooter :: [String]
-evoModSeqFooter = [ "File formats:" ] ++ fs ++
-                  [ "", "Alphabet types:" ] ++ as
+ftr :: [String]
+ftr = [ "File formats:" ] ++ fs ++
+      [ "", "Alphabet types:" ] ++ as
   where
     toListItem = ("  - " ++)
     fs = map toListItem ["FASTA"]

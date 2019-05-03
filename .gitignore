@@ -31,10 +31,10 @@ seq-sim.out.model
 *.treefile
 
 # Tags.
-/TAGS
-/GPATH
-/GRTAGS
-/GTAGS
+/**/TAGS
+/**/GPATH
+/**/GRTAGS
+/**/GTAGS
 
 # Emacs related files.
 dist/

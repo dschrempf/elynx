@@ -27,10 +27,10 @@ import           Numeric.LinearAlgebra
 import           System.IO
 import           System.Random.MWC
 
-import           ArgParseSim
+import           ArgParseSeqSim
 import           ParsePhyloModel
 
-import           EvoMod.ArgParse
+import           EvoMod.Definitions
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
 import           EvoMod.Data.MarkovProcess.MixtureModel
@@ -94,7 +94,7 @@ summarizeEDMComponents cs = LC.pack
 
 type Simulation = ReaderT Params IO
 
-data Params = Params { arguments  :: EvoModSimArgs
+data Params = Params { arguments  :: Args
                      , mLogHandle :: Maybe Handle }
 
 instance Logger Params where
@@ -165,7 +165,7 @@ simulate = do
 
 main :: IO ()
 main = do
-  a <- parseEvoModSimArgs
+  a <- parseArgs
   h <- setupLogger (argsQuiet a) (Just $ argsFileOut a)
   runReaderT simulate (Params a h)
   closeLogger h

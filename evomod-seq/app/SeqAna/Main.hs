@@ -26,9 +26,9 @@ import qualified Data.ByteString.Lazy.Char8                  as L
 import           Data.Maybe                                  (fromMaybe)
 import           System.IO
 
-import           ArgParseSeq
+import           ArgParseSeqAna
 
-import           EvoMod.ArgParse
+import           EvoMod.Definitions
 import           EvoMod.Data.Sequence.Filter
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
@@ -38,7 +38,7 @@ import           EvoMod.Tools.InputOutput
 import           EvoMod.Tools.Logger
 import           EvoMod.Tools.Misc
 
-data Params = Params { arguments  :: EvoModSeqArgs
+data Params = Params { arguments  :: Args
                      , mLogHandle :: Maybe Handle }
 
 instance Logger Params where
@@ -86,7 +86,7 @@ work = do
 
 main :: IO ()
 main = do
-  a <- parseEvoModSeqArgs
+  a <- parseArgs
   h <- setupLogger (argsQuiet a) (argsMaybeFileNameOut a)
   runReaderT work (Params a h)
   closeLogger h

@@ -1,5 +1,5 @@
 {- |
-Module      :  ArgParseSim
+Module      :  ArgParseSeqSim
 Description :  EvoModSim argument parsing.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -35,15 +35,15 @@ Available options:
 -}
 
 
-module ArgParseSim
-  ( EvoModSimArgs (..)
-  , parseEvoModSimArgs
+module ArgParseSeqSim
+  ( Args (..)
+  , parseArgs
   ) where
 
 import           Data.Word
 import           Options.Applicative
 
-import           EvoMod.ArgParse
+import           EvoMod.Definitions
 
 -- -- Ugly convenience function to read in more complicated command line options
 -- -- with megaparsec and optparse
@@ -58,7 +58,7 @@ import           EvoMod.ArgParse
 
 type GammaRateHeterogeneityParams = (Int, Double)
 
-data EvoModSimArgs = EvoModSimArgs
+data Args = Args
   { argsTreeFile                     :: FilePath
   , argsMaybeSubstitutionModelString :: Maybe String
   , argsMaybeMixtureModelString      :: Maybe String
@@ -71,8 +71,8 @@ data EvoModSimArgs = EvoModSimArgs
   , argsFileOut                      :: FilePath
   }
 
-evoModSimArgs :: Parser EvoModSimArgs
-evoModSimArgs = EvoModSimArgs
+args :: Parser Args
+args = Args
   <$> treeFileOpt
   <*> phyloSubstitutionModelOpt
   <*> phyloMixtureModelOpt
@@ -157,11 +157,11 @@ maybeSeedOpt = optional $ option auto
               ++ "list of 32 bit integers with up to 256 elements" ) )
 
 -- | Read the arguments and prints out help if needed.
-parseEvoModSimArgs :: IO EvoModSimArgs
-parseEvoModSimArgs = parseEvoModArgs evoModSimFooter evoModSimArgs
+parseArgs :: IO Args
+parseArgs = parseArgsWith [] ftr args
 
-evoModSimFooter :: [String]
-evoModSimFooter = sms ++ mms
+ftr :: [String]
+ftr = sms ++ mms
   where
     sms =
       [ "Substitution models:"
