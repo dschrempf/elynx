@@ -5,7 +5,7 @@ source include
 echo "NOTE: Inference model has to be amended manually."
 sleep 3
 
-tree_file="${project_root}/data/Newick.tree"
+tree_file="${project_root}/evomod-seq/data/Newick.tree"
 
 # edm_file="${project_root}/data/EDMDistsIQTREE.nex"
 # iqtree -nt 4 -s seq-sim.out -pre iqtree-verify -mdef "$edm_file" -m LG+CF004ModelOpt -redo || exit 1
