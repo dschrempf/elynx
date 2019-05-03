@@ -1,5 +1,5 @@
 {- |
-Module      :  ArgParseSeqSim
+Module      :  OptionsSeqSim
 Description :  EvoModSim argument parsing.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -35,7 +35,7 @@ Available options:
 -}
 
 
-module ArgParseSeqSim
+module OptionsSeqSim
   ( Args (..)
   , parseArgs
   ) where
@@ -43,7 +43,7 @@ module ArgParseSeqSim
 import           Data.Word
 import           Options.Applicative
 
-import           EvoMod.Definitions
+import           EvoMod.Options
 
 -- -- Ugly convenience function to read in more complicated command line options
 -- -- with megaparsec and optparse
@@ -80,9 +80,9 @@ args = Args
   <*> maybeMixtureWeights
   <*> maybeGammaParams
   <*> lengthOpt
-  <*> maybeSeedOpt
+  <*> seedOpt
   <*> quietOpt
-  <*> fileOutOpt
+  <*> fileNameOutOpt
 
 treeFileOpt :: Parser FilePath
 treeFileOpt = strOption
@@ -90,19 +90,6 @@ treeFileOpt = strOption
     <> short 't'
     <> metavar "NAME"
     <> help "Specify tree file NAME" )
-
-quietOpt :: Parser Bool
-quietOpt = switch
-  ( long "quiet"
-  <> short 'q'
-  <> help "Be quiet" )
-
-fileOutOpt :: Parser FilePath
-fileOutOpt = strOption
-  ( long "output-file"
-    <> short 'o'
-    <> metavar "NAME"
-    <> help "Specify output file NAME")
 
 phyloSubstitutionModelOpt :: Parser (Maybe String)
 phyloSubstitutionModelOpt = optional $ strOption
@@ -145,16 +132,6 @@ lengthOpt = option auto
     <> short 'l'
     <> metavar "NUMBER"
     <> help "Set alignment length to NUMBER" )
-
-maybeSeedOpt :: Parser (Maybe [Word32])
-maybeSeedOpt = optional $ option auto
-  ( long "seed"
-    <> short 'S'
-    <> metavar "[INT]"
-    -- <> value [ 0 :: Word32 ]
-    -- <> showDefault
-    <> help ( "Set seed for the random number generator; "
-              ++ "list of 32 bit integers with up to 256 elements (default: random)" ) )
 
 -- | Read the arguments and prints out help if needed.
 parseArgs :: IO Args

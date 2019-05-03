@@ -1,5 +1,5 @@
 {- |
-Module      :  ArgParseSeqAna
+Module      :  OptionsSeqAna
 Description :  EvoModSeq argument parsing.
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -13,7 +13,7 @@ Creation date: Sun Oct  7 17:29:45 2018.
 -}
 
 
-module ArgParseSeqAna
+module OptionsSeqAna
   ( Args (..)
   , Command (..)
   , parseArgs
@@ -22,7 +22,7 @@ module ArgParseSeqAna
 import           Control.Applicative
 import           Options.Applicative
 
-import           EvoMod.Definitions
+import           EvoMod.Options
 import           EvoMod.Data.Alphabet.Alphabet
 
 data Command = Summarize
@@ -43,7 +43,7 @@ args :: Parser Args
 args = Args
   <$> commandArg
   <*> alphabetOpt
-  <*> fileNameOutOpt
+  <*> optional fileNameOutOpt
   <*> quietOpt
   <*> some fileNameArg
 
@@ -97,24 +97,10 @@ alphabetOpt = option auto
     <> metavar "NAME"
     <> help "Specify alphabet type NAME" )
 
-fileNameOutOpt :: Parser (Maybe FilePath)
-fileNameOutOpt = optional $ strOption
-  ( long "output-file"
-    <> short 'o'
-    <> metavar "NAME"
-    <> help "Specify output file NAME" )
-
 fileNameArg :: Parser FilePath
 fileNameArg = argument str
   ( metavar "INPUT-FILE-NAMES"
     <> help "Read sequences from INPUT-FILE-NAMES" )
-
--- | Option to be quiet.
-quietOpt :: Parser Bool
-quietOpt = switch
-  ( long "quiet"
-    <> short 'q'
-    <> help "Be quiet" )
 
 parseArgs :: IO Args
 parseArgs = parseArgsWith Nothing (Just ftr) args

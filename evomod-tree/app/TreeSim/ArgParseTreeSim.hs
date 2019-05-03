@@ -21,7 +21,7 @@ module ArgParseTreeSim
 import           Data.Word
 import           Options.Applicative
 
-import           EvoMod.Definitions
+import           EvoMod.Options
 
 data Args = Args
   { nTrees    :: Int    -- ^ Simulated trees.
@@ -124,28 +124,6 @@ sumStatOpt = switch
     <> short 's'
     <> showDefault
     <> help "Only output number of children for each branch" )
-
-verbosityOpt :: Parser Bool
-verbosityOpt = switch
-  ( long "verbosity"
-    <> short 'v'
-    <> showDefault
-    <> help "Be verbose; incompatible with -q" )
-
-quietOpt :: Parser Bool
-quietOpt = switch
-  ( long "quiet"
-    <> short 'q'
-    <> showDefault
-    <> help "Be quiet; incompatible with -v" )
-
-seedOpt :: Parser (Maybe [Word32])
-seedOpt = optional $ option auto
-  ( long "seed"
-    <> short 'S'
-    <> metavar "[INT]"
-    <> help ("Seed for random number generator; "
-             ++ "list of 32 bit integers with up to 256 elements (default: random)" ) )
 
 -- getCommandLineStr :: String -> [String] -> String
 -- getCommandLineStr n as = unlines

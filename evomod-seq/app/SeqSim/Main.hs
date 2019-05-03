@@ -27,10 +27,10 @@ import           Numeric.LinearAlgebra
 import           System.IO
 import           System.Random.MWC
 
-import           ArgParseSeqSim
+import           OptionsSeqSim
 import           ParsePhyloModel
 
-import           EvoMod.Definitions
+import           EvoMod.Options
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
 import           EvoMod.Data.MarkovProcess.MixtureModel

@@ -39,7 +39,7 @@ import           ArgParseTreeSim
 import           EvoMod.Data.Tree.PhyloTree   (PhyloIntLabel)
 import           EvoMod.Data.Tree.SumStat     (formatNChildSumStat,
                                                toNChildSumStat)
-import           EvoMod.Definitions
+import           EvoMod.Options
 import           EvoMod.Export.Tree.Newick    (toNewickPhyloIntTree)
 import           EvoMod.Simulate.PointProcess (simulateReconstructedTree)
 
@@ -48,8 +48,6 @@ newSection :: String -> String
 newSection h = unlines
   [ ""
   , "-- " ++ h ]
-
--- TODO TODO: Log facility.
 
 main :: IO ()
 main = do

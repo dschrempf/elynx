@@ -26,9 +26,9 @@ import qualified Data.ByteString.Lazy.Char8                  as L
 import           Data.Maybe                                  (fromMaybe)
 import           System.IO
 
-import           ArgParseSeqAna
+import           OptionsSeqAna
 
-import           EvoMod.Definitions
+import           EvoMod.Options
 import           EvoMod.Data.Sequence.Filter
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
