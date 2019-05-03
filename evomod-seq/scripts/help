@@ -2,14 +2,14 @@
 
 source include
 
-msg "EvoMod-Seq help text."
-stack exec evomod-seq -- --help || exit 1
+msg "Seq-Ana help text."
+stack exec seq-ana -- --help || exit 1
 
-msg "EvoMod-Seq version text."
-stack exec evomod-seq -- --version || exit 1
+msg "Seq-Ana version text."
+stack exec seq-ana -- --version || exit 1
 
-msg "EvoMod-Sim help text."
-stack exec evomod-sim -- --help || exit 1
+msg "Seq-Sim help text."
+stack exec seq-sim -- --help || exit 1
 
-msg "EvoMod-Sim version text."
-stack exec evomod-sim -- --version || exit 1
+msg "Seq-Sim version text."
+stack exec seq-sim -- --version || exit 1

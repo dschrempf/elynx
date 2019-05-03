@@ -4,6 +4,8 @@ source include
 
 pr="$project_root"
 
+cd "${pr}" || exit 1
+
 while IFS= read -r -d '' file
 do
     stylish-haskell -i "$file"

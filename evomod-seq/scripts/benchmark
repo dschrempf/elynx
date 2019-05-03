@@ -4,5 +4,5 @@ source include
 
 file_benchmark="${project_root}/data/BenchmarkEnsemblMouse.fa.gz"
 
-msg "EvoMod-Seq benchmark."
-stack --work-dir "$prod_dir" exec evomod-seq -- summarize -a DNAIUPAC "$file_benchmark"  +RTS -s || exit 1
+msg "Seq-Ana benchmark."
+stack --work-dir "$prod_dir" exec seq-ana -- summarize -a DNAIUPAC "$file_benchmark"  +RTS -s || exit 1

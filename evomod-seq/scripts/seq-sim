@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+source include
+
+file_tree="${project_root}/data/Newick.tree"
+
+if [[ $1 == "s" || $1 == "a" ]]
+then
+    msg "Seq-Sim; substitution model."
+    stack exec seq-sim -- \
+          -t "$file_tree" -o seq-sim.out -s "HKY[6.0]{0.2,0.3,0.3,0.2}" -l 10000 -S [0] || exit 1
+fi
+
+if [[ $1 == "e" || $1 == "a" ]]
+then
+    msg "Seq-Sim; empirical distribution mixture model."
+    file_edm=../data/EDMDistsPhylobayes.txt
+    stack exec seq-sim -- \
+          -t "$file_tree" -o seq-sim.out -e $file_edm -m "EDM(LG-Custom)" -l 1000 -S [0] || exit 1
+fi
+
+if [[ $1 == "w" || $1 == "a" ]]
+then
+    msg "Seq-Sim; empirical distribution mixture model with custom weights."
+    file_edm=../data/EDMDistsPhylobayes.txt
+    stack exec seq-sim -- \
+          -t "$file_tree" -o seq-sim.out -e $file_edm -m "EDM(LG-Custom)" -w "[0.9,0.05,0.03,0.02]" -l 1000 -S [0] || exit 1
+fi
+
+if [[ $1 == "c" || $1 == "a" ]]
+then
+    msg "Seq-Sim; CXX distribution mixture model."
+    stack exec seq-sim -- \
+          -t "$file_tree" -o seq-sim.out -m "C20" -l 1000 -S [0] || exit 1
+fi
+
+if [[ $1 == "g" || $1 == "a" ]]
+then
+    msg "Seq-Sim; gamma rate heterogeneity."
+    stack exec seq-sim -- \
+          -t "$file_tree" -o seq-sim.out -g "(4,0.2)" -s "HKY[6.0]{0.2,0.3,0.3,0.2}" -l 10000 -S [0] || exit 1
+fi
+
+if [[ $1 == "cg" || $1 == "a" ]]
+then
+    msg "Seq-Sim; CXX distribution mixture model with gamma rate heterogeneity."
+    stack exec seq-sim -- \
+          -t "$file_tree" -o seq-sim.out -m "C10" -g "(4,0.2)" -l 1000 -S [0] || exit 1
+fi
+
+if [[ $1 == "m" || $1 == "a" ]]
+then
+    msg "Seq-Sim; standard mixture model."
+    stack exec seq-sim -- \
+          -t "$file_tree" -o seq-sim.out -m "MIXTURE(JC,HKY[6.0]{0.25,0.25,0.25,0.25})" -w "[0.4,0.6]" -l 20000 -S [0] || exit 1
+fi
+
+if [[ $1 == "h" ]]
+then
+    msg "Usage: ./seq-sim (a|s|e|w|c|g|cg|m)"
+fi

@@ -16,7 +16,7 @@ source include
 
 msg "EvoMode-Seq profiling run."
 file_profile="${project_root}/data/Profile.fa.gz"
-stack exec evomod-seq --work-dir $prof_dir -- \
+stack exec seq-ana --work-dir $prof_dir -- \
       summarize -a DNAIUPAC "$file_profile" \
       +RTS -p -l -s || exit 1
       # +RTS -p -hy -l -s || exit 1
@@ -24,8 +24,8 @@ stack exec evomod-seq --work-dir $prof_dir -- \
 msg "EvoMode-Sim profiling run."
 file_tree="${project_root}/data/Newick.tree"
 file_edm="${project_root}/data/EDMDistsPhylobayes.txt"
-stack exec evomod-sim --work-dir $prof_dir -- \
-      -t "$file_tree" -o evomod-sim.out -e "$file_edm" -m "EDM[LG-Custom]" -l 5000 -s [0] \
+stack exec seq-sim --work-dir $prof_dir -- \
+      -t "$file_tree" -o seq-sim.out -e "$file_edm" -m "EDM[LG-Custom]" -l 5000 -s [0] \
       +RTS -p -hc -l -s || exit 1
 
 msg "Create graphs of the memory heap profiles."

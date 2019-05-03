@@ -8,8 +8,8 @@ sleep 3
 tree_file="${project_root}/data/Newick.tree"
 
 # edm_file="${project_root}/data/EDMDistsIQTREE.nex"
-# iqtree -nt 4 -s evomod-sim.out -pre iqtree-verify -mdef "$edm_file" -m LG+CF004ModelOpt -redo || exit 1
-iqtree -nt 4 -s evomod-sim.out -pre iqtree-verify -m "MIX{JC,HKY}" -mwopt -redo || exit 1
+# iqtree -nt 4 -s seq-sim.out -pre iqtree-verify -mdef "$edm_file" -m LG+CF004ModelOpt -redo || exit 1
+iqtree -nt 4 -s seq-sim.out -pre iqtree-verify -m "MIX{JC,HKY}" -mwopt -redo || exit 1
 
 if hash newick-compare 2>/dev/null
 then

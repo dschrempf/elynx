@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+source include
+
+file_DNA="${project_root}/data/Nucleotide.fasta"
+file_AA="${project_root}/data/AminoAcid.fasta"
+
+msg "Seq-Ana; summarize DNA."
+stack exec seq-ana -- summarize -a DNA "$file_DNA" || exit 1
+
+msg "Seq-Ana; summarize protein data."
+stack exec seq-ana -- summarize -a Protein "$file_AA" || exit 1
+
+msg "Seq-Ana; concatenate DNA."
+stack exec seq-ana -- concatenate -a DNA "$file_DNA" "$file_DNA" || exit 1
+
+msg "Seq-Ana; summarize; test if quiet."
+stack exec seq-ana -- summarize -a DNA -q "$file_DNA" || exit 1
+
+msg "Seq-Ana; analyze DNA."
+stack exec seq-ana -- analyze -a DNA "$file_DNA" || exit 1
