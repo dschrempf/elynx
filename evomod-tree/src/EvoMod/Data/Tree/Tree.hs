@@ -36,12 +36,14 @@ the book /Haskell high performance programming from Thomasson/, p. 344.
 module EvoMod.Data.Tree.Tree
   ( singleton
   , degree
-  , leafs
+  , leaves
   -- , rootNodesAgreeWith
+  , subTree
+  , pruneWith
   ) where
 
+import           Data.Maybe
 import           Data.Tree
--- import qualified Data.Set as S
 
 -- | The simplest tree. Usually an extant leaf.
 singleton :: a -> Tree a
@@ -51,10 +53,10 @@ singleton l = Node l []
 degree :: Tree a -> Int
 degree = (+ 1) . length . subForest
 
--- | Get leafs of tree.
-leafs :: Tree a -> [a]
-leafs (Node l []) = [l]
-leafs (Node _ f)  = concatMap leafs f
+-- | Get leaves of tree.
+leaves :: Tree a -> [a]
+leaves (Node l []) = [l]
+leaves (Node _ f)  = concatMap leaves f
 
 -- -- | Check if ancestor and daughters of first tree are a subset of the ancestor
 -- -- and daughters of the second tree. Useful to test if, e.g., speciations agree.
@@ -64,3 +66,25 @@ leafs (Node _ f)  = concatMap leafs f
 --   S.fromList sDs `S.isSubsetOf` S.fromList tDs
 --   where sDs = map (f . rootLabel) (subForest s)
 --         tDs = map (g . rootLabel) (subForest t)
+
+-- | Get subtree of 'Tree' with nodes satisfying predicate. Return 'Nothing', if
+-- no leaf satisfies predicate. At the moment: recursively, for each child, take
+-- the child if any leaf in the child satisfies the predicate.
+subTree :: (a -> Bool) -> Tree a -> Maybe (Tree a)
+subTree p leaf@(Node lbl [])
+  | p lbl     = Just leaf
+  | otherwise = Nothing
+subTree p (Node lbl chs) = if null subTrees
+                           then Nothing
+                           else Just $ Node lbl subTrees
+  where subTrees = mapMaybe (subTree p) chs
+
+-- | Prune degree 2 inner nodes. The information stored in a pruned node can be
+-- used to change the daughter node. To discard this information, use,
+-- @pruneWith const tree@, otherwise @pruneWith (\daughter parent -> combined)
+-- tree@.
+pruneWith :: (a -> a -> a) -> Tree a -> Tree a
+pruneWith _    n@(Node _ [])       = n
+pruneWith join   (Node paLbl [ch]) = let lbl = join (rootLabel ch) paLbl
+                                     in pruneWith join $ Node lbl (subForest ch)
+pruneWith _    n                   = n

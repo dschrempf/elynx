@@ -15,13 +15,15 @@ Miscellaneous tools that do not have their own category (yet).
 
 module EvoMod.Tools.Misc
   (
-    -- * Weird stuff :).
-    compose
+    -- * Not yet classified stuff
+    ensure
+    -- * Weird stuff
+  , compose
   , allValues
   , horizontalConcat
-    -- * MWC.
+    -- * MWC
   , splitGen
-   -- * Parallel stuff.
+   -- * Parallel stuff
   , parMapChunk
   ) where
 
@@ -59,3 +61,8 @@ splitGen n gen
 -- | Parallel map with given chunk size.
 parMapChunk :: Int -> (a -> b) -> [a] -> [b]
 parMapChunk n f as = map f as `using` parListChunk n rseq
+
+-- | Ensure that a value satisfies a given predicate.
+ensure :: (a -> Bool) -> a -> Maybe a
+ensure p v | p v       = Just v
+           | otherwise = Nothing

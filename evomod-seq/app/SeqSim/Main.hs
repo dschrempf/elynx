@@ -82,7 +82,7 @@ simulateMSA pm t n g = do
   -- XXX: The horizontal concatenation might be slow. If so, 'concatenateSeqs'
   -- or 'concatenateMSAs' can be used, which directly appends vectors.
   let leafStates = horizontalConcat leafStatesS
-      leafNames  = map name $ leafs t
+      leafNames  = map name $ leaves t
       code       = pmCode pm
       sequences  = [ Sequence sName code (L.pack $ indicesToCharacters code ss) |
                     (sName, ss) <- zip leafNames leafStates ]
