@@ -46,11 +46,11 @@ isSpecial w = w `elem` (map c2w ['_', '|', '.', '-'])
 isHeaderChar :: Word8 -> Bool
 isHeaderChar w = isAlphaNum w || isSpecial w
 
--- XXX: Allow description.
 sequenceHeader :: Parser L.ByteString
 sequenceHeader = do
   _ <- char (c2w '>')
   h <- takeWhile1P (Just "Header character") isHeaderChar
+  -- XXX: Allow description.
   _ <- eol
   return h
 
