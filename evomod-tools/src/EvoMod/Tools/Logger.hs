@@ -30,8 +30,10 @@ module EvoMod.Tools.Logger
   , closeLogger
   -- * Helper functions
   , logNewSection
+  , reportCapability
   ) where
 
+import           Control.Concurrent         (myThreadId, threadCapability)
 import           Control.Monad
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
@@ -106,5 +108,13 @@ closeLogger :: Maybe Handle -> IO ()
 -- It took me quite a while to find this out.
 closeLogger = mapM_ hClose
 
+-- | Convenience function. Create a visibly noticeable log entry.
 logNewSection :: Logger l => String -> ReaderT l IO ()
 logNewSection h = logS $ "\n-- " ++ h
+
+-- | Report the core this thread is running on.
+reportCapability :: Logger l => ReaderT l IO ()
+reportCapability = do
+  i <- lift myThreadId
+  (c, _) <- lift $ threadCapability i
+  logS $ "Running on core: " ++ show c

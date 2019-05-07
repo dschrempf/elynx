@@ -21,18 +21,9 @@ module EvoMod.Tools.Misc
   , compose
   , allValues
   , horizontalConcat
-    -- * MWC
-  , splitGen
-   -- * Parallel stuff
-  , parMapChunk
   ) where
 
-import           Control.Monad
-import           Control.Parallel.Strategies
 import           Data.List
-import qualified Data.Vector                 as V
-import           Data.Word
-import           System.Random.MWC
 
 -- | Chain a list of functions together. See https://wiki.haskell.org/Compose.
 compose :: [a -> a] -> a -> a
@@ -49,18 +40,6 @@ allValues = [minBound..]
 horizontalConcat :: [[[a]]] -> [[a]]
 horizontalConcat [xs] = xs
 horizontalConcat xss  = foldl' (zipWith (++)) (head xss) (tail xss)
-
--- | Should be in the library...
-splitGen :: Int -> GenIO -> IO [GenIO]
-splitGen n gen
-  | n <= 0    = return []
-  | otherwise =
-  fmap (gen:) . replicateM (n-1) $
-  initialize =<< (uniformVector gen 256 :: IO (V.Vector Word32))
-
--- | Parallel map with given chunk size.
-parMapChunk :: Int -> (a -> b) -> [a] -> [b]
-parMapChunk n f as = map f as `using` parListChunk n rseq
 
 -- | Ensure that a value satisfies a given predicate.
 ensure :: (a -> Bool) -> a -> Maybe a

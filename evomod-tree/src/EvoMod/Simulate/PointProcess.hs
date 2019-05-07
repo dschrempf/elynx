@@ -25,6 +25,7 @@ module EvoMod.Simulate.PointProcess
   , simulate
   , toReconstructedTree
   , simulateReconstructedTree
+  , simulateNReconstructedTrees
   -- , toBranchLengthNChildren
   -- , simulateBranchLengthNChildren
   -- , simulateBranchLengthNChildrenRandomHeight
@@ -135,6 +136,20 @@ flattenIndices is = snd $ mapAccumL fAcc [] is
 fAcc :: [Int] -> Int -> ([Int], Int)
 fAcc is i = (i:is, i')
   where i' = i - length (filter (<i) is)
+
+-- | See 'simulateReconstructedTree', but n times.
+simulateNReconstructedTrees
+  :: (PrimMonad m)
+  => Int        -- ^ Number of trees
+  -> Int        -- ^ Number of points (samples)
+  -> Maybe Time -- ^ Time of origin
+  -> Rate       -- ^ Birth rate
+  -> Rate       -- ^ Death rate
+  -> Gen (PrimState m)   -- ^ Generator (see 'System.Random.MWC')
+  -> m [Tree PhyloIntLabel]
+simulateNReconstructedTrees nT nP t l m g
+  | nT <= 0   = return []
+  | otherwise = replicateM nT $ simulateReconstructedTree nP t l m g
 
 -- | Use the point process to simulate a reconstructed tree (see
 -- 'toReconstructedTree') possibly with specific height and a fixed number of

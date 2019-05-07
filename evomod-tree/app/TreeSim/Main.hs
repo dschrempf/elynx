@@ -23,31 +23,30 @@ Elsevier BV, 2009, 261, 58-66
 
 module Main where
 
-import           Control.Concurrent                   (getNumCapabilities,
-                                                       myThreadId,
-                                                       threadCapability)
-import           Control.Concurrent.Async.Lifted.Safe (replicateConcurrently)
-import           Control.Monad                        (replicateM)
+import           Control.Concurrent                   (getNumCapabilities)
+import           Control.Concurrent.Async.Lifted.Safe (mapConcurrently)
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import           Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8           as L
+import           Data.Maybe
+import qualified Data.Sequence                        as Seq
 import           Data.Tree
-import           Data.Vector                          (fromList)
-import           Data.Word
 import           System.IO
-import           System.Random.MWC
 
 import           OptionsTreeSim
 
+import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.PhyloTree           (PhyloIntLabel)
 import           EvoMod.Data.Tree.SumStat             (formatNChildSumStat,
                                                        toNChildSumStat)
+import           EvoMod.Data.Tree.Tree
 import           EvoMod.Export.Tree.Newick            (toNewickPhyloIntTree)
 import           EvoMod.Options
-import           EvoMod.Simulate.PointProcess         (simulateReconstructedTree)
+import           EvoMod.Simulate.PointProcess         (simulateNReconstructedTrees,
+                                                       simulateReconstructedTree)
+import           EvoMod.Tools.Concurrent
 import           EvoMod.Tools.Logger
-
 
 main :: IO ()
 main = do
@@ -66,7 +65,7 @@ simulate = do
   logNewSection "Arguments"
   logS $ reportArgs a
   logNewSection "Simulation"
-  logSDebug $ "Number of used cores: " ++ show c
+  logS $ "Number of used cores: " ++ show c
   trs <- if argsSubSample a
          then simulateAndSubSampleNTreesConcurrently c a
          else simulateNTreesConcurrently c a
@@ -79,37 +78,27 @@ simulate = do
     Just fn -> lift $ L.writeFile fn $ L.unlines ls
 
 simulateNTreesConcurrently :: Int -> Args -> Simulation [Tree PhyloIntLabel]
-simulateNTreesConcurrently c (Args t n h l m r _ _ _ _ s) = do
+simulateNTreesConcurrently c (Args nT nL h l m r _ _ _ _ s) = do
   let l' = l * r
       m' = m - l * (1.0 - r)
-  trsCon <- replicateConcurrently c (simulateNTrees (t `div` c) n h l' m' s)
-  trsRem <- simulateNTrees (t `mod` c) n h l' m' s
-  return $ concat trsCon ++ trsRem
+  gs <- lift $ getNGen c s
+  let chunks = getChunks c nT
+  trss <- mapConcurrently (\(n, g) -> simulateNReconstructedTrees n nL h l' m' g) (zip chunks gs)
+  return $ concat trss
 
 simulateAndSubSampleNTreesConcurrently :: Int -> Args -> Simulation [Tree PhyloIntLabel]
-simulateAndSubSampleNTreesConcurrently c (Args t n h l m r _ _ _ _ s) = do
-  let nLeaves = (ceiling $ fromIntegral t * r) :: Int
-  logS $ "Simulate one tree, and sub sample trees with " ++ show nLeaves ++ " trees."
-  tr <- simulateNTrees 1 n h l m s
-  -- TODO: Sub-sample.
-  return tr
-
-simulateNTrees :: Int -> Int -> Maybe Double -> Double -> Double
-               -> Maybe [Word32]
-               -> Simulation [Tree PhyloIntLabel]
-simulateNTrees t n mH l m s
-  | t <= 0 = return []
-  | otherwise = do
-      reportCapability
-      g <- lift $ maybe createSystemRandom (initialize . fromList) s
-      let f = simulateReconstructedTree n mH l m g
-      replicateM t f
-
-reportCapability :: Simulation ()
-reportCapability = do
-  i <- lift myThreadId
-  (c, _) <- lift $ threadCapability i
-  logSDebug $ "Running on core: " ++ show c
+simulateAndSubSampleNTreesConcurrently c (Args nT nL h l m r _ _ _ _ s) = do
+  let nLeavesBigTree = (round $ fromIntegral nL / r) :: Int
+  gs <- lift $ getNGen c s
+  let chunks = getChunks c nT
+  tr <- simulateReconstructedTree nLeavesBigTree h l m (head gs)
+  logNewSection $ "Simulate one big tree with " ++ show nLeavesBigTree ++ " leaves."
+  logLBS $ toNewickPhyloIntTree tr
+  logNewSection $ "Sub sample " ++ show nT ++ " trees with " ++ show nL ++ " leaves."
+  let lvs = Seq.fromList $ leaves tr
+  trss <- mapConcurrently (\(nSamples, g) -> nSubSamples nSamples lvs nL tr g) (zip chunks gs)
+  let trs = catMaybes $ concat trss
+  return $ map prune trs
 
 type Simulation = ReaderT Params IO
 

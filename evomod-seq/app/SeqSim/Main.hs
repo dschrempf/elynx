@@ -32,7 +32,6 @@ import           System.Random.MWC
 import           OptionsSeqSim
 import           ParsePhyloModel
 
-import           EvoMod.Options
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
 import           EvoMod.Data.MarkovProcess.MixtureModel
@@ -47,17 +46,12 @@ import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes   hiding
                                                                    (Parser)
 import           EvoMod.Import.Tree.Newick                        hiding (name)
+import           EvoMod.Options
 import           EvoMod.Simulate.MarkovProcessAlongTree
+import           EvoMod.Tools.Concurrent
 import           EvoMod.Tools.InputOutput
 import           EvoMod.Tools.Logger
 import           EvoMod.Tools.Misc
-
--- For a given number of capabilities and values, get the chunk sizes.
-getChunks :: Int -> Int -> [Int]
-getChunks c n = ns
-  where n'  = n `div` c
-        r = n `mod` c
-        ns = replicate r (n'+1) ++ replicate (c - r) n'
 
 -- Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.

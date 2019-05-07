@@ -37,13 +37,21 @@ module EvoMod.Data.Tree.Tree
   ( singleton
   , degree
   , leaves
-  -- , rootNodesAgreeWith
   , subTree
+  , subSample
+  , nSubSamples
   , pruneWith
   ) where
 
+import           Control.Monad
+import           Control.Monad.Primitive
 import           Data.Maybe
+import qualified Data.Sequence           as Seq
+import qualified Data.Set                as Set
 import           Data.Tree
+import           System.Random.MWC
+
+import           EvoMod.Tools.Random
 
 -- | The simplest tree. Usually an extant leaf.
 singleton :: a -> Tree a
@@ -79,12 +87,32 @@ subTree p (Node lbl chs) = if null subTrees
                            else Just $ Node lbl subTrees
   where subTrees = mapMaybe (subTree p) chs
 
+-- TODO: Probably move the sampling functions into their own module.
+-- | Extract a random sub tree with N leaves of a tree with M leaves, where M>N
+-- (otherwise error). The complete list of leaves (names are assumed to be
+-- unique) has to be provided as a 'Seq.Seq', and a 'Seq.Set', so that we have
+-- fast sub-sampling as well as lookup and don't have to recompute them when
+-- many sub-samples are requested.
+subSample :: (PrimMonad m, Ord a)
+  => Seq.Seq a -> Int -> Tree a -> Gen (PrimState m) -> m (Maybe (Tree a))
+subSample lvs n tree g
+  | Seq.length lvs < n = error "Given list of leaves is shorter than requested number of leaves."
+  | otherwise = do
+      sampledLeaves <- sample lvs n g
+      let leavesSet = Set.fromList sampledLeaves
+      return $ subTree (`Set.member` leavesSet) tree
+
+-- | See 'subSample', but n times.
+nSubSamples :: (PrimMonad m, Ord a)
+            => Int -> Seq.Seq a -> Int -> Tree a -> Gen (PrimState m) -> m [Maybe (Tree a)]
+nSubSamples nS lvs nL tree g = replicateM nS $ subSample lvs nL tree g
+
 -- | Prune degree 2 inner nodes. The information stored in a pruned node can be
 -- used to change the daughter node. To discard this information, use,
 -- @pruneWith const tree@, otherwise @pruneWith (\daughter parent -> combined)
 -- tree@.
 pruneWith :: (a -> a -> a) -> Tree a -> Tree a
-pruneWith _    n@(Node _ [])       = n
-pruneWith join   (Node paLbl [ch]) = let lbl = join (rootLabel ch) paLbl
-                                     in pruneWith join $ Node lbl (subForest ch)
-pruneWith _    n                   = n
+pruneWith _  n@(Node _ [])       = n
+pruneWith f    (Node paLbl [ch]) = let lbl = f (rootLabel ch) paLbl
+                                     in pruneWith f $ Node lbl (subForest ch)
+pruneWith f    (Node paLbl chs)  = Node paLbl (map (pruneWith f) chs)

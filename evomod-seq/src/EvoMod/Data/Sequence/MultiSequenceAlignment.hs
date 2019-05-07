@@ -48,9 +48,9 @@ import           EvoMod.Data.Alphabet.DistributionDiversity
 import           EvoMod.Data.Sequence.Defaults
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Tools.ByteString
+import           EvoMod.Tools.Concurrent
 import           EvoMod.Tools.Equality
 import           EvoMod.Tools.Matrix
-import           EvoMod.Tools.Misc
 
 -- | A collection of sequences.
 data MultiSequenceAlignment = MultiSequenceAlignment

@@ -33,6 +33,7 @@ module EvoMod.Data.Tree.PhyloTree
 
 import qualified Data.ByteString.Lazy.Builder    as L
 import qualified Data.ByteString.Lazy.Char8      as L
+import           Data.Function
 
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.NamedTree
@@ -41,7 +42,10 @@ import           EvoMod.Data.Tree.NamedTree
 -- 'Double' branch length.
 data PhyloLabel a = PhyloLabel { pLabel :: a
                                , pBrLen :: Double }
-                 deriving (Show, Eq)
+                 deriving (Read, Show, Eq)
+
+instance Ord a => Ord (PhyloLabel a) where
+  compare = compare `on` pLabel
 
 instance Measurable (PhyloLabel a) where
   getLen = pBrLen

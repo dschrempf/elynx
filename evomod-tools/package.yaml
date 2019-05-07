@@ -28,7 +28,7 @@ dependencies:
   # - async
   - base
   - bytestring
-  # - containers
+  - containers
   # - data-memocombinators
   - hmatrix
   # - integration
@@ -39,7 +39,7 @@ dependencies:
   - mwc-random
   - optparse-applicative
   - parallel
-  # - primitive
+  - primitive
   # - statistics
   - template-haskell
   - time
