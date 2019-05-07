@@ -29,23 +29,30 @@ import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8    as L
 import qualified Data.Set                      as S
 import           Data.Void
-import           Data.Word                     (Word8)
+import           Data.Word8
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Sequence.Sequence
-import           EvoMod.Tools.ByteString       (c2w, w2c)
+import           EvoMod.Tools.ByteString       (c2w)
 
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString
 
-allowedHeaderChar :: Parser Word8
-allowedHeaderChar = alphaNumChar <|> oneOf (map c2w ['_', '|', '.', '-'])
+isSpecial :: Word8 -> Bool
+isSpecial w = w `elem` (map c2w ['_', '|', '.', '-'])
+
+isHeaderChar :: Word8 -> Bool
+isHeaderChar w = isAlphaNum w || isSpecial w
 
 -- XXX: Allow description.
-sequenceHeader :: Parser [Word8]
-sequenceHeader = char (c2w '>') *> some allowedHeaderChar <* eol
+sequenceHeader :: Parser L.ByteString
+sequenceHeader = do
+  _ <- char (c2w '>')
+  h <- takeWhile1P (Just "Header character") isHeaderChar
+  _ <- eol
+  return h
 
 -- It is a little faster to directly pass the set of allowed characters. Then,
 -- this set only has to be calculcated once per sequence in 'fastaSequence'.
@@ -61,11 +68,10 @@ sequenceLine s = do
 -- | Parse a sequence of 'Alphabet' 'EvoMod.Data.Alphabet.Character's.
 fastaSequence :: Code -> Parser Sequence
 fastaSequence c = do hd <- sequenceHeader
-                     let hd' = L.pack $ map w2c hd
-                         !a  = fromAlphabetLookup $ alphabetLookup c
-                     cs <- some (sequenceLine a)
+                     let !a  = fromAlphabetLookup $ alphabetLookup c
+                     lns <- some (sequenceLine a)
                      _  <- many eol
-                     return $ Sequence hd' c (L.concat cs)
+                     return $ Sequence hd c (L.concat lns)
 
 -- | Parse a Fasta file assuming 'Code'.
 fasta :: Code -> Parser [Sequence]
