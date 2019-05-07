@@ -15,7 +15,9 @@ Monad that supports some basic logging features.
 -}
 
 module EvoMod.Tools.Logger
-  ( Logger (..)
+  (
+    -- * Logging
+    Logger (..)
   , logSWith
   , logSQuiet
   , logS
@@ -26,6 +28,8 @@ module EvoMod.Tools.Logger
   , logLBSDebug
   , setupLogger
   , closeLogger
+  -- * Helper functions
+  , logNewSection
   ) where
 
 import           Control.Monad
@@ -73,7 +77,7 @@ logS = logSWith Info
 
 -- | Only print 'String' to screen if verbosity level is 'Debug'.
 logSDebug :: Logger l => String -> ReaderT l IO ()
-logSDebug = logSWith Info
+logSDebug = logSWith Debug
 
 -- | See 'logSWith'; but for lazy byte strings.
 logLBSWith :: Logger l => Verbosity -> LC.ByteString -> ReaderT l IO ()
@@ -101,3 +105,6 @@ setupLogger _     (Just fn) = Just <$> openFile (fn ++ ".log") WriteMode
 closeLogger :: Maybe Handle -> IO ()
 -- It took me quite a while to find this out.
 closeLogger = mapM_ hClose
+
+logNewSection :: Logger l => String -> ReaderT l IO ()
+logNewSection h = logS $ "\n-- " ++ h

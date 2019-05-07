@@ -49,11 +49,6 @@ import           EvoMod.Simulate.PointProcess         (simulateReconstructedTree
 import           EvoMod.Tools.Logger
 
 
-newSection :: String -> String
-newSection h = unlines
-  [ ""
-  , "-- " ++ h ]
-
 main :: IO ()
 main = do
   a <- parseArgs
@@ -68,11 +63,13 @@ simulate = do
   c <- lift getNumCapabilities
   hdr <- lift programHeader
   logS hdr
-  logS $ newSection "Arguments"
+  logNewSection "Arguments"
   logS $ reportArgs a
-  logS $ newSection "Simulation"
+  logNewSection "Simulation"
   logSDebug $ "Number of used cores: " ++ show c
-  trs <- simulateNTreesConcurrently c a
+  trs <- if argsSubSample a
+         then simulateAndSubSampleNTreesConcurrently c a
+         else simulateNTreesConcurrently c a
   let ls = if s
            then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
            else parMap rpar toNewickPhyloIntTree trs
@@ -89,6 +86,14 @@ simulateNTreesConcurrently c (Args t n h l m r _ _ _ _ s) = do
   trsRem <- simulateNTrees (t `mod` c) n h l' m' s
   return $ concat trsCon ++ trsRem
 
+simulateAndSubSampleNTreesConcurrently :: Int -> Args -> Simulation [Tree PhyloIntLabel]
+simulateAndSubSampleNTreesConcurrently c (Args t n h l m r _ _ _ _ s) = do
+  let nLeaves = (ceiling $ fromIntegral t * r) :: Int
+  logS $ "Simulate one tree, and sub sample trees with " ++ show nLeaves ++ " trees."
+  tr <- simulateNTrees 1 n h l m s
+  -- TODO: Sub-sample.
+  return tr
+
 simulateNTrees :: Int -> Int -> Maybe Double -> Double -> Double
                -> Maybe [Word32]
                -> Simulation [Tree PhyloIntLabel]
@@ -99,26 +104,6 @@ simulateNTrees t n mH l m s
       g <- lift $ maybe createSystemRandom (initialize . fromList) s
       let f = simulateReconstructedTree n mH l m g
       replicateM t f
-
--- simulateNBranchLengthNChildrenConcurrently :: Int -> Args -> IO T.Text
--- simulateNBranchLengthNChildrenConcurrently c (Args t n h l m _ v _ s) = do
---   trsCon <- replicateConcurrently c (simulateNBranchLengthNChildren (t `div` c) n h l m v s)
---   trsRem <- simulateNBranchLengthNChildren (t `mod` c) n h l m v s
---   let trs = concat trsCon ++ trsRem
---       ls  = parMap rpar formatNChildSumStat trs
---   return $ T.unlines ls
-
-
--- simulateNBranchLengthNChildren :: Int -> Int -> Maybe Double -> Double -> Double -> Bool
---                                -> Maybe Int
---                                -> IO [[(Double, Int)]]
--- simulateNBranchLengthNChildren t n mH l m v s = do
---   when v reportCapability
---   g <- maybe createSystemRandom (initialize . singleton . fromIntegral) s
---   let f = case mH of
---             Nothing -> simulateBranchLengthNChildrenRandomHeight n l m g
---             Just h  -> simulateBranchLengthNChildren n h l m g
---   replicateM t f
 
 reportCapability :: Simulation ()
 reportCapability = do
