@@ -22,6 +22,8 @@ seq-sim.out.log
 seq-sim.out.model
 /scripts/iqtree-verify.*
 /scripts/module-dependencies-*
+/evomod-seq/data/BenchmarkEnsemblMouse.fa
+/evomod-seq/data/Profile.fa
 
 # IQ-TREE files.
 *.bionj

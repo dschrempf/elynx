@@ -40,7 +40,6 @@ import           EvoMod.Tools.ByteString       (c2w, w2c)
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString
 
-
 allowedHeaderChar :: Parser Word8
 allowedHeaderChar = alphaNumChar <|> oneOf (map c2w ['_', '|', '.', '-'])
 
@@ -63,8 +62,6 @@ sequenceLine s = do
 fastaSequence :: Code -> Parser Sequence
 fastaSequence c = do hd <- sequenceHeader
                      let hd' = L.pack $ map w2c hd
-                         -- The formation of the alphabet could be pulled into
-                         -- 'fasta'.
                          !a  = fromAlphabetLookup $ alphabetLookup c
                      cs <- some (sequenceLine a)
                      _  <- many eol
