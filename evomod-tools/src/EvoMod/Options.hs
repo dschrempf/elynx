@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 {- |
 Module      :  EvoMod.Options
 Description :  Global command line options and arguments.
@@ -27,8 +29,10 @@ module EvoMod.Options
 
 import           Data.List
 import           Data.Maybe
+import           Data.Time
 import           Data.Version                    (showVersion)
 import           Data.Word
+import           Language.Haskell.TH
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
 import           System.Environment
@@ -44,11 +48,21 @@ versionString = "EvoMod suite version " ++ showVersion version ++ "."
 copyrightString :: String
 copyrightString = "Developed by Dominik Schrempf."
 
+compilationString :: String
+compilationString = "Compiled on "
+                    ++ $(stringE =<< runIO
+                         ( formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, "
+                           `fmap` Data.Time.getCurrentTime ))
+                    ++ $(stringE =<< runIO
+                         ( show `fmap` Data.Time.getCurrentTimeZone ))
+                    ++ "."
+
 -- A short header to be used in executables. 'unlines' doesn't work here because
 -- it adds an additional newline at the end :(.
 hdr :: String
 hdr = intercalate "\n" [ versionString
                        , copyrightString
+                       , compilationString
                        ]
 
 description :: String
@@ -78,12 +92,13 @@ parseArgsWith md mf p = execParser $
   (fullDesc
     <> header hdr
     <> progDesc dsc'
+    -- <> footerDoc (Just . (vcat . map pretty) $ ftr'))
     <> footerDoc (Just . (vcat . map pretty) $ ftr'))
   where
     dsc' = maybe description (\d -> unlines $ d ++ [description]) md
     ftr' = fromMaybe [] mf
 
--- | Verbosity levels. Default is 'Info'.
+-- | Verbosity levels.
 data Verbosity = Quiet | Info | Debug
   deriving (Show, Read, Eq, Enum, Bounded, Ord)
 

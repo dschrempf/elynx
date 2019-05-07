@@ -32,19 +32,20 @@ data Command = Summarize
              | Analyze { drop :: Bool }
 
 data Args = Args
-  { argsCommand          :: Command
-  , argsCode             :: Code
+  {
+    argsCode             :: Code
   , argsMaybeFileNameOut :: Maybe FilePath
   , argsVerbosity        :: Verbosity
+  , argsCommand          :: Command
   , argsFileNames        :: [FilePath]
   }
 
 args :: Parser Args
 args = Args
-  <$> commandArg
-  <*> alphabetOpt
+  <$> alphabetOpt
   <*> optional fileNameOutOpt
   <*> verbosityOpt
+  <*> commandArg
   <*> some fileNameArg
 
 commandArg :: Parser Command

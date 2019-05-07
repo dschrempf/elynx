@@ -1,22 +1,15 @@
 #!/usr/bin/env bash
 
-# TODO.
-echo TODO. This has to be changed because packages have been split up!
-exit 0
+source include
 
-# source include
+dot_file_bn="${project_root}/scripts/module-dependencies"
 
-# cd "${project_root}" || exit 1
+for module in "${modules[@]}"
+do
+    cd "$module" || exit 1
+    module_bn=$(basename "$module")
+    graphmod -q -r Main \
+             . > "${dot_file_bn}-${module_bn}.dot" || exit 1
+done
 
-# dot_file="${project_root}/scripts/module-dependencies.dot"
-
-# graphmod -q \
-#          -r Main \
-#          -r ParseModuleString \
-#          -r EvoMod.ArgParse \
-#          -R EvoMod.Tools \
-#          -r EvoMod.Definitions \
-#          . > "$dot_file" \
-#     || exit 1
-
-# xdot "$dot_file"
+echo "Draw and analyze graphs with 'xdot'."

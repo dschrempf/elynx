@@ -38,13 +38,12 @@ import           EvoMod.Options             (Verbosity (..))
 
 -- | A logger knows if it has to be quiet and where it deposits more and less
 -- useful messages. It also comes with some convenience logging functions in the
--- ReaderT monad transformer. They can be used like this (assume @l@ is instance
--- of class 'Logger')
+-- ReaderT monad transformer. They can be used like this
 --
 -- @
 --   type MyLoggerReader = ReaderT l IO
 --
---   myFunc :: MyLoggerReader ()
+--   myFunc :: (Logger l) => ReaderT l IO ()
 --   myFunc = logS "Noooooo."
 -- @
 

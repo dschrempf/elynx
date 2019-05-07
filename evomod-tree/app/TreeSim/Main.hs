@@ -23,28 +23,29 @@ Elsevier BV, 2009, 261, 58-66
 
 module Main where
 
-import           Control.Concurrent           (getNumCapabilities, myThreadId,
-                                               threadCapability)
-import           Control.Concurrent.Async     (replicateConcurrently)
-import           Control.Monad                (replicateM, when)
+import           Control.Concurrent                   (getNumCapabilities,
+                                                       myThreadId,
+                                                       threadCapability)
+import           Control.Concurrent.Async.Lifted.Safe (replicateConcurrently)
+import           Control.Monad                        (replicateM)
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import           Control.Parallel.Strategies
-import qualified Data.ByteString.Lazy.Char8   as L
+import qualified Data.ByteString.Lazy.Char8           as L
 import           Data.Tree
-import           Data.Vector                  (fromList)
+import           Data.Vector                          (fromList)
 import           Data.Word
 import           System.IO
 import           System.Random.MWC
 
 import           OptionsTreeSim
 
-import           EvoMod.Data.Tree.PhyloTree   (PhyloIntLabel)
-import           EvoMod.Data.Tree.SumStat     (formatNChildSumStat,
-                                               toNChildSumStat)
-import           EvoMod.Export.Tree.Newick    (toNewickPhyloIntTree)
+import           EvoMod.Data.Tree.PhyloTree           (PhyloIntLabel)
+import           EvoMod.Data.Tree.SumStat             (formatNChildSumStat,
+                                                       toNChildSumStat)
+import           EvoMod.Export.Tree.Newick            (toNewickPhyloIntTree)
 import           EvoMod.Options
-import           EvoMod.Simulate.PointProcess (simulateReconstructedTree)
+import           EvoMod.Simulate.PointProcess         (simulateReconstructedTree)
 import           EvoMod.Tools.Logger
 
 
@@ -71,41 +72,31 @@ simulate = do
   logS $ reportArgs a
   logS $ newSection "Simulation"
   logSDebug $ "Number of used cores: " ++ show c
-  trs <- lift $ simulateNTreesConcurrently c a
+  trs <- simulateNTreesConcurrently c a
   let ls = if s
            then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
            else parMap rpar toNewickPhyloIntTree trs
-  -- TODO: Handle output file. Don't print actual output to screen then? Or how
-  -- do I want to handle this? This is a general question that affects all
-  -- EvoMod binaries.
-  logLBSQuiet $ L.unlines ls
+  let mfn = argsFileNameOut a
+  case mfn of
+    Nothing -> logLBSQuiet $ L.unlines ls
+    Just fn -> lift $ L.writeFile fn $ L.unlines ls
 
--- TODO: Handle output file; see comment above.
--- TODO: Support logging framework.
-simulateNTreesConcurrently :: Int -> Args -> IO [Tree PhyloIntLabel]
-simulateNTreesConcurrently c (Args t n h l m r _ v _ s) = do
-  -- when (l <= 0) (error "Speciation rate has to be larger than zero.")
-  -- when (m <= 0) (error "Extinction rate has to be larger than zero.")
-  -- when ((r <= 0) || (r > 1)) (error "Sampling probability has to in (0,1].")
+simulateNTreesConcurrently :: Int -> Args -> Simulation [Tree PhyloIntLabel]
+simulateNTreesConcurrently c (Args t n h l m r _ _ _ _ s) = do
   let l' = l * r
       m' = m - l * (1.0 - r)
-      v' = case v of
-        Quiet -> False
-        Info  -> False
-        Debug -> True
-  trsCon <- replicateConcurrently c (simulateNTrees (t `div` c) n h l' m' v' s)
-  trsRem <- simulateNTrees (t `mod` c) n h l' m' v' s
+  trsCon <- replicateConcurrently c (simulateNTrees (t `div` c) n h l' m' s)
+  trsRem <- simulateNTrees (t `mod` c) n h l' m' s
   return $ concat trsCon ++ trsRem
 
--- TODO: Support logging framework.
-simulateNTrees :: Int -> Int -> Maybe Double -> Double -> Double -> Bool
+simulateNTrees :: Int -> Int -> Maybe Double -> Double -> Double
                -> Maybe [Word32]
-               -> IO [Tree PhyloIntLabel]
-simulateNTrees t n mH l m v s
+               -> Simulation [Tree PhyloIntLabel]
+simulateNTrees t n mH l m s
   | t <= 0 = return []
   | otherwise = do
-      when v reportCapability
-      g <- maybe createSystemRandom (initialize . fromList) s
+      reportCapability
+      g <- lift $ maybe createSystemRandom (initialize . fromList) s
       let f = simulateReconstructedTree n mH l m g
       replicateM t f
 
@@ -129,11 +120,11 @@ simulateNTrees t n mH l m v s
 --             Just h  -> simulateBranchLengthNChildren n h l m g
 --   replicateM t f
 
-reportCapability :: IO ()
+reportCapability :: Simulation ()
 reportCapability = do
-  i <- myThreadId
-  (c, _) <- threadCapability i
-  putStrLn $ "Running on core: " ++ show c
+  i <- lift myThreadId
+  (c, _) <- lift $ threadCapability i
+  logSDebug $ "Running on core: " ++ show c
 
 type Simulation = ReaderT Params IO
 

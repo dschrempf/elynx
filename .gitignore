@@ -21,6 +21,7 @@ seq-sim.out
 seq-sim.out.log
 seq-sim.out.model
 /scripts/iqtree-verify.*
+/scripts/module-dependencies-*
 
 # IQ-TREE files.
 *.bionj

@@ -30,6 +30,7 @@ data Args = Args
   , argsLambda      :: Double -- ^ Birth rate.
   , argsMu          :: Double -- ^ Death rate.
   , argsRho         :: Double -- ^ Smapling rate.
+  , argsSubSample   :: Bool   -- ^ Perform actual sub-sampling.
   , argsSumStat     :: Bool   -- ^ Only print summary statistics?
   , argsVerbosity   :: Verbosity   -- ^ Verbosity.
   , argsFileNameOut :: Maybe FilePath
@@ -44,6 +45,7 @@ reportArgs a =
           , "Birth rate: " ++ show (argsLambda a)
           , "Death rate: " ++ show (argsMu a)
           , "Sampling probability: " ++ show (argsRho a)
+          , "Perform sub-sampling: " ++ show (argsSubSample a)
           , "Summary statistics only: " ++ show (argsSumStat a)
           , "Verbosity: " ++ show (argsVerbosity a)
           , "Output file name: " ++ show fStr
@@ -63,6 +65,7 @@ argsParser = Args
   <*> lambdaOpt
   <*> muOpt
   <*> rhoOpt
+  <*> subSampleOpt
   <*> sumStatOpt
   <*> verbosityOpt
   <*> optional fileNameOutOpt
@@ -120,6 +123,13 @@ rhoOpt = option auto
     <> value 1.0
     <> help "Sampling probability rho (default: 1.0)" )
 
+subSampleOpt :: Parser Bool
+subSampleOpt = switch
+  ( long "sub-sample"
+    <> short 'u'
+    <> showDefault
+    <> help "Perform sub-sampling; see below.")
+
 sumStatOpt :: Parser Bool
 sumStatOpt = switch
   ( long "summary-statistics"
@@ -136,8 +146,10 @@ hdr :: [String]
 hdr = ["Simulate reconstructed trees using the point process. See Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005"]
 
 ftr :: [String]
-ftr = [ "Height of Trees: If no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate."
-              , "Summary statistics only: Only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character."]
+ftr = [ "Height of Trees: if no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate."
+      , "Summary statistics only: only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character."
+      , "Sub-sampling: simulate one tree and randomly sub-sample sub-trees with n'=ceiling(n*rho), n'>0, leaves. Hence, with rho=1.0, the same tree is reported over and over again."
+      ]
 
 -- | The impure IO action that reads the arguments and prints out help if
 -- needed.

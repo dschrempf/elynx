@@ -41,6 +41,8 @@ dependencies:
   - parallel
   # - primitive
   # - statistics
+  - template-haskell
+  - time
   - transformers
   - vector
   # - word8

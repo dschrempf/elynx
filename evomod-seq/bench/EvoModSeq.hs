@@ -8,7 +8,7 @@ Portability :  portable
 
 Creation date: Mon Jan 28 08:46:48 2019.
 
-XXX: For now, it is easier to use a script.
+NOTE: For now, it is easier to use a script.
 
 -}
 

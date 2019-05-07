@@ -1,5 +1,9 @@
-XXX: I decided to not provide an option for reading from STDIN, since this is a
+NOTE: I decided to not provide an option for reading from STDIN, since this is a
 corner case and additionally because behavior might be undefined when more than
 one input file is given. When does one file end and the next one begin?
 
 TODO: Improve output of (mixture, gamma) models.
+
+XXX: Separate tree-lib from tree-sim?
+
+XXX: Separate seq-lib from seq-ana and seq-sim?

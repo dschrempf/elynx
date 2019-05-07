@@ -40,5 +40,11 @@ then
 fi
 export project_root
 
+# XXX: Doesn't work if paths include spaces.
+modules=()
+while IFS= read -r file; do
+    modules=("${modules[@]}" "$file")
+done < <(stack query | grep "path: $project_root" | cut -d " " -f 6)
+
 export prof_dir=".stack-work-profiling"
 export prod_dir=".stack-work-production"
