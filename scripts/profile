@@ -14,7 +14,7 @@
 
 source include
 
-ana() {
+seqana() {
     msg "Seq-Ana profiling run."
     file_profile="${project_root}/evomod-seq/data/BenchmarkEnsemblMouse.fa.gz"
     #file_profile="${project_root}/evomod-seq/data/Profile.fa.gz"
@@ -24,12 +24,19 @@ ana() {
     # +RTS -p -hy -l -s || exit 1
 }
 
-sim() {
+seqsim() {
     msg "Seq-Sim profiling run."
     file_tree="${project_root}/evomod-seq/data/Newick.tree"
     file_edm="${project_root}/evomod-seq/data/EDMDistsPhylobayes.txt"
     stack exec seq-sim --work-dir $prof_dir -- \
           -t "$file_tree" -o seq-sim.out -e "$file_edm" -m "EDM(LG-Custom)" -l 5000 -S [0] \
+          +RTS -p -hc -l -s || exit 1
+}
+
+treesim() {
+    msg "Tree-Sim profiling run."
+    stack exec tree-sim --work-dir $prof_dir -- \
+          -t 100 -n 100 -r 0.5 -u -o tree-sim.out -S [0] \
           +RTS -p -hc -l -s || exit 1
 }
 
@@ -41,14 +48,18 @@ graph() {
     done
 }
 
-if [[ $1 == "ana" ]]
+if [[ $1 == "seqana" ]]
 then
-    ana
-    graph
-elif [[ $1 == "sim" ]]
+    seqana
+elif [[ $1 == "seqsim" ]]
 then
-    sim
-    graph
+    seqsim
+elif [[ $1 == "treesim" ]]
+then
+    treesim
 else
-    echo "Usage: $(basename "$0") (ana|sim)"
+    echo "Usage: $(basename "$0") (seqana|seqsim|treesim)"
+    exit 1
 fi
+
+graph
