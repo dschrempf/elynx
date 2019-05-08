@@ -60,8 +60,7 @@ simulate = do
   a <- arguments <$> ask
   let s = argsSumStat a
   c <- lift getNumCapabilities
-  hdr <- lift programHeader
-  logS hdr
+  lift programHeader >>= logS
   logNewSection "Arguments"
   logS $ reportArgs a
   logNewSection "Simulation"
@@ -75,7 +74,9 @@ simulate = do
   let mfn = argsFileNameOut a
   case mfn of
     Nothing -> logLBSQuiet $ L.unlines ls
-    Just fn -> lift $ L.writeFile fn $ L.unlines ls
+    Just fn -> do
+      lift $ L.writeFile fn $ L.unlines ls
+      logS $ "Results written to file '" ++ fn ++ "'."
 
 simulateNTreesConcurrently :: Int -> Args -> Simulation [Tree PhyloIntLabel]
 simulateNTreesConcurrently c (Args nT nL h l m r _ _ _ _ s) = do

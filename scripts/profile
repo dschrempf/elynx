@@ -36,7 +36,7 @@ seqsim() {
 treesim() {
     msg "Tree-Sim profiling run."
     stack exec tree-sim --work-dir $prof_dir -- \
-          -t 100 -n 100 -r 0.5 -u -o tree-sim.out -S [0] \
+          -t 10 -n 3000 -r 0.5 -u -o tree-sim.out -S [0] \
           +RTS -p -hc -l -s || exit 1
 }
 

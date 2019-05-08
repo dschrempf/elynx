@@ -48,7 +48,7 @@ reportArgs a =
           , "Perform sub-sampling: " ++ show (argsSubSample a)
           , "Summary statistics only: " ++ show (argsSumStat a)
           , "Verbosity: " ++ show (argsVerbosity a)
-          , "Output file name: " ++ show fStr
+          , "Output file name: " ++ fStr
           , "Seed: " ++ sStr ]
   where hStr = case argsHeight a of Nothing -> "Random"
                                     Just h  -> show h

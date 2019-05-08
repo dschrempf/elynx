@@ -23,9 +23,11 @@ module EvoMod.Tools.Matrix
   , fMapColParChunk
   , (|||)
   , (===)
+  , subSampleMatrix
   ) where
 
 import           Control.Parallel.Strategies
+import           Data.List
 import qualified Data.Matrix.Storable        as M
 import qualified Data.Vector.Storable        as V
 
@@ -66,3 +68,7 @@ fMapColParChunk n f m = M.fromColumns (map f (M.toColumns m) `using` parListChun
   where
     lRs = M.toRows l
     rRs = M.toRows r
+
+-- Sample the given sites from a matrix.
+subSampleMatrix :: (V.Storable a) => [Int] -> M.Matrix a -> M.Matrix a
+subSampleMatrix is m = M.fromColumns $ foldl' (\a i -> M.takeColumn m i : a) [] is

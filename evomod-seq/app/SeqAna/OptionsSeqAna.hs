@@ -12,7 +12,6 @@ Creation date: Sun Oct  7 17:29:45 2018.
 
 -}
 
-
 module OptionsSeqAna
   ( Args (..)
   , Command (..)

@@ -34,14 +34,19 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , toFrequencyData
   , kEffAll
   , kEffMean
+  -- | * Sub sample
+  , subSample
+  , randomSubSample
   ) where
 
 import           Control.Lens
 import           Control.Monad
+import           Control.Monad.Primitive
 import qualified Data.ByteString.Lazy.Char8                 as L
 import qualified Data.Matrix.Storable                       as M
 import qualified Data.Vector.Storable                       as V
 import           Data.Word8                                 (Word8)
+import           System.Random.MWC
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Alphabet.DistributionDiversity
@@ -58,6 +63,7 @@ data MultiSequenceAlignment = MultiSequenceAlignment
   , _code   :: Code
   , _matrix :: M.Matrix Word8
   }
+  deriving (Read, Show, Eq)
 
 makeLenses ''MultiSequenceAlignment
 
@@ -196,3 +202,15 @@ kEffAll fd = parMapChunk 500 kEffEntropy (M.toColumns fd)
 kEffMean :: FrequencyData -> Double
 kEffMean = mean . kEffAll
   where mean xs = sum xs / fromIntegral (length xs)
+
+-- | Sample the given sites from a multi sequence alignment.
+subSample :: [Int] -> MultiSequenceAlignment -> MultiSequenceAlignment
+subSample is = over matrix (subSampleMatrix is)
+
+-- | Randomly sample a given number of sites of the multi sequence alignment.
+randomSubSample :: (PrimMonad m)
+          => Int -> MultiSequenceAlignment  -> Gen (PrimState m) -> m MultiSequenceAlignment
+randomSubSample n msa g = do
+  let l = msaLength msa
+  is <- replicateM n $ uniformR (0, l-1) g
+  return $ subSample is msa

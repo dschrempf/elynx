@@ -30,12 +30,12 @@ import           System.IO
 
 import           OptionsSeqAna
 
-import           EvoMod.Options
 import           EvoMod.Data.Sequence.Filter
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
+import           EvoMod.Options
 import           EvoMod.Tools.InputOutput
 import           EvoMod.Tools.Logger
 import           EvoMod.Tools.Misc
@@ -55,7 +55,6 @@ act Concatenate sss    = sequencesToFasta <$> concatenateSeqs sss
 act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
   where filters        = map (fromMaybe id) [ filterLongerThan <$> ml
                                     , filterShorterThan <$> ms ]
--- XXX: For now, columns including IUPAC characters are removed before analysis.
 act (Analyze dr) sss = Right . L.intercalate (L.pack "\n") $ map ana msas
   where msas = map fromSequenceList sss
         ana  = if dr
@@ -75,8 +74,7 @@ io (Right res) = do
 work :: Seq ()
 work = do
   args <- arguments <$> ask
-  header <- lift programHeader
-  logS header
+  lift programHeader >>= logS
   let c = argsCode args
   logS $ "Read fasta file(s); code " ++ show c ++ "."
   logS ""

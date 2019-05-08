@@ -12,7 +12,7 @@ Creation date: Thu Jan 17 09:57:29 2019.
 
 Comment about nomenclature:
 
-- In 'Data.Tree', a 'Tree' is defined as
+- In "Data.Tree", a 'Tree' is defined as
 
 @
 data Tree a = Node {
