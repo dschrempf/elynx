@@ -70,6 +70,7 @@ act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
 act (Examine dropFlag meanFlag) sss = Right . L.intercalate (L.pack "\n") $
   map (examine dropFlag meanFlag) msas
   where msas = map fromSequenceList sss
+-- act (SubSample nSites nSamples) = Right . L.inter
 
 io :: Either L.ByteString L.ByteString -> Seq ()
 io (Left  s)   = logLBS s

@@ -30,6 +30,8 @@ data Command = Summarize
                       , shorter :: Maybe Int}
              | Examine { drop :: Bool
                        , mean :: Bool }
+             | SubSample { nSites   :: Int
+                         , nSamples :: Int }
 
 data Args = Args
   {
@@ -53,7 +55,8 @@ commandArg = hsubparser $
   summarizeCommand <>
   concatenateCommand <>
   filterCommand <>
-  examineCommand
+  examineCommand <>
+  subSampleCommand
 
 summarizeCommand :: Mod CommandFields Command
 summarizeCommand = command "summarize" $
@@ -84,7 +87,7 @@ filterShorterThanOpt = optional $ option auto $
 examineCommand :: Mod CommandFields Command
 examineCommand = command "examine" $
   info (Examine <$> examineDropNonStandard <*> examineMean) $
-  progDesc "Examine columns of multi sequence alignments (error if sequences have different length)"
+  progDesc "Examine columns of multi sequence alignments"
 
 examineDropNonStandard :: Parser Bool
 examineDropNonStandard = switch $
@@ -95,6 +98,25 @@ examineMean :: Parser Bool
 examineMean = switch $
   long "mean"
   <> help "Only report mean values"
+
+subSampleCommand :: Mod CommandFields Command
+subSampleCommand = command "subsample" $
+  info (SubSample <$> subSampleNSites <*> subSampleNSamples) $
+  progDesc "Sub-sample columns from multi sequence alignments"
+
+subSampleNSites :: Parser Int
+subSampleNSites = option auto $
+  long "number-of-sites"
+  <> short 'n'
+  <> metavar "INT"
+  <> help "Number of sites to randomly sample with replacement"
+
+subSampleNSamples :: Parser Int
+subSampleNSamples = option auto $
+  long "number-of-samples"
+  <> short 'm'
+  <> metavar "INT"
+  <> help "Number of random sub-samples"
 
 alphabetOpt :: Parser Code
 alphabetOpt = option auto $
