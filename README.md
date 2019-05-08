@@ -13,9 +13,10 @@ EvoMod is written in [Haskell](https://www.haskell.org/) and can be installed
 with [Stack](https://docs.haskellstack.org/en/stable/README/).
 
 1. Install Stack with your package manager, or directly from the web page.
-```
-curl -sSL https://get.haskellstack.org/ | sh
-```
+
+   ```
+   curl -sSL https://get.haskellstack.org/ | sh
+   ```
 
 2. Clone the EvoMod repository.
 ```
