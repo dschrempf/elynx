@@ -110,21 +110,21 @@ maybeEDMFileOpt = optional $ strOption
   ( long "edm-file"
     <> short 'e'
     <> metavar "NAME"
-    <> help "empirical distribution model file NAME in Phylobayes format" )
+    <> help "Empirical distribution model file NAME in Phylobayes format" )
 
 maybeMixtureWeights :: Parser (Maybe [Double])
 maybeMixtureWeights = optional $ option auto
   ( long "mixture-model-weights"
     <> short 'w'
     <> metavar "[DOUBLE,DOUBLE,...]"
-    <> help "weights of mixture model components" )
+    <> help "Weights of mixture model components" )
 
 maybeGammaParams :: Parser (Maybe GammaRateHeterogeneityParams)
 maybeGammaParams = optional $ option auto
   ( long "gamma-rate-heterogeneity"
     <> short 'g'
     <> metavar "(NCAT, SHAPE)"
-    <> help "number of gamma rate categories and shape parameter" )
+    <> help "Number of gamma rate categories and shape parameter" )
 
 lengthOpt :: Parser Int
 lengthOpt = option auto

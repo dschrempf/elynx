@@ -21,14 +21,15 @@ module OptionsSeqAna
 import           Control.Applicative
 import           Options.Applicative
 
-import           EvoMod.Options
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Options
 
 data Command = Summarize
              | Concatenate
              | Filter { longer  :: Maybe Int
                       , shorter :: Maybe Int}
-             | Analyze { drop :: Bool }
+             | Examine { drop :: Bool
+                       , mean :: Bool }
 
 data Args = Args
   {
@@ -52,55 +53,60 @@ commandArg = hsubparser $
   summarizeCommand <>
   concatenateCommand <>
   filterCommand <>
-  analyzeCommand
+  examineCommand
 
 summarizeCommand :: Mod CommandFields Command
 summarizeCommand = command "summarize" $
-  info (pure Summarize) (progDesc "Summarize sequences found in input files")
+  info (pure Summarize) $ progDesc "Summarize sequences found in input files"
 
 concatenateCommand :: Mod CommandFields Command
 concatenateCommand = command "concatenate" $
-  info (pure Concatenate) (progDesc "Concatenate sequences found in input files")
+  info (pure Concatenate) $ progDesc "Concatenate sequences found in input files"
 
 filterCommand :: Mod CommandFields Command
 filterCommand = command "filter" $
   info (Filter <$> filterLongerThanOpt
-         <*> filterShorterThanOpt)
-  (progDesc "Filter sequences found in input files")
+         <*> filterShorterThanOpt) $
+  progDesc "Filter sequences found in input Files"
 
 filterLongerThanOpt :: Parser (Maybe Int)
-filterLongerThanOpt = optional $ option auto
-  ( long "longer-than"
-    <> metavar "LENGTH"
-    <> help "Only keep sequences longer than LENGTH" )
+filterLongerThanOpt = optional $ option auto $
+  long "longer-than"
+  <> metavar "LENGTH"
+  <> help "Only keep sequences longer than LENGTH"
 
 filterShorterThanOpt :: Parser (Maybe Int)
-filterShorterThanOpt = optional $ option auto
-  ( long "shorter-than"
-    <> metavar "LENGTH"
-    <> help "Only keep sequences shorter than LENGTH" )
+filterShorterThanOpt = optional $ option auto $
+  long "shorter-than"
+  <> metavar "LENGTH"
+  <> help "Only keep sequences shorter than LENGTH"
 
-analyzeCommand :: Mod CommandFields Command
-analyzeCommand = command "analyze" $
-  info (Analyze <$> analyzeDropNonStandard)
-  (progDesc "Analyze multi sequence alignments (error if sequences have different length)")
+examineCommand :: Mod CommandFields Command
+examineCommand = command "examine" $
+  info (Examine <$> examineDropNonStandard <*> examineMean) $
+  progDesc "Examine columns of multi sequence alignments (error if sequences have different length)"
 
-analyzeDropNonStandard :: Parser Bool
-analyzeDropNonStandard = switch
-  ( long "drop-non-standard"
-    <> help "Drop columns in alignment that contain non-standard characters such as gaps or IUPAC codes")
+examineDropNonStandard :: Parser Bool
+examineDropNonStandard = switch $
+  long "drop-non-standard"
+  <> help "Drop columns in alignment that contain non-standard characters such as gaps or IUPAC codes"
+
+examineMean :: Parser Bool
+examineMean = switch $
+  long "mean"
+  <> help "Only report mean values"
 
 alphabetOpt :: Parser Code
-alphabetOpt = option auto
-  ( long "alphabet"
-    <> short 'a'
-    <> metavar "NAME"
-    <> help "Specify alphabet type NAME" )
+alphabetOpt = option auto $
+  long "alphabet"
+  <> short 'a'
+  <> metavar "NAME"
+  <> help "Specify alphabet type NAME"
 
 fileNameArg :: Parser FilePath
-fileNameArg = argument str
-  ( metavar "INPUT-FILE-NAMES"
-    <> help "Read sequences from INPUT-FILE-NAMES" )
+fileNameArg = argument str $
+  metavar "INPUT-FILE-NAMES"
+  <> help "Read sequences from INPUT-FILE-NAMES"
 
 parseArgs :: IO Args
 parseArgs = parseArgsWith Nothing (Just ftr) args

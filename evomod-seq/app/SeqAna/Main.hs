@@ -49,17 +49,27 @@ instance Logger Params where
 
 type Seq = ReaderT Params IO
 
+-- examine drop mean msa
+examine :: Bool -> Bool -> MultiSequenceAlignment -> L.ByteString
+examine False False msa = L.pack "Effective number used states for all columns:\n"
+                          <> (L.pack . show . kEffAll . toFrequencyData) msa
+examine False True  msa = L.pack "Average effective number of used states:\n"
+                          <> (L.pack . show . kEffMean . toFrequencyData) msa
+examine True False  msa = L.pack "Effective number used states for columns"
+                          <> L.pack " not including IUPAC characters:\n"
+                          <> (L.pack . show . kEffAll . toFrequencyData . filterColumnsIUPAC) msa
+examine True True   msa = L.pack "Average effective number of used states:\n"
+                          <> (L.pack . show . kEffMean. toFrequencyData . filterColumnsIUPAC) msa
+
 act :: Command -> [[Sequence]] -> Either L.ByteString L.ByteString
 act Summarize sss      = Right . L.intercalate (L.pack "\n") $ map summarizeSequenceList sss
 act Concatenate sss    = sequencesToFasta <$> concatenateSeqs sss
 act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
   where filters        = map (fromMaybe id) [ filterLongerThan <$> ml
                                     , filterShorterThan <$> ms ]
-act (Analyze dr) sss = Right . L.intercalate (L.pack "\n") $ map ana msas
+act (Examine dropFlag meanFlag) sss = Right . L.intercalate (L.pack "\n") $
+  map (examine dropFlag meanFlag) msas
   where msas = map fromSequenceList sss
-        ana  = if dr
-               then L.pack . show . kEffAll . toFrequencyData . filterColumnsIUPAC
-               else L.pack . show . kEffAll . toFrequencyData
 
 io :: Either L.ByteString L.ByteString -> Seq ()
 io (Left  s)   = logLBS s
