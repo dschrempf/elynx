@@ -30,8 +30,8 @@ defSequenceSummaryLength = 60
 
 -- | How many sequences are shown in summary.
 defSequenceListSummaryNumber :: Int
-defSequenceListSummaryNumber = 100
+defSequenceListSummaryNumber = 200
 
 -- | Field width for tables.
 defFieldWidth :: Int
-defFieldWidth = 10
+defFieldWidth = 13

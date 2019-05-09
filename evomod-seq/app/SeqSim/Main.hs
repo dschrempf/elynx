@@ -100,7 +100,7 @@ instance Logger Params where
 reportModel :: PhyloModel -> Simulation ()
 reportModel m = do
   args <- arguments <$> ask
-  let fnOut = argsFileNameOut args
+  let fnOut = argsOutFileBaseName args
       modelFn = fnOut ++ ".model"
   -- TODO. Provide human readable model file.
   lift $ writeFile modelFn (show m)
@@ -154,13 +154,13 @@ simulate = do
                >> lift (initialize (V.fromList s))
   msa <- lift $ simulateMSA phyloModel tree alignmentLength gen
   let output = sequencesToFasta $ toSequenceList msa
-      outFile = argsFileNameOut args
+      outFile = argsOutFileBaseName args ++ ".fasta"
   lift $ L.writeFile outFile output
   logS ("Output written to file '" ++ outFile ++ "'.")
 
 main :: IO ()
 main = do
   a <- parseArgs
-  h <- setupLogger (argsVerbosity a) (Just $ argsFileNameOut a)
+  h <- setupLogger (argsVerbosity a) (Just $ argsOutFileBaseName a)
   runReaderT simulate (Params a h)
   closeLogger h

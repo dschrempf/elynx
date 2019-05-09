@@ -201,6 +201,10 @@ instance Bounded State where
 instance Character State where
   fromWord = toEnum . fromEnum
   toWord = toEnum . fromEnum
+  -- FIXME: This requires more thought. Are polymorphic characters standard?
+  isStandard _ = error "Requires more thought."
+  -- FIXME: This requires more work. (0,0,0,0) should be a gap!
+  isGapOrUnknown _ = error "Not implemented."
 
 valid :: State -> Bool
 valid (Bnd n _)

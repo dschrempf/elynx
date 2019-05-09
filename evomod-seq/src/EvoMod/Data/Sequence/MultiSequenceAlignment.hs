@@ -29,11 +29,13 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , msaConcatenate
   , msasConcatenate
   , filterColumnsIUPAC
+  , filterColumnsGapsUnknowns
   -- | * Analysis
   , FrequencyData
   , toFrequencyData
-  , kEffAll
-  , kEffMean
+  , kEff
+  , countStandardChars
+  , countGapOrUnknownChars
   -- | * Sub sample
   , subSample
   , randomSubSample
@@ -79,7 +81,7 @@ msaNSequences = M.rows . view matrix
 fromSequenceList :: [Sequence] -> MultiSequenceAlignment
 fromSequenceList ss
   | equalLength ss && allEqual (map (view seqCode) ss) = MultiSequenceAlignment ns cd d
-  | otherwise = error "Sequences do not have equal length."
+  | otherwise = error "Sequences do not have equal length or equal codes."
   where
     ns   = map (view seqName) ss
     cd   = head ss ^. seqCode
@@ -183,8 +185,11 @@ filterColumns p = over matrix (M.fromColumns . filter p . M.toColumns)
 -- | Only keep columns with standard characters. Alignment columns with IUPAC
 -- characters are removed.
 filterColumnsIUPAC :: MultiSequenceAlignment -> MultiSequenceAlignment
-filterColumnsIUPAC msa = filterColumns (V.all $ inAlphabet c) msa
-  where c = fromIUPAC $ msa ^. code
+filterColumnsIUPAC msa = filterColumns (V.all (`isStandardW` (msa^.code))) msa
+
+-- | Only keep columns without gaps or unknown characters.
+filterColumnsGapsUnknowns :: MultiSequenceAlignment -> MultiSequenceAlignment
+filterColumnsGapsUnknowns msa = filterColumns (V.all (`isGapOrUnknownW` (msa^.code))) msa
 
 -- | Frequency data; do not store the actual characters, but only their
 -- frequencies.
@@ -195,13 +200,21 @@ toFrequencyData :: MultiSequenceAlignment -> FrequencyData
 toFrequencyData (MultiSequenceAlignment _ c d) = fMapColParChunk 100 (frequencyCharacters c) d
 
 -- | Diversity analysis. See 'kEffEntropy'.
-kEffAll :: FrequencyData -> [Double]
-kEffAll fd = parMapChunk 500 kEffEntropy (M.toColumns fd)
+kEff :: FrequencyData -> [Double]
+kEff fd = parMapChunk 500 kEffEntropy (M.toColumns fd)
 
--- | Diversity analysis. See 'kEffEntropy'.
-kEffMean :: FrequencyData -> Double
-kEffMean = mean . kEffAll
-  where mean xs = sum xs / fromIntegral (length xs)
+-- | Count the number of standard (i.e., not extended IUPAC) characters in the
+-- alignment.
+countStandardChars :: MultiSequenceAlignment -> Int
+countStandardChars msa = V.length . V.filter (==True) . (`areStandardW` cd) $ allChars
+  where allChars = M.flatten $ msa^.matrix
+        cd       = msa^.code
+
+-- | Count the number of gaps or unknown characters in the alignment.
+countGapOrUnknownChars :: MultiSequenceAlignment -> Int
+countGapOrUnknownChars msa = V.length . V.filter (== True) . (`areGapOrUnknownW` cd) $ allChars
+  where allChars = M.flatten $ msa^.matrix
+        cd       = msa^.code
 
 -- | Sample the given sites from a multi sequence alignment.
 subSample :: [Int] -> MultiSequenceAlignment -> MultiSequenceAlignment

@@ -24,7 +24,7 @@ module EvoMod.Options
   , Verbosity (..)
   , verbosityOpt
   , seedOpt
-  , fileNameOutOpt
+  , outFileBaseNameOpt
   ) where
 
 import           Data.List
@@ -51,11 +51,8 @@ copyrightString = "Developed by Dominik Schrempf."
 compilationString :: String
 compilationString = "Compiled on "
                     ++ $(stringE =<< runIO
-                         ( formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, "
+                         ( formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z."
                            `fmap` Data.Time.getCurrentTime ))
-                    ++ $(stringE =<< runIO
-                         ( show `fmap` Data.Time.getCurrentTimeZone ))
-                    ++ "."
 
 -- A short header to be used in executables. 'unlines' doesn't work here because
 -- it adds an additional newline at the end :(.
@@ -134,9 +131,9 @@ seedOpt = optional $ option auto
              ++ "list of 32 bit integers with up to 256 elements (default: random)" ) )
 
 -- | Output filename.
-fileNameOutOpt :: Parser FilePath
-fileNameOutOpt = strOption
-  ( long "output-file"
+outFileBaseNameOpt :: Parser FilePath
+outFileBaseNameOpt = strOption
+  ( long "output-file-basename"
     <> short 'o'
     <> metavar "NAME"
-    <> help "Specify output file NAME")
+    <> help "Specify base name of output file")

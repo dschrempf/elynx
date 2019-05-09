@@ -35,6 +35,10 @@ module EvoMod.Data.Alphabet.Alphabet
   , indicesToCharacters
   , fromIUPAC
   , charFromIUPAC
+  , isStandardW
+  , areStandardW
+  , isGapOrUnknownW
+  , areGapOrUnknownW
   ) where
 
 import qualified Data.MemoCombinators            as Memo
@@ -94,8 +98,8 @@ alphabetLookup = Memo.enum alphabetLookup'
 
 -- | For a given code, check if character is in alphabet. Although sets and
 -- memoization is used, a direct check with 'S.member' is faster!
-inAlphabet :: Code -> Word8 -> Bool
-inAlphabet code char = toUpper char `S.member` fromAlphabetLookup (alphabetLookup code)
+inAlphabet :: Word8 -> Code -> Bool
+inAlphabet char code = toUpper char `S.member` fromAlphabetLookup (alphabetLookup code)
 
 -- | Number of characters. Since for IUPAC codes, the cardinality is not
 -- directly related to the number of characters in the alphabet, we have to set
@@ -128,9 +132,41 @@ fromIUPAC DNAIUPAC     = DNA
 fromIUPAC Protein      = Protein
 fromIUPAC ProteinIUPAC = Protein
 
+-- -- | Check if code contains extnded IUPAC chracter set.
+-- isIUPACCode :: Code -> Bool
+-- isIUPACCode DNA          = False
+-- isIUPACCode DNAIUPAC     = True
+-- isIUPACCode Protein      = False
+-- isIUPACCode ProteinIUPAC = True
+
 -- | Convert from IUPAC character.
 charFromIUPAC :: Code -> Word8 -> [Word8]
 charFromIUPAC DNA          char = [char]
 charFromIUPAC DNAIUPAC     char = map toWord $ fromIUPACNucleotide (fromWord char :: NucleotideIUPAC)
 charFromIUPAC Protein      char = [char]
 charFromIUPAC ProteinIUPAC char = map toWord $ fromIUPACAminoAcid (fromWord char :: AminoAcidIUPAC)
+
+-- | Is the character c a standard character, then @isStandard c@ is @True@, or
+-- an extended IUPAC character, then @isStandard c@ is @False@. This will not be
+-- too fast for many comparisons because the code has to be converted to the
+-- non-IUPAC equivalent for each comparison; use 'areStandardW'.
+isStandardW :: Word8 -> Code -> Bool
+isStandardW char code = char `inAlphabet` fromIUPAC code
+
+-- | See 'isStandardW' but for many characters.
+areStandardW :: V.Vector Word8 -> Code -> V.Vector Bool
+areStandardW chars code = V.map (`inAlphabet` codeNonIUPAC) chars
+  where codeNonIUPAC = fromIUPAC code
+
+-- | Check if character is a gap (usually @-@), or an unknown character (usually
+-- @N@).
+isGapOrUnknownW :: Word8 -> Code -> Bool
+isGapOrUnknownW _ DNA             = False
+isGapOrUnknownW char DNAIUPAC     = isGapOrUnknown (fromWord char :: NucleotideIUPAC)
+isGapOrUnknownW _ Protein         = False
+isGapOrUnknownW char ProteinIUPAC = isGapOrUnknown (fromWord char :: AminoAcidIUPAC)
+
+-- | Check if characters are gaps (usually @-@), or an unknown characters
+-- (usually @N@).
+areGapOrUnknownW :: V.Vector Word8 -> Code -> V.Vector Bool
+areGapOrUnknownW chars code = V.map (`isGapOrUnknownW` code) chars

@@ -52,8 +52,10 @@ nucleotideToWord G = c2w 'G'
 nucleotideToWord T = c2w 'T'
 
 instance Character Nucleotide where
-  fromWord = wordToNucleotide
-  toWord   = nucleotideToWord
+  fromWord         = wordToNucleotide
+  toWord           = nucleotideToWord
+  isStandard _     = True
+  isGapOrUnknown _ = False
 
 -- | Nucleotides with IUPAC code (ordering according to list on Wikipedia).
 --
@@ -128,9 +130,23 @@ nucleotideIUPACToWord N       = c2w 'N'
 nucleotideIUPACToWord Z       = c2w 'Z'
 nucleotideIUPACToWord Gap     = c2w '-'
 
+nucleotideIUPACIsStandard :: NucleotideIUPAC -> Bool
+nucleotideIUPACIsStandard A_IUPAC = True
+nucleotideIUPACIsStandard C_IUPAC = True
+nucleotideIUPACIsStandard G_IUPAC = True
+nucleotideIUPACIsStandard T_IUPAC = True
+nucleotideIUPACIsStandard _       = False
+
+nucleotideIUPACIsGapOrUnknown :: NucleotideIUPAC -> Bool
+nucleotideIUPACIsGapOrUnknown N   = True
+nucleotideIUPACIsGapOrUnknown Gap = True
+nucleotideIUPACIsGapOrUnknown _   = False
+
 instance Character NucleotideIUPAC where
-  fromWord = wordToNucleotideIUPAC
-  toWord   = nucleotideIUPACToWord
+  fromWord       = wordToNucleotideIUPAC
+  toWord         = nucleotideIUPACToWord
+  isStandard     = nucleotideIUPACIsStandard
+  isGapOrUnknown = nucleotideIUPACIsGapOrUnknown
 
 -- | Convert IUPAC code to set of normal nucleotides.
 fromIUPACNucleotide :: NucleotideIUPAC -> [Nucleotide]

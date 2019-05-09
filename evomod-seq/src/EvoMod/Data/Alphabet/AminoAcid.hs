@@ -82,8 +82,10 @@ aminoAcidToWord  W = c2w 'W'
 aminoAcidToWord  Y = c2w 'Y'
 
 instance Character AminoAcid where
-  fromWord = wordToAminoAcid
-  toWord   = aminoAcidToWord
+  fromWord         = wordToAminoAcid
+  toWord           = aminoAcidToWord
+  isStandard _     = True
+  isGapOrUnknown _ = False
 
 -- | Amino acids IUPAC type; normal amino acids in alphabetical order; then
 -- IUPAC codes in alphabetical order.
@@ -154,7 +156,7 @@ wordToAminoAcidIUPAC w | w' == c2w 'A' = A_IUPAC
   where w' = toUpper w
 
 -- | And writing is also interesting.
-aminoAcidIUPACToWord :: AminoAcidIUPAC-> Word8
+aminoAcidIUPACToWord :: AminoAcidIUPAC -> Word8
 aminoAcidIUPACToWord A_IUPAC = c2w 'A'
 aminoAcidIUPACToWord C_IUPAC = c2w 'C'
 aminoAcidIUPACToWord D_IUPAC = c2w 'D'
@@ -180,9 +182,39 @@ aminoAcidIUPACToWord X       = c2w 'X'
 aminoAcidIUPACToWord Z       = c2w 'Z'
 aminoAcidIUPACToWord Gap     = c2w '-'
 
+aminoAcidIUPACIsStandard :: AminoAcidIUPAC -> Bool
+aminoAcidIUPACIsStandard A_IUPAC = True
+aminoAcidIUPACIsStandard C_IUPAC = True
+aminoAcidIUPACIsStandard D_IUPAC = True
+aminoAcidIUPACIsStandard E_IUPAC = True
+aminoAcidIUPACIsStandard F_IUPAC = True
+aminoAcidIUPACIsStandard G_IUPAC = True
+aminoAcidIUPACIsStandard H_IUPAC = True
+aminoAcidIUPACIsStandard I_IUPAC = True
+aminoAcidIUPACIsStandard K_IUPAC = True
+aminoAcidIUPACIsStandard L_IUPAC = True
+aminoAcidIUPACIsStandard M_IUPAC = True
+aminoAcidIUPACIsStandard N_IUPAC = True
+aminoAcidIUPACIsStandard P_IUPAC = True
+aminoAcidIUPACIsStandard Q_IUPAC = True
+aminoAcidIUPACIsStandard R_IUPAC = True
+aminoAcidIUPACIsStandard S_IUPAC = True
+aminoAcidIUPACIsStandard T_IUPAC = True
+aminoAcidIUPACIsStandard V_IUPAC = True
+aminoAcidIUPACIsStandard W_IUPAC = True
+aminoAcidIUPACIsStandard Y_IUPAC = True
+aminoAcidIUPACIsStandard _       = False
+
+aminoAcidIUPACIsGapOrUnknown :: AminoAcidIUPAC -> Bool
+aminoAcidIUPACIsGapOrUnknown Gap = True
+aminoAcidIUPACIsGapOrUnknown X   = True
+aminoAcidIUPACIsGapOrUnknown _   = False
+
 instance Character AminoAcidIUPAC where
-  fromWord = wordToAminoAcidIUPAC
-  toWord   = aminoAcidIUPACToWord
+  fromWord       = wordToAminoAcidIUPAC
+  toWord         = aminoAcidIUPACToWord
+  isStandard     = aminoAcidIUPACIsStandard
+  isGapOrUnknown = aminoAcidIUPACIsGapOrUnknown
 
 -- | Convert IUPAC code to set of normal amino acids.
 fromIUPACAminoAcid :: AminoAcidIUPAC -> [AminoAcid]

@@ -22,11 +22,16 @@ TODO: Use Quiet, Info, Debug.
 
 module Main where
 
+import           Control.Monad
+import           Control.Monad.Primitive
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8                  as L
 import           Data.Maybe                                  (fromMaybe)
+import qualified Data.Vector                                 as V
 import           System.IO
+import           System.Random.MWC
+import           Text.Printf
 
 import           OptionsSeqAna
 
@@ -36,6 +41,7 @@ import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Options
+import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.InputOutput
 import           EvoMod.Tools.Logger
 import           EvoMod.Tools.Misc
@@ -49,38 +55,100 @@ instance Logger Params where
 
 type Seq = ReaderT Params IO
 
--- examine drop mean msa
-examine :: Bool -> Bool -> MultiSequenceAlignment -> L.ByteString
-examine False False msa = L.pack "Effective number used states for all columns:\n"
-                          <> (L.pack . show . kEffAll . toFrequencyData) msa
-examine False True  msa = L.pack "Average effective number of used states:\n"
-                          <> (L.pack . show . kEffMean . toFrequencyData) msa
-examine True False  msa = L.pack "Effective number used states for columns"
-                          <> L.pack " not including IUPAC characters:\n"
-                          <> (L.pack . show . kEffAll . toFrequencyData . filterColumnsIUPAC) msa
-examine True True   msa = L.pack "Average effective number of used states:\n"
-                          <> (L.pack . show . kEffMean. toFrequencyData . filterColumnsIUPAC) msa
+examineSequences :: Bool -> [Sequence] -> L.ByteString
+examineSequences perSiteFlag ss
+  | equalLength ss = summarizeSequenceList ss
+                     <> L.pack "\n"
+                     <> examineMSA perSiteFlag (fromSequenceList ss)
+  | otherwise      = summarizeSequenceList ss
 
-act :: Command -> [[Sequence]] -> Either L.ByteString L.ByteString
-act Summarize sss      = Right . L.intercalate (L.pack "\n") $ map summarizeSequenceList sss
-act Concatenate sss    = sequencesToFasta <$> concatenateSeqs sss
-act (Filter ml ms) sss = Right . sequencesToFasta $ compose filters $ concat sss
+examineMSA :: Bool -> MultiSequenceAlignment -> L.ByteString
+examineMSA perSiteFlag msa =
+  L.unlines [ L.pack $ "Total number of columns in alignment: "
+              ++ show (msaLength msa)
+            , L.pack $ "Number of columns without gaps or unknown characters: "
+              ++ show (msaLength msaFltGaps)
+            , L.pack $ "Number of columns without extended IUPAC characters: "
+              ++ show (msaLength msaFltIUPAC)
+            , L.empty
+            , L.pack $ "Total chars: " ++ show nTot
+            , L.pack $ "Standard (i.e., not extended IUPAC) characters: " ++ show nNonStd
+            , L.pack $ "Non-standard (i.e., extended IUPAC) characters: " ++ show (nTot - nNonStd)
+            , L.pack $ "Gaps or unknown characters: " ++ show nGaps
+            , L.pack $ "Percentage of standard characters: "
+              ++ printf "%.3f" percentageNonStd
+            , L.pack $ "Percentage of non-standard characters: "
+              ++ printf "%.3f" (1.0 - percentageNonStd)
+            , L.pack $ "Percentage of gaps or unknown characters: "
+              ++ printf "%.3f" percentageGaps
+            , L.empty
+            , L.pack "Mean effective number of used states:"
+            , L.pack "Across whole alignment: "
+              <> L.pack (show kEffMean)
+            , L.pack "Across columns without extended IUPAC characters: "
+              <> L.pack (show kEffMeanFltIUPAC)
+            , L.pack "Across columns without gaps or unknown characters: "
+              <> L.pack (show kEffMeanFltGaps)
+            ]
+  <> perSiteBS
+  where
+    nTot                = msaLength msa * msaNSequences msa
+    nNonStd             = countStandardChars msa
+    nGaps               = countGapOrUnknownChars msa
+    percentageNonStd    = fromIntegral nNonStd / fromIntegral nTot :: Double
+    percentageGaps      = fromIntegral nGaps   / fromIntegral nTot :: Double
+    msaFltGaps          = filterColumnsGapsUnknowns msa
+    msaFltIUPAC         = filterColumnsIUPAC msaFltGaps
+    kEffs               = kEff . toFrequencyData $ msa
+    kEffsFltGaps        = kEff . toFrequencyData $ msaFltGaps
+    kEffsFltIUPAC       = kEff . toFrequencyData $ msaFltIUPAC
+    kEffMean            = sum kEffs / fromIntegral (length kEffs)
+    kEffMeanFltGaps     = sum kEffsFltGaps  / fromIntegral (length kEffsFltGaps)
+    kEffMeanFltIUPAC    = sum kEffsFltIUPAC / fromIntegral (length kEffsFltIUPAC)
+    perSiteBS           = if perSiteFlag
+                          then L.unlines [ L.pack "Effective number of used states per site:"
+                                         , L.pack . show $ kEffs
+                                         ]
+                          else L.empty
+
+-- subsample nSites nSamples msa gen
+subsample :: (PrimMonad m)
+          => Int -> Int -> MultiSequenceAlignment -> Gen (PrimState m) -> m [MultiSequenceAlignment]
+subsample n m msa g = replicateM m $ randomSubSample n msa g
+
+act :: Command -> [[Sequence]] -> Seq ()
+-- act Summarize sss      = io $ L.intercalate (L.pack "\n") $ map summarizeSequenceList sss
+act (Examine perSiteFlag) sss = io $ L.intercalate (L.pack "\n") $
+  map (examineSequences perSiteFlag) sss
+act Concatenate sss    = io $ sequencesToFasta $ concatenateSeqs sss
+act (Filter ml ms) sss = io $ sequencesToFasta $ compose filters $ concat sss
   where filters        = map (fromMaybe id) [ filterLongerThan <$> ml
                                     , filterShorterThan <$> ms ]
-act (Examine dropFlag meanFlag) sss = Right . L.intercalate (L.pack "\n") $
-  map (examine dropFlag meanFlag) msas
-  where msas = map fromSequenceList sss
--- act (SubSample nSites nSamples) = Right . L.inter
-
-io :: Either L.ByteString L.ByteString -> Seq ()
-io (Left  s)   = logLBS s
-io (Right res) = do
-  mFileOut <- argsMaybeFileNameOut . arguments <$> ask
+act (SubSample n m ms) sss = do
+  when (length sss > 1) $ error "can only sub-sample from one input file"
+  g <- lift $ maybe createSystemRandom (initialize . V.fromList) ms
+  let msa = fromSequenceList $ head sss
+  samples <- subsample n m msa g
+  let files = map (sequencesToFasta . toSequenceList) samples
+  mFileOut <- argsMaybeOutFileBaseName . arguments <$> ask
   case mFileOut of
+    Nothing -> logLBSQuiet $ L.intercalate (L.pack "\n") files
+    Just fn -> do
+      let nDigits    = ceiling $ logBase (10 :: Double) (fromIntegral m)
+          digitStr i = L.unpack $ alignRightWith '0' nDigits (L.pack $ show i)
+          fns = [ fn ++ digitStr i ++ ".fasta" | i <- [0 .. m-1] ]
+      lift $ mapM_ (\i -> withFile (fns!!i) WriteMode (`L.hPutStr` (files!!i))) [0 .. m-1]
+      logS $ "Results written to files with basename '" ++ fn ++ "'."
+
+io :: L.ByteString -> Seq ()
+io res = do
+  mOutFileBaseName <- argsMaybeOutFileBaseName . arguments <$> ask
+  case mOutFileBaseName of
     Nothing -> logLBSQuiet res
     Just fn -> do
-      lift $ withFile fn WriteMode (`L.hPutStr` res)
-      logS $ "Results written to file '" ++ fn ++ "'."
+      let fn' = fn ++ ".out"
+      lift $ withFile fn' WriteMode (`L.hPutStr` res)
+      logS $ "Results written to file '" ++ fn' ++ "'."
 
 work :: Seq ()
 work = do
@@ -92,12 +160,11 @@ work = do
   let fns = argsFileNames args
   -- 'sss' is a little weird, but it is a list of a list of sequences.
   sss <- lift $ sequence $ parseFileWith (fasta c) <$> fns
-  let eRes = act (argsCommand args) sss
-  io eRes
+  act (argsCommand args) sss
 
 main :: IO ()
 main = do
   a <- parseArgs
-  h <- setupLogger (argsVerbosity a) (argsMaybeFileNameOut a)
+  h <- setupLogger (argsVerbosity a) (argsMaybeOutFileBaseName a)
   runReaderT work (Params a h)
   closeLogger h

@@ -33,6 +33,7 @@ sequenceToFasta :: Sequence -> L.ByteString
 sequenceToFasta s = L.unlines [ fastaHeader i , cs ]
   where (i, cs) = fromSequence s
 
+-- XXX: Remove newline between sequences.
 -- | Convert a list 'Sequence's to Fasta format. A newline is added between any
 -- two 'Sequence's.
 sequencesToFasta :: [Sequence] -> L.ByteString

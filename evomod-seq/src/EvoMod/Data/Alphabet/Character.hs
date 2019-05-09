@@ -14,9 +14,17 @@ See header of 'EvoMod.Data.Alphabet.Alphabet'.
 
 -}
 
+-- TODO: I have to change the basic type classes. It feels like I have to
+-- implement everything twice. See *W functions in
+-- "EvoMod.Data.Alphabet.Alphabet".
+
+-- Somehow, IUPAC characters should be separated from 'Character'. But then,
+-- function definitions require a CharacterIUPAC constraint, and cannot be used
+-- for normal Characters.
 
 module EvoMod.Data.Alphabet.Character
   ( Character (..)
+  -- , CharacterIUPAC (..)
   ) where
 
 import           Data.Word8 (Word8)
@@ -29,3 +37,17 @@ import           Data.Word8 (Word8)
 class (Enum a, Bounded a) => Character a where
   fromWord :: Word8 -> a
   toWord   :: a -> Word8
+  -- This should probably go into its own type class, but then everything is
+  -- more complicated.
+  isStandard :: a -> Bool
+  isGapOrUnknown :: a -> Bool
+
+  isIUPACChar :: a -> Bool
+  isIUPACChar = not . isStandard
+
+-- class (Enum a, Bounded a, Character a) => CharacterIUPAC a where
+--   isStandard :: a -> Bool
+--   isGapOrUnknown :: a -> Bool
+
+--   isIUPACChar :: a -> Bool
+--   isIUPACChar = not . isStandard

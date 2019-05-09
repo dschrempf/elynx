@@ -51,7 +51,7 @@ import           EvoMod.Tools.Logger
 main :: IO ()
 main = do
   a <- parseArgs
-  h <- setupLogger (argsVerbosity a) (argsFileNameOut a)
+  h <- setupLogger (argsVerbosity a) (argsOutFileBaseName a)
   runReaderT simulate (Params a h)
   closeLogger h
 
@@ -71,12 +71,13 @@ simulate = do
   let ls = if s
            then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
            else parMap rpar toNewickPhyloIntTree trs
-  let mfn = argsFileNameOut a
+  let mfn = argsOutFileBaseName a
   case mfn of
     Nothing -> logLBSQuiet $ L.unlines ls
     Just fn -> do
-      lift $ L.writeFile fn $ L.unlines ls
-      logS $ "Results written to file '" ++ fn ++ "'."
+      let fn' = fn ++ ".tree"
+      lift $ L.writeFile fn' $ L.unlines ls
+      logS $ "Results written to file '" ++ fn' ++ "'."
 
 simulateNTreesConcurrently :: Int -> Args -> Simulation [Tree PhyloIntLabel]
 simulateNTreesConcurrently c (Args nT nL h l m r _ _ _ _ s) = do

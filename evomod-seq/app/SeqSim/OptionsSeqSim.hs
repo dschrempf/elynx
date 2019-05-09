@@ -68,7 +68,7 @@ data Args = Args
   , argsLength                       :: Int
   , argsMaybeSeed                    :: Maybe [Word32]
   , argsVerbosity                    :: Verbosity
-  , argsFileNameOut                  :: FilePath
+  , argsOutFileBaseName              :: FilePath
   }
 
 args :: Parser Args
@@ -82,7 +82,7 @@ args = Args
   <*> lengthOpt
   <*> seedOpt
   <*> verbosityOpt
-  <*> fileNameOutOpt
+  <*> outFileBaseNameOpt
 
 treeFileOpt :: Parser FilePath
 treeFileOpt = strOption

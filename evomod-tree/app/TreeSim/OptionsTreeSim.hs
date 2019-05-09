@@ -24,17 +24,17 @@ import           Options.Applicative
 import           EvoMod.Options
 
 data Args = Args
-  { argsNTrees      :: Int    -- ^ Simulated trees.
-  , argsNLeaves     :: Int    -- ^ Number of leaves.
-  , argsHeight      :: Maybe Double -- ^ Tree height (time to origin).
-  , argsLambda      :: Double -- ^ Birth rate.
-  , argsMu          :: Double -- ^ Death rate.
-  , argsRho         :: Double -- ^ Smapling rate.
-  , argsSubSample   :: Bool   -- ^ Perform actual sub-sampling.
-  , argsSumStat     :: Bool   -- ^ Only print summary statistics?
-  , argsVerbosity   :: Verbosity   -- ^ Verbosity.
-  , argsFileNameOut :: Maybe FilePath
-  , argsSeed        :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
+  { argsNTrees          :: Int    -- ^ Simulated trees.
+  , argsNLeaves         :: Int    -- ^ Number of leaves.
+  , argsHeight          :: Maybe Double -- ^ Tree height (time to origin).
+  , argsLambda          :: Double -- ^ Birth rate.
+  , argsMu              :: Double -- ^ Death rate.
+  , argsRho             :: Double -- ^ Smapling rate.
+  , argsSubSample       :: Bool   -- ^ Perform actual sub-sampling.
+  , argsSumStat         :: Bool   -- ^ Only print summary statistics?
+  , argsVerbosity       :: Verbosity   -- ^ Verbosity.
+  , argsOutFileBaseName :: Maybe FilePath
+  , argsSeed            :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
   }
 
 reportArgs :: Args -> String
@@ -48,12 +48,12 @@ reportArgs a =
           , "Perform sub-sampling: " ++ show (argsSubSample a)
           , "Summary statistics only: " ++ show (argsSumStat a)
           , "Verbosity: " ++ show (argsVerbosity a)
-          , "Output file name: " ++ fStr
+          , "Output file base name: " ++ fStr
           , "Seed: " ++ sStr ]
   where hStr = case argsHeight a of Nothing -> "Random"
                                     Just h  -> show h
-        fStr = case argsFileNameOut a of Nothing -> "None"
-                                         Just f -> show f
+        fStr = case argsOutFileBaseName a of Nothing -> "None"
+                                             Just f  -> show f
         sStr = case argsSeed a of Nothing -> "Random"
                                   Just i  -> show i
 
@@ -68,7 +68,7 @@ argsParser = Args
   <*> subSampleOpt
   <*> sumStatOpt
   <*> verbosityOpt
-  <*> optional fileNameOutOpt
+  <*> optional outFileBaseNameOpt
   <*> seedOpt
 
 nTreeOpt :: Parser Int

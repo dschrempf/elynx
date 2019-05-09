@@ -50,12 +50,11 @@ module EvoMod.Data.Sequence.Sequence
   ) where
 
 import           Control.Lens
-import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.List                     (maximumBy)
 import           Data.Ord                      (comparing)
--- import qualified Data.Vector.Storable          as V
--- import           Data.Word8                    (Word8)
+import qualified Data.Vector.Storable          as V
+import           Text.Printf
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Sequence.Defaults
@@ -96,10 +95,13 @@ showCharacters :: Sequence -> L.ByteString
 showCharacters = view characters
 
 showInfo :: Sequence -> L.ByteString
-showInfo s = L.unwords [ alignLeft defSequenceNameWidth (s ^. name)
-                       , alignRight defFieldWidth (L.pack . show $ s ^. code)
-                       , alignLeft defFieldWidth l ]
-  where l = L.pack . show $ lengthSequence s
+showInfo s = L.unwords [ alignLeft defSequenceNameWidth (s^.name)
+                       , alignRight defFieldWidth (L.pack . show $ s^.code)
+                       , alignRight defFieldWidth (L.pack . show $ len)
+                       , alignRight defFieldWidth (L.pack $ printf "%.3f" pGaps) ]
+  where len = lengthSequence s
+        nGaps = countGapOrUnknownChars s
+        pGaps = fromIntegral nGaps / fromIntegral len :: Double
 
 instance Show Sequence where
   show s = L.unpack $ showSequence s
@@ -116,7 +118,8 @@ showSequenceList = L.unlines . map showSequence
 sequenceListHeader :: L.ByteString
 sequenceListHeader = L.unwords [ alignLeft defSequenceNameWidth (L.pack "Name")
                                , alignRight defFieldWidth (L.pack "Code")
-                               , alignLeft defFieldWidth (L.pack "Length")
+                               , alignRight defFieldWidth (L.pack "Length")
+                               , alignRight defFieldWidth (L.pack "Gaps [%]")
                                , L.pack "Sequence" ]
 
 -- | Trim and show a 'Sequence'.
@@ -159,19 +162,26 @@ equalLength = allEqual . map lengthSequence
 longest :: [Sequence] -> Sequence
 longest = maximumBy (comparing lengthSequence)
 
+-- XXX This is pretty hacky here. Better to change to vector (not byte string).
+-- | Count number of gaps or unknown characters in sequence.
+countGapOrUnknownChars :: Sequence -> Int
+countGapOrUnknownChars s = V.length . V.filter (== True) . (`areGapOrUnknownW` cd) $ v
+  where cd = s^.code
+        v  = V.fromList . map c2w . L.unpack $ s^.characters
+
 -- | Trim to given length.
 trimSequence :: Int -> Sequence -> Sequence
 trimSequence n = over characters (L.take $ fromIntegral n)
 
 -- | Concatenate two sequences. 'SequenceName's have to match.
-concatenate :: Sequence -> Sequence -> Either L.ByteString Sequence
+concatenate :: Sequence -> Sequence -> Sequence
 concatenate (Sequence i c cs) (Sequence j k ks)
-  | i == j && c == k = Right $ Sequence i c (cs <> ks)
-  | otherwise        = Left $ L.pack "concatenate: Sequences do not have equal names: "
-                       <> i <> L.pack ", " <> j <> L.pack "."
+  | i == j && c == k = Sequence i c (cs <> ks)
+  | otherwise        = error $ "concatenate: Sequences do not have equal names: "
+                       ++ L.unpack i ++ ", " ++ L.unpack j ++ "."
 
 -- | Concatenate a list of sequences, see 'concatenate'.
-concatenateSeqs :: [[Sequence]] -> Either L.ByteString [Sequence]
-concatenateSeqs []   = Left $ L.pack "Nothing to concatenate."
-concatenateSeqs [ss] = Right ss
-concatenateSeqs sss  = foldM (zipWithM concatenate) (head sss) (tail sss)
+concatenateSeqs :: [[Sequence]] -> [Sequence]
+concatenateSeqs []   = error "concatenateSeqs: Nothing to concatenate."
+concatenateSeqs [ss] = ss
+concatenateSeqs sss  = foldl1 (zipWith concatenate) sss

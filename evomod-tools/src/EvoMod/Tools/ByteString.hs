@@ -42,7 +42,7 @@ alignRight = alignRightWith ' '
 -- | For a given width, align string to the left; use given fill character; trim
 -- on the right if string is longer.
 alignLeftWith :: Char -> Int -> L.ByteString -> L.ByteString
-alignLeftWith c n s = L.replicate (fromIntegral n - l) c <> L.take (fromIntegral n) s
+alignLeftWith c n s = L.take (fromIntegral n) s <> L.replicate (fromIntegral n - l) c
   where l = L.length s
 
 -- | For a given width, align string to the left; trim on the right if string is

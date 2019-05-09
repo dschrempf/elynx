@@ -19,48 +19,48 @@ module OptionsSeqAna
   ) where
 
 import           Control.Applicative
+import           Data.Word
 import           Options.Applicative
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Options
 
-data Command = Summarize
+data Command = Examine { perSite :: Bool }
              | Concatenate
              | Filter { longer  :: Maybe Int
                       , shorter :: Maybe Int}
-             | Examine { drop :: Bool
-                       , mean :: Bool }
              | SubSample { nSites   :: Int
-                         , nSamples :: Int }
+                         , nSamples :: Int
+                         , mSeed    :: Maybe [Word32] }
 
 data Args = Args
   {
-    argsCode             :: Code
-  , argsMaybeFileNameOut :: Maybe FilePath
-  , argsVerbosity        :: Verbosity
-  , argsCommand          :: Command
-  , argsFileNames        :: [FilePath]
+    argsCode                 :: Code
+  , argsMaybeOutFileBaseName :: Maybe FilePath
+  , argsVerbosity            :: Verbosity
+  , argsCommand              :: Command
+  , argsFileNames            :: [FilePath]
   }
 
 args :: Parser Args
 args = Args
   <$> alphabetOpt
-  <*> optional fileNameOutOpt
+  <*> optional outFileBaseNameOpt
   <*> verbosityOpt
   <*> commandArg
   <*> some fileNameArg
 
 commandArg :: Parser Command
 commandArg = hsubparser $
-  summarizeCommand <>
+  examineCommand <>
+  -- summarizeCommand <>
   concatenateCommand <>
   filterCommand <>
-  examineCommand <>
   subSampleCommand
 
-summarizeCommand :: Mod CommandFields Command
-summarizeCommand = command "summarize" $
-  info (pure Summarize) $ progDesc "Summarize sequences found in input files"
+-- summarizeCommand :: Mod CommandFields Command
+-- summarizeCommand = command "summarize" $
+--   info (pure Summarize) $ progDesc "Summarize sequences found in input files"
 
 concatenateCommand :: Mod CommandFields Command
 concatenateCommand = command "concatenate" $
@@ -86,22 +86,22 @@ filterShorterThanOpt = optional $ option auto $
 
 examineCommand :: Mod CommandFields Command
 examineCommand = command "examine" $
-  info (Examine <$> examineDropNonStandard <*> examineMean) $
-  progDesc "Examine columns of multi sequence alignments"
+  info (Examine <$> examinePerSite) $
+  progDesc "Examine sequences and columns of multi sequence alignments"
 
-examineDropNonStandard :: Parser Bool
-examineDropNonStandard = switch $
-  long "drop-non-standard"
-  <> help "Drop columns in alignment that contain non-standard characters such as gaps or IUPAC codes"
+-- examineDropNonStandard :: Parser Bool
+-- examineDropNonStandard = switch $
+--   long "drop-non-standard"
+--   <> help "Drop columns in alignment that contain non-standard characters such as gaps or extended IUPAC codes"
 
-examineMean :: Parser Bool
-examineMean = switch $
+examinePerSite :: Parser Bool
+examinePerSite = switch $
   long "mean"
-  <> help "Only report mean values"
+  <> help "Report per site summary statistics"
 
 subSampleCommand :: Mod CommandFields Command
 subSampleCommand = command "subsample" $
-  info (SubSample <$> subSampleNSites <*> subSampleNSamples) $
+  info (SubSample <$> subSampleNSites <*> subSampleNSamples <*> seedOpt ) $
   progDesc "Sub-sample columns from multi sequence alignments"
 
 subSampleNSites :: Parser Int

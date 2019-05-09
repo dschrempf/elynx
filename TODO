@@ -9,3 +9,6 @@ XXX: Separate tree-lib from tree-sim?
 XXX: Separate seq-lib from seq-ana and seq-sim?
 
 TODO: Enable description in FASTA files sequence headers.
+
+TODO: Remove mandatory statement of code at command line. Detect code for each
+sequence (what do we do for very short sequences?), and output it to log.
