@@ -17,9 +17,9 @@ module EvoMod.Data.Alphabet.AlphabetSpec
 
 import           Test.Hspec
 
-import qualified Data.IntMap.Strict             as IntMap
-import qualified Data.Map.Strict                as Map
-import qualified Data.Vector.Unboxed            as V
+import qualified Data.IntMap.Strict             as I
+import qualified Data.Map.Strict                as M
+import qualified Data.Set                       as S
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Alphabet.Character
@@ -31,10 +31,10 @@ alphabets :: [Alphabet]
 alphabets = map alphabet codes
 
 id' :: Code -> Character -> Character
-id' code = (indexToCharacterMap code IntMap.!) . (characterToIndexMap code Map.!)
+id' code = (indexToCharacter code I.!) . (characterToIndex code M.!)
 
 convertAlphabet :: Code -> Alphabet -> Alphabet
-convertAlphabet code a = Alphabet $ V.map (id' code) a'
+convertAlphabet code a = Alphabet $ S.map (id' code) a'
   where a' = fromAlphabet a
 
 spec :: Spec
