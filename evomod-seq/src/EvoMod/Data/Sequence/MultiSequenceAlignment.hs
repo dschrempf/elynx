@@ -185,11 +185,11 @@ filterColumns p = over matrix (M.fromColumns . filter p . M.toColumns)
 -- | Only keep columns with standard characters. Alignment columns with IUPAC
 -- characters are removed.
 filterColumnsIUPAC :: MultiSequenceAlignment -> MultiSequenceAlignment
-filterColumnsIUPAC msa = filterColumns (V.all (`isStandardW` (msa^.code))) msa
+filterColumnsIUPAC msa = filterColumns (V.all (isStandard (msa^.code))) msa
 
 -- | Only keep columns without gaps or unknown characters.
 filterColumnsGapsUnknowns :: MultiSequenceAlignment -> MultiSequenceAlignment
-filterColumnsGapsUnknowns msa = filterColumns (V.all (`isGapOrUnknownW` (msa^.code))) msa
+filterColumnsGapsUnknowns msa = filterColumns (V.all (isGapOrUnknown (msa^.code))) msa
 
 -- | Frequency data; do not store the actual characters, but only their
 -- frequencies.
@@ -206,13 +206,13 @@ kEff fd = parMapChunk 500 kEffEntropy (M.toColumns fd)
 -- | Count the number of standard (i.e., not extended IUPAC) characters in the
 -- alignment.
 countStandardChars :: MultiSequenceAlignment -> Int
-countStandardChars msa = V.length . V.filter (==True) . (`areStandardW` cd) $ allChars
+countStandardChars msa = V.length . V.filter (isStandard cd) $ allChars
   where allChars = M.flatten $ msa^.matrix
         cd       = msa^.code
 
 -- | Count the number of gaps or unknown characters in the alignment.
 countGapOrUnknownChars :: MultiSequenceAlignment -> Int
-countGapOrUnknownChars msa = V.length . V.filter (== True) . (`areGapOrUnknownW` cd) $ allChars
+countGapOrUnknownChars msa = V.length . V.filter (isGapOrUnknown cd) $ allChars
   where allChars = M.flatten $ msa^.matrix
         cd       = msa^.code
 

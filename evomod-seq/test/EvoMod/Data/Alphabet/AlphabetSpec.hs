@@ -17,21 +17,27 @@ module EvoMod.Data.Alphabet.AlphabetSpec
 
 import           Test.Hspec
 
-import qualified Data.Vector.Storable          as V
+import qualified Data.IntMap.Strict             as I
+import qualified Data.Map.Strict                as M
+import qualified Data.Set                       as S
 
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Alphabet.Character
 
 codes :: [Code]
-codes = [DNA, DNAIUPAC, Protein, ProteinIUPAC]
+codes = [DNA, Protein]
 
 alphabets :: [Alphabet]
 alphabets = map alphabet codes
 
+id' :: Code -> Character -> Character
+id' code = (indexToCharacter code I.!) . (characterToIndex code M.!)
+
 convertAlphabet :: Code -> Alphabet -> Alphabet
-convertAlphabet c a = Alphabet $ V.map (indexToCharacter c . characterToIndex c) a'
+convertAlphabet code a = Alphabet $ S.map (id' code) a'
   where a' = fromAlphabet a
 
 spec :: Spec
 spec = describe "indexToCharacter . characterToIndex" $
   it "should be the identity" $
-  zipWith convertAlphabet codes alphabets `shouldBe` alphabets
+    zipWith convertAlphabet codes alphabets `shouldBe` alphabets

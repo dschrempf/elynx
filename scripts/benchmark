@@ -5,4 +5,4 @@ source include
 file_benchmark="${project_root}/evomod-seq/data/BenchmarkEnsemblMouse.fa.gz"
 
 msg "Seq-Ana benchmark."
-stack --work-dir "$prod_dir" exec seq-ana -- summarize -a DNAIUPAC "$file_benchmark"  +RTS -s || exit 1
+stack --work-dir "$prod_dir" exec seq-ana -- examine -a DNA "$file_benchmark"  +RTS -s || exit 1

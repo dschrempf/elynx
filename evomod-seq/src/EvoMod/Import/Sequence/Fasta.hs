@@ -41,7 +41,7 @@ import           EvoMod.Tools.ByteString       (c2w)
 type Parser = Parsec Void L.ByteString
 
 isSpecial :: Word8 -> Bool
-isSpecial w = w `elem` (map c2w ['_', '|', '.', '-'])
+isSpecial w = w `elem` map c2w ['_', '|', '.', '-']
 
 isHeaderChar :: Word8 -> Bool
 isHeaderChar w = isAlphaNum w || isSpecial w
@@ -58,6 +58,7 @@ sequenceHeader = do
 -- this set only has to be calculcated once per sequence in 'fastaSequence'.
 sequenceLine :: S.Set Word8 -> Parser L.ByteString
 sequenceLine s = do
+  -- FIXME: Will fail for non-capital letters.
   !xs <- takeWhile1P (Just "Alphabet character") (`S.member` s)
   _  <- void eol <|> eof
   return xs
@@ -68,7 +69,7 @@ sequenceLine s = do
 -- | Parse a sequence of 'Alphabet' 'EvoMod.Data.Alphabet.Character's.
 fastaSequence :: Code -> Parser Sequence
 fastaSequence c = do hd <- sequenceHeader
-                     let !a  = fromAlphabetLookup $ alphabetLookup c
+                     let !a  = fromAlphabet $ alphabet c
                      lns <- some (sequenceLine a)
                      _  <- many eol
                      return $ Sequence hd c (L.concat lns)

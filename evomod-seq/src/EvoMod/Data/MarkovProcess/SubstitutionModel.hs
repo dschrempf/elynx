@@ -126,7 +126,6 @@ summarizeSubstitutionModel sm = map L.pack $
     Protein -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
                , "Scale: " ++ show (roundN precision $ totalRateSubstitutionModel sm) ++ "."
                ]
-    _ -> []
 
 -- | Calculate rate matrix from substitution model.
 getRateMatrix :: SubstitutionModel -> RateMatrix

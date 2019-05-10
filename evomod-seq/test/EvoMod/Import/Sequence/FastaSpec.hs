@@ -31,7 +31,7 @@ spec =
       msaLength msa `shouldBe` 40
 
     it "parses a fasta file with nucleotide IUPAC sequences with equal length" $ do
-      msa <- fromSequenceList <$> parseFileWith (fasta DNAIUPAC) fastaNucleotideIUPACFN
+      msa <- fromSequenceList <$> parseFileWith (fasta DNA) fastaNucleotideIUPACFN
       msaNSequences msa `shouldBe` 3
       msaLength msa `shouldBe` 40
 

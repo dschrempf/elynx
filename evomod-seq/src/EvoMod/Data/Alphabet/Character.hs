@@ -14,40 +14,29 @@ See header of 'EvoMod.Data.Alphabet.Alphabet'.
 
 -}
 
--- TODO: I have to change the basic type classes. It feels like I have to
--- implement everything twice. See *W functions in
--- "EvoMod.Data.Alphabet.Alphabet".
-
--- Somehow, IUPAC characters should be separated from 'Character'. But then,
--- function definitions require a CharacterIUPAC constraint, and cannot be used
--- for normal Characters.
-
 module EvoMod.Data.Alphabet.Character
-  ( Character (..)
-  -- , CharacterIUPAC (..)
+  ( Character
+  , fromChar
+  , fromString
+  , up
   ) where
 
-import           Data.Word8 (Word8)
+import           Data.Word8              (Word8, toUpper)
+import           EvoMod.Tools.ByteString (c2w)
 
--- | A set of characters forms an 'EvoMod.Data.Alphabet'. Characters need to
--- support some form of IO. At the moment, I use 'Word8's, since none of my
--- alphabets have more than 255 characters.
---
--- > fromWord . toWord == id
-class (Enum a, Bounded a) => Character a where
-  fromWord :: Word8 -> a
-  toWord   :: a -> Word8
-  -- This should probably go into its own type class, but then everything is
-  -- more complicated.
-  isStandard :: a -> Bool
-  isGapOrUnknown :: a -> Bool
+-- | A set of characters forms an 'EvoMod.Data.Alphabet.Alphabet'. At the
+-- moment, 'Word8' is used, since none of the alphabets has more than 255
+-- characters.
+type Character = Word8
 
-  isIUPACChar :: a -> Bool
-  isIUPACChar = not . isStandard
+-- | Convert 'Char' into 'Character'.
+fromChar :: Char -> Character
+fromChar = c2w
 
--- class (Enum a, Bounded a, Character a) => CharacterIUPAC a where
---   isStandard :: a -> Bool
---   isGapOrUnknown :: a -> Bool
+-- | Convert 'String' into list of 'Character's.
+fromString :: String -> [Character]
+fromString = map fromChar
 
---   isIUPACChar :: a -> Bool
---   isIUPACChar = not . isStandard
+-- | Put character to upper case.
+up :: Character -> Character
+up = Data.Word8.toUpper
