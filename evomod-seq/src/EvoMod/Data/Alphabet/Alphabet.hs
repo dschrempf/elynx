@@ -22,12 +22,14 @@ Hierarchy:
 -}
 
 module EvoMod.Data.Alphabet.Alphabet
-  ( Code (..)
+  ( -- * Types
+    Code (..)
   , codeNameVerbose
   , Alphabet (..)
   , alphabet
   , AlphabetLookup (..)
   , alphabetLookup
+    -- * Queries
   , inAlphabet
   , cardinality
   , indexToCharacter
