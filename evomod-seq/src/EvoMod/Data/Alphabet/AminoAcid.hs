@@ -18,14 +18,14 @@ module EvoMod.Data.Alphabet.AminoAcid
   ( aminoAcids
   , aminoAcidsIUPAC
   , isGapOrUnknownAminoAcid
-  -- , fromIUPACAminoAcid
+  , fromIUPACAminoAcid
   ) where
 
 import           EvoMod.Data.Alphabet.Character
 
 -- | Amino acids type; alphabetical order.
 aminoAcids :: [Character]
-aminoAcids = map fromChar "ACDEFGHIKLMNPQRSTVWY"
+aminoAcids = fromString "ACDEFGHIKLMNPQRSTVWY"
 
 -- | Amino acid IUPAC type; normal amino acids in alphabetical order; then IUPAC
 -- codes in alphabetical order.
@@ -61,43 +61,24 @@ aminoAcids = map fromChar "ACDEFGHIKLMNPQRSTVWY"
 -- @
 
 aminoAcidsIUPAC :: [Character]
-aminoAcidsIUPAC = map fromChar "ACDEFGHIKLMNPQRSTVWYBXZ-"
+aminoAcidsIUPAC = fromString "ACDEFGHIKLMNPQRSTVWYBXZ-"
 
 isGapOrUnknownAminoAcid :: Character -> Bool
 isGapOrUnknownAminoAcid char | char == fromChar '-' = True
                              | char == fromChar 'X' = True
                              | otherwise            = False
 
-TODO.
 -- | Convert IUPAC code to set of normal amino acids.
 fromIUPACAminoAcid :: Character -> [Character]
-fromIUPACAminoAcid char | char == fromChar 'B' = [A]
-fromIUPACAminoAcid C_IUPAC = [C]
-fromIUPACAminoAcid D_IUPAC = [D]
-fromIUPACAminoAcid E_IUPAC = [E]
-fromIUPACAminoAcid F_IUPAC = [F]
-fromIUPACAminoAcid G_IUPAC = [G]
-fromIUPACAminoAcid H_IUPAC = [H]
-fromIUPACAminoAcid I_IUPAC = [I]
-fromIUPACAminoAcid K_IUPAC = [K]
-fromIUPACAminoAcid L_IUPAC = [L]
-fromIUPACAminoAcid M_IUPAC = [M]
-fromIUPACAminoAcid N_IUPAC = [N]
-fromIUPACAminoAcid P_IUPAC = [P]
-fromIUPACAminoAcid Q_IUPAC = [Q]
-fromIUPACAminoAcid R_IUPAC = [R]
-fromIUPACAminoAcid S_IUPAC = [S]
-fromIUPACAminoAcid T_IUPAC = [T]
-fromIUPACAminoAcid V_IUPAC = [V]
-fromIUPACAminoAcid W_IUPAC = [W]
-fromIUPACAminoAcid Y_IUPAC = [Y]
-fromIUPACAminoAcid B       = [D, N]
-fromIUPACAminoAcid X       = [A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y]
-fromIUPACAminoAcid Z       = [E, Q]
--- XXX: This makes a huge difference when analyzing data for the effective
--- number of used amino acids. See 'DistributionDiversity'.
--- fromIUPACAminoAcid Gap     = [A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y]
-fromIUPACAminoAcid Gap     = []
+fromIUPACAminoAcid char | char == fromChar 'B' = fromString "DN"
+                        | char == fromChar 'X' = fromString "ACDEFGHIKLMNPQRSTVWY"
+                        | char == fromChar 'Z' = fromString "EQ"
+                        -- XXX: This makes a huge difference when analyzing data for the effective
+                        -- number of used amino acids. See 'DistributionDiversity'.
+                        -- -- | char == fromChar '-' = fromString "ACDEFGHIKLMNPQRSTVWY"
+                        | char == fromChar '-' = []
+                        -- XXX: Should we through error when char not in alphabet?
+                        | otherwise            = [char]
 
 -- module EvoMod.Data.Alphabet.AminoAcid
 --   ( AminoAcid

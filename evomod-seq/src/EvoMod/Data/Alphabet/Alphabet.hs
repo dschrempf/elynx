@@ -39,6 +39,7 @@ module EvoMod.Data.Alphabet.Alphabet
   , isStandard
   , isExtendedIUPAC
   , isGapOrUnknown
+  , charFromIUPAC
   ) where
 
 import qualified Data.IntMap.Strict              as IntMap
@@ -136,21 +137,24 @@ toIUPAC ProteinIUPAC = ProteinIUPAC
 isStandard :: Code -> Character -> Bool
 isStandard code = inAlphabet (fromIUPAC code)
 
+-- XXX: Probably assume that character is in alphabet? Then it would be much faster.
 isExtendedIUPAC :: Code -> Character -> Bool
 isExtendedIUPAC code char = not (isStandard code char) && inAlphabet (toIUPAC code) char
 
+-- XXX: Assumes that character is in alphabet.
 isGapOrUnknown :: Code -> Character -> Bool
 isGapOrUnknown DNA          = isGapOrUnknownNucleotide
 isGapOrUnknown DNAIUPAC     = isGapOrUnknownNucleotide
 isGapOrUnknown Protein      = isGapOrUnknownAminoAcid
 isGapOrUnknown ProteinIUPAC = isGapOrUnknownAminoAcid
 
--- -- | Convert from IUPAC character.
--- charFromIUPAC :: Code -> Character -> [Character]
--- charFromIUPAC DNA          char = [char]
--- charFromIUPAC DNAIUPAC     char = map toWord $ fromIUPACNucleotide (fromWord char :: NucleotideIUPAC)
--- charFromIUPAC Protein      char = [char]
--- charFromIUPAC ProteinIUPAC char = map toWord $ fromIUPACAminoAcid (fromWord char :: AminoAcidIUPAC)
+-- XXX: Assumes that character is in alphabet.
+-- | Convert from IUPAC character.
+charFromIUPAC :: Code -> Character -> [Character]
+charFromIUPAC DNA          = fromIUPACNucleotide
+charFromIUPAC DNAIUPAC     = fromIUPACNucleotide
+charFromIUPAC Protein      = fromIUPACAminoAcid
+charFromIUPAC ProteinIUPAC = fromIUPACAminoAcid
 
 -- {- |
 -- Module      :  EvoMod.Data.Alphabet

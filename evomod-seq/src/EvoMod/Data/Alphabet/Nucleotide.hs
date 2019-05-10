@@ -18,14 +18,14 @@ module EvoMod.Data.Alphabet.Nucleotide
   ( nucleotides
   , nucleotidesIUPAC
   , isGapOrUnknownNucleotide
-  -- , fromIUPACNucleotide
+  , fromIUPACNucleotide
   ) where
 
 import           EvoMod.Data.Alphabet.Character
 -- import           EvoMod.Tools.ByteString        (c2w, w2c)
 
 nucleotides :: [Character]
-nucleotides = map fromChar "ACGT"
+nucleotides = fromString "ACGT"
 
 -- | Nucleotide IUPAC code (ordering according to list on Wikipedia).
 --
@@ -53,34 +53,37 @@ nucleotides = map fromChar "ACGT"
 -- -       Gap (same as N)                 -
 -- @
 nucleotidesIUPAC :: [Character]
-nucleotidesIUPAC = map fromChar "ACGTUWSMKRYBDHVNZ-"
+nucleotidesIUPAC = fromString "ACGTUWSMKRYBDHVNZ-"
 
 isGapOrUnknownNucleotide :: Character -> Bool
 isGapOrUnknownNucleotide char | char == fromChar 'N' = True
                               | char == fromChar '-' = True
                               | otherwise            = False
 
--- -- TODO.
--- -- | Convert IUPAC code to set of normal nucleotides.
--- fromIUPACNucleotide :: NucleotideIUPAC -> [Nucleotide]
--- fromIUPACNucleotide A_IUPAC = [A]
--- fromIUPACNucleotide C_IUPAC = [C]
--- fromIUPACNucleotide G_IUPAC = [G]
--- fromIUPACNucleotide T_IUPAC = [T]
--- fromIUPACNucleotide U       = [T]
--- fromIUPACNucleotide W       = [A, T]
--- fromIUPACNucleotide S       = [G, C]
--- fromIUPACNucleotide M       = [A, C]
--- fromIUPACNucleotide K       = [G, T]
--- fromIUPACNucleotide R       = [A, G]
--- fromIUPACNucleotide Y       = [C, T]
--- fromIUPACNucleotide B       = [C, G, T]
--- fromIUPACNucleotide D       = [A, G, T]
--- fromIUPACNucleotide H       = [A, C, T]
--- fromIUPACNucleotide V       = [A, C, G]
--- fromIUPACNucleotide N       = [A, C, G, T]
--- fromIUPACNucleotide Z       = []
--- fromIUPACNucleotide Gap     = [A, C, G, T]
+-- | Convert IUPAC code to set of normal nucleotides.
+fromIUPACNucleotide :: Character -> [Character]
+fromIUPACNucleotide char | char == fromChar 'U' = fromString "T"
+                         | char == fromChar 'W' = fromString "AT"
+                         | char == fromChar 'S' = fromString "GC"
+                         | char == fromChar 'M' = fromString "AC"
+                         | char == fromChar 'K' = fromString "GT"
+                         | char == fromChar 'R' = fromString "AG"
+                         | char == fromChar 'Y' = fromString "CT"
+                         | char == fromChar 'B' = fromString "CGT"
+                         | char == fromChar 'D' = fromString "AGT"
+                         | char == fromChar 'H' = fromString "ACT"
+                         | char == fromChar 'V' = fromString "ACG"
+                         | char == fromChar 'N' = fromString "ACGT"
+                         | char == fromChar 'Z' = fromString ""
+                         -- XXX: See also comment in AminoAcid.hs
+                         -- -- | char == fromChar '-' = fromString "ACGT"
+                         | char == fromChar '-' = fromString ""
+                         -- XXX: Should we through error when char not in "ACGT"?
+                         -- fromIUPACNucleotide A_IUPAC = [A]
+                         -- fromIUPACNucleotide C_IUPAC = [C]
+                         -- fromIUPACNucleotide G_IUPAC = [G]
+                         -- fromIUPACNucleotide T_IUPAC = [T]
+                         | otherwise            = [char]
 
 -- module EvoMod.Data.Alphabet.Nucleotide
 --   ( Nucleotide (..)

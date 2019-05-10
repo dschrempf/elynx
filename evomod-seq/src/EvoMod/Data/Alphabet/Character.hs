@@ -25,6 +25,7 @@ See header of 'EvoMod.Data.Alphabet.Alphabet'.
 module EvoMod.Data.Alphabet.Character
   ( Character
   , fromChar
+  , fromString
   ) where
 
 import           Data.Word8              (Word8)
@@ -34,8 +35,13 @@ import           EvoMod.Tools.ByteString (c2w)
 -- since none of the alphabets has more than 255 characters.
 type Character = Word8
 
+-- | Convert 'Char' into 'Character'.
 fromChar :: Char -> Character
 fromChar = c2w
+
+-- | Convert 'String' into list of 'Character's.
+fromString :: String -> [Character]
+fromString = fromString
 
 -- -- | A set of characters forms an 'EvoMod.Data.Alphabet'. Characters need to
 -- -- support some form of IO. At the moment, I use 'Word8's, since none of my
