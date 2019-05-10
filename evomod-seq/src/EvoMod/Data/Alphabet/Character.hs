@@ -31,8 +31,9 @@ module EvoMod.Data.Alphabet.Character
 import           Data.Word8              (Word8)
 import           EvoMod.Tools.ByteString (c2w)
 
--- | A set of characters forms an 'Alphabet'. At the moment, 'Word8' is used,
--- since none of the alphabets has more than 255 characters.
+-- | A set of characters forms an 'EvoMod.Data.Alphabet.Alphabet'. At the
+-- moment, 'Word8' is used, since none of the alphabets has more than 255
+-- characters.
 type Character = Word8
 
 -- | Convert 'Char' into 'Character'.

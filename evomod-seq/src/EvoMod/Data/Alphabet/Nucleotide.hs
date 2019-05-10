@@ -23,6 +23,7 @@ module EvoMod.Data.Alphabet.Nucleotide
 
 import           EvoMod.Data.Alphabet.Character
 
+-- | Standard nucleotides.
 nucleotides :: [Character]
 nucleotides = fromString "ACGT"
 
@@ -54,6 +55,7 @@ nucleotides = fromString "ACGT"
 nucleotidesIUPAC :: [Character]
 nucleotidesIUPAC = fromString "ACGTUWSMKRYBDHVNZ-"
 
+-- | Check if nucleotide is gap or unknown.
 isGapOrUnknownNucleotide :: Character -> Bool
 isGapOrUnknownNucleotide char | char == fromChar 'N' = True
                               | char == fromChar '-' = True

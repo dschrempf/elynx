@@ -14,7 +14,7 @@ Hierarchy:
 
 1. 'Character' type.
 
-2. Sets of 'Character's such as 'Nucleotide's or 'AminoAcid's.
+2. Sets of 'Character's such as 'nucleotides' or 'aminoAcids'.
 
 3. 'Alphabet's. The different 'Code's are collected in a specific data type. New
    codes have to be added manually in this module.
@@ -111,6 +111,7 @@ alphabetLookup = Memo.enum alphabetLookup'
 -- inAlphabet :: Code -> Character -> Bool
 -- inAlphabet code char = toUpper char `Set.member` fromAlphabetLookup (alphabetLookup code)
 
+-- | For a given code, check if character is in alphabet.
 inAlphabet :: Code -> Character -> Bool
 inAlphabet code char = char `Set.member` alphabetLookup code
 
@@ -146,14 +147,18 @@ toIUPAC Protein      = ProteinIUPAC
 toIUPAC ProteinIUPAC = ProteinIUPAC
 
 -- XXX: Probably assume that character is in alphabet? Then it would be much faster.
+-- | For a given code, is the character a standard character? A character is
+-- considered standard, when it is not an extended IUPAC character.
 isStandard :: Code -> Character -> Bool
 isStandard code = inAlphabet (fromIUPAC code)
 
 -- XXX: Probably assume that character is in alphabet? Then it would be much faster.
+-- | For a given code, is the character an extended IUPAC character?
 isExtendedIUPAC :: Code -> Character -> Bool
 isExtendedIUPAC code char = not (isStandard code char) && inAlphabet (toIUPAC code) char
 
 -- XXX: Assumes that character is in alphabet.
+-- | For a given code, is the character unknown, or a gap?
 isGapOrUnknown :: Code -> Character -> Bool
 isGapOrUnknown DNA          = isGapOrUnknownNucleotide
 isGapOrUnknown DNAIUPAC     = isGapOrUnknownNucleotide

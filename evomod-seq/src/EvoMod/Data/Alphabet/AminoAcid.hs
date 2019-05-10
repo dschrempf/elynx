@@ -59,10 +59,10 @@ aminoAcids = fromString "ACDEFGHIKLMNPQRSTVWY"
 -- Additionally, I add:
 -- -.................Gap.................No amino acid
 -- @
-
 aminoAcidsIUPAC :: [Character]
 aminoAcidsIUPAC = fromString "ACDEFGHIKLMNPQRSTVWYBXZ-"
 
+-- | Check if amino acid is gap or unknown.
 isGapOrUnknownAminoAcid :: Character -> Bool
 isGapOrUnknownAminoAcid char | char == fromChar '-' = True
                              | char == fromChar 'X' = True
