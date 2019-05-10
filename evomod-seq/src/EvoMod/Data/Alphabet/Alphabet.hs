@@ -50,15 +50,13 @@ import qualified EvoMod.Data.Alphabet.Nucleotide as N
 
 -- | The used genetic code. Could include Protein_IUPAC, CountsFile for
 -- population data and so on.
-data Code = DNA | DNAIUPAC | Protein | ProteinIUPAC
+data Code = DNA | Protein
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 -- | Verbose version of code name.
 codeNameVerbose :: Code -> String
-codeNameVerbose DNA          = show DNA ++ " (nucleotides)"
-codeNameVerbose DNAIUPAC     = show DNAIUPAC ++ " (nucleotides including IUPAC codes)"
-codeNameVerbose Protein      = show Protein ++ " (amino acids)"
-codeNameVerbose ProteinIUPAC = show ProteinIUPAC ++ " (amino acids including IUPAC codes)"
+codeNameVerbose DNA     = show DNA ++ " (nucleotides including IUPAC codes)"
+codeNameVerbose Protein = show Protein ++ " (amino acids including IUPAC codes)"
 
 -- | An alphabet is a vector of characters with a specific order.
 newtype Alphabet = Alphabet { fromAlphabet :: S.Set Character }
@@ -69,19 +67,15 @@ toCharacters = S.toList . fromAlphabet
 
 -- | Alphabets.
 alphabet :: Code -> Alphabet
-alphabet DNA          = Alphabet   N.standard
-alphabet DNAIUPAC     = Alphabet $ N.standard `S.union` N.iupac
-alphabet Protein      = Alphabet   A.standard
-alphabet ProteinIUPAC = Alphabet $ A.standard `S.union` A.iupac
+alphabet DNA     = Alphabet $ N.standard `S.union` N.iupac
+alphabet Protein = Alphabet $ A.standard `S.union` A.iupac
 
 -- | Number of characters. Since for IUPAC codes, the cardinality is not
 -- directly related to the number of characters in the alphabet, we have to set
 -- it manually.
 cardinality :: Code -> Int
-cardinality DNA          = 4
-cardinality DNAIUPAC     = 4
-cardinality Protein      = 20
-cardinality ProteinIUPAC = 20
+cardinality DNA     = 4
+cardinality Protein = 20
 
 -- | Convert integer index to 'Character'.
 indexToCharacter :: Code -> I.IntMap Character
@@ -95,27 +89,19 @@ characterToIndex code = M.fromList $ zip (toCharacters . alphabet $ code) [0..]
 -- considered standard, when it is not an extended IUPAC character.
 isStandard :: Code -> Character -> Bool
 isStandard DNA          char = char `S.member` N.standard
-isStandard DNAIUPAC     char = char `S.member` N.standard
 isStandard Protein      char = char `S.member` A.standard
-isStandard ProteinIUPAC char = char `S.member` A.standard
 
 -- | For a given code, is the character an extended IUPAC character?
 isIUPAC :: Code -> Character -> Bool
 isIUPAC DNA          char = char `S.member` N.iupac
-isIUPAC DNAIUPAC     char = char `S.member` N.iupac
 isIUPAC Protein      char = char `S.member` A.iupac
-isIUPAC ProteinIUPAC char = char `S.member` A.iupac
 
 -- | For a given code, is the character unknown, or a gap?
 isGapOrUnknown :: Code -> Character -> Bool
 isGapOrUnknown DNA          char = char `S.member` (N.gap `S.union` N.unknown)
-isGapOrUnknown DNAIUPAC     char = char `S.member` (N.gap `S.union` N.unknown)
 isGapOrUnknown Protein      char = char `S.member` (A.gap `S.union` A.unknown)
-isGapOrUnknown ProteinIUPAC char = char `S.member` (A.gap `S.union` A.unknown)
 
 -- | Convert from IUPAC character.
 iupacToStandard :: Code -> Character -> [Character]
 iupacToStandard DNA          char = N.iupacToStandard M.! char
-iupacToStandard DNAIUPAC     char = N.iupacToStandard M.! char
 iupacToStandard Protein      char = A.iupacToStandard M.! char
-iupacToStandard ProteinIUPAC char = A.iupacToStandard M.! char

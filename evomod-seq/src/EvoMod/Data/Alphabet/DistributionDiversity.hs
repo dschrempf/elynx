@@ -67,9 +67,8 @@ incrementElemIndexByOne is v = v V.// zip is es'
 acc :: Code -> V.Vector Int -> Character -> V.Vector Int
 acc code vec char = incrementElemIndexByOne is vec
   where
-    codeNonIupac  = fromIUPAC code
-    charsNonIupac = charsFromIUPAC code char
-    is            = map (characterToIndexMap codeNonIupac Map.!) charsNonIupac
+    charsNonIupac = iupacToStandard code char
+    is            = map (characterToIndex code Map.!) charsNonIupac
 
 countCharacters :: Code -> V.Vector Word8 -> V.Vector Int
 countCharacters code =
