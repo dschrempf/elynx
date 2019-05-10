@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Data.Alphabet
-Description :  Alphabets store hereditary information.
+Description :  Alphabets store hereditary information
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 
