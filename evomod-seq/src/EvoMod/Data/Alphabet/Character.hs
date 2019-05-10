@@ -41,7 +41,7 @@ fromChar = c2w
 
 -- | Convert 'String' into list of 'Character's.
 fromString :: String -> [Character]
-fromString = fromString
+fromString = map fromChar
 
 -- -- | A set of characters forms an 'EvoMod.Data.Alphabet'. Characters need to
 -- -- support some form of IO. At the moment, I use 'Word8's, since none of my

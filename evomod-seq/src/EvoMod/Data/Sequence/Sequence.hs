@@ -165,7 +165,7 @@ longest = maximumBy (comparing lengthSequence)
 -- XXX This is pretty hacky here. Better to change to vector (not byte string).
 -- | Count number of gaps or unknown characters in sequence.
 countGapOrUnknownChars :: Sequence -> Int
-countGapOrUnknownChars s = V.length . V.filter (== True) . (`areGapOrUnknownW` cd) $ v
+countGapOrUnknownChars s = V.length . V.filter (isGapOrUnknown cd) $ v
   where cd = s^.code
         v  = V.fromList . map c2w . L.unpack $ s^.characters
 

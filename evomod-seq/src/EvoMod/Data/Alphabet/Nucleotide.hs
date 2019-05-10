@@ -22,7 +22,6 @@ module EvoMod.Data.Alphabet.Nucleotide
   ) where
 
 import           EvoMod.Data.Alphabet.Character
--- import           EvoMod.Tools.ByteString        (c2w, w2c)
 
 nucleotides :: [Character]
 nucleotides = fromString "ACGT"

@@ -25,10 +25,12 @@ module EvoMod.Data.Alphabet.DistributionDiversity
 
 -- import           Data.Functor.Identity
 -- import qualified Data.Matrix.Storable          as M
-import qualified Data.Vector.Storable          as V
+import qualified Data.Map                       as Map
+import qualified Data.Vector.Storable           as V
 import           Data.Word
 
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Tools.Numeric
 import           EvoMod.Tools.Vector
 
@@ -61,14 +63,13 @@ incrementElemIndexByOne :: [Int] -> V.Vector Int -> V.Vector Int
 incrementElemIndexByOne is v = v V.// zip is es'
   where es' = [v V.! i + 1 | i <- is]
 
--- For a given code and counts vector, increment the count of the given state
--- (Word8).
-acc :: Code -> V.Vector Int -> Word8 -> V.Vector Int
+-- For a given code and counts vector, increment the count of the given character.
+acc :: Code -> V.Vector Int -> Character -> V.Vector Int
 acc code vec char = incrementElemIndexByOne is vec
   where
     codeNonIupac  = fromIUPAC code
-    charsNonIupac = charFromIUPAC code char
-    is            = map (characterToIndex codeNonIupac) charsNonIupac
+    charsNonIupac = charsFromIUPAC code char
+    is            = map (characterToIndexMap codeNonIupac Map.!) charsNonIupac
 
 countCharacters :: Code -> V.Vector Word8 -> V.Vector Int
 countCharacters code =

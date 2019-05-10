@@ -26,20 +26,21 @@ module EvoMod.Data.Alphabet.Alphabet
     -- * Data types
     Code (..)
   , codeNameVerbose
-  , Alphabet
+  , Alphabet (..)
   , alphabet
-  , AlphabetLookup
+  -- , AlphabetLookup
   , alphabetLookup
     -- * Lookup
   , inAlphabet
   , cardinality
   , indexToCharacterMap
   , characterToIndexMap
-    -- * Classes
+    -- * IUPAC stuff
+  , fromIUPAC
   , isStandard
   , isExtendedIUPAC
   , isGapOrUnknown
-  , charFromIUPAC
+  , charsFromIUPAC
   ) where
 
 import qualified Data.IntMap.Strict              as IntMap
@@ -47,7 +48,7 @@ import qualified Data.Map.Strict                 as Map
 import qualified Data.MemoCombinators            as Memo
 import qualified Data.Set                        as Set
 import qualified Data.Vector.Unboxed             as Vec
-import           Data.Word8
+-- import           Data.Word8
 
 import           EvoMod.Data.Alphabet.AminoAcid
 import           EvoMod.Data.Alphabet.Character
@@ -69,9 +70,10 @@ codeNameVerbose ProteinIUPAC = show ProteinIUPAC ++ " (amino acids including IUP
 
 -- | An alphabet is a vector of characters with a specific order.
 newtype Alphabet = Alphabet { fromAlphabet :: Vec.Vector Character }
+  deriving (Show, Read, Eq, Ord)
 
 fromCharacters :: [Character] -> Alphabet
-fromCharacters = Alphabet. Vec.fromList
+fromCharacters = Alphabet . Vec.fromList
 
 toCharacters :: Alphabet -> [Character]
 toCharacters = Vec.toList . fromAlphabet
@@ -83,24 +85,34 @@ alphabet DNAIUPAC     = fromCharacters nucleotidesIUPAC
 alphabet Protein      = fromCharacters aminoAcids
 alphabet ProteinIUPAC = fromCharacters aminoAcidsIUPAC
 
--- | Alphabet optimized for lookups (i.e., "Is this character in the
--- alphabet?"). Order of characters is not preserved. 'Data.Set' is used because
--- it uses an ordered, tree-like structure with fast queries. When parsing
--- characters, they have to be checked for validity and so, the query speed is
--- very important when reading in large data files.
-newtype AlphabetLookup = AlphabetLookup { fromAlphabetLookup :: Set.Set Word8 }
-  deriving (Show, Read, Eq, Ord)
+-- -- | Alphabet optimized for lookups (i.e., "Is this character in the
+-- -- alphabet?"). Order of characters is not preserved. 'Data.Set' is used because
+-- -- it uses an ordered, tree-like structure with fast queries. When parsing
+-- -- characters, they have to be checked for validity and so, the query speed is
+-- -- very important when reading in large data files.
+-- newtype AlphabetLookup = AlphabetLookup { fromAlphabetLookup :: Set.Set Word8 }
+--   deriving (Show, Read, Eq, Ord)
 
--- Create an alphabet for lookups from 'Code'.
-alphabetLookup' :: Code -> AlphabetLookup
-alphabetLookup' = AlphabetLookup . Set.fromList . Vec.toList . fromAlphabet . alphabet
+-- -- Create an alphabet for lookups from 'Code'.
+-- alphabetLookup' :: Code -> AlphabetLookup
+-- alphabetLookup' = AlphabetLookup . Set.fromList . Vec.toList . fromAlphabet . alphabet
+
+-- -- | Create an alphabet for lookups from 'Code'; memoized.
+-- alphabetLookup :: Code -> AlphabetLookup
+-- alphabetLookup = Memo.enum alphabetLookup'
+
+alphabetLookup' :: Code -> Set.Set Character
+alphabetLookup' = Set.fromList . Vec.toList . fromAlphabet . alphabet
 
 -- | Create an alphabet for lookups from 'Code'; memoized.
-alphabetLookup :: Code -> AlphabetLookup
+alphabetLookup :: Code -> Set.Set Character
 alphabetLookup = Memo.enum alphabetLookup'
 
+-- inAlphabet :: Code -> Character -> Bool
+-- inAlphabet code char = toUpper char `Set.member` fromAlphabetLookup (alphabetLookup code)
+
 inAlphabet :: Code -> Character -> Bool
-inAlphabet code char = toUpper char `Set.member` fromAlphabetLookup (alphabetLookup code)
+inAlphabet code char = char `Set.member` alphabetLookup code
 
 -- | Number of characters. Since for IUPAC codes, the cardinality is not
 -- directly related to the number of characters in the alphabet, we have to set
@@ -150,11 +162,11 @@ isGapOrUnknown ProteinIUPAC = isGapOrUnknownAminoAcid
 
 -- XXX: Assumes that character is in alphabet.
 -- | Convert from IUPAC character.
-charFromIUPAC :: Code -> Character -> [Character]
-charFromIUPAC DNA          = fromIUPACNucleotide
-charFromIUPAC DNAIUPAC     = fromIUPACNucleotide
-charFromIUPAC Protein      = fromIUPACAminoAcid
-charFromIUPAC ProteinIUPAC = fromIUPACAminoAcid
+charsFromIUPAC :: Code -> Character -> [Character]
+charsFromIUPAC DNA          = fromIUPACNucleotide
+charsFromIUPAC DNAIUPAC     = fromIUPACNucleotide
+charsFromIUPAC Protein      = fromIUPACAminoAcid
+charsFromIUPAC ProteinIUPAC = fromIUPACAminoAcid
 
 -- {- |
 -- Module      :  EvoMod.Data.Alphabet

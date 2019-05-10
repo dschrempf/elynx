@@ -23,6 +23,7 @@ import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy                             as L
 import qualified Data.ByteString.Lazy.Char8                       as LC
+import qualified Data.IntMap                                      as M
 import           Data.Tree
 import qualified Data.Vector                                      as V
 import           Numeric.LinearAlgebra
@@ -78,7 +79,7 @@ simulateMSA pm t n g = do
   let leafStates = horizontalConcat leafStatesS
       leafNames  = map name $ leaves t
       code       = pmCode pm
-      sequences  = [ Sequence sName code (L.pack $ indicesToCharacters code ss) |
+      sequences  = [ Sequence sName code (L.pack $ map (indexToCharacterMap code M.!) ss) |
                     (sName, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
 
