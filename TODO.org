@@ -8,6 +8,8 @@ one input file is given. When does one file end and the next one begin?
 ** TODO Check common design
 For example, NO full stop after /Description/ in module header.
 
+** TODO Check model dependency graphs
+
 * Medium
 ** TODO Improve output of (mixture, gamma) model
 
