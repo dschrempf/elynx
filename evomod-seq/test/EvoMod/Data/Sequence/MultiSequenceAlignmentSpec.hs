@@ -30,13 +30,13 @@ ssData :: M.Matrix Word8
 ssData = M.fromLists $ map (reverse . map c2w) [ "AAA", "GAA", "TAA" ]
 
 ssMSA :: MultiSequenceAlignment
-ssMSA = MultiSequenceAlignment (map L.pack ["SEQUENCE_1", "SEQUENCE_2", "SEQUENCE_3"]) DNAIUPAC ssData
+ssMSA = MultiSequenceAlignment (map L.pack ["SEQUENCE_1", "SEQUENCE_2", "SEQUENCE_3"]) DNA ssData
 
 spec :: Spec
 spec =
   describe "subSample" $
   it "correctly sub sample an MSA" $ do
-    msa <- fromSequenceList <$> parseFileWith (fasta DNAIUPAC) fastaNucleotideIUPACFN
+    msa <- fromSequenceList <$> parseFileWith (fasta DNA) fastaNucleotideIUPACFN
     let ss = subSample [0,3,5] msa
     -- L.putStr $ summarizeMSA ss
     ss `shouldBe` ssMSA

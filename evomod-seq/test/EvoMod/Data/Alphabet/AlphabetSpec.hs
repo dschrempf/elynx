@@ -25,7 +25,7 @@ import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Alphabet.Character
 
 codes :: [Code]
-codes = [DNA, DNAIUPAC, Protein, ProteinIUPAC]
+codes = [DNA, Protein]
 
 alphabets :: [Alphabet]
 alphabets = map alphabet codes
