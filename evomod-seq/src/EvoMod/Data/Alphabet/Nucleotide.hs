@@ -50,25 +50,24 @@ module EvoMod.Data.Alphabet.Nucleotide
   ) where
 
 import qualified Data.Map.Strict                as M
-import qualified Data.Set                       as S
 
 import           EvoMod.Data.Alphabet.Character
 
 -- | Standard nucleotides; alphabetical order.
-standard :: S.Set Character
-standard = S.fromList $ fromString "ACGT"
+standard :: [Character]
+standard = fromString "ACGT"
 
 -- | Nucleotide IUPAC code characters.
-iupac :: S.Set Character
-iupac = S.fromList $ fromString "UWSMKRYBDHVNZ-"
+iupac :: [Character]
+iupac = fromString "UWSMKRYBDHVNZ-"
 
 -- | Nucleotide gap characters.
-gap :: S.Set Character
-gap = S.fromList $ fromString "Z-"
+gap :: [Character]
+gap = fromString "Z-"
 
 -- | Nucleotide unknown characters.
-unknown :: S.Set Character
-unknown = S.fromList $ fromString "N"
+unknown :: [Character]
+unknown = fromString "N"
 
 -- | Convert IUPAC code to set of normal nucleotides.
 iupacToStandard :: M.Map Character [Character]

@@ -24,3 +24,4 @@ output it to log.
 ** XXX Separate tree-lib from tree-sim?
 
 ** XXX Separate seq-lib from seq-ana and seq-sim?
+** TODO Also reduce complexity of tree data types

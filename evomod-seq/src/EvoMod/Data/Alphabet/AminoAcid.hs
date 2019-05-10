@@ -56,25 +56,24 @@ module EvoMod.Data.Alphabet.AminoAcid
   ) where
 
 import qualified Data.Map.Strict                as M
-import qualified Data.Set                       as S
 
 import           EvoMod.Data.Alphabet.Character
 
 -- | Amino acids; alphabetical order.
-standard :: S.Set Character
-standard = S.fromList $ fromString "ACDEFGHIKLMNPQRSTVWY"
+standard :: [Character]
+standard = fromString "ACDEFGHIKLMNPQRSTVWY"
 
 -- | Amino acids IUPAC code characters.
-iupac :: S.Set Character
-iupac = S.fromList $ fromString "BXZ-"
+iupac :: [Character]
+iupac = fromString "BXZ-"
 
 -- | Amino acid gap characters.
-gap :: S.Set Character
-gap = S.fromList $ fromString "-"
+gap :: [Character]
+gap = fromString "-"
 
 -- | Amino acid unknown characters.
-unknown :: S.Set Character
-unknown = S.fromList $ fromString "X"
+unknown :: [Character]
+unknown = fromString "X"
 
 -- | Convert IUPAC code to set of normal amino acids.
 iupacToStandard :: M.Map Character [Character]

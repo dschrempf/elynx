@@ -19,7 +19,6 @@ import           Test.Hspec
 
 import qualified Data.IntMap.Strict             as I
 import qualified Data.Map.Strict                as M
-import qualified Data.Set                       as S
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Alphabet.Character
@@ -34,7 +33,7 @@ id' :: Code -> Character -> Character
 id' code = (indexToCharacter code I.!) . (characterToIndex code M.!)
 
 convertAlphabet :: Code -> Alphabet -> Alphabet
-convertAlphabet code a = Alphabet $ S.map (id' code) a'
+convertAlphabet code a = Alphabet $ map (id' code) a'
   where a' = fromAlphabet a
 
 spec :: Spec

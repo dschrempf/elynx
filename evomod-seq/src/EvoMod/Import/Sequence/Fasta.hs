@@ -69,7 +69,7 @@ sequenceLine s = do
 -- | Parse a sequence of 'Alphabet' 'EvoMod.Data.Alphabet.Character's.
 fastaSequence :: Code -> Parser Sequence
 fastaSequence c = do hd <- sequenceHeader
-                     let !a  = fromAlphabet $ alphabet c
+                     let !a  = S.fromList $ fromAlphabet $ alphabet c
                      lns <- some (sequenceLine a)
                      _  <- many eol
                      return $ Sequence hd c (L.concat lns)

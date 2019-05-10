@@ -14,7 +14,8 @@ Hierarchy:
 
 1. 'Character' type.
 
-2. Sets of 'Character's such as 'nucleotides' or 'aminoAcids'.
+2. Sets of 'Character's such as nucleotides 'N.standard' or amino acids
+   'A.standard'.
 
 3. 'Alphabet's. The different 'Code's are collected in a specific data type. New
    codes have to be added manually in this module.
@@ -57,16 +58,16 @@ codeNameVerbose DNA     = show DNA ++ " (nucleotides including IUPAC codes)"
 codeNameVerbose Protein = show Protein ++ " (amino acids including IUPAC codes)"
 
 -- | An alphabet is a vector of characters with a specific order.
-newtype Alphabet = Alphabet { fromAlphabet :: S.Set Character }
+newtype Alphabet = Alphabet { fromAlphabet :: [Character] }
   deriving (Show, Read, Eq, Ord)
 
 toCharacters :: Alphabet -> [Character]
-toCharacters = S.toList . fromAlphabet
+toCharacters = fromAlphabet
 
 -- | Alphabets.
 alphabet :: Code -> Alphabet
-alphabet DNA     = Alphabet $ N.standard `S.union` N.iupac
-alphabet Protein = Alphabet $ A.standard `S.union` A.iupac
+alphabet DNA     = Alphabet $ N.standard ++ N.iupac
+alphabet Protein = Alphabet $ A.standard ++ A.iupac
 
 -- | Number of characters. Since for IUPAC codes, the cardinality is not
 -- directly related to the number of characters in the alphabet, we have to set
@@ -86,18 +87,24 @@ characterToIndex code = M.fromList $ zip (toCharacters . alphabet $ code) [0..]
 -- | For a given code, is the character a standard character? A character is
 -- considered standard, when it is not an extended IUPAC character.
 isStandard :: Code -> Character -> Bool
-isStandard DNA          char = char `S.member` N.standard
-isStandard Protein      char = char `S.member` A.standard
+isStandard DNA          char = char `S.member` ns
+  where ns = S.fromList N.standard
+isStandard Protein      char = char `S.member` as
+  where as = S.fromList A.standard
 
 -- | For a given code, is the character an extended IUPAC character?
 isIUPAC :: Code -> Character -> Bool
-isIUPAC DNA          char = char `S.member` N.iupac
-isIUPAC Protein      char = char `S.member` A.iupac
+isIUPAC DNA          char = char `S.member` ni
+  where ni = S.fromList N.iupac
+isIUPAC Protein      char = char `S.member` ai
+  where ai = S.fromList A.iupac
 
 -- | For a given code, is the character unknown, or a gap?
 isGapOrUnknown :: Code -> Character -> Bool
-isGapOrUnknown DNA          char = char `S.member` (N.gap `S.union` N.unknown)
-isGapOrUnknown Protein      char = char `S.member` (A.gap `S.union` A.unknown)
+isGapOrUnknown DNA          char = char `S.member` ngu
+  where ngu = S.fromList (N.gap ++ N.unknown)
+isGapOrUnknown Protein      char = char `S.member` agu
+  where agu = S.fromList (A.gap ++ A.unknown)
 
 -- | Convert from IUPAC character.
 iupacToStandard :: Code -> Character -> [Character]

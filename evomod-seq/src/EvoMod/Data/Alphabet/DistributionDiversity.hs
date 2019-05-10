@@ -58,6 +58,12 @@ homoplasy v = sumVec $ V.map (\x -> x*x) v
 kEffHomoplasy :: V.Vector Double -> Double
 kEffHomoplasy v = 1.0 / homoplasy v
 
+-- -- Increment element at index in vector by one.
+-- incrementElemIndexByOne :: [Int] -> V.Vector Int -> V.Vector Int
+-- incrementElemIndexByOne is v = v V.// zip is es'
+--   where es' = [v V.! i + 1 | i <- is]
+
+-- XXX: Use mutable vector; then V.// is much faster.
 -- Increment element at index in vector by one.
 incrementElemIndexByOne :: [Int] -> V.Vector Int -> V.Vector Int
 incrementElemIndexByOne is v = v V.// zip is es'
