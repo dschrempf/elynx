@@ -18,7 +18,24 @@ For example, NO full stop after /Description/ in module header.
 Detect code for each sequence (what do we do for very short sequences?), and
 output it to log.
 
-* Require further tought
+* Requires further tought
 ** XXX Separate tree-lib from tree-sim?
 
 ** XXX Separate seq-lib from seq-ana and seq-sim?
+** Base type classes or data types
+#+BEGIN_SRC haskell :exports code
+type C = Word8
+
+data Code = DNA
+
+codeName :: Code -> String
+codeDescription :: Code -> String
+alphabet :: Code -> Alphabet
+standard :: Code -> [C]
+iupac    :: Code -> [C]
+gap      :: C
+unknown  :: C
+
+data Alphabet = Alphabet { aCode        :: Code
+                         , fromAlphabet :: V.Vector C}
+#+END_SRC
