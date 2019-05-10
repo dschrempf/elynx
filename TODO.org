@@ -18,7 +18,7 @@ For example, NO full stop after /Description/ in module header.
 Detect code for each sequence (what do we do for very short sequences?), and
 output it to log.
 
-* Require further tought
+* Requires further tought
 ** XXX Separate tree-lib from tree-sim?
 
 ** XXX Separate seq-lib from seq-ana and seq-sim?

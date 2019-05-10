@@ -28,34 +28,29 @@ module EvoMod.Data.Alphabet.Alphabet
   , codeNameVerbose
   , Alphabet (..)
   , alphabet
-  -- , AlphabetLookup
   , alphabetLookup
     -- * Lookup
-  , inAlphabet
+  -- , inAlphabet
   , cardinality
   , indexToCharacterMap
   , characterToIndexMap
     -- * IUPAC stuff
-  , fromIUPAC
   , isStandard
-  , isExtendedIUPAC
+  , isIUPAC
   , isGapOrUnknown
-  , charsFromIUPAC
+  , iupacToStandard
   ) where
 
-import qualified Data.IntMap.Strict              as IntMap
-import qualified Data.Map.Strict                 as Map
+import qualified Data.IntMap.Strict              as I
+import qualified Data.Map.Strict                 as M
 import qualified Data.MemoCombinators            as Memo
-import qualified Data.Set                        as Set
-import qualified Data.Vector.Unboxed             as Vec
--- import           Data.Word8
+import qualified Data.Set                        as S
+import qualified Data.Vector.Unboxed             as V
 
-import           EvoMod.Data.Alphabet.AminoAcid
+import qualified EvoMod.Data.Alphabet.AminoAcid  as A
 import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Data.Alphabet.Nucleotide
+import qualified EvoMod.Data.Alphabet.Nucleotide as N
 
--- One could add extended DNA or Protein here (standard characters plus gaps and
--- unknowns).
 -- | The used genetic code. Could include Protein_IUPAC, CountsFile for
 -- population data and so on.
 data Code = DNA | DNAIUPAC | Protein | ProteinIUPAC
@@ -69,51 +64,32 @@ codeNameVerbose Protein      = show Protein ++ " (amino acids)"
 codeNameVerbose ProteinIUPAC = show ProteinIUPAC ++ " (amino acids including IUPAC codes)"
 
 -- | An alphabet is a vector of characters with a specific order.
-newtype Alphabet = Alphabet { fromAlphabet :: Vec.Vector Character }
+newtype Alphabet = Alphabet { fromAlphabet :: V.Vector Character }
   deriving (Show, Read, Eq, Ord)
 
 fromCharacters :: [Character] -> Alphabet
-fromCharacters = Alphabet . Vec.fromList
+fromCharacters = Alphabet . V.fromList
 
 toCharacters :: Alphabet -> [Character]
-toCharacters = Vec.toList . fromAlphabet
+toCharacters = V.toList . fromAlphabet
 
 -- | Alphabets.
 alphabet :: Code -> Alphabet
-alphabet DNA          = fromCharacters nucleotides
-alphabet DNAIUPAC     = fromCharacters nucleotidesIUPAC
-alphabet Protein      = fromCharacters aminoAcids
-alphabet ProteinIUPAC = fromCharacters aminoAcidsIUPAC
+alphabet DNA          = fromCharacters . S.toList $ N.standard
+alphabet DNAIUPAC     = fromCharacters . S.toList $ N.standard `S.union` N.iupac
+alphabet Protein      = fromCharacters . S.toList $ A.standard
+alphabet ProteinIUPAC = fromCharacters . S.toList $ A.standard `S.union` A.iupac
 
--- -- | Alphabet optimized for lookups (i.e., "Is this character in the
--- -- alphabet?"). Order of characters is not preserved. 'Data.Set' is used because
--- -- it uses an ordered, tree-like structure with fast queries. When parsing
--- -- characters, they have to be checked for validity and so, the query speed is
--- -- very important when reading in large data files.
--- newtype AlphabetLookup = AlphabetLookup { fromAlphabetLookup :: Set.Set Word8 }
---   deriving (Show, Read, Eq, Ord)
-
--- -- Create an alphabet for lookups from 'Code'.
--- alphabetLookup' :: Code -> AlphabetLookup
--- alphabetLookup' = AlphabetLookup . Set.fromList . Vec.toList . fromAlphabet . alphabet
-
--- -- | Create an alphabet for lookups from 'Code'; memoized.
--- alphabetLookup :: Code -> AlphabetLookup
--- alphabetLookup = Memo.enum alphabetLookup'
-
-alphabetLookup' :: Code -> Set.Set Character
-alphabetLookup' = Set.fromList . Vec.toList . fromAlphabet . alphabet
+alphabetLookup' :: Code -> S.Set Character
+alphabetLookup' = S.fromList . V.toList . fromAlphabet . alphabet
 
 -- | Create an alphabet for lookups from 'Code'; memoized.
-alphabetLookup :: Code -> Set.Set Character
+alphabetLookup :: Code -> S.Set Character
 alphabetLookup = Memo.enum alphabetLookup'
 
+-- -- | For a given code, check if character is in alphabet.
 -- inAlphabet :: Code -> Character -> Bool
--- inAlphabet code char = toUpper char `Set.member` fromAlphabetLookup (alphabetLookup code)
-
--- | For a given code, check if character is in alphabet.
-inAlphabet :: Code -> Character -> Bool
-inAlphabet code char = char `Set.member` alphabetLookup code
+-- inAlphabet code char = up char `S.member` alphabetLookup code
 
 -- | Number of characters. Since for IUPAC codes, the cardinality is not
 -- directly related to the number of characters in the alphabet, we have to set
@@ -125,53 +101,55 @@ cardinality Protein      = 20
 cardinality ProteinIUPAC = 20
 
 -- | Convert integer index to 'Character'.
-indexToCharacterMap :: Code -> IntMap.IntMap Character
-indexToCharacterMap code = IntMap.fromList $ zip [0..] (toCharacters . alphabet $ code)
+indexToCharacterMap :: Code -> I.IntMap Character
+indexToCharacterMap code = I.fromList $ zip [0..] (toCharacters . alphabet $ code)
 
 -- | Convert a character (Word8) to integer index in alphabet.
-characterToIndexMap :: Code -> Map.Map Character Int
-characterToIndexMap code = Map.fromList $ zip (toCharacters . alphabet $ code) [0..]
+characterToIndexMap :: Code -> M.Map Character Int
+characterToIndexMap code = M.fromList $ zip (toCharacters . alphabet $ code) [0..]
 
--- | Get normal code from IUPAC code.
-fromIUPAC :: Code -> Code
-fromIUPAC DNA          = DNA
-fromIUPAC DNAIUPAC     = DNA
-fromIUPAC Protein      = Protein
-fromIUPAC ProteinIUPAC = Protein
+-- -- | Get normal code from IUPAC code.
+-- fromIUPAC :: Code -> Code
+-- fromIUPAC DNA          = DNA
+-- fromIUPAC DNAIUPAC     = DNA
+-- fromIUPAC Protein      = Protein
+-- fromIUPAC ProteinIUPAC = Protein
 
--- | Get IUPAC code from normal code.
-toIUPAC :: Code -> Code
-toIUPAC DNA          = DNAIUPAC
-toIUPAC DNAIUPAC     = DNAIUPAC
-toIUPAC Protein      = ProteinIUPAC
-toIUPAC ProteinIUPAC = ProteinIUPAC
+-- -- | Get IUPAC code from normal code.
+-- toIUPAC :: Code -> Code
+-- toIUPAC DNA          = DNAIUPAC
+-- toIUPAC DNAIUPAC     = DNAIUPAC
+-- toIUPAC Protein      = ProteinIUPAC
+-- toIUPAC ProteinIUPAC = ProteinIUPAC
 
--- XXX: Probably assume that character is in alphabet? Then it would be much faster.
 -- | For a given code, is the character a standard character? A character is
 -- considered standard, when it is not an extended IUPAC character.
 isStandard :: Code -> Character -> Bool
-isStandard code = inAlphabet (fromIUPAC code)
+isStandard DNA          char = char `S.member` N.standard
+isStandard DNAIUPAC     char = char `S.member` N.standard
+isStandard Protein      char = char `S.member` A.standard
+isStandard ProteinIUPAC char = char `S.member` A.standard
 
--- XXX: Probably assume that character is in alphabet? Then it would be much faster.
 -- | For a given code, is the character an extended IUPAC character?
-isExtendedIUPAC :: Code -> Character -> Bool
-isExtendedIUPAC code char = not (isStandard code char) && inAlphabet (toIUPAC code) char
+isIUPAC :: Code -> Character -> Bool
+isIUPAC DNA          char = char `S.member` N.iupac
+isIUPAC DNAIUPAC     char = char `S.member` N.iupac
+isIUPAC Protein      char = char `S.member` A.iupac
+isIUPAC ProteinIUPAC char = char `S.member` A.iupac
 
--- XXX: Assumes that character is in alphabet.
 -- | For a given code, is the character unknown, or a gap?
 isGapOrUnknown :: Code -> Character -> Bool
-isGapOrUnknown DNA          = isGapOrUnknownNucleotide
-isGapOrUnknown DNAIUPAC     = isGapOrUnknownNucleotide
-isGapOrUnknown Protein      = isGapOrUnknownAminoAcid
-isGapOrUnknown ProteinIUPAC = isGapOrUnknownAminoAcid
+isGapOrUnknown DNA          char = char `S.member` (N.gap `S.union` N.unknown)
+isGapOrUnknown DNAIUPAC     char = char `S.member` (N.gap `S.union` N.unknown)
+isGapOrUnknown Protein      char = char `S.member` (A.gap `S.union` A.unknown)
+isGapOrUnknown ProteinIUPAC char = char `S.member` (A.gap `S.union` A.unknown)
 
--- XXX: Assumes that character is in alphabet.
 -- | Convert from IUPAC character.
-charsFromIUPAC :: Code -> Character -> [Character]
-charsFromIUPAC DNA          = fromIUPACNucleotide
-charsFromIUPAC DNAIUPAC     = fromIUPACNucleotide
-charsFromIUPAC Protein      = fromIUPACAminoAcid
-charsFromIUPAC ProteinIUPAC = fromIUPACAminoAcid
+iupacToStandard :: Code -> Character -> [Character]
+iupacToStandard DNA          char = N.iupacToStandard M.! char
+iupacToStandard DNAIUPAC     char = N.iupacToStandard M.! char
+iupacToStandard Protein      char = A.iupacToStandard M.! char
+iupacToStandard ProteinIUPAC char = A.iupacToStandard M.! char
 
 -- {- |
 -- Module      :  EvoMod.Data.Alphabet
