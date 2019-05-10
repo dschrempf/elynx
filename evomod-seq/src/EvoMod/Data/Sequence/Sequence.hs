@@ -50,6 +50,7 @@ module EvoMod.Data.Sequence.Sequence
   ) where
 
 import           Control.Lens
+import           Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.List                     (maximumBy)
 import           Data.Ord                      (comparing)
@@ -148,7 +149,7 @@ summarizeSequenceListHeader ss = L.unlines $
 
 -- | Trim and show a list of 'Sequence's.
 summarizeSequenceListBody :: [Sequence] -> L.ByteString
-summarizeSequenceListBody ss = L.unlines $ map summarizeSequence ss
+summarizeSequenceListBody ss = L.unlines (map summarizeSequence ss `using` parListChunk 5 rdeepseq)
 
 -- | Calculate length of 'Sequence'.
 lengthSequence :: Sequence -> Int
