@@ -1,0 +1,24 @@
+* Notes
+** Read from standard input
+I decided to not provide an option for reading from STDIN, since this is a
+corner case and additionally because behavior might be undefined when more than
+one input file is given. When does one file end and the next one begin?
+
+* Easy
+** TODO Check common design
+For example, NO full stop after /Description/ in module header.
+
+* Medium
+** TODO Improve output of (mixture, gamma) model
+
+** TODO Enable description in FASTA files sequence headers
+
+* Hard
+** TODO Remove mandatory statement of code at command line
+Detect code for each sequence (what do we do for very short sequences?), and
+output it to log.
+
+* Require further tought
+** XXX Separate tree-lib from tree-sim?
+
+** XXX Separate seq-lib from seq-ana and seq-sim?
