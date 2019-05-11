@@ -31,7 +31,7 @@ import qualified Data.Vector.Unboxed            as V
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Tools.Numeric
-import           EvoMod.Tools.UVector
+import           EvoMod.Tools.Vector
 
 -- | Entropy of vector.
 entropy :: V.Vector Double -> Double

@@ -32,7 +32,7 @@ import           Prelude                    hiding ((<>))
 
 import           EvoMod.Tools.Equality
 import           EvoMod.Tools.LinearAlgebra
-import           EvoMod.Tools.SVector
+import           EvoMod.Tools.Vector
 
 -- | A rate matrix is just a real matrix.
 type RateMatrix = Matrix R

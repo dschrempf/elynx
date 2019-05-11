@@ -22,7 +22,7 @@ import           EvoMod.Data.MarkovProcess.AminoAcid
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools.Equality
-import           EvoMod.Tools.SVector
+import           EvoMod.Tools.Vector
 
 statDistLGPython :: StationaryDistribution
 statDistLGPython = normalizeSumVec 1.0 $
