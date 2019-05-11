@@ -25,7 +25,7 @@ import qualified Data.ByteString.Lazy                             as L
 import qualified Data.ByteString.Lazy.Char8                       as LC
 import qualified Data.IntMap                                      as M
 import           Data.Tree
-import qualified Data.Vector                                      as V
+import qualified Data.Vector.Unboxed                              as V
 import           Numeric.LinearAlgebra
 import           System.IO
 import           System.Random.MWC
@@ -33,7 +33,6 @@ import           System.Random.MWC
 import           OptionsSeqSim
 import           ParsePhyloModel
 
-import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
 import           EvoMod.Data.MarkovProcess.MixtureModel
@@ -80,7 +79,7 @@ simulateMSA pm t n g = do
   let leafStates = horizontalConcat leafStatesS
       leafNames  = map name $ leaves t
       code       = pmCode pm
-      sequences  = [ Sequence sName code (L.pack $ map (toWord8 . (indexToCharacter code M.!)) ss) |
+      sequences  = [ Sequence sName code (V.fromList $ map (indexToCharacter code M.!) ss) |
                     (sName, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
 

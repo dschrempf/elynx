@@ -73,7 +73,7 @@ fastaSequence c = do hd <- sequenceHeader
                      let !a  = S.fromList $ map toWord8 $ fromAlphabet $ alphabet c
                      lns <- some (sequenceLine a)
                      _  <- many eol
-                     return $ Sequence hd c (L.concat lns)
+                     return $ Sequence hd c (toCharacters $ L.concat lns)
 
 -- | Parse a Fasta file assuming 'Code'.
 fasta :: Code -> Parser [Sequence]

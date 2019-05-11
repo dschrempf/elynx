@@ -86,18 +86,13 @@ fromSequenceList ss
     ns   = map (view seqName) ss
     cd   = head ss ^. seqCode
     bss  = map (view seqCharacters) ss
-    vecs = map (V.fromList . map fromChar . L.unpack) bss
-    d    = M.fromRows vecs
-
-vecToByteString :: V.Vector Character -> L.ByteString
-vecToByteString = L.pack . map toChar . V.toList
+    d    = M.fromRows bss
 
 -- | Conversion to list of 'Sequence's.
 toSequenceList :: MultiSequenceAlignment -> [Sequence]
-toSequenceList (MultiSequenceAlignment ns c d) = zipWith (\n r -> Sequence n c r) ns bss
+toSequenceList (MultiSequenceAlignment ns c d) = zipWith (\n r -> Sequence n c r) ns rows
   where
     rows  = M.toRows d
-    bss   = map vecToByteString rows
 
 msaHeader :: L.ByteString
 msaHeader = L.unwords [ alignLeft defSequenceNameWidth (L.pack "Name")
@@ -107,14 +102,14 @@ msaHeader = L.unwords [ alignLeft defSequenceNameWidth (L.pack "Name")
 showSequenceOfMultiSequenceAlignment :: MultiSequenceAlignment -> Int -> L.ByteString
 showSequenceOfMultiSequenceAlignment m i =
   L.unwords [ alignLeft defSequenceNameWidth $ (m ^. names) !! i
-            , vecToByteString $ M.takeRow (m ^. matrix) i ]
+            , fromCharacters $ M.takeRow (m ^. matrix) i ]
 
 -- | Show a 'Sequence', untrimmed.
 summarizeSequenceOfMultiSequenceAlignment :: MultiSequenceAlignment -> Int -> L.ByteString
 summarizeSequenceOfMultiSequenceAlignment m i =
   L.unwords [ alignLeft defSequenceNameWidth $ (m ^. names) !! i
             , summarizeByteString defSequenceSummaryLength $
-              vecToByteString $ M.takeRow (m ^. matrix) i ]
+              fromCharacters $ M.takeRow (m ^. matrix) i ]
 
 -- | Show a 'MultiSequenceAlignment' in text form.
 showMSA :: MultiSequenceAlignment -> L.ByteString

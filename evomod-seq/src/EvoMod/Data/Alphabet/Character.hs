@@ -30,6 +30,7 @@ module EvoMod.Data.Alphabet.Character
 
 import           Data.Vector.Unboxed.Deriving
 import           Data.Word8                   (Word8, toUpper)
+
 import           EvoMod.Tools.ByteString      (c2w, w2c)
 
 -- | A set of characters forms an 'EvoMod.Data.Alphabet.Alphabet'. At the
@@ -47,23 +48,29 @@ derivingUnbox "Character"
 -- | Convert 'Char' into 'Character', upper case is enforced.
 fromChar :: Char -> Character
 fromChar = Character . toUpper . c2w
+-- {-# INLINE fromChar #-}
 
 -- | Convert 'Character' into 'Char'.
 toChar :: Character -> Char
 toChar (Character w) = w2c w
+-- {-# INLINE toChar #-}
 
 -- | Convert 'Word8' into 'Character', upper case is enforced.
 fromWord8 :: Word8 -> Character
 fromWord8 = Character . toUpper
+-- {-# INLINE fromWord8 #-}
 
 -- | Convert 'Character into ''Word8'.
 toWord8 :: Character -> Word8
 toWord8 (Character w) = w
+-- {-# INLINE toWord8 #-}
 
 -- | Convert 'String' into list of 'Character's.
 fromString :: String -> [Character]
 fromString = map fromChar
+-- {-# INLINE fromString #-}
 
 -- | Convert list of 'Character's into String.
 toString :: [Character] -> String
 toString = map toChar
+-- {-# INLINE toString #-}

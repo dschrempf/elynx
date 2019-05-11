@@ -30,9 +30,9 @@ module EvoMod.Data.Sequence.Sequence
   , seqCode
   , seqCharacters
   -- * Input
-  -- , toSequence
+  , toCharacters
   -- * Output
-  , fromSequence
+  , fromCharacters
   , showSequence
   , showSequenceList
   , sequenceListHeader
@@ -68,7 +68,7 @@ import           EvoMod.Tools.Equality
 type SequenceName = L.ByteString
 
 -- | The vector of characters of a sequence.
-type SequenceCharacters = L.ByteString
+type SequenceCharacters = V.Vector C.Character
 
 -- | Sequences have a name, a code and hopefully a lot of data.
 data Sequence = Sequence { _name       :: SequenceName
@@ -90,12 +90,14 @@ seqCode = code
 seqCharacters :: Lens' Sequence SequenceCharacters
 seqCharacters = characters
 
--- | Extract 'SequenceName' and data.
-fromSequence :: Sequence -> (SequenceName, L.ByteString)
-fromSequence s = (s ^. name, s ^. characters)
+-- | Converrt byte string to sequence characters.
+toCharacters :: L.ByteString -> SequenceCharacters
+toCharacters = V.fromList . map C.fromChar . L.unpack
 
-showCharacters :: Sequence -> L.ByteString
-showCharacters = view characters
+-- | Convert sequence characters to byte string.
+fromCharacters :: SequenceCharacters -> L.ByteString
+-- Seriously?
+fromCharacters = L.pack . map C.toChar . V.toList
 
 showInfo :: Sequence -> L.ByteString
 showInfo s = L.unwords [ alignLeft defSequenceNameWidth (s^.name)
@@ -111,7 +113,7 @@ instance Show Sequence where
 
 -- | Show a 'Sequence', untrimmed.
 showSequence :: Sequence -> L.ByteString
-showSequence s = L.unwords [showInfo s, showCharacters s]
+showSequence s = L.unwords [showInfo s, fromCharacters $ s^.characters]
 
 -- | Show a list of 'Sequence's, untrimmed.
 showSequenceList :: [Sequence] -> L.ByteString
@@ -128,7 +130,8 @@ sequenceListHeader = L.unwords [ alignLeft defSequenceNameWidth (L.pack "Name")
 -- | Trim and show a 'Sequence'.
 summarizeSequence :: Sequence -> L.ByteString
 summarizeSequence s = L.unwords [ showInfo s
-                                , summarizeByteString defSequenceSummaryLength (showCharacters s) ]
+                                , summarizeByteString defSequenceSummaryLength
+                                  (fromCharacters $ s^.characters) ]
 
 -- | Trim and show a list of 'Sequence's.
 summarizeSequenceList :: [Sequence] -> L.ByteString
@@ -155,7 +158,7 @@ summarizeSequenceListBody ss = L.unlines (map summarizeSequence ss `using` parLi
 
 -- | Calculate length of 'Sequence'.
 lengthSequence :: Sequence -> Int
-lengthSequence s = fromIntegral $ L.length $ s ^. characters
+lengthSequence s = fromIntegral $ V.length $ s ^. characters
 
 -- | Check if all 'Sequence's have equal length.
 equalLength :: [Sequence] -> Bool
@@ -168,13 +171,12 @@ longest = maximumBy (comparing lengthSequence)
 -- XXX This is pretty hacky here. Better to change to vector (not byte string).
 -- | Count number of gaps or unknown characters in sequence.
 countGapOrUnknownChars :: Sequence -> Int
-countGapOrUnknownChars s = V.length . V.filter (isGapOrUnknown cd) $ v
+countGapOrUnknownChars s = V.length . V.filter (isGapOrUnknown cd) $ s^.characters
   where cd = s^.code
-        v  = V.fromList . map C.fromChar . L.unpack $ s^.characters
 
 -- | Trim to given length.
 trimSequence :: Int -> Sequence -> Sequence
-trimSequence n = over characters (L.take $ fromIntegral n)
+trimSequence n = over characters (V.take $ fromIntegral n)
 
 -- | Concatenate two sequences. 'SequenceName's have to match.
 concatenate :: Sequence -> Sequence -> Sequence
