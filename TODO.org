@@ -15,11 +15,14 @@ For example, NO full stop after /Description/ in module header.
 
 ** TODO Enable description in FASTA files sequence headers
 
+** TODO Vector/matrix tools for generic vector/matrix instances
+** TODO Investigate the Haddock warning because of deriveUnboxed
 * Hard
 ** TODO Remove mandatory statement of code at command line
 Detect code for each sequence (what do we do for very short sequences?), and
 output it to log.
 
+** TODO Sequence should be vector of characters
 * Requires further tought
 ** XXX Separate tree-lib from tree-sim?
 

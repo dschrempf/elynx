@@ -41,6 +41,7 @@ module EvoMod.Data.Sequence.Sequence
   , summarizeSequenceListBody
   -- * Analysis
   , lengthSequence
+
   , equalLength
   , longest
   -- * Manipulation
@@ -51,13 +52,14 @@ module EvoMod.Data.Sequence.Sequence
 
 import           Control.Lens
 import           Control.Parallel.Strategies
-import qualified Data.ByteString.Lazy.Char8    as L
-import           Data.List                     (maximumBy)
-import           Data.Ord                      (comparing)
-import qualified Data.Vector.Storable          as V
+import qualified Data.ByteString.Lazy.Char8     as L
+import           Data.List                      (maximumBy)
+import           Data.Ord                       (comparing)
+import qualified Data.Vector.Unboxed            as V
 import           Text.Printf
 
 import           EvoMod.Data.Alphabet.Alphabet
+import qualified EvoMod.Data.Alphabet.Character as C
 import           EvoMod.Data.Sequence.Defaults
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality
@@ -168,7 +170,7 @@ longest = maximumBy (comparing lengthSequence)
 countGapOrUnknownChars :: Sequence -> Int
 countGapOrUnknownChars s = V.length . V.filter (isGapOrUnknown cd) $ v
   where cd = s^.code
-        v  = V.fromList . map c2w . L.unpack $ s^.characters
+        v  = V.fromList . map C.fromChar . L.unpack $ s^.characters
 
 -- | Trim to given length.
 trimSequence :: Int -> Sequence -> Sequence

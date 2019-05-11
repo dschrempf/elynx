@@ -15,7 +15,7 @@ module EvoMod.Data.Alphabet.DistributionDiversitySpec
   (spec
   ) where
 
-import qualified Data.Vector.Storable                       as V
+import qualified Data.Vector.Unboxed                        as V
 import           Test.Hspec
 
 import           EvoMod.Data.Alphabet.DistributionDiversity

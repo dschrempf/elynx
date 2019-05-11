@@ -1,5 +1,7 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 {- |
-Module      :  EvoMod.Tools.Vector
+Module      :  EvoMod.Tools.SVector
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -13,7 +15,7 @@ Tools for vectors from 'Data.Vector.Storable'.
 
 -}
 
-module EvoMod.Tools.Vector
+module EvoMod.Tools.SVector
   (
     sumVec
   , normalizeSumVec
@@ -21,22 +23,22 @@ module EvoMod.Tools.Vector
   , meanVec
   ) where
 
-import           Data.Vector.Storable as V
+import  qualified         Data.Vector.Storable as V
 
 -- | Sum of elements.
-sumVec :: (Num a, Storable a) => Vector a -> a
+sumVec :: (Num a, V.Storable a) => V.Vector a -> a
 sumVec = V.foldl' (+) 0
 
 -- | Normalize a vector such that elements sum to a given value.
-normalizeSumVec :: Double -> Vector Double -> Vector Double
+normalizeSumVec :: Double -> V.Vector Double -> V.Vector Double
 normalizeSumVec c v = V.map (* c') v
   where s = sumVec v
         c' = c/s
 
 -- | A uniform vector of given length.
-uniformVec :: Int -> Vector Double
+uniformVec :: Int -> V.Vector Double
 uniformVec n = V.replicate n (1 / fromIntegral n)
 
 -- | Mean of a vector.
-meanVec :: Vector Double -> Double
+meanVec :: V.Vector Double -> Double
 meanVec v = sumVec v / fromIntegral (V.length v)

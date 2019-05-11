@@ -26,13 +26,12 @@ module EvoMod.Data.Alphabet.DistributionDiversity
 -- import           Data.Functor.Identity
 -- import qualified Data.Matrix.Storable          as M
 import qualified Data.Map                       as Map
-import qualified Data.Vector.Storable           as V
-import           Data.Word
+import qualified Data.Vector.Unboxed            as V
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Tools.Numeric
-import           EvoMod.Tools.Vector
+import           EvoMod.Tools.UVector
 
 -- | Entropy of vector.
 entropy :: V.Vector Double -> Double
@@ -76,7 +75,7 @@ acc code vec char = incrementElemIndexByOne is vec
     charsNonIupac = iupacToStandard code char
     is            = map (characterToIndex code Map.!) charsNonIupac
 
-countCharacters :: Code -> V.Vector Word8 -> V.Vector Int
+countCharacters :: Code -> V.Vector Character -> V.Vector Int
 countCharacters code =
   V.foldl' (acc code) zeroCounts
   where
@@ -84,7 +83,7 @@ countCharacters code =
     zeroCounts = V.replicate nChars (0 :: Int)
 
 -- | For a given code vector of characters, calculate frequency of characters.
-frequencyCharacters :: Code -> V.Vector Word8 -> V.Vector Double
+frequencyCharacters :: Code -> V.Vector Character -> V.Vector Double
 frequencyCharacters code d = V.map (\e -> fromIntegral e / fromIntegral s) counts
   where
     counts = countCharacters code d

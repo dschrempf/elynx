@@ -43,6 +43,7 @@ dependencies:
   - statistics
   - transformers
   - vector
+  - vector-th-unbox
   - word8
   # - zlib
 

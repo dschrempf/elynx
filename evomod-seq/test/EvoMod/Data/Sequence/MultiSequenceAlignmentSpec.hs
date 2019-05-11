@@ -15,19 +15,18 @@ module EvoMod.Data.Sequence.MultiSequenceAlignmentSpec
   (spec) where
 
 import qualified Data.ByteString.Lazy.Char8                  as L
-import qualified Data.Matrix.Storable                        as M
-import           Data.Word8
+import qualified Data.Matrix.Unboxed                         as M
 import           Test.Hspec
 
+import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Import.Sequence.Fasta
-import           EvoMod.Tools.ByteString                     (c2w)
 import           EvoMod.Tools.InputOutput
 import           Files
 
-ssData :: M.Matrix Word8
-ssData = M.fromLists $ map (reverse . map c2w) [ "AAA", "GAA", "TAA" ]
+ssData :: M.Matrix Character
+ssData = M.fromLists $ map (reverse . map fromChar) [ "AAA", "GAA", "TAA" ]
 
 ssMSA :: MultiSequenceAlignment
 ssMSA = MultiSequenceAlignment (map L.pack ["SEQUENCE_1", "SEQUENCE_2", "SEQUENCE_3"]) DNA ssData

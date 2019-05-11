@@ -33,6 +33,7 @@ import           Data.Word8
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 
+import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Tools.ByteString       (c2w)
@@ -69,7 +70,7 @@ sequenceLine s = do
 -- | Parse a sequence of 'Alphabet' 'EvoMod.Data.Alphabet.Character's.
 fastaSequence :: Code -> Parser Sequence
 fastaSequence c = do hd <- sequenceHeader
-                     let !a  = S.fromList $ fromAlphabet $ alphabet c
+                     let !a  = S.fromList $ map toWord8 $ fromAlphabet $ alphabet c
                      lns <- some (sequenceLine a)
                      _  <- many eol
                      return $ Sequence hd c (L.concat lns)

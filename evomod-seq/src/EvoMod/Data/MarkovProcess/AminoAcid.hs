@@ -37,7 +37,7 @@ import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools.ByteString                     (c2w)
 import           EvoMod.Tools.LinearAlgebra
-import           EvoMod.Tools.Vector
+import           EvoMod.Tools.SVector
 
 n :: Int
 n = cardinality Protein

@@ -45,12 +45,12 @@ import           Control.Lens
 import           Control.Monad
 import           Control.Monad.Primitive
 import qualified Data.ByteString.Lazy.Char8                 as L
-import qualified Data.Matrix.Storable                       as M
-import qualified Data.Vector.Storable                       as V
-import           Data.Word8                                 (Word8)
+import qualified Data.Matrix.Unboxed                        as M
+import qualified Data.Vector.Unboxed                        as V
 import           System.Random.MWC
 
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.DistributionDiversity
 import           EvoMod.Data.Sequence.Defaults
 import           EvoMod.Data.Sequence.Sequence
@@ -63,7 +63,7 @@ import           EvoMod.Tools.Matrix
 data MultiSequenceAlignment = MultiSequenceAlignment
   { _names  :: [SequenceName]
   , _code   :: Code
-  , _matrix :: M.Matrix Word8
+  , _matrix :: M.Matrix Character
   }
   deriving (Read, Show, Eq)
 
@@ -86,11 +86,11 @@ fromSequenceList ss
     ns   = map (view seqName) ss
     cd   = head ss ^. seqCode
     bss  = map (view seqCharacters) ss
-    vecs = map (V.fromList . map c2w . L.unpack) bss
+    vecs = map (V.fromList . map fromChar . L.unpack) bss
     d    = M.fromRows vecs
 
-vecToByteString :: V.Vector Word8 -> L.ByteString
-vecToByteString = L.pack . map w2c . V.toList
+vecToByteString :: V.Vector Character -> L.ByteString
+vecToByteString = L.pack . map toChar . V.toList
 
 -- | Conversion to list of 'Sequence's.
 toSequenceList :: MultiSequenceAlignment -> [Sequence]
@@ -179,7 +179,7 @@ msasConcatenate [msa] = Right msa
 msasConcatenate msas  = foldM msaConcatenate (head msas) (tail msas)
 
 -- Only keep columns from alignment that satisfy given predicate.
-filterColumns :: (V.Vector Word8 -> Bool) -> MultiSequenceAlignment -> MultiSequenceAlignment
+filterColumns :: (V.Vector Character -> Bool) -> MultiSequenceAlignment -> MultiSequenceAlignment
 filterColumns p = over matrix (M.fromColumns . filter p . M.toColumns)
 
 -- | Only keep columns with standard characters. Alignment columns with IUPAC
