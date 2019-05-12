@@ -126,6 +126,7 @@ summarizeSubstitutionModel sm = map L.pack $
     Protein -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
                , "Scale: " ++ show (roundN precision $ totalRateSubstitutionModel sm) ++ "."
                ]
+    _ -> error "Extended character sets are not supported with substitution models."
 
 -- | Calculate rate matrix from substitution model.
 getRateMatrix :: SubstitutionModel -> RateMatrix

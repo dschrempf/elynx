@@ -53,7 +53,6 @@ module EvoMod.Data.Alphabet.Nucleotide
 import qualified Data.Map.Strict                as M
 
 import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Tools.Misc              (allValues)
 
 -- | Nucleotides.
 data Nucleotide = A | C | G | T
@@ -61,7 +60,7 @@ data Nucleotide = A | C | G | T
 
 -- | Standard nucleotides; alphabetical order.
 standard :: [Character]
-standard = fromString $ show (allValues :: [Nucleotide])
+standard = fromString "ACGT"
 
 -- | Nucleotide IUPAC code characters.
 iupac :: [Character]
