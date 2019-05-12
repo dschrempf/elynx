@@ -12,9 +12,11 @@ that allows mutations only when the population is monomorphic.
 
 * Changelog
 
+TODO: BM states can not be read and written like characters.
+
 -}
 
-module EvoMod.Data.Alphabet.BoundaryMutationModel
+module EvoMod.Data.Alphabet.BoundaryMutation
   ( -- * Types
     Allele
   , PopulationSize
@@ -35,7 +37,7 @@ import           Control.Lens
 import qualified Data.ByteString.Lazy.Char8      as L
 import           Numeric.SpecFunctions           (choose)
 
-import           EvoMod.Data.Alphabet.Character
+-- import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Nucleotide
 import           EvoMod.Tools.Misc
 
@@ -192,19 +194,19 @@ instance Bounded State where
   minBound = Bnd nFixed minBound
   maxBound = Ply nFixed (nFixed-1) (pred maxBound) maxBound
 
--- I am not sure if I should remove the 'Character' instance because writing
--- Fasta files with boundary mutation model states is not really promising
--- anyways. However, the 'toIndex' and 'fromIndexWith' function provide a
--- convenient way to map states to integers. This functionality is needed when
--- working with matrices.
--- | A fixed population size 'nFixed' is assumed.
-instance Character State where
-  fromWord = toEnum . fromEnum
-  toWord = toEnum . fromEnum
-  -- FIXME: This requires more thought. Are polymorphic characters standard?
-  isStandard _ = error "Requires more thought."
-  -- FIXME: This requires more work. (0,0,0,0) should be a gap!
-  isGapOrUnknown _ = error "Not implemented."
+-- -- I am not sure if I should remove the 'Character' instance because writing
+-- -- Fasta files with boundary mutation model states is not really promising
+-- -- anyways. However, the 'toIndex' and 'fromIndexWith' function provide a
+-- -- convenient way to map states to integers. This functionality is needed when
+-- -- working with matrices.
+-- -- | A fixed population size 'nFixed' is assumed.
+-- instance Character State where
+--   fromWord = toEnum . fromEnum
+--   toWord = toEnum . fromEnum
+--   -- FIXME: This requires more thought. Are polymorphic characters standard?
+--   isStandard _ = error "Requires more thought."
+--   -- FIXME: This requires more work. (0,0,0,0) should be a gap!
+--   isGapOrUnknown _ = error "Not implemented."
 
 valid :: State -> Bool
 valid (Bnd n _)

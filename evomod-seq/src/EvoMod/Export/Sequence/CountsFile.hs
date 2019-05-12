@@ -7,6 +7,9 @@ Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
 Portability :  non-portable (not tested)
 
+TODO: The counts file should not be part of the Sequence hierarchy. It should be
+part of Import and Export.
+
 * The Counts Format
 
 The input of PoMo is allele frequency data.  Especially, when
@@ -61,7 +64,7 @@ module EvoMod.Export.Sequence.CountsFile
 import qualified Data.ByteString.Lazy.Char8                 as L
 import           Data.Maybe                                 (fromMaybe)
 
-import           EvoMod.Data.Alphabet.BoundaryMutationModel
+import           EvoMod.Data.Alphabet.BoundaryMutation
 import           EvoMod.Tools.ByteString                    (alignLeft,
                                                              alignRight)
 
