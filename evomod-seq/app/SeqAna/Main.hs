@@ -35,7 +35,6 @@ import           Text.Printf
 
 import           OptionsSeqAna
 
-import           EvoMod.Data.Sequence.Filter
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Export.Sequence.Fasta

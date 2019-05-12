@@ -29,13 +29,13 @@ ssData :: M.Matrix Character
 ssData = M.fromLists $ map (reverse . map fromChar) [ "AAA", "GAA", "TAA" ]
 
 ssMSA :: MultiSequenceAlignment
-ssMSA = MultiSequenceAlignment (map L.pack ["SEQUENCE_1", "SEQUENCE_2", "SEQUENCE_3"]) DNA ssData
+ssMSA = MultiSequenceAlignment (map L.pack ["SEQUENCE_1", "SEQUENCE_2", "SEQUENCE_3"]) DNAI ssData
 
 spec :: Spec
 spec =
   describe "subSample" $
   it "correctly sub sample an MSA" $ do
-    msa <- fromSequenceList <$> parseFileWith (fasta DNA) fastaNucleotideIUPACFN
+    msa <- fromSequenceList <$> parseFileWith (fasta DNAI) fastaNucleotideIUPACFN
     let ss = subSample [0,3,5] msa
     -- L.putStr $ summarizeMSA ss
     ss `shouldBe` ssMSA

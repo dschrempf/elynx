@@ -87,7 +87,7 @@ filterShorterThanOpt = optional $ option auto $
 examineCommand :: Mod CommandFields Command
 examineCommand = command "examine" $
   info (Examine <$> examinePerSite) $
-  progDesc "Examine sequences and columns of multi sequence alignments"
+  progDesc "Examine sequences; if data is a multi sequence alignment, additionally analyze columns"
 
 -- examineDropNonStandard :: Parser Bool
 -- examineDropNonStandard = switch $

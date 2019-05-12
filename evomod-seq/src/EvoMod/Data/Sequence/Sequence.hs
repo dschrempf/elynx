@@ -48,6 +48,9 @@ module EvoMod.Data.Sequence.Sequence
   , trimSequence
   , concatenate
   , concatenateSeqs
+  -- * Filtering
+  , filterShorterThan
+  , filterLongerThan
   ) where
 
 import           Control.Lens
@@ -190,3 +193,11 @@ concatenateSeqs :: [[Sequence]] -> [Sequence]
 concatenateSeqs []   = error "concatenateSeqs: Nothing to concatenate."
 concatenateSeqs [ss] = ss
 concatenateSeqs sss  = foldl1 (zipWith concatenate) sss
+
+-- | Only take 'Sequence's that are shorter than a given number.
+filterShorterThan :: Int -> [Sequence] -> [Sequence]
+filterShorterThan n = filter (\x -> lengthSequence x < n)
+
+-- | Only take 'Sequence's that are longer than a given number.
+filterLongerThan :: Int -> [Sequence] -> [Sequence]
+filterLongerThan n = filter (\x -> lengthSequence x > n)

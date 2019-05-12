@@ -49,13 +49,17 @@ import qualified EvoMod.Data.Alphabet.Nucleotide as N
 
 -- | The used genetic code. Could include Protein_IUPAC, CountsFile for
 -- population data and so on.
-data Code = DNA | Protein
+data Code = DNA | DNAX | DNAI | Protein | ProteinX | ProteinI
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 -- | Verbose version of code name.
 codeNameVerbose :: Code -> String
-codeNameVerbose DNA     = show DNA ++ " (nucleotides including IUPAC codes)"
-codeNameVerbose Protein = show Protein ++ " (amino acids including IUPAC codes)"
+codeNameVerbose DNA      = show DNA ++ " (nucleotides)"
+codeNameVerbose DNAX     = show DNAX ++ " (nucleotides; extended; including gaps and unknowns)"
+codeNameVerbose DNAI     = show DNAI ++ " (nucleotides; including IUPAC codes)"
+codeNameVerbose Protein  = show Protein ++ " (amino acids)"
+codeNameVerbose ProteinX = show ProteinX ++ " (amino acids; extended; including gaps and unknowns)"
+codeNameVerbose ProteinI = show ProteinI ++ " (amino acids; including IUPAC codes)"
 
 -- | An alphabet is a vector of characters with a specific order.
 newtype Alphabet = Alphabet { fromAlphabet :: [Character] }
@@ -66,15 +70,17 @@ toCharacters = fromAlphabet
 
 -- | Alphabets.
 alphabet :: Code -> Alphabet
-alphabet DNA     = Alphabet $ N.standard ++ N.iupac
-alphabet Protein = Alphabet $ A.standard ++ A.iupac
+alphabet DNA      = Alphabet   N.standard
+alphabet DNAX     = Alphabet $ N.standard ++ N.gap ++ N.unknown
+alphabet DNAI     = Alphabet $ N.standard ++ N.iupac
+alphabet Protein  = Alphabet   A.standard
+alphabet ProteinX = Alphabet $ A.standard ++ A.gap ++ A.unknown
+alphabet ProteinI = Alphabet $ A.standard ++ A.iupac
 
--- | Number of characters. Since for IUPAC codes, the cardinality is not
--- directly related to the number of characters in the alphabet, we have to set
--- it manually.
+-- | Number of characters. For IUPAC codes, the cardinality is not the number of
+-- characters in the standard alphabet.
 cardinality :: Code -> Int
-cardinality DNA     = 4
-cardinality Protein = 20
+cardinality = length . fromAlphabet . alphabet
 
 -- | Convert integer index to 'Character'.
 indexToCharacter :: Code -> I.IntMap Character
@@ -85,28 +91,59 @@ characterToIndex :: Code -> M.Map Character Int
 characterToIndex code = M.fromList $ zip (toCharacters . alphabet $ code) [0..]
 
 -- | For a given code, is the character a standard character? A character is
--- considered standard, when it is not an extended IUPAC character.
+-- considered standard, when it is not an extended IUPAC character. Assume that
+-- the given character is part of the given alphabet.
 isStandard :: Code -> Character -> Bool
-isStandard DNA          char = char `S.member` ns
-  where ns = S.fromList N.standard
-isStandard Protein      char = char `S.member` as
-  where as = S.fromList A.standard
+isStandard code char =
+  case code of
+    DNA      -> True
+    DNAX     -> not $ char `S.member` ng
+    DNAI     -> char `S.member` ns
+    Protein  -> True
+    ProteinX -> not $ char `S.member` ag
+    ProteinI -> char `S.member` as
+  where
+    ng = S.fromList $ N.gap ++ N.unknown
+    ns = S.fromList N.standard
+    ag = S.fromList $ A.gap ++ A.unknown
+    as = S.fromList A.standard
 
--- | For a given code, is the character an extended IUPAC character?
+-- | For a given code, is the character an extended IUPAC character? Assume that
+-- the given character is part of the given alphabet.
 isIUPAC :: Code -> Character -> Bool
-isIUPAC DNA          char = char `S.member` ni
-  where ni = S.fromList N.iupac
-isIUPAC Protein      char = char `S.member` ai
-  where ai = S.fromList A.iupac
+isIUPAC code char = case code of
+    DNA      -> False
+    DNAX     -> char `S.member` ng
+    DNAI     -> char `S.member` ni
+    Protein  -> False
+    ProteinX -> char `S.member` ag
+    ProteinI -> char `S.member` ai
+  where
+    ng = S.fromList $ N.gap ++ N.unknown
+    ni = S.fromList   N.iupac
+    ag = S.fromList $ A.gap ++ A.unknown
+    ai = S.fromList   A.iupac
 
--- | For a given code, is the character unknown, or a gap?
+-- | For a given code, is the character unknown, or a gap? Assume that the given
+-- character is part of the given alphabet.
 isGapOrUnknown :: Code -> Character -> Bool
-isGapOrUnknown DNA          char = char `S.member` ngu
-  where ngu = S.fromList (N.gap ++ N.unknown)
-isGapOrUnknown Protein      char = char `S.member` agu
-  where agu = S.fromList (A.gap ++ A.unknown)
+isGapOrUnknown code char = case code of
+    DNA      -> False
+    DNAX     -> char `S.member` ng
+    DNAI     -> char `S.member` ng
+    Protein  -> False
+    ProteinX -> char `S.member` ag
+    ProteinI -> char `S.member` ag
+  where
+    ng = S.fromList $ N.gap ++ N.unknown
+    ag = S.fromList $ A.gap ++ A.unknown
 
--- | Convert from IUPAC character.
+-- | Convert from IUPAC character. Assume that the given character is part of
+-- the given alphabet.
 iupacToStandard :: Code -> Character -> [Character]
-iupacToStandard DNA          char = N.iupacToStandard M.! char
-iupacToStandard Protein      char = A.iupacToStandard M.! char
+iupacToStandard DNA      char = [char]
+iupacToStandard DNAX     char = N.iupacToStandard M.! char
+iupacToStandard DNAI     char = N.iupacToStandard M.! char
+iupacToStandard Protein  char = [char]
+iupacToStandard ProteinX char = A.iupacToStandard M.! char
+iupacToStandard ProteinI char = A.iupacToStandard M.! char

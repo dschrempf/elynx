@@ -31,10 +31,16 @@ longestSequenceInFile :: Sequence
 longestSequenceInFile = parseByteStringWith (fastaSequence DNA) longestSequenceInFileBS
 
 spec :: Spec
-spec =
+spec = do
   describe "longest" $
     it "finds the longest sequence"$ do
     ss <- parseFileWith (fasta DNA) fastaDifferentLengthFN
     longest ss `shouldBe` longestSequenceInFile
+
+  describe "filterLongerThan" $
+    it "filters sequences that are longer than a specified length" $ do
+    ss  <- parseFileWith (fasta DNA) fastaDifferentLengthFN
+    ss' <- parseFileWith (fasta DNA) fastaDifferentLengthTrimmedFN
+    filterLongerThan 10 ss `shouldBe` ss'
 
 

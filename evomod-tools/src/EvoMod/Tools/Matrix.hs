@@ -28,47 +28,47 @@ module EvoMod.Tools.Matrix
 
 import           Control.Parallel.Strategies
 import           Data.List
-import qualified Data.Matrix.Unboxed         as M
-import qualified Data.Vector.Unboxed         as V
+import qualified Data.Matrix.Generic         as M
+import qualified Data.Vector.Generic         as V
 
 -- | Map a function on each row of a DIM2 array; sequential version.
-fMapRowSeq :: (V.Unbox a, V.Unbox b) => (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
+fMapRowSeq :: (V.Vector v a, V.Vector v b) => (v a -> v b) -> M.Matrix v a -> M.Matrix v b
 fMapRowSeq f m = M.fromRows $ map f (M.toRows m)
 
 -- | Map a function on each row of a DIM2 array; parallel version.
-fMapRowPar :: (V.Unbox a, V.Unbox b) => (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
+fMapRowPar :: (V.Vector v a, V.Vector v b) => (v a -> v b) -> M.Matrix v a -> M.Matrix v b
 fMapRowPar f m = M.fromRows $ parMap rseq f (M.toRows m)
 
 -- | Map a function on each row of a DIM2 array; parallel version with given chunk size.
-fMapRowParChunk :: (V.Unbox a, V.Unbox b) => Int -> (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
+fMapRowParChunk :: (V.Vector v a, V.Vector v b) => Int -> (v a -> v b) -> M.Matrix v a -> M.Matrix v b
 fMapRowParChunk n f m = M.fromRows (map f (M.toRows m) `using` parListChunk n rseq)
 
 -- | Map a function on each row of a DIM2 array; sequential version.
-fMapColSeq :: (V.Unbox a, V.Unbox b) => (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
+fMapColSeq :: (V.Vector v a, V.Vector v b) => (v a -> v b) -> M.Matrix v a -> M.Matrix v b
 fMapColSeq f m = M.fromColumns $ map f (M.toColumns m)
 
 -- | Map a function on each row of a DIM2 array; parallel version.
-fMapColPar :: (V.Unbox a, V.Unbox b) => (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
+fMapColPar :: (V.Vector v a, V.Vector v b) => (v a -> v b) -> M.Matrix v a -> M.Matrix v b
 fMapColPar f m = M.fromColumns $ parMap rseq f (M.toColumns m)
 
 -- | Map a function on each row of a DIM2 array; parallel version with given chunk size.
-fMapColParChunk :: (V.Unbox a, V.Unbox b) => Int -> (V.Vector a -> V.Vector b) -> M.Matrix a -> M.Matrix b
+fMapColParChunk :: (V.Vector v a, V.Vector v b) => Int -> (v a -> v b) -> M.Matrix v a -> M.Matrix v b
 fMapColParChunk n f m = M.fromColumns (map f (M.toColumns m) `using` parListChunk n rseq)
 
 -- | Horizontal concatenation.
-(|||) :: (V.Unbox a) => M.Matrix a -> M.Matrix a -> M.Matrix a
+(|||) :: (V.Vector v a) => M.Matrix v a -> M.Matrix v a -> M.Matrix v a
 (|||) l r = M.fromColumns $ lCs ++ rCs
   where
     lCs = M.toColumns l
     rCs = M.toColumns r
 
 -- | Vertical concatenation.
-(===) :: (V.Unbox a) => M.Matrix a -> M.Matrix a -> M.Matrix a
+(===) :: (V.Vector v a) => M.Matrix v a -> M.Matrix v a -> M.Matrix v a
 (===) l r = M.fromRows $ lRs ++ rRs
   where
     lRs = M.toRows l
     rRs = M.toRows r
 
 -- | Sample the given sites from a matrix.
-subSampleMatrix :: (V.Unbox a) => [Int] -> M.Matrix a -> M.Matrix a
+subSampleMatrix :: (V.Vector v a) => [Int] -> M.Matrix v a -> M.Matrix v a
 subSampleMatrix is m = M.fromColumns $ foldl' (\a i -> M.takeColumn m i : a) [] is

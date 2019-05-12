@@ -4,6 +4,11 @@ I decided to not provide an option for reading from STDIN, since this is a
 corner case and additionally because behavior might be undefined when more than
 one input file is given. When does one file end and the next one begin?
 
+** Automatic code detection
+I decided that there should not be any automatic code detection. Reaons:
+1. Reproducible runs.
+2. Separation between extended and IUPAC codes.
+
 * Easy
 ** TODO Check model dependency graphs
 
@@ -12,12 +17,9 @@ one input file is given. When does one file end and the next one begin?
 
 ** TODO Enable description in FASTA files sequence headers
 
-** TODO Vector/matrix tools for generic vector/matrix instances
 ** TODO Investigate the Haddock warning because of deriveUnboxed
+
 * Hard
-** TODO Remove mandatory statement of code at command line
-Detect code for each sequence (what do we do for very short sequences?), and
-output it to log.
 
 * Requires further tought
 ** XXX Separate tree-lib from tree-sim?
