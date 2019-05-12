@@ -42,7 +42,8 @@ Also used:
 -}
 
 module EvoMod.Data.Alphabet.Nucleotide
-  ( standard
+  ( Nucleotide (..)
+  , standard
   , iupac
   , gap
   , unknown
@@ -52,10 +53,15 @@ module EvoMod.Data.Alphabet.Nucleotide
 import qualified Data.Map.Strict                as M
 
 import           EvoMod.Data.Alphabet.Character
+import           EvoMod.Tools.Misc              (allValues)
+
+-- | Nucleotides.
+data Nucleotide = A | C | G | T
+  deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 -- | Standard nucleotides; alphabetical order.
 standard :: [Character]
-standard = fromString "ACGT"
+standard = fromString $ show (allValues :: [Nucleotide])
 
 -- | Nucleotide IUPAC code characters.
 iupac :: [Character]

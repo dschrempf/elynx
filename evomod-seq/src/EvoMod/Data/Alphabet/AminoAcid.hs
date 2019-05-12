@@ -48,7 +48,8 @@ Additionally, I add:
 -}
 
 module EvoMod.Data.Alphabet.AminoAcid
-  ( standard
+  ( AminoAcid (..)
+  , standard
   , iupac
   , gap
   , unknown
@@ -58,10 +59,15 @@ module EvoMod.Data.Alphabet.AminoAcid
 import qualified Data.Map.Strict                as M
 
 import           EvoMod.Data.Alphabet.Character
+import           EvoMod.Tools.Misc              (allValues)
+
+-- | Amino acids.
+data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
+  deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 -- | Amino acids; alphabetical order.
 standard :: [Character]
-standard = fromString "ACDEFGHIKLMNPQRSTVWY"
+standard = fromString $ show (allValues :: [AminoAcid])
 
 -- | Amino acids IUPAC code characters.
 iupac :: [Character]
