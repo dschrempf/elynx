@@ -15,7 +15,7 @@ module EvoMod.Data.Tree.TreeSpec
   (spec
   ) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8      as L
 import           Data.Maybe
 import           Data.Tree
 import           Test.Hspec
@@ -23,8 +23,8 @@ import           Test.Hspec
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Data.Tree.Tree
-import           EvoMod.Import.Tree.Newick  hiding (node)
-import           EvoMod.Tools.InputOutput   (parseByteStringWith)
+import           EvoMod.Import.Tree.Newick       hiding (node)
+import           EvoMod.Tools.InputOutput        (parseByteStringWith)
 
 node :: Int -> Tree Int
 node n = Node n []

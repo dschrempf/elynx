@@ -21,7 +21,7 @@ module EvoMod.Tools.Vector
   , meanVec
   ) where
 
-import  qualified         Data.Vector.Generic as V
+import qualified Data.Vector.Generic as V
 
 -- | Sum of elements.
 sumVec :: (Num a, V.Vector v a) => v a -> a

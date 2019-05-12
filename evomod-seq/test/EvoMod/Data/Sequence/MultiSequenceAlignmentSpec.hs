@@ -18,8 +18,8 @@ import qualified Data.ByteString.Lazy.Char8                  as L
 import qualified Data.Matrix.Unboxed                         as M
 import           Test.Hspec
 
-import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.InputOutput
