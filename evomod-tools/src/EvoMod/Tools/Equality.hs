@@ -28,7 +28,7 @@ module EvoMod.Tools.Equality
 
 import           Numeric.LinearAlgebra
 
-import           EvoMod.Definitions
+import           EvoMod.Tools.Definitions
 
 -- | Test if all elements of a list are equal; returns True for empty list.
 allEqual :: Eq a => [a] -> Bool

@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 {- |
-Module      :  EvoMod.Options
+Module      :  EvoMod.Tools.Options
 Description :  Global command line options and arguments
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -14,7 +14,7 @@ Creation date: Fri May  3 18:20:11 2019.
 
 -}
 
-module EvoMod.Options
+module EvoMod.Tools.Options
   (
     -- * Header
     programHeader

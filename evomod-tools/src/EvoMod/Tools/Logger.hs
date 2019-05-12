@@ -40,7 +40,7 @@ import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8 as LC
 import           System.IO
 
-import           EvoMod.Options             (Verbosity (..))
+import           EvoMod.Tools.Options       (Verbosity (..))
 
 -- | A logger knows if it has to be quiet and where it deposits more and less
 -- useful messages. It also comes with some convenience logging functions in the

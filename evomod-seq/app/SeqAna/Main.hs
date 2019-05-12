@@ -39,11 +39,11 @@ import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
-import           EvoMod.Options
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.InputOutput
 import           EvoMod.Tools.Logger
 import           EvoMod.Tools.Misc
+import           EvoMod.Tools.Options
 
 data Params = Params { arguments  :: Args
                      , mLogHandle :: Maybe Handle }

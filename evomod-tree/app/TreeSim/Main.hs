@@ -42,11 +42,11 @@ import           EvoMod.Data.Tree.SumStat             (formatNChildSumStat,
                                                        toNChildSumStat)
 import           EvoMod.Data.Tree.Tree
 import           EvoMod.Export.Tree.Newick            (toNewickPhyloIntTree)
-import           EvoMod.Options
 import           EvoMod.Simulate.PointProcess         (simulateNReconstructedTrees,
                                                        simulateReconstructedTree)
 import           EvoMod.Tools.Concurrent
 import           EvoMod.Tools.Logger
+import           EvoMod.Tools.Options
 
 main :: IO ()
 main = do

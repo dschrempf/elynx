@@ -38,7 +38,7 @@ import           Numeric.LinearAlgebra                hiding ((<>))
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.RateMatrix
-import           EvoMod.Definitions
+import           EvoMod.Tools.Definitions
 import           EvoMod.Tools.LinearAlgebra
 import           EvoMod.Tools.Numeric
 

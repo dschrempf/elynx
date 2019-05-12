@@ -43,7 +43,7 @@ module OptionsSeqSim
 import           Data.Word
 import           Options.Applicative
 
-import           EvoMod.Options
+import           EvoMod.Tools.Options
 
 -- -- Ugly convenience function to read in more complicated command line options
 -- -- with megaparsec and optparse

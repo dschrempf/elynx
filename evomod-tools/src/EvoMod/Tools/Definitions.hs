@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Definitions
+Module      :  EvoMod.Tools.Definitions
 Description :  Some global definitions
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -12,7 +12,7 @@ Creation date: Fri Jan 25 17:17:41 2019.
 
 -}
 
-module EvoMod.Definitions
+module EvoMod.Tools.Definitions
   ( eps
   , precision
   ) where

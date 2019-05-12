@@ -21,7 +21,7 @@ module OptionsTreeSim
 import           Data.Word
 import           Options.Applicative
 
-import           EvoMod.Options
+import           EvoMod.Tools.Options
 
 data Args = Args
   { argsNTrees          :: Int    -- ^ Simulated trees.

@@ -23,7 +23,7 @@ import           Data.Word
 import           Options.Applicative
 
 import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Options
+import           EvoMod.Tools.Options
 
 data Command = Examine { perSite :: Bool }
              | Concatenate

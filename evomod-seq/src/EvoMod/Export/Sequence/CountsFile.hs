@@ -7,8 +7,7 @@ Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
 Portability :  non-portable (not tested)
 
-TODO: The counts file should not be part of the Sequence hierarchy. It should be
-part of Import and Export.
+TODO: Import.
 
 * The Counts Format
 

@@ -47,12 +47,12 @@ import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes   hiding
                                                                    (Parser)
 import           EvoMod.Import.Tree.Newick                        hiding (name)
-import           EvoMod.Options
 import           EvoMod.Simulate.MarkovProcessAlongTree
 import           EvoMod.Tools.Concurrent
 import           EvoMod.Tools.InputOutput
 import           EvoMod.Tools.Logger
 import           EvoMod.Tools.Misc
+import           EvoMod.Tools.Options
 
 -- Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.

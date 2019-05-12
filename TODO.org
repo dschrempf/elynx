@@ -10,7 +10,6 @@ I decided that there should not be any automatic code detection. Reaons:
 2. Separation between extended and IUPAC codes.
 
 * Easy
-** TODO Check model dependency graphs
 
 * Medium
 ** TODO Improve output of (mixture, gamma) model
