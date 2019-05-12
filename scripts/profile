@@ -19,7 +19,7 @@ seqana() {
     file_profile="${project_root}/evomod-seq/data/BenchmarkEnsemblMouse.fa.gz"
     #file_profile="${project_root}/evomod-seq/data/Profile.fa.gz"
     stack exec seq-ana --work-dir $prof_dir -- \
-          examine -a DNA "$file_profile" \
+          examine -a DNAI "$file_profile" \
           +RTS -p -l -s || exit 1
     # +RTS -p -hy -l -s || exit 1
 }
