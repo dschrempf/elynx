@@ -2,7 +2,7 @@
 
 {- |
 Module      :  EvoMod.Data.MultiSequenceAlignment
-Description :  Multi sequence alignment related types and functions.
+Description :  Multi sequence alignment related types and functions
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 

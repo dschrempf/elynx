@@ -2,7 +2,7 @@
 
 {- |
 Module      :  EvoMod.Data.Tree.PhyloTree
-Description :  Phylogenetic trees.
+Description :  Phylogenetic trees
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 

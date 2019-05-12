@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Data.Tree.EvoTree
-Description :  Evolutionary nodes.
+Description :  Evolutionary nodes
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 

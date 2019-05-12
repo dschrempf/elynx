@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Import.Tree.Newick
-Description :  Import Newick trees.
+Description :  Import Newick trees
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 

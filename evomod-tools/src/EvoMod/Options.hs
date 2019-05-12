@@ -2,7 +2,7 @@
 
 {- |
 Module      :  EvoMod.Options
-Description :  Global command line options and arguments.
+Description :  Global command line options and arguments
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 

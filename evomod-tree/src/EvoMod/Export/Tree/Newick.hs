@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Export.Tree.Newick
-Description :  Export tree objects to Newick format.
+Description :  Export tree objects to Newick format
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 

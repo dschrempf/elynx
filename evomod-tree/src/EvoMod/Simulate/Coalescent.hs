@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Simulate.Coalescent
-Description :  Generate coalescent trees.
+Description :  Generate coalescent trees
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 

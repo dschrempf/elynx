@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Data.Tree.MeasurableTree
-Description :  Functions on trees with branch lengths.
+Description :  Functions on trees with branch lengths
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 

@@ -2,7 +2,7 @@
 
 {- |
 Module      :  EvoMod.Data.Sequence
-Description :  Hereditary sequences.
+Description :  Hereditary sequences
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 

@@ -1,6 +1,6 @@
 {- |
 Module      :  Main
-Description :  Parse sequence file formats and analyze them.
+Description :  Parse sequence file formats and analyze them
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 

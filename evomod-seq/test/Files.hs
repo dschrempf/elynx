@@ -1,6 +1,6 @@
 {- |
 Module      :  Files
-Description :  File names of test data.
+Description :  File names of test data
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 

@@ -1,6 +1,6 @@
 {- |
 Module      :  OptionsSeqSim
-Description :  EvoModSim argument parsing.
+Description :  EvoModSim argument parsing
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 

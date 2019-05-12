@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Defaults
-Description :  Various default values.
+Description :  Various default values
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 

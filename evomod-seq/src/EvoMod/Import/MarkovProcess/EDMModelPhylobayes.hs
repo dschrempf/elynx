@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Import.MarkovProcess.EDMModelPhylobayes
-Description :  Import stationary distributions from Phylobayes format.
+Description :  Import stationary distributions from Phylobayes format
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 

@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Tools.Concurrent
-Description :  Tools for concurrent random calculations.
+Description :  Tools for concurrent random calculations
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 

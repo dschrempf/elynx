@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Distribution.CoalescentContinuous
-Description :  Distribution of coalescent times.
+Description :  Distribution of coalescent times
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 

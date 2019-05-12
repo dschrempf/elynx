@@ -5,9 +5,6 @@ corner case and additionally because behavior might be undefined when more than
 one input file is given. When does one file end and the next one begin?
 
 * Easy
-** TODO Check common design
-For example, NO full stop after /Description/ in module header.
-
 ** TODO Check model dependency graphs
 
 * Medium
@@ -22,7 +19,6 @@ For example, NO full stop after /Description/ in module header.
 Detect code for each sequence (what do we do for very short sequences?), and
 output it to log.
 
-** TODO Sequence should be vector of characters
 * Requires further tought
 ** XXX Separate tree-lib from tree-sim?
 

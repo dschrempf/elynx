@@ -2,7 +2,7 @@
 
 {- |
 Module      :  EvoMod.Import.Sequence.Fasta
-Description :  Import Fasta sequences.
+Description :  Import Fasta sequences
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 

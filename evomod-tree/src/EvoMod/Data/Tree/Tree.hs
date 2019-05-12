@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Data.Tree.Tree
-Description :  Functions related to phylogenetic trees.
+Description :  Functions related to phylogenetic trees
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 

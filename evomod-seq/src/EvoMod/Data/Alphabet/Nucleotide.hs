@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Data.Nucleotide
-Description :  Nucleotide related types and functions.
+Description :  Nucleotide related types and functions
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 

@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Data.Tree.SumStat
-Description :  Summary statistics for phylogenetic trees.
+Description :  Summary statistics for phylogenetic trees
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 

@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Distribution.Types
-Description :  Data types for distributions on trees.
+Description :  Data types for distributions on trees
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 

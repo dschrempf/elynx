@@ -1,6 +1,6 @@
 {- |
 Module      :  OptionsTreeSim
-Description :  Argument parser for seq-ana.
+Description :  Argument parser for seq-ana
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 

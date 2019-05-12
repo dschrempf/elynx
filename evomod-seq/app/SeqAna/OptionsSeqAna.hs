@@ -1,6 +1,6 @@
 {- |
 Module      :  OptionsSeqAna
-Description :  EvoModSeq argument parsing.
+Description :  EvoModSeq argument parsing
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 

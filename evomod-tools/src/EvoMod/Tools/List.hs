@@ -1,6 +1,6 @@
 {- |
 Module      :  EvoMod.Tools.List
-Description :  Additional tools for lists.
+Description :  Additional tools for lists
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
