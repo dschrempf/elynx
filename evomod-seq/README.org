@@ -1,9 +1,7 @@
+# -*- org-id-link-to-org-use-id: nil; -*-
+
 * Handle evolutionary sequences
 ** Analysis
-:PROPERTIES:
-:ID:       61223757-46e3-4f2b-8065-c8348d4041f6
-:END:
-
 Analyze sequence with =seq-ana=.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
@@ -53,10 +51,6 @@ Alphabet types:
 #+end_example
 
 ** Simulation
-:PROPERTIES:
-:ID:       d1a0c656-c3fb-4441-b598-df2ff62cb915
-:END:
-
 Simulate sequences with =seq-sim=.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
