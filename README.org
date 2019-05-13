@@ -2,11 +2,12 @@
 
 The EvoMod suite is a Haskell library and a tool set for computational biology.
 
-Available binaries:
-- [[file:evomod-seq/README.org][Analysis]] :: View, examine, and modify evolutionary sequences (FASTA
-  format).
-- [[file:evomod-seq/README.org][=seq-sim=]] :: Simulate evolutionary sequences (FASTA format).
-- [[file:evomod-tree/README.org][=tree-sim=]] :: Simulate phylogenetic trees (Newick format).
+- [[file:evomod-seq/README.org][Sequence analysis]] :: View, examine, and modify evolutionary sequences (FASTA
+     format) with =seq-ana=.
+- [[file:evomod-seq/README.org][Sequence simulation]] :: Simulate evolutionary sequences (FASTA format)with
+     =seq-sim=.
+- [[file:evomod-tree/README.org][Tree simulation]] :: Simulate phylogenetic trees (Newick format) with
+     =tree=sim=.
      
 * Installation
 
