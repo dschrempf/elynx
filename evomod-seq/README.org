@@ -1,5 +1,3 @@
-# -*- org-id-link-to-org-use-id: nil; -*-
-
 * Handle evolutionary sequences
 ** Analysis
 Analyze sequence with =seq-ana=.

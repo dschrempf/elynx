@@ -1,8 +1,4 @@
 * Handle evolutionary trees
-:PROPERTIES:
-:ID:       709407e0-ef6d-4dea-a6a9-e2c81c76a697
-:END:
-
 Simulate birth and death trees with =tree-sim=.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
