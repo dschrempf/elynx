@@ -1,1 +1,48 @@
+* Handle evolutionary trees
+Simulate birth and death trees with =tree-sim=.
 
+#+BEGIN_SRC sh :exports both :results output verbatim
+tree-sim --help
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+EvoMod suite version 0.3. Developed by Dominik Schrempf. Compiled on May 13,
+2019, at 07:21 am, UTC.
+
+Usage: tree-sim [-t|--nTrees INT] [-n|--nLeaves INT] [-H|--height DOUBLE]
+                [-l|--lambda DOUBLE] [-m|--mu DOUBLE] [-r|--rho DOUBLE]
+                [-u|--sub-sample] [-s|--summary-statistics]
+                [-v|--verbosity VALUE] [-o|--output-file-basename NAME]
+                [-S|--seed [INT]]
+  Simulate reconstructed trees using the point process. See Gernhard, T. (2008).
+  The conditioned reconstructed process. Journal of Theoretical Biology, 253(4),
+  769–778. http://doi.org/10.1016/j.jtbi.2008.04.005 The goal of the EvoMod
+  suite is reproducible research. Evolutionary sequences and phylogenetic trees
+  can be read, viewed, modified and simulated without assuming anything about
+  the data (e.g., the type of code), and without default values. The exact
+  command with all arguments has to be stated by the user and is logged
+  automatically. This leads to some work overhead in the beginning, but usually
+  pays off in the end.
+
+Available options:
+  -h,--help                Show this help text
+  -V,--version             Show version
+  -t,--nTrees INT          Number of trees (default: 10)
+  -n,--nLeaves INT         Number of leaves per tree (default: 5)
+  -H,--height DOUBLE       Fix tree height (no default)
+  -l,--lambda DOUBLE       Birth rate lambda (default: 1.0)
+  -m,--mu DOUBLE           Death rate mu (default: 0.9)
+  -r,--rho DOUBLE          Sampling probability rho (default: 1.0)
+  -u,--sub-sample          Perform sub-sampling; see below.
+  -s,--summary-statistics  Only output number of children for each branch
+  -v,--verbosity VALUE     Be verbose; one of: Quiet Info Debug (default: Info)
+  -o,--output-file-basename NAME
+                           Specify base name of output file
+  -S,--seed [INT]          Seed for random number generator; list of 32 bit
+                           integers with up to 256 elements (default: random)
+
+Height of Trees: if no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate.
+Summary statistics only: only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character.
+Sub-sampling: simulate one big tree with n'=round(n/rho), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with rho=1.0, the same tree is reported over and over again.
+#+end_example

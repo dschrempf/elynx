@@ -12,8 +12,8 @@ ghc-options:
   - -fllvm
 
 extra-source-files:
-- README.md
-- ChangeLog.md
+- README.org
+- ChangeLog.org
 
 # Metadata used when publishing your package
 synopsis:            Tools for EvoMod.
@@ -21,7 +21,7 @@ category:            Bioinformatics
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
+# common to point users to the README.org file.
 description:         Please see the README on GitHub at <https://github.com/dschrempf/evomod>.
 
 dependencies:

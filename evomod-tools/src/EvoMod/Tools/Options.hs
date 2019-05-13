@@ -63,7 +63,7 @@ hdr = intercalate "\n" [ versionString
                        ]
 
 description :: String
-description = "The goal of the EvoMod suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without assuming anything about the data (e.g., the type of code), and without default values. The exact command with all arguments has to be stated by the user and are logged consistently. This leads to some work overhead in the beginning, but usually pays off in the end."
+description = "The goal of the EvoMod suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without assuming anything about the data (e.g., the type of code), and without default values. The exact command with all arguments has to be stated by the user and is logged automatically. This leads to some work overhead in the beginning, but usually pays off in the end."
 
 -- | Short, globally usable program header.
 programHeader :: IO String

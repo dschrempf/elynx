@@ -1,1 +1,126 @@
+* Handle evolutionary sequences
+** Analysis
+Analyze sequence with =seq-ana=.
 
+#+BEGIN_SRC sh :exports both :results output verbatim
+seq-ana --help
+#+end_src
+
+#+RESULTS:
+#+begin_example
+EvoMod suite version 0.3. Developed by Dominik Schrempf. Compiled on May 13,
+2019, at 07:21 am, UTC.
+
+Usage: seq-ana (-a|--alphabet NAME) [-o|--output-file-basename NAME]
+               [-v|--verbosity VALUE] COMMAND INPUT-FILE-NAMES
+  The goal of the EvoMod suite is reproducible research. Evolutionary sequences
+  and phylogenetic trees can be read, viewed, modified and simulated without
+  assuming anything about the data (e.g., the type of code), and without default
+  values. The exact command with all arguments has to be stated by the user and
+  is logged automatically. This leads to some work overhead in the beginning,
+  but usually pays off in the end.
+
+Available options:
+  -h,--help                Show this help text
+  -V,--version             Show version
+  -a,--alphabet NAME       Specify alphabet type NAME
+  -o,--output-file-basename NAME
+                           Specify base name of output file
+  -v,--verbosity VALUE     Be verbose; one of: Quiet Info Debug (default: Info)
+  INPUT-FILE-NAMES         Read sequences from INPUT-FILE-NAMES
+
+Available commands:
+  examine                  Examine sequences; if data is a multi sequence
+                           alignment, additionally analyze columns
+  concatenate              Concatenate sequences found in input files
+  filter                   Filter sequences found in input Files
+  subsample                Sub-sample columns from multi sequence alignments
+
+File formats:
+  - FASTA
+
+Alphabet types:
+  - DNA (nucleotides)
+  - DNAX (nucleotides; extended; including gaps and unknowns)
+  - DNAI (nucleotides; including IUPAC codes)
+  - Protein (amino acids)
+  - ProteinX (amino acids; extended; including gaps and unknowns)
+  - ProteinI (amino acids; including IUPAC codes)
+#+end_example
+
+** Simulation
+Simulate sequences with =seq-sim=.
+
+#+BEGIN_SRC sh :exports both :results output verbatim
+seq-sim --help
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+EvoMod suite version 0.3. Developed by Dominik Schrempf. Compiled on May 13,
+2019, at 07:21 am, UTC.
+
+Usage: seq-sim (-t|--tree-file NAME) [-s|--substitution-model MODEL]
+               [-m|--mixture-model MODEL] [-e|--edm-file NAME]
+               [-w|--mixture-model-weights [DOUBLE,DOUBLE,...]]
+               [-g|--gamma-rate-heterogeneity (NCAT, SHAPE)]
+               (-l|--length NUMBER) [-S|--seed [INT]] [-v|--verbosity VALUE]
+               (-o|--output-file-basename NAME)
+  The goal of the EvoMod suite is reproducible research. Evolutionary sequences
+  and phylogenetic trees can be read, viewed, modified and simulated without
+  assuming anything about the data (e.g., the type of code), and without default
+  values. The exact command with all arguments has to be stated by the user and
+  is logged automatically. This leads to some work overhead in the beginning,
+  but usually pays off in the end.
+
+Available options:
+  -h,--help                Show this help text
+  -V,--version             Show version
+  -t,--tree-file NAME      Specify tree file NAME
+  -s,--substitution-model MODEL
+                           Set the phylogenetic substitution model; available
+                           models are shown below (mutually exclusive with -m
+                           option)
+  -m,--mixture-model MODEL Set the phylogenetic mixture model; available models
+                           are shown below (mutually exclusive with -s option)
+  -e,--edm-file NAME       Empirical distribution model file NAME in Phylobayes
+                           format
+  -w,--mixture-model-weights [DOUBLE,DOUBLE,...]
+                           Weights of mixture model components
+  -g,--gamma-rate-heterogeneity (NCAT, SHAPE)
+                           Number of gamma rate categories and shape parameter
+  -l,--length NUMBER       Set alignment length to NUMBER
+  -S,--seed [INT]          Seed for random number generator; list of 32 bit
+                           integers with up to 256 elements (default: random)
+  -v,--verbosity VALUE     Be verbose; one of: Quiet Info Debug (default: Info)
+  -o,--output-file-basename NAME
+                           Specify base name of output file
+
+Substitution models:
+-s MODEL[PARAMETER,PARAMETER,...]{STATIONARY_DISTRIBUTION}
+   Supported DNA models: JC, HKY.
+     For example,
+       -s HKY[KAPPA]{DOUBLE,DOUBLE,DOUBLE,DOUBLE}
+   Supported Protein models: Poisson, Poisson-Custom, LG, LG-Custom, WAG, WAG-Custom.
+     MODEL-Custom means that only the exchangeabilities of MODEL are used,
+     and a custom stationary distribution is provided.
+     For example,
+       -s LG-Custom{...}
+
+Mixture models:
+-m MIXTURE(SUBSTITUTION_MODEL_1,SUBSTITUTION_MODEL_2)
+   For example,
+     -m MIXTURE(JC,HKY[6.0]{0.3,0.2,0.2,0.3})
+Mixture weights have to be provided with the -w option.
+
+Special mixture models:
+-m CXX
+   where XX is 10, 20, 30, 40, 50, or 60; CXX models, Quang et al., 2008.
+-m EDM(EXCHANGEABILITIES)
+   Arbitrary empirical distribution mixture (EDM) models.
+   Stationary distributions have to be provided with the -e option.
+   For example,
+     LG exchangeabilities with stationary distributions given in FILE.
+     -m EDM(LG-Custom) -e FILE
+For special mixture models, mixture weights are optional.
+#+end_example
