@@ -35,8 +35,9 @@ H       not G        A  C     T         D
 V       not T        A  C  G            B
 N       any          A  C  G  T         N
 Z       Zero                            Z
-Also used:
+Additionally, I add
 -       Gap (Zero)                      -
+.       Gap (Zero)                      .
 @
 
 -}
@@ -68,7 +69,7 @@ iupac = fromString "UWSMKRYBDHVNZ-"
 
 -- | Nucleotide gap characters.
 gap :: [Character]
-gap = fromString "Z-"
+gap = fromString "Z-."
 
 -- | Nucleotide unknown characters.
 unknown :: [Character]
@@ -95,4 +96,5 @@ iupacToStandard = M.fromList $ map (\(k, v) -> (fromChar k, fromString v))
                   , ('N', "ACGT")
                   , ('Z', "")
                   , ('-', "")
+                  , ('.', "")
                   ]

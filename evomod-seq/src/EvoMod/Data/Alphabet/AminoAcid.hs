@@ -43,6 +43,7 @@ X.................Xaa.................Any amino acid
 Z.................Glx.................Glutamine or Glutamic acid
 Additionally, I add:
 -.................Gap.................No amino acid
+..................Gap.................No amino acid
 @
 
 -}
@@ -74,7 +75,7 @@ iupac = fromString "BXZ-"
 
 -- | Amino acid gap characters.
 gap :: [Character]
-gap = fromString "-"
+gap = fromString "-."
 
 -- | Amino acid unknown characters.
 unknown :: [Character]
@@ -107,4 +108,5 @@ iupacToStandard = M.fromList $ map (\(k, v) -> (fromChar k, fromString v))
                   , ('X', "ACDEFGHIKLMNPQRSTVWY")
                   , ('Z', "EQ")
                   , ('-', "")
+                  , ('.', "")
                   ]
