@@ -48,6 +48,7 @@ module EvoMod.Data.Sequence.Sequence
   , trimSequence
   , concatenate
   , concatenateSeqs
+  , translate
   -- * Filtering
   , filterShorterThan
   , filterLongerThan
@@ -57,15 +58,18 @@ import           Control.Lens
 import           Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8     as L
 import           Data.List                      (maximumBy)
+import qualified Data.Map                       as M
 import           Data.Ord                       (comparing)
 import qualified Data.Vector.Unboxed            as V
 import           Text.Printf
 
 import           EvoMod.Data.Alphabet.Alphabet
 import qualified EvoMod.Data.Alphabet.Character as C
+import           EvoMod.Data.Alphabet.Codon
 import           EvoMod.Data.Sequence.Defaults
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality
+import           EvoMod.Tools.List
 
 -- | For now, 'SequenceName's are just 'L.ByteString's.
 type SequenceName = L.ByteString
@@ -193,6 +197,17 @@ concatenateSeqs :: [[Sequence]] -> [Sequence]
 concatenateSeqs []   = error "concatenateSeqs: Nothing to concatenate."
 concatenateSeqs [ss] = ss
 concatenateSeqs sss  = foldl1 (zipWith concatenate) sss
+
+-- TODO: This function goes via lists. Super slow.
+-- | Translate from DNA to Protein with given reading frame (0, 1, 2).
+translate :: Int -> Sequence -> Sequence
+translate rf (Sequence n c cs) | rf > 2    = error "translate: reading frame is larger than 2."
+                               | rf < 0    = error "translate: reading frame is negative."
+                               | c == DNA  = Sequence n Protein aas
+                               | c == DNAX = Sequence n ProteinX aas
+                               | otherwise = error "translate: can only translate DNA to Protein."
+  where codons = map Codon $ chop3 $ V.toList $ V.drop rf cs
+        aas = V.fromList $ map (universalCode M.!) codons
 
 -- | Only take 'Sequence's that are shorter than a given number.
 filterShorterThan :: Int -> [Sequence] -> [Sequence]

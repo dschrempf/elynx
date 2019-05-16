@@ -138,6 +138,8 @@ act (SubSample n m ms) sss = do
           fns = [ fn ++ digitStr i ++ ".fasta" | i <- [0 .. m-1] ]
       lift $ mapM_ (\i -> withFile (fns!!i) WriteMode (`L.hPutStr` (files!!i))) [0 .. m-1]
       logS $ "Results written to files with basename '" ++ fn ++ "'."
+act (Translate rf) sss = io $ L.intercalate (L.pack "\n") $
+  map (sequencesToFasta . map (translate rf)) sss
 
 io :: L.ByteString -> Seq ()
 io res = do

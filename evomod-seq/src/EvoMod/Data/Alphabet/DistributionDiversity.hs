@@ -25,7 +25,7 @@ module EvoMod.Data.Alphabet.DistributionDiversity
 
 -- import           Data.Functor.Identity
 -- import qualified Data.Matrix.Storable          as M
-import qualified Data.Map                       as Map
+import qualified Data.Map.Strict                as Map
 import qualified Data.Vector.Unboxed            as V
 
 import           EvoMod.Data.Alphabet.Alphabet

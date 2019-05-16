@@ -44,6 +44,7 @@ Additionally, I add
 
 module EvoMod.Data.Alphabet.Nucleotide
   ( Nucleotide (..)
+  , fromCharacter
   , standard
   , iupac
   , gap
@@ -58,6 +59,13 @@ import           EvoMod.Data.Alphabet.Character
 -- | Nucleotides.
 data Nucleotide = A | C | G | T
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
+
+fromCharacter :: Character -> Nucleotide
+fromCharacter c | toChar c == 'A' = A
+                | toChar c == 'C' = C
+                | toChar c == 'G' = G
+                | toChar c == 'T' = T
+                | otherwise       = error "fromCharacter: cannot convert Character to Nucleotide."
 
 -- | Standard nucleotides; alphabetical order.
 standard :: [Character]

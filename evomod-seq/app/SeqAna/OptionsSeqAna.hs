@@ -32,6 +32,7 @@ data Command = Examine { perSite :: Bool }
              | SubSample { nSites   :: Int
                          , nSamples :: Int
                          , mSeed    :: Maybe [Word32] }
+             | Translate { readingFrame :: Int }
 
 data Args = Args
   {
@@ -56,7 +57,8 @@ commandArg = hsubparser $
   -- summarizeCommand <>
   concatenateCommand <>
   filterCommand <>
-  subSampleCommand
+  subSampleCommand <>
+  translateCommand
 
 -- summarizeCommand :: Mod CommandFields Command
 -- summarizeCommand = command "summarize" $
@@ -86,7 +88,7 @@ filterShorterThanOpt = optional $ option auto $
 
 examineCommand :: Mod CommandFields Command
 examineCommand = command "examine" $
-  info (Examine <$> examinePerSite) $
+  info (Examine <$> examinePerSiteOpt) $
   progDesc "Examine sequences; if data is a multi sequence alignment, additionally analyze columns"
 
 -- examineDropNonStandard :: Parser Bool
@@ -94,29 +96,41 @@ examineCommand = command "examine" $
 --   long "drop-non-standard"
 --   <> help "Drop columns in alignment that contain non-standard characters such as gaps or extended IUPAC codes"
 
-examinePerSite :: Parser Bool
-examinePerSite = switch $
+examinePerSiteOpt :: Parser Bool
+examinePerSiteOpt = switch $
   long "mean"
   <> help "Report per site summary statistics"
 
 subSampleCommand :: Mod CommandFields Command
 subSampleCommand = command "subsample" $
-  info (SubSample <$> subSampleNSites <*> subSampleNSamples <*> seedOpt ) $
+  info (SubSample <$> subSampleNSitesOpt <*> subSampleNSamplesOpt <*> seedOpt ) $
   progDesc "Sub-sample columns from multi sequence alignments"
 
-subSampleNSites :: Parser Int
-subSampleNSites = option auto $
+subSampleNSitesOpt :: Parser Int
+subSampleNSitesOpt = option auto $
   long "number-of-sites"
   <> short 'n'
   <> metavar "INT"
   <> help "Number of sites to randomly sample with replacement"
 
-subSampleNSamples :: Parser Int
-subSampleNSamples = option auto $
+subSampleNSamplesOpt :: Parser Int
+subSampleNSamplesOpt = option auto $
   long "number-of-samples"
   <> short 'm'
   <> metavar "INT"
   <> help "Number of random sub-samples"
+
+translateCommand :: Mod CommandFields Command
+translateCommand = command "translate" $
+  info (Translate <$> readingFrameOpt ) $
+  progDesc "Translate from DNA to Protein or DNAX to ProteinX"
+
+readingFrameOpt :: Parser Int
+readingFrameOpt = option auto $
+  long "reading-frame"
+  <> short 'r'
+  <> metavar "INT"
+  <> help "Reading frame [0|1|2]."
 
 alphabetOpt :: Parser Code
 alphabetOpt = option auto $

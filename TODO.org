@@ -10,6 +10,8 @@ I decided that there should not be any automatic code detection. Reaons:
 2. Separation between extended and IUPAC codes.
 
 * Easy
+** TODO Uniform error messages
+Full sentence with full stop at end?
 
 * Medium
 ** TODO Improve output of (mixture, gamma) model
