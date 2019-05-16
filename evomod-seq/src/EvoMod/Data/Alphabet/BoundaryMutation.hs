@@ -18,7 +18,8 @@ TODO: BM states can not be read and written like characters.
 
 module EvoMod.Data.Alphabet.BoundaryMutation
   ( -- * Types
-    Allele
+    Nucleotide
+  , Allele
   , PopulationSize
   , AlleleCount
   , State(..)
@@ -39,7 +40,7 @@ import           Numeric.SpecFunctions           (choose)
 
 import           EvoMod.Tools.Misc
 
- -- | Nucleotides.
+-- | Nucleotides.
 data Nucleotide = A | C | G | T
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 

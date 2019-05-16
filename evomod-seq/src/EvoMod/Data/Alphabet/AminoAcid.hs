@@ -54,6 +54,7 @@ module EvoMod.Data.Alphabet.AminoAcid
   , iupac
   , gap
   , unknown
+  , stop
   , iupacToStandard
   ) where
 
@@ -80,6 +81,10 @@ gap = fromString "-."
 -- | Amino acid unknown characters.
 unknown :: [Character]
 unknown = fromString "X"
+
+-- | When translating DNA sequences, stop codons may be encountered.
+stop :: Character
+stop = fromChar '*'
 
 -- | Convert IUPAC code to set of normal amino acids.
 iupacToStandard :: M.Map Character [Character]

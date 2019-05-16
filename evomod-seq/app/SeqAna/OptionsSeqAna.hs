@@ -19,10 +19,13 @@ module OptionsSeqAna
   ) where
 
 import           Control.Applicative
+import           Data.List
 import           Data.Word
 import           Options.Applicative
 
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Alphabet.Codon
+import           EvoMod.Tools.Misc
 import           EvoMod.Tools.Options
 
 data Command = Examine { perSite :: Bool }
@@ -32,7 +35,8 @@ data Command = Examine { perSite :: Bool }
              | SubSample { nSites   :: Int
                          , nSamples :: Int
                          , mSeed    :: Maybe [Word32] }
-             | Translate { readingFrame :: Int }
+             | Translate { readingFrame  :: Int
+                         , universalCode :: UniversalCode }
 
 data Args = Args
   {
@@ -122,7 +126,7 @@ subSampleNSamplesOpt = option auto $
 
 translateCommand :: Mod CommandFields Command
 translateCommand = command "translate" $
-  info (Translate <$> readingFrameOpt ) $
+  info (Translate <$> readingFrameOpt <*> universalCodeOpt) $
   progDesc "Translate from DNA to Protein or DNAX to ProteinX"
 
 readingFrameOpt :: Parser Int
@@ -131,6 +135,16 @@ readingFrameOpt = option auto $
   <> short 'r'
   <> metavar "INT"
   <> help "Reading frame [0|1|2]."
+
+universalCodeOpt :: Parser UniversalCode
+universalCodeOpt = option auto $
+  long "universal-code"
+  <> short 'u'
+  <> metavar "CODE"
+  <> help ("universal code; one of: " ++ codeStr ++ ".")
+  where codes = allValues :: [UniversalCode]
+        codeWords = map show codes
+        codeStr = intercalate ", " codeWords
 
 alphabetOpt :: Parser Code
 alphabetOpt = option auto $

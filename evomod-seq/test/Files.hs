@@ -20,6 +20,8 @@ module Files
   , fastaDifferentLengthTrimmedFN
   , fastaErroneousFN
   , componentsFilePhylobayes
+  , fastaTranslateDNAFN
+  , fastaTranslateProteinFN
   ) where
 
 dataDir :: FilePath
@@ -46,3 +48,8 @@ fastaErroneousFN = dataDir ++ "Erroneous.fasta"
 componentsFilePhylobayes :: FilePath
 componentsFilePhylobayes = dataDir ++ "EDMDistsPhylobayes.txt"
 
+fastaTranslateDNAFN :: FilePath
+fastaTranslateDNAFN = dataDir ++ "TranslateMitochondrialVertebrateDNA.fasta"
+
+fastaTranslateProteinFN :: FilePath
+fastaTranslateProteinFN = dataDir ++ "TranslateMitochondrialVertebrateProtein.fasta"

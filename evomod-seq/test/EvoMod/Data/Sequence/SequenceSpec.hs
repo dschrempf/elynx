@@ -18,6 +18,7 @@ import qualified Data.ByteString.Lazy.Char8    as L
 import           Test.Hspec
 
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Alphabet.Codon
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.InputOutput
@@ -43,4 +44,8 @@ spec = do
     ss' <- parseFileWith (fasta DNA) fastaDifferentLengthTrimmedFN
     filterLongerThan 10 ss `shouldBe` ss'
 
-
+  describe "translate" $
+    it "correctly translates a test sequence" $ do
+    ss  <- parseFileWith (fasta DNAX) fastaTranslateDNAFN
+    ss' <- parseFileWith (fasta ProteinC) fastaTranslateProteinFN
+    map (translate 0 VertebrateMitochondrial) ss `shouldBe` ss'

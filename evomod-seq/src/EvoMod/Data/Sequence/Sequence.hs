@@ -40,8 +40,8 @@ module EvoMod.Data.Sequence.Sequence
   , summarizeSequenceList
   , summarizeSequenceListBody
   -- * Analysis
+  , checkSequence
   , lengthSequence
-
   , equalLength
   , longest
   -- * Manipulation
@@ -163,6 +163,10 @@ summarizeSequenceListHeader ss = L.unlines $
 summarizeSequenceListBody :: [Sequence] -> L.ByteString
 summarizeSequenceListBody ss = L.unlines (map summarizeSequence ss `using` parListChunk 5 rdeepseq)
 
+-- | Check if characters belong to alphabet of code.
+checkSequence :: Sequence -> Bool
+checkSequence (Sequence _ c cs) = V.all (checkCharacter c) cs
+
 -- | Calculate length of 'Sequence'.
 lengthSequence :: Sequence -> Int
 lengthSequence s = fromIntegral $ V.length $ s ^. characters
@@ -200,14 +204,14 @@ concatenateSeqs sss  = foldl1 (zipWith concatenate) sss
 
 -- TODO: This function goes via lists. Super slow.
 -- | Translate from DNA to Protein with given reading frame (0, 1, 2).
-translate :: Int -> Sequence -> Sequence
-translate rf (Sequence n c cs) | rf > 2    = error "translate: reading frame is larger than 2."
-                               | rf < 0    = error "translate: reading frame is negative."
-                               | c == DNA  = Sequence n Protein aas
-                               | c == DNAX = Sequence n ProteinX aas
-                               | otherwise = error "translate: can only translate DNA to Protein."
+translate :: Int -> UniversalCode -> Sequence -> Sequence
+translate rf uc (Sequence n c cs) | rf > 2    = error "translate: reading frame is larger than 2."
+                                  | rf < 0    = error "translate: reading frame is negative."
+                                  | c == DNA  = Sequence n Protein aas
+                                  | c == DNAX = Sequence n ProteinC aas
+                                  | otherwise = error "translate: can only translate DNA or DNAX (not DNAI) to Protein."
   where codons = map Codon $ chop3 $ V.toList $ V.drop rf cs
-        aas = V.fromList $ map (universalCode M.!) codons
+        aas = V.fromList $ map (universalCode uc M.!) codons
 
 -- | Only take 'Sequence's that are shorter than a given number.
 filterShorterThan :: Int -> [Sequence] -> [Sequence]

@@ -138,16 +138,22 @@ act (SubSample n m ms) sss = do
           fns = [ fn ++ digitStr i ++ ".fasta" | i <- [0 .. m-1] ]
       lift $ mapM_ (\i -> withFile (fns!!i) WriteMode (`L.hPutStr` (files!!i))) [0 .. m-1]
       logS $ "Results written to files with basename '" ++ fn ++ "'."
-act (Translate rf) sss = io $ L.intercalate (L.pack "\n") $
-  map (sequencesToFasta . map (translate rf)) sss
+act (Translate rf uc) sss = do
+  logS "Translate sequences to amino acids."
+  logS $ "Universal code: " ++ show uc ++ "."
+  io $ L.intercalate (L.pack "\n") $
+    map (sequencesToFasta . map (translate rf uc)) sss
 
 io :: L.ByteString -> Seq ()
 io res = do
   mOutFileBaseName <- argsMaybeOutFileBaseName . arguments <$> ask
+  cmd <- argsCommand . arguments <$> ask
   case mOutFileBaseName of
     Nothing -> logLBSQuiet res
     Just fn -> do
-      let fn' = fn ++ ".out"
+      let fn' = case cmd of
+            Examine _ -> fn ++ ".out"
+            _         -> fn ++ ".fasta"
       lift $ withFile fn' WriteMode (`L.hPutStr` res)
       logS $ "Results written to file '" ++ fn' ++ "'."
 
