@@ -43,9 +43,8 @@ Additionally, I add
 -}
 
 module EvoMod.Data.Alphabet.Nucleotide
-  ( Nucleotide (..)
-  , fromCharacter
-  , standard
+  (
+    standard
   , iupac
   , gap
   , unknown
@@ -56,16 +55,11 @@ import qualified Data.Map.Strict                as M
 
 import           EvoMod.Data.Alphabet.Character
 
--- | Nucleotides.
-data Nucleotide = A | C | G | T
-  deriving (Show, Read, Eq, Ord, Enum, Bounded)
-
-fromCharacter :: Character -> Nucleotide
-fromCharacter c | toChar c == 'A' = A
-                | toChar c == 'C' = C
-                | toChar c == 'G' = G
-                | toChar c == 'T' = T
-                | otherwise       = error "fromCharacter: cannot convert Character to Nucleotide."
+-- -- I tried various times, but it is just too complicated to build up a proper
+-- -- type system for DNA, DNAX, DNAI, ...
+-- -- | Nucleotides.
+-- data Nucleotide = A | C | G | T
+--   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 -- | Standard nucleotides; alphabetical order.
 standard :: [Character]

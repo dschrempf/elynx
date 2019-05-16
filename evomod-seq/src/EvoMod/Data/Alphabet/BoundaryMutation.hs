@@ -37,9 +37,11 @@ import           Control.Lens
 import qualified Data.ByteString.Lazy.Char8      as L
 import           Numeric.SpecFunctions           (choose)
 
--- import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Data.Alphabet.Nucleotide
 import           EvoMod.Tools.Misc
+
+ -- | Nucleotides.
+data Nucleotide = A | C | G | T
+  deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 -- | Alleles are just nucleotides at the moment. However, I want to keep the
 -- code such that it can be extended easily to codons or amino acids.
