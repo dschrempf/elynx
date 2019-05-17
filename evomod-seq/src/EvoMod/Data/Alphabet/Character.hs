@@ -1,3 +1,5 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+
 {- |
 Module      :  Character
 Description :  Character interface
@@ -46,11 +48,15 @@ import           EvoMod.Tools.ByteString  (c2w, w2c)
 -- | A set of characters forms an 'EvoMod.Data.Alphabet.Alphabet'. At the
 -- moment, 'Word8' is used, since none of the alphabets has more than 255
 -- characters.
-class (Show a, Read a, Eq a, Ord a, Unbox a, Enum a, Bounded a) => Character a where
+class (Show a, Read a, Eq a, Ord a, Enum a, Bounded a, Unbox a) => Character a where
   -- | Write characters.
   toWord   :: a -> Word8
   -- | Read characters.
   fromWord :: Word8 -> a
+  -- | Code name.
+  codeName :: String
+  -- | Verbose code name.
+  codeNameVerbose :: String
 
 -- | Conversion to 'Char'.
 toChar :: Character a => a -> Char

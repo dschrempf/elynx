@@ -10,55 +10,89 @@ Portability :  portable
 
 Creation date: Thu May 16 07:58:50 2019.
 
+The different universal codes.
+- https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi?mode=c
+- http://www.bioinformatics.org/sms2/genetic_code.html
+- https://en.wikipedia.org/wiki/Genetic_code
+
 -}
 
 module EvoMod.Data.Alphabet.Codon
   ( Codon (Codon)
   , UniversalCode (..)
   , universalCode
+  , universalCodeX
   ) where
 
 import           Data.List
-import qualified Data.Map                       as M
+import qualified Data.Map                         as M
 
-import           EvoMod.Data.Alphabet.Character
+import           EvoMod.Data.Alphabet.AminoAcidS
+import qualified EvoMod.Data.Alphabet.Nucleotide  as N
+import qualified EvoMod.Data.Alphabet.NucleotideX as NX
 
 -- | Codons are triplets of characters.
-newtype Codon = Codon (Character, Character, Character)
+newtype Codon a = Codon (a, a, a)
   deriving (Show, Read, Eq, Ord)
 
-fromCharTriplet :: (Char, Char, Char) -> Codon
-fromCharTriplet (c1, c2, c3) = Codon (fromChar c1, fromChar c2, fromChar c3)
-
--- | The different universal codes. See
--- https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi?mode=c,
--- http://www.bioinformatics.org/sms2/genetic_code.html and
--- https://en.wikipedia.org/wiki/Genetic_code.
+-- | Universal codes.
 data UniversalCode = Standard | VertebrateMitochondrial
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 -- It is important that the map is lazy, because some keys have errors as values.
-mapFromLists :: String -> String -> String -> String -> M.Map Codon Character
+mapFromLists :: Ord a => [a] -> [a] -> [a]
+             -> [b] -> M.Map (Codon a) b
 mapFromLists xs ys zs as = M.fromList $
-  zipWith4 (\f s t a -> (fromCharTriplet (f, s, t), fromChar a)) xs ys zs as
+  zipWith4 (\f s t a -> (Codon (f, s, t), a)) xs ys zs as
+
+nucs :: Enum a => [a]
+nucs = map toEnum [3,1,0,2]     -- Order T, C, A , G.
 
 -- Permutation of the triplets PLUS GAPS! I avoid 'Z' because I do not want to
 -- translate DNAI.
-base1, base2, base3 :: String
-base1 = "TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG" ++ "-."
-base2 = "TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG" ++ "-."
-base3 = "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG" ++ "-."
+base1, base2, base3 :: Enum a => [a]
+base1 = [n | n <- nucs
+           , _ <- [0..3 :: Int]
+           , _ <- [0..3 :: Int]]
+-- base1 = "TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG" ++ "-."
+base2 = [n | _ <- [0..3 :: Int]
+           , n <- nucs
+           , _ <- [0..3 :: Int]]
+-- base2 = "TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG" ++ "-."
+base3 = [n | _ <- [0..3 :: Int]
+           , _ <- [0..3 :: Int]
+           , n <- nucs]
+-- base3 = "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG" ++ "-."
 
 -- The actual codes.
-standard :: String
-standard =
-  "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG" ++ "--"
+standard :: [AminoAcidS]
+standard = [ F, F, L, L, S, S, S, S, Y, Y, Stop, Stop, C, C, Stop, W, L, L, L,
+             L, P, P, P, P, H, H, Q, Q, R, R, R, R, I, I, I, M, T, T, T, T, N,
+             N, K, K, S, S, R, R, V, V, V, V, A, A, A, A, D, D, E, E, G, G, G,
+             G]
+-- "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG" ++ "--"
 
-vertebrateMitochondrial :: String
-vertebrateMitochondrial =
-  "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG" ++ "--"
+vertebrateMitochondrial :: [AminoAcidS]
+vertebrateMitochondrial = [F, F, L, L, S, S, S, S, Y, Y, Stop, Stop, C, C, W, W,
+                           L, L, L, L, P, P, P, P, H, H, Q, Q, R, R, R, R, I, I,
+                           M, M, T, T, T, T, N, N, K, K, S, S, Stop, Stop, V, V,
+                           V, V, A, A, A, A, D, D, E, E, G, G, G, G]
+-- "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG" ++ "--"
 
 -- | Map from 'Codon' to amino acid character.
-universalCode :: UniversalCode -> M.Map Codon Character
+universalCode :: UniversalCode -> M.Map (Codon N.Nucleotide) AminoAcidS
 universalCode Standard                = mapFromLists base1 base2 base3 standard
 universalCode VertebrateMitochondrial = mapFromLists base1 base2 base3 vertebrateMitochondrial
+
+-- | Map from 'Codon' to amino acid character.
+universalCodeX :: UniversalCode -> M.Map (Codon NX.NucleotideX) AminoAcidS
+universalCodeX Standard                = mapFromLists
+                                         (base1 ++ [NX.Gap])
+                                         (base2 ++ [NX.Gap])
+                                         (base3 ++ [NX.Gap])
+                                         (standard ++ [Gap])
+universalCodeX VertebrateMitochondrial = mapFromLists
+                                         (base1 ++ [NX.Gap])
+                                         (base2 ++ [NX.Gap])
+                                         (base3 ++ [NX.Gap])
+                                         (vertebrateMitochondrial ++ [Gap])

@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 {- |
 Module      :  EvoMod.Data.Alphabet.DistributionDiversity
 Description :  Summarize statistics for alphabets
@@ -23,9 +25,6 @@ module EvoMod.Data.Alphabet.DistributionDiversity
   , frequencyCharacters
   ) where
 
--- import           Data.Functor.Identity
--- import qualified Data.Matrix.Storable          as M
-import qualified Data.Map.Strict                as Map
 import qualified Data.Vector.Unboxed            as V
 
 import           EvoMod.Data.Alphabet.Alphabet
@@ -57,11 +56,6 @@ homoplasy v = sumVec $ V.map (\x -> x*x) v
 kEffHomoplasy :: V.Vector Double -> Double
 kEffHomoplasy v = 1.0 / homoplasy v
 
--- -- Increment element at index in vector by one.
--- incrementElemIndexByOne :: [Int] -> V.Vector Int -> V.Vector Int
--- incrementElemIndexByOne is v = v V.// zip is es'
---   where es' = [v V.! i + 1 | i <- is]
-
 -- XXX: Use mutable vector; then V.// is much faster.
 -- Increment element at index in vector by one.
 incrementElemIndexByOne :: [Int] -> V.Vector Int -> V.Vector Int
@@ -69,22 +63,22 @@ incrementElemIndexByOne is v = v V.// zip is es'
   where es' = [v V.! i + 1 | i <- is]
 
 -- For a given code and counts vector, increment the count of the given character.
-acc :: Code -> V.Vector Int -> Character -> V.Vector Int
-acc code vec char = incrementElemIndexByOne is vec
+acc :: CharacterX a => V.Vector Int -> a -> V.Vector Int
+acc vec char = incrementElemIndexByOne is vec
   where
-    charsNonIupac = iupacToStandard code char
-    is            = map (characterToIndex code Map.!) charsNonIupac
+    charsNonIupac = toStandard char
+    is            = map fromEnum charsNonIupac
 
-countCharacters :: Code -> V.Vector Character -> V.Vector Int
-countCharacters code =
-  V.foldl' (acc code) zeroCounts
+countCharacters :: forall a . CharacterX a => V.Vector a -> V.Vector Int
+countCharacters =
+  V.foldl' acc zeroCounts
   where
-    nChars     = cardinality code
+    nChars     = length (alphabet :: [a])
     zeroCounts = V.replicate nChars (0 :: Int)
 
 -- | For a given code vector of characters, calculate frequency of characters.
-frequencyCharacters :: Code -> V.Vector Character -> V.Vector Double
-frequencyCharacters code d = V.map (\e -> fromIntegral e / fromIntegral s) counts
+frequencyCharacters :: CharacterX a => V.Vector a -> V.Vector Double
+frequencyCharacters d = V.map (\e -> fromIntegral e / fromIntegral s) counts
   where
-    counts = countCharacters code d
+    counts = countCharacters d
     s      = sumVec counts

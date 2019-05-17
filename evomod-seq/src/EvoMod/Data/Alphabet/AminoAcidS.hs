@@ -16,8 +16,7 @@ Creation date: Thu Oct  4 18:26:35 2018.
 
 See header of 'EvoMod.Data.Alphabet.Alphabet'.
 
-Amino acid IUPAC code. See also https://www.bioinformatics.org/sms/iupac.html or
-https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry.
+Amino acids with gaps and translation stops.
 
 @
 Amino Acid Code:  Three letter Code:  Amino Acid:
@@ -43,12 +42,6 @@ V                 Val                 Valine
 W                 Trp                 Tryptophan
 Y                 Tyr                 Tyrosine
 -----------------
-J                                     Leucine or Isoleucine
-B                 Asx                 Aspartic acid or Asparagine
-Z                 Glx                 Glutamine or Glutamic acid
------------------
-X                 Xaa                 Any amino acid
------------------
 *                 Stp                 No amino acid
 -----------------
 -                 Gap                 No amino acid
@@ -57,8 +50,8 @@ X                 Xaa                 Any amino acid
 
 -}
 
-module EvoMod.Data.Alphabet.AminoAcidI
-  ( AminoAcidI (..)
+module EvoMod.Data.Alphabet.AminoAcidS
+  ( AminoAcidS (..)
   ) where
 
 import qualified Data.Map.Strict                as M
@@ -69,47 +62,41 @@ import qualified EvoMod.Data.Alphabet.Character as C
 import           EvoMod.Tools.ByteString        (c2w)
 
 -- | Amino acids.
-data AminoAcidI = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
-                | J | B | Z
-                | X
+data AminoAcidS = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
                 | Stop
                 | Gap
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
-toWordM :: M.Map AminoAcidI Word8
+toWordM :: M.Map AminoAcidS Word8
 toWordM = M.fromList $ map (\(k, v) -> (k, c2w v))
-  [ (A,    'A')
-  , (C,    'C')
-  , (D,    'D')
-  , (E,    'E')
-  , (F,    'F')
-  , (G,    'G')
-  , (H,    'H')
-  , (I,    'I')
-  , (K,    'K')
-  , (L,    'L')
-  , (M,    'M')
-  , (N,    'N')
-  , (P,    'P')
-  , (Q,    'Q')
-  , (R,    'R')
-  , (S,    'S')
-  , (T,    'T')
-  , (V,    'V')
-  , (W,    'W')
-  , (Y,    'Y')
-  , (J,    'J')
-  , (B,    'B')
-  , (Z,    'Z')
-  , (X,    'X')
+  [ (A, 'A')
+  , (C, 'C')
+  , (D, 'D')
+  , (E, 'E')
+  , (F, 'F')
+  , (G, 'G')
+  , (H, 'H')
+  , (I, 'I')
+  , (K, 'K')
+  , (L, 'L')
+  , (M, 'M')
+  , (N, 'N')
+  , (P, 'P')
+  , (Q, 'Q')
+  , (R, 'R')
+  , (S, 'S')
+  , (T, 'T')
+  , (V, 'V')
+  , (W, 'W')
+  , (Y, 'Y')
   , (Stop, '*')
-  , (Gap,  '-')
+  , (Gap, '-')
   ]
 
-toWord :: AminoAcidI -> Word8
+toWord :: AminoAcidS -> Word8
 toWord = (M.!) toWordM
 
-fromWordM :: M.Map Word8 AminoAcidI
+fromWordM :: M.Map Word8 AminoAcidS
 fromWordM = M.fromList $ map (\(k, v) -> (c2w k, v))
   [ ('A', A)
   , ('C', C)
@@ -131,63 +118,21 @@ fromWordM = M.fromList $ map (\(k, v) -> (c2w k, v))
   , ('V', V)
   , ('W', W)
   , ('Y', Y)
-  , ('J', J)
-  , ('B', B)
-  , ('Z', Z)
-  , ('X', X)
   , ('*', Stop)
   , ('-', Gap)
-  , ('.', Gap)                  -- Support dot gap character.
+  , ('.', Gap)
   ]
 
-fromWord :: Word8 -> AminoAcidI
+fromWord :: Word8 -> AminoAcidS
 fromWord = (M.!) fromWordM
 
-derivingUnbox "AminoAcidI"
-    [t| AminoAcidI -> Word8 |]
+derivingUnbox "AminoAcidS"
+    [t| AminoAcidS -> Word8 |]
     [| toWord |]
     [| fromWord |]
 
-instance C.Character AminoAcidI where
+instance C.Character AminoAcidS where
   toWord   = toWord
   fromWord = fromWord
-  codeName = "ProteinI"
-  codeNameVerbose = "ProteinI (amino acids; including IUPAC codes)"
-
-toStandardM :: M.Map AminoAcidI [AminoAcidI]
-toStandardM = M.fromList
-  [ (A, [A])
-  , (C, [C])
-  , (D, [D])
-  , (E, [E])
-  , (F, [F])
-  , (G, [G])
-  , (H, [H])
-  , (I, [I])
-  , (K, [K])
-  , (L, [L])
-  , (M, [M])
-  , (N, [N])
-  , (P, [P])
-  , (Q, [Q])
-  , (R, [R])
-  , (S, [S])
-  , (T, [T])
-  , (V, [V])
-  , (W, [W])
-  , (Y, [Y])
-  , (J, [L, I])
-  , (B, [D, N])
-  , (Z, [E, Q])
-  , (X, [A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y])
-  , (Gap, [])
-  ]
-
-instance C.CharacterX AminoAcidI where
-  unknown    = X
-  gap        = Gap
-  toStandard = (M.!) toStandardM
-
-instance C.CharacterI AminoAcidI where
-  -- XXX: Should the gap be in here?
-  iupac = [J, B, Z, X, Gap]
+  codeName = "ProteinS"
+  codeNameVerbose = "ProteinS (amino acids; including gaps and translation stops)"

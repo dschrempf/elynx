@@ -28,7 +28,7 @@ T       Thymine               T         A
 -}
 
 module EvoMod.Data.Alphabet.Nucleotide
-  ( Nucleotide
+  ( Nucleotide (..)
   ) where
 
 import           Data.Vector.Unboxed.Deriving
@@ -63,3 +63,5 @@ derivingUnbox "Nucleotide"
 instance C.Character Nucleotide where
   toWord   = toWord
   fromWord = fromWord
+  codeName = "DNA"
+  codeNameVerbose = "DNA (nucleotides)"

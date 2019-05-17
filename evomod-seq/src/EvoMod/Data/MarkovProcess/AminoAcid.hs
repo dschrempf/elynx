@@ -33,6 +33,7 @@ import           Numeric.LinearAlgebra
 import           Numeric.SpecFunctions
 
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Alphabet.AminoAcid
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools.ByteString                     (c2w)
@@ -40,7 +41,7 @@ import           EvoMod.Tools.LinearAlgebra
 import           EvoMod.Tools.Vector
 
 n :: Int
-n = cardinality Protein
+n = length (alphabet :: [AminoAcid])
 
 -- Some matrices have to be converted from PAML order to alphabetical order. See
 -- 'pamlToAlphaVec' and 'pamlToAlphaMat'.

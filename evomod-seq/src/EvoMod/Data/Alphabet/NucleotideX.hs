@@ -35,8 +35,8 @@ N       any          A  C  G  T         N
 
 -}
 
-module EvoMod.Data.Alphabet.Nucleotide
-  ( NucleotideX
+module EvoMod.Data.Alphabet.NucleotideX
+  ( NucleotideX (..)
   ) where
 
 import qualified Data.Map.Strict                as M
@@ -86,6 +86,8 @@ derivingUnbox "NucleotideX"
 instance C.Character NucleotideX where
   toWord   = toWord
   fromWord = fromWord
+  codeName = "DNAX"
+  codeNameVerbose = "DNAX (nucleotides; extended; including gaps and unknowns)"
 
 toStandardM :: M.Map NucleotideX [NucleotideX]
 toStandardM = M.fromList

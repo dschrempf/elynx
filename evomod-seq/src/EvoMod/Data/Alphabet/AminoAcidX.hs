@@ -53,7 +53,7 @@ X                 Xaa                 Any amino acid
 -}
 
 module EvoMod.Data.Alphabet.AminoAcidX
-  (
+  ( AminoAcidX (..)
   ) where
 
 import qualified Data.Map.Strict                as M
@@ -136,6 +136,8 @@ derivingUnbox "AminoAcidX"
 instance C.Character AminoAcidX where
   toWord   = toWord
   fromWord = fromWord
+  codeName = "ProteinX"
+  codeNameVerbose = "ProteinX (amino acids; extended; including gaps and unknowns)"
 
 toStandardM :: M.Map AminoAcidX [AminoAcidX]
 toStandardM = M.fromList

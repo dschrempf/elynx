@@ -48,7 +48,7 @@ N       any          A  C  G  T         N
 -}
 
 module EvoMod.Data.Alphabet.NucleotideI
-  ( NucleotideI
+  ( NucleotideI (..)
   ) where
 
 import qualified Data.Map.Strict                as M
@@ -122,6 +122,8 @@ derivingUnbox "NucleotideI"
 instance C.Character NucleotideI where
   toWord   = toWord
   fromWord = fromWord
+  codeName = "DNAI"
+  codeNameVerbose = "DNAI (nucleotides; including IUPAC codes)"
 
 toStandardM :: M.Map NucleotideI [NucleotideI]
 toStandardM = M.fromList

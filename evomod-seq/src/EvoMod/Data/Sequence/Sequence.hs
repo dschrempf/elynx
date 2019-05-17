@@ -1,4 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {- |
 Module      :  EvoMod.Data.Sequence
@@ -26,9 +28,8 @@ module EvoMod.Data.Sequence.Sequence
   ( SequenceName
   , SequenceCharacters
   , Sequence (Sequence)
-  , seqName
-  , seqCode
-  , seqCharacters
+  , name
+  , characters
   -- * Input
   , toCharacters
   -- * Output
@@ -40,7 +41,6 @@ module EvoMod.Data.Sequence.Sequence
   , summarizeSequenceList
   , summarizeSequenceListBody
   -- * Analysis
-  , checkSequence
   , lengthSequence
   , equalLength
   , longest
@@ -48,7 +48,6 @@ module EvoMod.Data.Sequence.Sequence
   , trimSequence
   , concatenate
   , concatenateSeqs
-  , translate
   -- * Filtering
   , filterShorterThan
   , filterLongerThan
@@ -58,72 +57,55 @@ import           Control.Lens
 import           Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8     as L
 import           Data.List                      (maximumBy)
-import qualified Data.Map                       as M
 import           Data.Ord                       (comparing)
 import qualified Data.Vector.Unboxed            as V
-import           Text.Printf
+-- import qualified Text.Printf                    as P
 
-import           EvoMod.Data.Alphabet.Alphabet
-import qualified EvoMod.Data.Alphabet.Character as C
-import           EvoMod.Data.Alphabet.Codon
+import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Sequence.Defaults
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality
-import           EvoMod.Tools.List
 
 -- | For now, 'SequenceName's are just 'L.ByteString's.
 type SequenceName = L.ByteString
 
 -- | The vector of characters of a sequence.
-type SequenceCharacters = V.Vector C.Character
+type SequenceCharacters a = V.Vector a
 
 -- | Sequences have a name, a code and hopefully a lot of data.
-data Sequence = Sequence { _name       :: SequenceName
-                         , _code       :: Code
-                         , _characters :: SequenceCharacters }
+data Sequence a = Sequence { _name       :: SequenceName
+                           , _characters :: SequenceCharacters a }
   deriving (Eq)
 
 makeLenses ''Sequence
 
--- | Access name.
-seqName :: Lens' Sequence SequenceName
-seqName = name
-
--- | Access code.
-seqCode :: Lens' Sequence Code
-seqCode = code
-
--- | Access characters.
-seqCharacters :: Lens' Sequence SequenceCharacters
-seqCharacters = characters
-
--- | Converrt byte string to sequence characters.
-toCharacters :: L.ByteString -> SequenceCharacters
-toCharacters = V.fromList . map C.fromChar . L.unpack
+-- | Convert byte string to sequence characters.
+toCharacters :: Character a => L.ByteString -> SequenceCharacters a
+toCharacters = V.fromList . map fromChar . L.unpack
 
 -- | Convert sequence characters to byte string.
-fromCharacters :: SequenceCharacters -> L.ByteString
--- Seriously?
-fromCharacters = L.pack . map C.toChar . V.toList
+fromCharacters :: Character a => SequenceCharacters a -> L.ByteString
+fromCharacters = L.pack . map toChar . V.toList
 
-showInfo :: Sequence -> L.ByteString
+showInfo :: forall a . Character a => Sequence a -> L.ByteString
 showInfo s = L.unwords [ alignLeft defSequenceNameWidth (s^.name)
-                       , alignRight defFieldWidth (L.pack . show $ s^.code)
-                       , alignRight defFieldWidth (L.pack . show $ len)
-                       , alignRight defFieldWidth (L.pack $ printf "%.3f" pGaps) ]
+                       , alignRight defFieldWidth (L.pack $ codeName @a)
+                       , alignRight defFieldWidth (L.pack . show $ len) ]
+-- TODO.
+                       -- , alignRight defFieldWidth (L.pack $ P.printf "%.3f" pGaps) ]
   where len = lengthSequence s
-        nGaps = countGapOrUnknownChars s
-        pGaps = fromIntegral nGaps / fromIntegral len :: Double
+        -- nGaps = countGapOrUnknownChars s
+        -- pGaps = fromIntegral nGaps / fromIntegral len :: Double
 
-instance Show Sequence where
+instance Character a => Show (Sequence a) where
   show s = L.unpack $ showSequence s
 
 -- | Show a 'Sequence', untrimmed.
-showSequence :: Sequence -> L.ByteString
+showSequence :: Character a => Sequence a -> L.ByteString
 showSequence s = L.unwords [showInfo s, fromCharacters $ s^.characters]
 
 -- | Show a list of 'Sequence's, untrimmed.
-showSequenceList :: [Sequence] -> L.ByteString
+showSequenceList :: Character a => [Sequence a] -> L.ByteString
 showSequenceList = L.unlines . map showSequence
 
 -- | Header printed before 'Sequence' list.
@@ -135,17 +117,17 @@ sequenceListHeader = L.unwords [ alignLeft defSequenceNameWidth (L.pack "Name")
                                , L.pack "Sequence" ]
 
 -- | Trim and show a 'Sequence'.
-summarizeSequence :: Sequence -> L.ByteString
+summarizeSequence :: Character a => Sequence a -> L.ByteString
 summarizeSequence s = L.unwords [ showInfo s
                                 , summarizeByteString defSequenceSummaryLength
                                   (fromCharacters $ s^.characters) ]
 
 -- | Trim and show a list of 'Sequence's.
-summarizeSequenceList :: [Sequence] -> L.ByteString
+summarizeSequenceList :: Character a => [Sequence a] -> L.ByteString
 summarizeSequenceList ss = summarizeSequenceListHeader ss <>
                            summarizeSequenceListBody (take defSequenceListSummaryNumber ss)
 
-summarizeSequenceListHeader :: [Sequence] -> L.ByteString
+summarizeSequenceListHeader :: [Sequence a] -> L.ByteString
 summarizeSequenceListHeader ss = L.unlines $
   reportIfSubsetIsShown ++
   [ L.pack $ "For each sequence, the " ++ show defSequenceSummaryLength ++ " first bases are shown."
@@ -160,63 +142,47 @@ summarizeSequenceListHeader ss = L.unlines $
           | otherwise = []
 
 -- | Trim and show a list of 'Sequence's.
-summarizeSequenceListBody :: [Sequence] -> L.ByteString
+summarizeSequenceListBody :: Character a => [Sequence a] -> L.ByteString
 summarizeSequenceListBody ss = L.unlines (map summarizeSequence ss `using` parListChunk 5 rdeepseq)
 
--- | Check if characters belong to alphabet of code.
-checkSequence :: Sequence -> Bool
-checkSequence (Sequence _ c cs) = V.all (checkCharacter c) cs
-
 -- | Calculate length of 'Sequence'.
-lengthSequence :: Sequence -> Int
+lengthSequence :: Character a => Sequence a -> Int
 lengthSequence s = fromIntegral $ V.length $ s ^. characters
 
 -- | Check if all 'Sequence's have equal length.
-equalLength :: [Sequence] -> Bool
+equalLength :: Character a => [Sequence a] -> Bool
 equalLength = allEqual . map lengthSequence
 
 -- | Find the longest 'Sequence' in a list.
-longest :: [Sequence] -> Sequence
+longest :: Character a => [Sequence a] -> Sequence a
 longest = maximumBy (comparing lengthSequence)
 
--- XXX This is pretty hacky here. Better to change to vector (not byte string).
--- | Count number of gaps or unknown characters in sequence.
-countGapOrUnknownChars :: Sequence -> Int
-countGapOrUnknownChars s = V.length . V.filter (isGapOrUnknown cd) $ s^.characters
-  where cd = s^.code
+-- TODO.
+-- -- | Count number of gaps or unknown characters in sequence.
+-- countGapOrUnknownChars :: CharacterX a => Sequence a -> Int
+-- countGapOrUnknownChars s = V.length . V.filter isGapOrUnknown $ s^.characters
 
 -- | Trim to given length.
-trimSequence :: Int -> Sequence -> Sequence
+trimSequence :: Character a => Int -> Sequence a -> Sequence a
 trimSequence n = over characters (V.take $ fromIntegral n)
 
 -- | Concatenate two sequences. 'SequenceName's have to match.
-concatenate :: Sequence -> Sequence -> Sequence
-concatenate (Sequence i c cs) (Sequence j k ks)
-  | i == j && c == k = Sequence i c (cs <> ks)
-  | otherwise        = error $ "concatenate: Sequences do not have equal names: "
-                       ++ L.unpack i ++ ", " ++ L.unpack j ++ "."
+concatenate :: Character a => Sequence a -> Sequence a -> Sequence a
+concatenate (Sequence i cs) (Sequence j ks)
+  | i == j    = Sequence i (cs <> ks)
+  | otherwise = error $ "concatenate: Sequences do not have equal names: "
+                ++ L.unpack i ++ ", " ++ L.unpack j ++ "."
 
 -- | Concatenate a list of sequences, see 'concatenate'.
-concatenateSeqs :: [[Sequence]] -> [Sequence]
+concatenateSeqs :: Character a => [[Sequence a]] -> [Sequence a]
 concatenateSeqs []   = error "concatenateSeqs: Nothing to concatenate."
 concatenateSeqs [ss] = ss
 concatenateSeqs sss  = foldl1 (zipWith concatenate) sss
 
--- TODO: This function goes via lists. Super slow.
--- | Translate from DNA to Protein with given reading frame (0, 1, 2).
-translate :: Int -> UniversalCode -> Sequence -> Sequence
-translate rf uc (Sequence n c cs) | rf > 2    = error "translate: reading frame is larger than 2."
-                                  | rf < 0    = error "translate: reading frame is negative."
-                                  | c == DNA  = Sequence n Protein aas
-                                  | c == DNAX = Sequence n ProteinC aas
-                                  | otherwise = error "translate: can only translate DNA or DNAX (not DNAI) to Protein."
-  where codons = map Codon $ chop3 $ V.toList $ V.drop rf cs
-        aas = V.fromList $ map (universalCode uc M.!) codons
-
 -- | Only take 'Sequence's that are shorter than a given number.
-filterShorterThan :: Int -> [Sequence] -> [Sequence]
+filterShorterThan :: Character a => Int -> [Sequence a] -> [Sequence a]
 filterShorterThan n = filter (\x -> lengthSequence x < n)
 
 -- | Only take 'Sequence's that are longer than a given number.
-filterLongerThan :: Int -> [Sequence] -> [Sequence]
+filterLongerThan :: Character a => Int -> [Sequence a] -> [Sequence a]
 filterLongerThan n = filter (\x -> lengthSequence x > n)

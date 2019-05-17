@@ -26,6 +26,7 @@ import qualified Data.ByteString.Lazy.Char8                  as L
 import           Numeric.LinearAlgebra                       hiding (normalize)
 
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Alphabet.Nucleotide
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools.Vector
@@ -44,7 +45,7 @@ import           EvoMod.Tools.Vector
 -- data AASubstitutionModel = LG | ...
 
 n :: Int
-n = cardinality DNA
+n = length (alphabet :: [Nucleotide])
 
 -- | JC model matrix.
 jcExch :: ExchangeabilityMatrix
