@@ -1,5 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-
 {- |
 Module      :  Character
 Description :  Character interface
@@ -28,19 +26,22 @@ See header of 'EvoMod.Data.Alphabet.Alphabet'.
 
 module EvoMod.Data.Alphabet.Character
   ( Character (..)
-  , CharacterX (..)
-  , CharacterI (..)
   , fromChar
   , toChar
   , fromString
   , toString
+  , CharacterX (..)
+  , isGapOrUnknown
+  , CharacterI (..)
+  , isIUPAC
+  , isStandard
   ) where
 
+import qualified Data.Set                 as S
 import           Data.Vector.Unboxed.Base (Unbox)
 import           Data.Word8               (Word8)
 
 import           EvoMod.Tools.ByteString  (c2w, w2c)
-import           EvoMod.Tools.Misc        (allValues)
 
 -- | A set of characters forms an 'EvoMod.Data.Alphabet.Alphabet'. At the
 -- moment, 'Word8' is used, since none of the alphabets has more than 255
@@ -50,20 +51,6 @@ class (Show a, Read a, Eq a, Ord a, Unbox a, Enum a, Bounded a) => Character a w
   toWord   :: a -> Word8
   -- | Read characters.
   fromWord :: Word8 -> a
-
-  -- | The complete alphabet comprising the code associated with the characters.
-  alphabet :: [a]
-  alphabet = allValues :: [a]
-
--- | An extended character type with gaps and unknowns.
-class Character a => CharacterX a where
-  unknown :: a
-  gap     :: a
-  toStandard :: a -> [a]
-
--- | IUPAC characters with a mapping to extended characters.
-class CharacterX a => CharacterI a where
-  iupac :: [a]
 
 -- | Conversion to 'Char'.
 toChar :: Character a => a -> Char
@@ -80,3 +67,28 @@ toString = map toChar
 -- | Conversion from 'String'.
 fromString :: Character a => String -> [a]
 fromString = map fromChar
+
+-- | An extended character type with gaps and unknowns.
+class Character a => CharacterX a where
+  unknown :: a
+  gap     :: a
+  toStandard :: a -> [a]
+
+-- | Is the character a gap or unknown?
+isGapOrUnknown :: CharacterX a => a -> Bool
+isGapOrUnknown c = c == gap || c == unknown
+
+-- | IUPAC characters with a mapping to extended characters.
+class CharacterX a => CharacterI a where
+  iupac :: [a]
+
+iupacLookup :: CharacterI a => S.Set a
+iupacLookup = S.fromList iupac
+
+-- | Is the given character a IUPAC character?
+isIUPAC :: CharacterI a => a -> Bool
+isIUPAC c = c `S.member` iupacLookup
+
+-- | Is the given character a standard character?
+isStandard :: CharacterI a => a -> Bool
+isStandard c = not $ isIUPAC c
