@@ -13,8 +13,8 @@ Creation date: Fri May 17 13:49:18 2019.
 -}
 
 module EvoMod.Data.Sequence.Translate
-  ( translate
-  , translateX
+  ( translateDNA
+  , translateDNAX
   ) where
 
 import qualified Data.Map                         as M
@@ -38,8 +38,8 @@ translateWith m rf (Sequence n cs) | rf > 2    = error "translate: reading frame
   where codons = map Codon $ chop3 $ V.toList $ V.drop rf cs
         aas = V.fromList $ map (m M.!) codons
 
-translate :: UniversalCode -> Int -> Sequence Nucleotide -> Sequence AminoAcidS
-translate uc = translateWith (universalCode uc)
+translateDNA :: UniversalCode -> Int -> Sequence Nucleotide -> Sequence AminoAcidS
+translateDNA uc = translateWith (universalCode uc)
 
-translateX :: UniversalCode -> Int -> Sequence NucleotideX -> Sequence AminoAcidS
-translateX uc = translateWith (universalCodeX uc)
+translateDNAX :: UniversalCode -> Int -> Sequence NucleotideX -> Sequence AminoAcidS
+translateDNAX uc = translateWith (universalCodeX uc)

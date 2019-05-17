@@ -18,7 +18,6 @@ module EvoMod.Data.MarkovProcess.EDMModel
   , edmModel
   ) where
 
-import qualified Data.ByteString.Lazy.Char8                  as L
 import qualified Data.Vector.Storable                        as V
 
 import           EvoMod.Data.MarkovProcess.MixtureModel
@@ -34,6 +33,6 @@ type EDMComponent = (Weight, V.Vector Double)
 edmModel :: [EDMComponent] -> (StationaryDistribution -> SubstitutionModel)
          -> MixtureModel
 edmModel cs f =
-  MixtureModel n [ MixtureModelComponent w (f d)
+  MixtureModel n [ Component w (f d)
                  | (w, d) <- cs ]
-  where n = L.pack $ "EDM" ++ show (length cs)
+  where n = "EDM" ++ show (length cs)

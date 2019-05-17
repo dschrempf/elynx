@@ -63,13 +63,13 @@ incrementElemIndexByOne is v = v V.// zip is es'
   where es' = [v V.! i + 1 | i <- is]
 
 -- For a given code and counts vector, increment the count of the given character.
-acc :: CharacterX a => V.Vector Int -> a -> V.Vector Int
+acc :: CharacterI a => V.Vector Int -> a -> V.Vector Int
 acc vec char = incrementElemIndexByOne is vec
   where
     charsNonIupac = toStandard char
     is            = map fromEnum charsNonIupac
 
-countCharacters :: forall a . CharacterX a => V.Vector a -> V.Vector Int
+countCharacters :: forall a . CharacterI a => V.Vector a -> V.Vector Int
 countCharacters =
   V.foldl' acc zeroCounts
   where
@@ -77,7 +77,7 @@ countCharacters =
     zeroCounts = V.replicate nChars (0 :: Int)
 
 -- | For a given code vector of characters, calculate frequency of characters.
-frequencyCharacters :: CharacterX a => V.Vector a -> V.Vector Double
+frequencyCharacters :: CharacterI a => V.Vector a -> V.Vector Double
 frequencyCharacters d = V.map (\e -> fromIntegral e / fromIntegral s) counts
   where
     counts = countCharacters d

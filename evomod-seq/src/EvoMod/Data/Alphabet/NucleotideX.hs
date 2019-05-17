@@ -27,8 +27,6 @@ C       Cytosine        C               G
 G       Guanine            G            C
 T       Thymine               T         A
 ------  -----------  -----------------  ----------
-N       any          A  C  G  T         N
-------  -----------  -----------------  ----------
 - or .  Gap (Zero)                      -
 @
 
@@ -86,21 +84,7 @@ derivingUnbox "NucleotideX"
 instance C.Character NucleotideX where
   toWord   = toWord
   fromWord = fromWord
-  codeName = "DNAX"
-  codeNameVerbose = "DNAX (nucleotides; extended; including gaps and unknowns)"
-
-toStandardM :: M.Map NucleotideX [NucleotideX]
-toStandardM = M.fromList
-  [
-    (A, [A])
-  , (C, [C])
-  , (G, [G])
-  , (T, [T])
-  , (N, [A, C, G, T])
-  , (Gap, [])
-  ]
+  code     = C.DNAX
 
 instance C.CharacterX NucleotideX where
-  unknown    = N
   gap        = Gap
-  toStandard = (M.!) toStandardM

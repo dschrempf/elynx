@@ -25,7 +25,6 @@ module EvoMod.Data.MarkovProcess.AminoAcid
   , poissonCustom
   ) where
 
-import qualified Data.ByteString.Lazy.Char8                  as L
 import           Data.List                                   (elemIndex)
 import           Data.Maybe                                  (fromMaybe)
 import           Data.Word                                   (Word8)
@@ -34,8 +33,9 @@ import           Numeric.SpecFunctions
 
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Alphabet.AminoAcid
+import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.MarkovProcess.RateMatrix
-import           EvoMod.Data.MarkovProcess.SubstitutionModel
+import qualified EvoMod.Data.MarkovProcess.SubstitutionModel as S
 import           EvoMod.Tools.ByteString                     (c2w)
 import           EvoMod.Tools.LinearAlgebra
 import           EvoMod.Tools.Vector
@@ -170,18 +170,18 @@ lgStatDist :: StationaryDistribution
 lgStatDist = pamlToAlphaVec lgStatDistPaml
 
 -- | LG substitution model.
-lg :: SubstitutionModel
-lg = substitutionModel Protein (L.pack "LG") [] lgStatDist lgExch
+lg :: S.SubstitutionModel
+lg = S.substitutionModel Protein "LG" [] lgStatDist lgExch
 
 -- | LG substitution model with maybe a name and a custom stationary distribution.
-lgCustom :: Maybe L.ByteString -> StationaryDistribution -> SubstitutionModel
-lgCustom mn d = substitutionModel Protein name [] d lgExch
-  where name = fromMaybe (L.pack "LG-Custom") mn
+lgCustom :: Maybe String -> StationaryDistribution -> S.SubstitutionModel
+lgCustom mn d = S.substitutionModel Protein name [] d lgExch
+  where name = fromMaybe "LG-Custom" mn
 
 -- | LG substitution model with maybe a name and a custom stationary distribution.
-lgCustomUnnormalized :: Maybe L.ByteString -> StationaryDistribution -> SubstitutionModel
-lgCustomUnnormalized mn d = substitutionModelUnnormalized Protein name [] d lgExch
-  where name = fromMaybe (L.pack "LG-Custom-Unnormalized") mn
+lgCustomUnnormalized :: Maybe String -> StationaryDistribution -> S.SubstitutionModel
+lgCustomUnnormalized mn d = S.substitutionModelUnnormalized Protein name [] d lgExch
+  where name = fromMaybe "LG-Custom-Unnormalized" mn
 
 -- WAG exchangeability list in PAML order.
 wagExchRawPaml :: [Double]
@@ -223,18 +223,18 @@ wagStatDist :: StationaryDistribution
 wagStatDist = pamlToAlphaVec wagStatDistPaml
 
 -- | LG substitution model.
-wag :: SubstitutionModel
-wag = substitutionModel Protein (L.pack "WAG") [] wagStatDist wagExch
+wag :: S.SubstitutionModel
+wag = S.substitutionModel Protein "WAG" [] wagStatDist wagExch
 
 -- | LG substitution model with maybe a name and a custom stationary distribution.
-wagCustom :: Maybe L.ByteString -> StationaryDistribution -> SubstitutionModel
-wagCustom mn d = substitutionModel Protein name [] d wagExch
-  where name = fromMaybe (L.pack "WAG-Custom") mn
+wagCustom :: Maybe String -> StationaryDistribution -> S.SubstitutionModel
+wagCustom mn d = S.substitutionModel Protein name [] d wagExch
+  where name = fromMaybe "WAG-Custom" mn
 
 -- | LG substitution model with maybe a name and a custom stationary distribution.
-wagCustomUnnormalized :: Maybe L.ByteString -> StationaryDistribution -> SubstitutionModel
-wagCustomUnnormalized mn d = substitutionModelUnnormalized Protein name [] d wagExch
-  where name = fromMaybe (L.pack "WAG-Custom-Unnormalized") mn
+wagCustomUnnormalized :: Maybe String -> StationaryDistribution -> S.SubstitutionModel
+wagCustomUnnormalized mn d = S.substitutionModelUnnormalized Protein name [] d wagExch
+  where name = fromMaybe "WAG-Custom-Unnormalized" mn
 
 uniformExch :: ExchangeabilityMatrix
 uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n*n) 1.0
@@ -243,10 +243,10 @@ poissonExch :: ExchangeabilityMatrix
 poissonExch = uniformExch
 
 -- | Poisson substitution model.
-poisson :: SubstitutionModel
-poisson = substitutionModel Protein (L.pack "Poisson") [] (uniformVec n) poissonExch
+poisson :: S.SubstitutionModel
+poisson = S.substitutionModel Protein "Poisson" [] (uniformVec n) poissonExch
 
 -- | Poisson substitution model with maybe a name and a custom stationary distribution.
-poissonCustom :: Maybe L.ByteString -> StationaryDistribution -> SubstitutionModel
-poissonCustom mn d = substitutionModel Protein name [] d poissonExch
-  where name = fromMaybe (L.pack "Poisson-Custom") mn
+poissonCustom :: Maybe String -> StationaryDistribution -> S.SubstitutionModel
+poissonCustom mn d = S.substitutionModel Protein name [] d poissonExch
+  where name = fromMaybe "Poisson-Custom" mn

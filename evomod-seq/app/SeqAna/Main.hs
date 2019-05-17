@@ -1,3 +1,6 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
+
 {- |
 Module      :  Main
 Description :  Parse sequence file formats and analyze them
@@ -35,8 +38,17 @@ import           Text.Printf
 
 import           OptionsSeqAna
 
+import           EvoMod.Data.Alphabet.AminoAcid
+import           EvoMod.Data.Alphabet.AminoAcidI
+import           EvoMod.Data.Alphabet.AminoAcidS
+import           EvoMod.Data.Alphabet.AminoAcidX
+import           EvoMod.Data.Alphabet.Character
+import           EvoMod.Data.Alphabet.Nucleotide
+import           EvoMod.Data.Alphabet.NucleotideI
+import           EvoMod.Data.Alphabet.NucleotideX
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
+import           EvoMod.Data.Sequence.Translate
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.ByteString
@@ -54,18 +66,18 @@ instance Logger Params where
 
 type Seq = ReaderT Params IO
 
-examineSequences :: Bool -> [Sequence] -> L.ByteString
-examineSequences perSiteFlag ss
-  | equalLength ss = summarizeSequenceList ss
-                     <> L.pack "\n"
-                     <> examineMSA perSiteFlag (fromSequenceList ss)
-  | otherwise      = summarizeSequenceList ss
+-- examineSequences :: CharacterI a => Bool -> [Sequence a] -> L.ByteString
+-- examineSequences perSiteFlag ss
+--   | equalLength ss = summarizeSequenceList ss
+--                      <> L.pack "\n"
+--                      <> examineMSA perSiteFlag (fromSequenceList ss)
+--   | otherwise      = summarizeSequenceList ss
 
-examineMSA :: Bool -> MultiSequenceAlignment -> L.ByteString
+examineMSA :: CharacterI a => Bool -> MultiSequenceAlignment a -> L.ByteString
 examineMSA perSiteFlag msa =
   L.unlines [ L.pack $ "Total number of columns in alignment: "
               ++ show (msaLength msa)
-            , L.pack $ "Number of columns without gaps or unknown characters: "
+            , L.pack $ "Number of columns without gaps: "
               ++ show (msaLength msaFltGaps)
             , L.pack $ "Number of columns without extended IUPAC characters: "
               ++ show (msaLength msaFltIUPAC)
@@ -96,7 +108,7 @@ examineMSA perSiteFlag msa =
     nGaps               = countGapOrUnknownChars msa
     percentageNonStd    = fromIntegral nNonStd / fromIntegral nTot :: Double
     percentageGaps      = fromIntegral nGaps   / fromIntegral nTot :: Double
-    msaFltGaps          = filterColumnsGapsUnknowns msa
+    msaFltGaps          = filterColumnsGaps msa
     msaFltIUPAC         = filterColumnsIUPAC msaFltGaps
     kEffs               = kEff . toFrequencyData $ msa
     kEffsFltGaps        = kEff . toFrequencyData $ msaFltGaps
@@ -110,39 +122,162 @@ examineMSA perSiteFlag msa =
                                          ]
                           else L.empty
 
+-- TODO. REDUCE REDUNDANCY IN CODE.
+examineS :: Seq ()
+examineS = do
+  args <- arguments <$> ask
+  let cd = argsCode args
+      -- TODO Analyze MSAs.
+      -- (Examine perSiteFlag) = argsCommand args
+      --
+      -- when equalLength ss $
+      --   <> L.pack "\n"
+      --   <> examineMSA perSiteFlag (fromSequenceList ss)
+  case cd of
+    DNA -> do
+      sss <- readSeqss @Nucleotide
+      io $ L.intercalate (L.pack "\n") $
+        map summarizeSequenceList sss
+    DNAX -> do
+      sss <- readSeqss @NucleotideX
+      io $ L.intercalate (L.pack "\n") $
+        map summarizeSequenceList sss
+    DNAI -> do
+      sss <- readSeqss @NucleotideI
+      io $ L.intercalate (L.pack "\n") $
+        map summarizeSequenceList sss
+    Protein -> do
+      sss <- readSeqss @AminoAcid
+      io $ L.intercalate (L.pack "\n") $
+        map summarizeSequenceList sss
+    ProteinX -> do
+      sss <- readSeqss @AminoAcidX
+      io $ L.intercalate (L.pack "\n") $
+        map summarizeSequenceList sss
+    ProteinS -> do
+      sss <- readSeqss @AminoAcidS
+      io $ L.intercalate (L.pack "\n") $
+        map summarizeSequenceList sss
+    ProteinI -> do
+      sss <- readSeqss @AminoAcidI
+      io $ L.intercalate (L.pack "\n") $
+        map summarizeSequenceList sss
+
+concatenateS :: Seq ()
+concatenateS = do
+  args <- arguments <$> ask
+  let cd = argsCode args
+  case cd of
+    DNA -> do
+      sss <- readSeqss @Nucleotide
+      io $ sequencesToFasta $ concatenateSeqs sss
+    DNAX -> do
+      sss <- readSeqss @NucleotideX
+      io $ sequencesToFasta $ concatenateSeqs sss
+    DNAI -> do
+      sss <- readSeqss @NucleotideI
+      io $ sequencesToFasta $ concatenateSeqs sss
+    Protein -> do
+      sss <- readSeqss @AminoAcid
+      io $ sequencesToFasta $ concatenateSeqs sss
+    ProteinX -> do
+      sss <- readSeqss @AminoAcidX
+      io $ sequencesToFasta $ concatenateSeqs sss
+    ProteinS -> do
+      sss <- readSeqss @AminoAcidS
+      io $ sequencesToFasta $ concatenateSeqs sss
+    ProteinI -> do
+      sss <- readSeqss @AminoAcidI
+      io $ sequencesToFasta $ concatenateSeqs sss
+
+filterS :: Seq ()
+filterS = do
+  args <- arguments <$> ask
+  let cd             = argsCode args
+      (Filter ml ms) = argsCommand args
+  case cd of
+    DNA -> do
+      sss <- readSeqss @Nucleotide
+      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
+                                       , filterShorterThan <$> ms ]
+      io $ sequencesToFasta $ compose filters $ concat sss
+    DNAX -> do
+      sss <- readSeqss @NucleotideX
+      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
+                                       , filterShorterThan <$> ms ]
+      io $ sequencesToFasta $ compose filters $ concat sss
+    DNAI -> do
+      sss <- readSeqss @NucleotideI
+      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
+                                       , filterShorterThan <$> ms ]
+      io $ sequencesToFasta $ compose filters $ concat sss
+    Protein -> do
+      sss <- readSeqss @AminoAcid
+      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
+                                       , filterShorterThan <$> ms ]
+      io $ sequencesToFasta $ compose filters $ concat sss
+    ProteinX -> do
+      sss <- readSeqss @AminoAcidX
+      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
+                                       , filterShorterThan <$> ms ]
+      io $ sequencesToFasta $ compose filters $ concat sss
+    ProteinS -> do
+      sss <- readSeqss @AminoAcidS
+      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
+                                       , filterShorterThan <$> ms ]
+      io $ sequencesToFasta $ compose filters $ concat sss
+    ProteinI -> do
+      sss <- readSeqss @AminoAcidI
+      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
+                                       , filterShorterThan <$> ms ]
+      io $ sequencesToFasta $ compose filters $ concat sss
+
 -- subsample nSites nSamples msa gen
-subsample :: (PrimMonad m)
-          => Int -> Int -> MultiSequenceAlignment -> Gen (PrimState m) -> m [MultiSequenceAlignment]
+subsample :: (PrimMonad m, Character a)
+          => Int -> Int -> MultiSequenceAlignment a -> Gen (PrimState m) -> m [MultiSequenceAlignment a]
 subsample n m msa g = replicateM m $ randomSubSample n msa g
 
-act :: Command -> [[Sequence]] -> Seq ()
--- act Summarize sss      = io $ L.intercalate (L.pack "\n") $ map summarizeSequenceList sss
-act (Examine perSiteFlag) sss = io $ L.intercalate (L.pack "\n") $
-  map (examineSequences perSiteFlag) sss
-act Concatenate sss    = io $ sequencesToFasta $ concatenateSeqs sss
-act (Filter ml ms) sss = io $ sequencesToFasta $ compose filters $ concat sss
-  where filters        = map (fromMaybe id) [ filterLongerThan <$> ml
-                                    , filterShorterThan <$> ms ]
-act (SubSample n m ms) sss = do
-  when (length sss > 1) $ error "can only sub-sample from one input file"
-  g <- lift $ maybe createSystemRandom (initialize . V.fromList) ms
-  let msa = fromSequenceList $ head sss
-  samples <- subsample n m msa g
-  let files = map (sequencesToFasta . toSequenceList) samples
-  mFileOut <- argsMaybeOutFileBaseName . arguments <$> ask
-  case mFileOut of
-    Nothing -> logLBSQuiet $ L.intercalate (L.pack "\n") files
-    Just fn -> do
-      let nDigits    = ceiling $ logBase (10 :: Double) (fromIntegral m)
-          digitStr i = L.unpack $ alignRightWith '0' nDigits (L.pack $ show i)
-          fns = [ fn ++ digitStr i ++ ".fasta" | i <- [0 .. m-1] ]
-      lift $ mapM_ (\i -> withFile (fns!!i) WriteMode (`L.hPutStr` (files!!i))) [0 .. m-1]
-      logS $ "Results written to files with basename '" ++ fn ++ "'."
-act (Translate rf uc) sss = do
+subSampleS :: Seq ()
+subSampleS = do
+  args <- arguments <$> ask
+  let cd                 = argsCode args
+      (SubSample n m ms) = argsCommand args
+  case cd of
+    DNA -> do
+      sss <- readSeqss @Nucleotide
+      when (length sss > 1) $ error "can only sub-sample from one input file"
+      g <- lift $ maybe createSystemRandom (initialize . V.fromList) ms
+      let msa = fromSequenceList $ head sss
+      samples <- subsample n m msa g
+      let files = map (sequencesToFasta . toSequenceList) samples
+      mFileOut <- argsMaybeOutFileBaseName . arguments <$> ask
+      case mFileOut of
+        Nothing -> logLBSQuiet $ L.intercalate (L.pack "\n") files
+        Just fn -> do
+          let nDigits    = ceiling $ logBase (10 :: Double) (fromIntegral m)
+              digitStr i = L.unpack $ alignRightWith '0' nDigits (L.pack $ show i)
+              fns = [ fn ++ digitStr i ++ ".fasta" | i <- [0 .. m-1] ]
+          lift $ mapM_ (\i -> withFile (fns!!i) WriteMode (`L.hPutStr` (files!!i))) [0 .. m-1]
+          logS $ "Results written to files with basename '" ++ fn ++ "'."
+    _ -> error "TODO."
+
+translateS :: Seq ()
+translateS = do
+  args <- arguments <$> ask
+  let cd                = argsCode args
+      (Translate rf uc) = argsCommand args
   logS "Translate sequences to amino acids."
   logS $ "Universal code: " ++ show uc ++ "."
-  io $ L.intercalate (L.pack "\n") $
-    map (sequencesToFasta . map (translate rf uc)) sss
+  case cd of
+    DNA -> do
+      sss <- readSeqss @Nucleotide
+      io $ L.intercalate (L.pack "\n") $
+        map (sequencesToFasta . map (translateDNA uc rf)) sss
+    DNAX -> do
+      sss <- readSeqss @NucleotideX
+      io $ L.intercalate (L.pack "\n") $
+        map (sequencesToFasta . map (translateDNAX uc rf)) sss
+    _ -> error "translate: can only translate DNA and DNAX."
 
 io :: L.ByteString -> Seq ()
 io res = do
@@ -157,6 +292,14 @@ io res = do
       lift $ withFile fn' WriteMode (`L.hPutStr` res)
       logS $ "Results written to file '" ++ fn' ++ "'."
 
+readSeqs :: Character a => FilePath -> IO [Sequence a]
+readSeqs = parseFileWith fasta
+
+readSeqss :: Character a => Seq [[Sequence a]]
+readSeqss = do
+  fns <- argsFileNames . arguments <$> ask
+  lift $ mapM readSeqs fns
+
 work :: Seq ()
 work = do
   args <- arguments <$> ask
@@ -164,10 +307,12 @@ work = do
   let c = argsCode args
   logS $ "Read fasta file(s); code " ++ show c ++ "."
   logS ""
-  let fns = argsFileNames args
-  -- 'sss' is a little weird, but it is a list of a list of sequences.
-  sss <- lift $ sequence $ parseFileWith (fasta c) <$> fns
-  act (argsCommand args) sss
+  case argsCommand args of
+    Examine{}   -> examineS
+    Concatenate -> concatenateS
+    Filter{}    -> filterS
+    SubSample{} -> subSampleS
+    Translate{} -> translateS
 
 main :: IO ()
 main = do

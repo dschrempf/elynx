@@ -15,13 +15,13 @@ Creation date: Tue Jan 29 19:10:46 2019.
 -}
 
 module EvoMod.Data.MarkovProcess.SubstitutionModel
-  ( SubstitutionModelName
-  , SubstitutionModelParams
+  ( Name
+  , Params
   , SubstitutionModel
+  , code
+  , name
   , substitutionModel
   , substitutionModelUnnormalized
-  , smCode
-  , smName
   , smStationaryDistribution
   , smExchangeabilityMatrix
   , scaleSubstitutionModel
@@ -36,24 +36,24 @@ import           Control.Lens
 import qualified Data.ByteString.Lazy.Char8           as L
 import           Numeric.LinearAlgebra                hiding ((<>))
 
-import           EvoMod.Data.Alphabet.Alphabet
+import qualified EvoMod.Data.Alphabet.Character       as C
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Tools.Definitions
 import           EvoMod.Tools.LinearAlgebra
 import           EvoMod.Tools.Numeric
 
 -- | Name of substitution model; abstracted and subject to change.
-type SubstitutionModelName = L.ByteString
+type Name = String
 
 -- | Parameters of substitution model. May be the empty list.
-type SubstitutionModelParams = [Double]
+type Params = [Double]
 
 -- | Complete definition of a substitution model. Create instances with
 -- 'substitutionModel'.
 data SubstitutionModel = SubstitutionModel
-  { _code                   :: Code
-  , _name                   :: SubstitutionModelName
-  , _params                 :: SubstitutionModelParams
+  { _code                   :: C.Code
+  , _name                   :: Name
+  , _params                 :: Params
   , _stationaryDistribution :: StationaryDistribution
   , _exchangeabilityMatrix  :: ExchangeabilityMatrix
   }
@@ -62,13 +62,13 @@ data SubstitutionModel = SubstitutionModel
 makeLenses ''SubstitutionModel
 
 -- | Create normalized 'SubstitutionModel'. See 'normalizeSubstitutionModel'.
-substitutionModel :: Code -> SubstitutionModelName -> SubstitutionModelParams
+substitutionModel :: C.Code -> Name -> Params
                   -> StationaryDistribution -> ExchangeabilityMatrix
                   -> SubstitutionModel
 substitutionModel c n ps d e = normalizeSubstitutionModel $ SubstitutionModel c n ps d e
 
 -- | Create UNNORMALIZED 'SubstitutionModel'. See 'substitutionModel'.
-substitutionModelUnnormalized :: Code -> SubstitutionModelName -> SubstitutionModelParams
+substitutionModelUnnormalized :: C.Code -> Name -> Params
                   -> StationaryDistribution -> ExchangeabilityMatrix
                   -> SubstitutionModel
 substitutionModelUnnormalized = SubstitutionModel
@@ -77,14 +77,6 @@ substitutionModelUnnormalized = SubstitutionModel
 -- Another way would be to use 'makeLensesWith' and a custom 'LensRules' that
 -- does not create type signatures. Then create the type signature manually and
 -- document them.
-
--- | Access code.
-smCode :: Lens' SubstitutionModel Code
-smCode = code
-
--- | Access name.
-smName :: Lens' SubstitutionModel SubstitutionModelName
-smName = name
 
 -- | Access stationary distribution.
 smStationaryDistribution :: Lens' SubstitutionModel StationaryDistribution
@@ -110,20 +102,20 @@ normalizeSubstitutionModel sm = scaleSubstitutionModel (1.0/r) sm
         r = totalRate (sm ^. stationaryDistribution) m
 
 -- | Abbend to name.
-appendNameSubstitutionModel :: SubstitutionModelName -> SubstitutionModel -> SubstitutionModel
+appendNameSubstitutionModel :: Name -> SubstitutionModel -> SubstitutionModel
 appendNameSubstitutionModel n = over name (<> n)
 
 -- | Summarize a substitution model; lines to be printed to screen or log.
 summarizeSubstitutionModel :: SubstitutionModel -> [L.ByteString]
 summarizeSubstitutionModel sm = map L.pack $
-  (show (sm ^. code) ++ " substitution model: " ++ L.unpack (sm ^. name) ++ ".") :
+  (show (sm ^. code) ++ " substitution model: " ++ sm ^. name ++ ".") :
   [ "Parameters: " ++ show (sm ^. params) ++ "." | not (null (sm ^. params))] ++
   case sm ^. code of
-    DNA -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
+    C.DNA -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
            , "Exchangeability matrix:\n" ++ dispmi 2 precision (sm ^. exchangeabilityMatrix) ++ "."
            , "Scale: " ++ show (roundN precision $ totalRateSubstitutionModel sm) ++ "."
            ]
-    Protein -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
+    C.Protein -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
                , "Scale: " ++ show (roundN precision $ totalRateSubstitutionModel sm) ++ "."
                ]
     _ -> error "Extended character sets are not supported with substitution models."

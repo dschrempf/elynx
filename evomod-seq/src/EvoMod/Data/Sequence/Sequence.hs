@@ -89,7 +89,7 @@ fromCharacters = L.pack . map toChar . V.toList
 
 showInfo :: forall a . Character a => Sequence a -> L.ByteString
 showInfo s = L.unwords [ alignLeft defSequenceNameWidth (s^.name)
-                       , alignRight defFieldWidth (L.pack $ codeName @a)
+                       , alignRight defFieldWidth (L.pack $ show $ code @a)
                        , alignRight defFieldWidth (L.pack . show $ len) ]
 -- TODO.
                        -- , alignRight defFieldWidth (L.pack $ P.printf "%.3f" pGaps) ]

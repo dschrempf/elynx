@@ -42,9 +42,8 @@ S                 Ser                 Serine
 T                 Thr                 Threonine
 V                 Val                 Valine
 W                 Trp                 Tryptophan
+
 Y                 Tyr                 Tyrosine
------------------
-X                 Xaa                 Any amino acid
 -----------------
 -                 Gap                 No amino acid
 .                 Gap                 No amino acid
@@ -65,7 +64,6 @@ import           EvoMod.Tools.ByteString        (c2w)
 
 -- | Amino acids.
 data AminoAcidX = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
-                | X
                 | Gap
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
@@ -91,7 +89,6 @@ toWordM = M.fromList $ map (\(k, v) -> (k, c2w v))
   , (V, 'V')
   , (W, 'W')
   , (Y, 'Y')
-  , (X, 'X')
   , (Gap, '-')
   ]
 
@@ -120,7 +117,6 @@ fromWordM = M.fromList $ map (\(k, v) -> (c2w k, v))
   , ('V', V)
   , ('W', W)
   , ('Y', Y)
-  , ('X', X)
   , ('-', Gap)
   , ('.', Gap)                  -- Support dot gap character.
   ]
@@ -136,36 +132,7 @@ derivingUnbox "AminoAcidX"
 instance C.Character AminoAcidX where
   toWord   = toWord
   fromWord = fromWord
-  codeName = "ProteinX"
-  codeNameVerbose = "ProteinX (amino acids; extended; including gaps and unknowns)"
-
-toStandardM :: M.Map AminoAcidX [AminoAcidX]
-toStandardM = M.fromList
-  [ (A, [A])
-  , (C, [C])
-  , (D, [D])
-  , (E, [E])
-  , (F, [F])
-  , (G, [G])
-  , (H, [H])
-  , (I, [I])
-  , (K, [K])
-  , (L, [L])
-  , (M, [M])
-  , (N, [N])
-  , (P, [P])
-  , (Q, [Q])
-  , (R, [R])
-  , (S, [S])
-  , (T, [T])
-  , (V, [V])
-  , (W, [W])
-  , (Y, [Y])
-  , (X, [A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y])
-  , (Gap, [])
-  ]
+  code     = C.ProteinX
 
 instance C.CharacterX AminoAcidX where
-  unknown    = X
   gap        = Gap
-  toStandard = (M.!) toStandardM

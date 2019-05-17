@@ -31,7 +31,7 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , msaConcatenate
   , msasConcatenate
   , filterColumnsIUPAC
-  , filterColumnsGapsUnknowns
+  , filterColumnsGaps
   -- | * Analysis
   , FrequencyData
   , toFrequencyData
@@ -119,7 +119,7 @@ showMSA msa = L.unlines $ msaHeader :
 summarizeMSAHeader :: forall a . Character a => MultiSequenceAlignment a -> L.ByteString
 summarizeMSAHeader msa = L.unlines $
   [ L.pack "Multi sequence alignment."
-  , L.pack $ "Code: " ++ codeNameVerbose @a ++ "."
+  , L.pack $ "Code: " ++ codeNameVerbose (code @a) ++ "."
   , L.pack $ "Length: " ++ show (msaLength msa) ++ "." ]
   ++ reportLengthSummary ++ reportNumberSummary
   where reportLengthSummary =
@@ -184,15 +184,15 @@ filterColumnsIUPAC :: CharacterI a => MultiSequenceAlignment a -> MultiSequenceA
 filterColumnsIUPAC = filterColumns (V.all isStandard)
 
 -- | Only keep columns without gaps or unknown characters.
-filterColumnsGapsUnknowns :: CharacterX a => MultiSequenceAlignment a -> MultiSequenceAlignment a
-filterColumnsGapsUnknowns = filterColumns (V.all isGapOrUnknown)
+filterColumnsGaps :: CharacterX a => MultiSequenceAlignment a -> MultiSequenceAlignment a
+filterColumnsGaps = filterColumns (V.all isGap)
 
 -- | Frequency data; do not store the actual characters, but only their
 -- frequencies.
 type FrequencyData = M.Matrix Double
 
 -- | Calculcate frequency of characters in multi sequence alignment.
-toFrequencyData :: CharacterX a => MultiSequenceAlignment a -> FrequencyData
+toFrequencyData :: CharacterI a => MultiSequenceAlignment a -> FrequencyData
 toFrequencyData (MultiSequenceAlignment _ d) = fMapColParChunk 100 frequencyCharacters d
 
 -- | Diversity analysis. See 'kEffEntropy'.
@@ -207,7 +207,7 @@ countStandardChars msa = V.length . V.filter isStandard $ allChars
 
 -- | Count the number of gaps or unknown characters in the alignment.
 countGapOrUnknownChars :: CharacterX a => MultiSequenceAlignment a -> Int
-countGapOrUnknownChars msa = V.length . V.filter isGapOrUnknown $ allChars
+countGapOrUnknownChars msa = V.length . V.filter isGap $ allChars
   where allChars = M.flatten $ msa^.matrix
 
 -- | Sample the given sites from a multi sequence alignment.

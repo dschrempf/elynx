@@ -1,4 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
 {- |
 Module      :  EvoMod.Import.Sequence.Fasta
@@ -68,13 +70,13 @@ sequenceLine s = do
 -- forming the complete sequence. This is not memory efficient.
 
 -- | Parse a sequence of 'Alphabet' 'EvoMod.Data.Alphabet.Character's.
-fastaSequence :: Code -> Parser Sequence
-fastaSequence c = do hd <- sequenceHeader
-                     let !a  = S.fromList $ map toWord8 $ fromAlphabet $ alphabet c
-                     lns <- some (sequenceLine a)
-                     _  <- many eol
-                     return $ Sequence hd c (toCharacters $ L.concat lns)
+fastaSequence :: forall a . Character a => Parser (Sequence a)
+fastaSequence = do hd <- sequenceHeader
+                   let !alph  = S.fromList $ map toWord (alphabet @a)
+                   lns <- some (sequenceLine alph)
+                   _  <- many eol
+                   return $ Sequence hd (toCharacters $ L.concat lns)
 
 -- | Parse a Fasta file assuming 'Code'.
-fasta :: Code -> Parser [Sequence]
-fasta c = some (fastaSequence c) <* eof
+fasta :: Character a => Parser [Sequence a]
+fasta = some fastaSequence <* eof

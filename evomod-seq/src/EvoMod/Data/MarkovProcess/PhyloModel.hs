@@ -25,21 +25,21 @@ module EvoMod.Data.MarkovProcess.PhyloModel
 import           Control.Lens
 import qualified Data.ByteString.Lazy.Char8                  as L
 
-import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Data.MarkovProcess.MixtureModel
-import           EvoMod.Data.MarkovProcess.SubstitutionModel
+import           EvoMod.Data.Alphabet.Character
+import qualified EvoMod.Data.MarkovProcess.MixtureModel      as M
+import qualified EvoMod.Data.MarkovProcess.SubstitutionModel as S
 
 -- | A phylogenetic model is a mixture model or a substitution model. More
 -- complicated models may be added.
-data PhyloModel = PhyloMixtureModel MixtureModel | PhyloSubstitutionModel SubstitutionModel
+data PhyloModel = PhyloMixtureModel M.MixtureModel | PhyloSubstitutionModel S.SubstitutionModel
   deriving (Show, Read)
 
 -- | Extract code from phylogenetic model.
 pmCode :: PhyloModel -> Code
-pmCode (PhyloMixtureModel mm)      = getCodeMixtureModel mm
-pmCode (PhyloSubstitutionModel sm) = sm ^. smCode
+pmCode (PhyloMixtureModel mm)      = M.getCodeMixtureModel mm
+pmCode (PhyloSubstitutionModel sm) = sm ^. S.code
 
 -- | Summarize a phylogenetic model; lines to be printed to screen or log.
 pmSummarize :: PhyloModel -> [L.ByteString]
-pmSummarize (PhyloMixtureModel mm)      = summarizeMixtureModel mm
-pmSummarize (PhyloSubstitutionModel sm) = summarizeSubstitutionModel sm
+pmSummarize (PhyloMixtureModel mm)      = M.summarizeMixtureModel mm
+pmSummarize (PhyloSubstitutionModel sm) = S.summarizeSubstitutionModel sm

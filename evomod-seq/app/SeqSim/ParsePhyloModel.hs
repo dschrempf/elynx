@@ -27,13 +27,15 @@ import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
 import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Alphabet.Nucleotide
+import           EvoMod.Data.Alphabet.AminoAcid
 import           EvoMod.Data.MarkovProcess.AminoAcid
 import           EvoMod.Data.MarkovProcess.CXXModels
-import           EvoMod.Data.MarkovProcess.MixtureModel
+import qualified EvoMod.Data.MarkovProcess.MixtureModel         as M
 import           EvoMod.Data.MarkovProcess.Nucleotide
 import           EvoMod.Data.MarkovProcess.PhyloModel
 import           EvoMod.Data.MarkovProcess.RateMatrix
-import           EvoMod.Data.MarkovProcess.SubstitutionModel
+import qualified EvoMod.Data.MarkovProcess.SubstitutionModel    as S
 import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes (EDMComponent)
 import           EvoMod.Tools.ByteString
 import           EvoMod.Tools.Equality
@@ -45,10 +47,10 @@ bs :: String -> L.ByteString
 bs = L.pack
 
 nNuc :: Int
-nNuc = cardinality DNA
+nNuc = length (alphabet :: [Nucleotide])
 
 nAA :: Int
-nAA = cardinality Protein
+nAA = length (alphabet :: [AminoAcid])
 
 -- Model parameters between square brackets.
 paramsStart :: Word8
@@ -97,8 +99,8 @@ assertLength d n r = if size d /= n
 
 -- This is the main function that connects the model string, the parameters and
 -- the stationary distribution. It should check that the model is valid.
-assembleSubstitutionModel :: String -> Maybe SubstitutionModelParams -> Maybe StationaryDistribution
-                          -> Either String SubstitutionModel
+assembleSubstitutionModel :: String -> Maybe S.Params -> Maybe StationaryDistribution
+                          -> Either String S.SubstitutionModel
 -- DNA models.
 assembleSubstitutionModel "JC" Nothing Nothing = Right jc
 assembleSubstitutionModel "HKY" (Just [k]) (Just d) = Right $ assertLength d nNuc $ hky k d
@@ -116,7 +118,7 @@ assembleSubstitutionModel n mps mf = Left $ unlines
   , "Parameters: " ++ show mps
   , "Stationary distribution: " ++ show mf ]
 
-parseSubstitutionModel :: Parser SubstitutionModel
+parseSubstitutionModel :: Parser S.SubstitutionModel
 parseSubstitutionModel = do
   n  <- name
   mps <- optional params
@@ -126,23 +128,23 @@ parseSubstitutionModel = do
     Left err -> fail err
     Right sm -> return sm
 
-edmModel :: [EDMComponent] -> Maybe [Weight] -> Parser MixtureModel
+edmModel :: [EDMComponent] -> Maybe [M.Weight] -> Parser M.MixtureModel
 edmModel cs mws = do
   _ <- chunk (bs "EDM")
   _ <- char mmStart
   n <- name
   mps <- optional params
   _ <- char mmEnd
-  let sms = map (\c -> assembleSubstitutionModel n mps (Just $ snd c)) cs
-      edmName = L.pack $ "EDM" ++ show (length cs)
-      ws = fromMaybe (map fst cs) mws
-      errs = [ e | (Left e) <- sms ]
+  let sms     = map (\c -> assembleSubstitutionModel n mps (Just $ snd c)) cs
+      edmName = "EDM" ++ show (length cs)
+      ws      = fromMaybe (map fst cs) mws
+      errs    = [ e | (Left e) <- sms ]
   if not $ null errs
   then fail $ head errs
-  else return $ MixtureModel edmName
-    [ MixtureModelComponent w sm | (w, Right sm) <- zip ws sms ]
+  else return $ M.MixtureModel edmName
+    [ M.Component w sm | (w, Right sm) <- zip ws sms ]
 
-cxxModel :: Maybe [Weight] -> Parser MixtureModel
+cxxModel :: Maybe [M.Weight] -> Parser M.MixtureModel
 cxxModel mws = do
   _ <- char (c2w 'C')
   n <- decimal :: Parser Int
@@ -150,16 +152,16 @@ cxxModel mws = do
     Nothing -> fail "Only 10, 20, 30, 40, 50, and 60 components are supported."
     Just m -> return m
 
-standardMixtureModel :: [Weight] -> Parser MixtureModel
+standardMixtureModel :: [M.Weight] -> Parser M.MixtureModel
 standardMixtureModel ws = do
   _ <- chunk (bs "MIXTURE")
   _ <- char mmStart
   sms <- parseSubstitutionModel `sepBy1` char separator
   _ <- char mmEnd
-  return $ MixtureModel (L.pack "MIXTURE")
-    [ MixtureModelComponent w sm | (w, sm) <- zip ws sms]
+  return $ M.MixtureModel "MIXTURE"
+    [ M.Component w sm | (w, sm) <- zip ws sms]
 
-mixtureModel :: Maybe [EDMComponent] -> Maybe [Weight] -> Parser MixtureModel
+mixtureModel :: Maybe [EDMComponent] -> Maybe [M.Weight] -> Parser M.MixtureModel
 mixtureModel Nothing   Nothing       = try (cxxModel Nothing) <|> fail "No weights provided."
 mixtureModel Nothing   mws@(Just ws) = try (cxxModel mws) <|> standardMixtureModel ws
 mixtureModel (Just cs) mws           = edmModel cs mws
@@ -171,7 +173,7 @@ mixtureModel (Just cs) mws           = edmModel cs mws
 -- @
 -- getPhyloModel maybeSubstitutionModelString maybeMixtureModelString maybeEDMComponents
 -- @
-getPhyloModel :: Maybe String -> Maybe String -> Maybe [Weight] -> Maybe [EDMComponent] -> Either String PhyloModel
+getPhyloModel :: Maybe String -> Maybe String -> Maybe [M.Weight] -> Maybe [EDMComponent] -> Either String PhyloModel
 getPhyloModel Nothing Nothing _ _              = Left "No model was given. See help."
 getPhyloModel (Just _) (Just _) _ _            = Left "Both, substitution and mixture model string given; use only one."
 getPhyloModel (Just s) Nothing Nothing Nothing = Right $ PhyloSubstitutionModel $ parseStringWith parseSubstitutionModel s

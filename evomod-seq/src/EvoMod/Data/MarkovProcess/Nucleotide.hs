@@ -22,9 +22,9 @@ module EvoMod.Data.MarkovProcess.Nucleotide
   , hky
   ) where
 
-import qualified Data.ByteString.Lazy.Char8                  as L
 import           Numeric.LinearAlgebra                       hiding (normalize)
 
+import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Alphabet.Nucleotide
 import           EvoMod.Data.MarkovProcess.RateMatrix
@@ -58,7 +58,7 @@ jcExch =
 
 -- | JC substitution model.
 jc :: SubstitutionModel
-jc = substitutionModel DNA (L.pack "JC") [] f jcExch
+jc = substitutionModel DNA "JC" [] f jcExch
   where f = uniformVec n
 
 hkyExch :: Double -> ExchangeabilityMatrix
@@ -71,5 +71,5 @@ hkyExch k =
 
 -- | HKY substitution model.
 hky :: Double -> StationaryDistribution -> SubstitutionModel
-hky k f = substitutionModel DNA (L.pack "HKY") [k] f e
+hky k f = substitutionModel DNA "HKY" [k] f e
   where e = hkyExch k

@@ -122,8 +122,7 @@ derivingUnbox "NucleotideI"
 instance C.Character NucleotideI where
   toWord   = toWord
   fromWord = fromWord
-  codeName = "DNAI"
-  codeNameVerbose = "DNAI (nucleotides; including IUPAC codes)"
+  code     = C.DNAI
 
 toStandardM :: M.Map NucleotideI [NucleotideI]
 toStandardM = M.fromList
@@ -148,10 +147,9 @@ toStandardM = M.fromList
   ]
 
 instance C.CharacterX NucleotideI where
-  unknown    = N
   gap        = Gap
-  toStandard = (M.!) toStandardM
 
 instance C.CharacterI NucleotideI where
   -- XXX: Should the gap be in here?
   iupac = [U, W, S, N, K, R, Y, B, D, H, V, N, Gap]
+  toStandard = (M.!) toStandardM

@@ -134,5 +134,7 @@ derivingUnbox "AminoAcidS"
 instance C.Character AminoAcidS where
   toWord   = toWord
   fromWord = fromWord
-  codeName = "ProteinS"
-  codeNameVerbose = "ProteinS (amino acids; including gaps and translation stops)"
+  code     = C.ProteinS
+
+instance C.CharacterX AminoAcidS where
+  gap = Gap

@@ -151,8 +151,7 @@ derivingUnbox "AminoAcidI"
 instance C.Character AminoAcidI where
   toWord   = toWord
   fromWord = fromWord
-  codeName = "ProteinI"
-  codeNameVerbose = "ProteinI (amino acids; including IUPAC codes)"
+  code     = C.ProteinI
 
 toStandardM :: M.Map AminoAcidI [AminoAcidI]
 toStandardM = M.fromList
@@ -184,10 +183,9 @@ toStandardM = M.fromList
   ]
 
 instance C.CharacterX AminoAcidI where
-  unknown    = X
   gap        = Gap
-  toStandard = (M.!) toStandardM
 
 instance C.CharacterI AminoAcidI where
   -- XXX: Should the gap be in here?
   iupac = [J, B, Z, X, Gap]
+  toStandard = (M.!) toStandardM

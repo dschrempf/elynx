@@ -23,7 +23,7 @@ import           Data.List
 import           Data.Word
 import           Options.Applicative
 
-import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Codon
 import           EvoMod.Tools.Misc
 import           EvoMod.Tools.Options

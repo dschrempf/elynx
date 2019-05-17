@@ -16,24 +16,16 @@ See header of 'EvoMod.Data.Alphabet.Alphabet'.
 
 -}
 
--- module EvoMod.Data.Alphabet.Character
---   ( Character
---   , fromChar
---   , toChar
---   , fromWord8
---   , toWord8
---   , fromString
---   , toString
---   ) where
-
 module EvoMod.Data.Alphabet.Character
-  ( Character (..)
+  ( Code (..)
+  , codeNameVerbose
+  , Character (..)
   , fromChar
   , toChar
   , fromString
   , toString
   , CharacterX (..)
-  , isGapOrUnknown
+  , isGap
   , CharacterI (..)
   , isIUPAC
   , isStandard
@@ -45,6 +37,21 @@ import           Data.Word8               (Word8)
 
 import           EvoMod.Tools.ByteString  (c2w, w2c)
 
+-- TODO. THIS IS UGLY. THERE MUST BE ANOTHER OPTION.
+-- | Available genetic codes.
+data Code = DNA | DNAX | DNAI | Protein | ProteinX | ProteinS | ProteinI
+  deriving (Show, Read, Eq, Ord, Enum, Bounded)
+
+-- | Verbose code name.
+codeNameVerbose :: Code -> String
+codeNameVerbose DNA      = "DNA (nucleotides)"
+codeNameVerbose DNAX     = "DNAX (nucleotides; extended; including gaps and unknowns)"
+codeNameVerbose DNAI     = "DNAI (nucleotides; including IUPAC codes)"
+codeNameVerbose Protein  = "Protein (amino acids)"
+codeNameVerbose ProteinX = "ProteinX (amino acids; extended; including gaps and unknowns)"
+codeNameVerbose ProteinS = "ProteinS (amino acids; including gaps and translation stops)"
+codeNameVerbose ProteinI = "ProteinI (amino acids; including IUPAC codes)"
+
 -- | A set of characters forms an 'EvoMod.Data.Alphabet.Alphabet'. At the
 -- moment, 'Word8' is used, since none of the alphabets has more than 255
 -- characters.
@@ -53,10 +60,8 @@ class (Show a, Read a, Eq a, Ord a, Enum a, Bounded a, Unbox a) => Character a w
   toWord   :: a -> Word8
   -- | Read characters.
   fromWord :: Word8 -> a
-  -- | Code name.
-  codeName :: String
-  -- | Verbose code name.
-  codeNameVerbose :: String
+  -- | Associated code.
+  code :: Code
 
 -- | Conversion to 'Char'.
 toChar :: Character a => a -> Char
@@ -76,17 +81,16 @@ fromString = map fromChar
 
 -- | An extended character type with gaps and unknowns.
 class Character a => CharacterX a where
-  unknown :: a
   gap     :: a
-  toStandard :: a -> [a]
 
 -- | Is the character a gap or unknown?
-isGapOrUnknown :: CharacterX a => a -> Bool
-isGapOrUnknown c = c == gap || c == unknown
+isGap :: CharacterX a => a -> Bool
+isGap c = c == gap
 
 -- | IUPAC characters with a mapping to extended characters.
 class CharacterX a => CharacterI a where
   iupac :: [a]
+  toStandard :: a -> [a]
 
 iupacLookup :: CharacterI a => S.Set a
 iupacLookup = S.fromList iupac

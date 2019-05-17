@@ -23,7 +23,6 @@ import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy                             as L
 import qualified Data.ByteString.Lazy.Char8                       as LC
-import qualified Data.IntMap                                      as M
 import           Data.Tree
 import qualified Data.Vector.Unboxed                              as V
 import           Numeric.LinearAlgebra
@@ -33,13 +32,15 @@ import           System.Random.MWC
 import           OptionsSeqSim
 import           ParsePhyloModel
 
-import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Alphabet.Character
+import           EvoMod.Data.Alphabet.Nucleotide
+import           EvoMod.Data.Alphabet.AminoAcid
 import           EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
-import           EvoMod.Data.MarkovProcess.MixtureModel
+import qualified EvoMod.Data.MarkovProcess.MixtureModel           as M
 import           EvoMod.Data.MarkovProcess.PhyloModel
-import           EvoMod.Data.MarkovProcess.SubstitutionModel
+import qualified EvoMod.Data.MarkovProcess.SubstitutionModel      as S
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
-import           EvoMod.Data.Sequence.Sequence
+import           EvoMod.Data.Sequence.Sequence                    hiding (name)
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.NamedTree
 import           EvoMod.Data.Tree.Tree
@@ -56,9 +57,9 @@ import           EvoMod.Tools.Options
 
 -- Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
-simulateMSA :: (Measurable a, Named a)
+simulateMSA :: (Measurable a, Named a, Character b)
             => PhyloModel -> Tree a -> Int -> GenIO
-            -> IO MultiSequenceAlignment
+            -> IO (MultiSequenceAlignment b)
 simulateMSA pm t n g = do
   c  <- getNumCapabilities
   gs <- splitGen c g
@@ -66,20 +67,19 @@ simulateMSA pm t n g = do
   leafStatesS <- case pm of
     PhyloSubstitutionModel sm -> mapConcurrently
       (\(num, gen) -> simulateAndFlattenNSitesAlongTree num d e t gen) (zip chunks gs)
-      where d = sm ^. smStationaryDistribution
-            e = sm ^. smExchangeabilityMatrix
+      where d = sm ^. S.smStationaryDistribution
+            e = sm ^. S.smExchangeabilityMatrix
     PhyloMixtureModel mm      -> mapConcurrently
       (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws ds es t gen) (zip chunks gs)
       where
-        ws = vector $ getWeights mm
-        ds = map (view smStationaryDistribution) $ getSubstitutionModels mm
-        es = map (view smExchangeabilityMatrix) $ getSubstitutionModels mm
+        ws = vector $ M.getWeights mm
+        ds = map (view S.smStationaryDistribution) $ M.getSubstitutionModels mm
+        es = map (view S.smExchangeabilityMatrix) $ M.getSubstitutionModels mm
   -- XXX: The horizontal concatenation might be slow. If so, 'concatenateSeqs'
   -- or 'concatenateMSAs' can be used, which directly appends vectors.
   let leafStates = horizontalConcat leafStatesS
       leafNames  = map name $ leaves t
-      code       = pmCode pm
-      sequences  = [ Sequence sName code (V.fromList $ map (indexToCharacter code M.!) ss) |
+      sequences  = [ Sequence sName (V.fromList $ map toEnum ss) |
                     (sName, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
 
@@ -153,8 +153,12 @@ simulate = do
                >> lift createSystemRandom
     Just s  -> logS ("Seed: " ++ show s ++ ".")
                >> lift (initialize (V.fromList s))
-  msa <- lift $ simulateMSA phyloModel tree alignmentLength gen
-  let output = sequencesToFasta $ toSequenceList msa
+  -- TODO: Something is wrong here.
+  msa <- case pmCode phyloModel of
+    DNA     -> Left <$> lift (simulateMSA phyloModel tree alignmentLength gen :: IO (MultiSequenceAlignment Nucleotide))
+    Protein -> Right <$> lift (simulateMSA phyloModel tree alignmentLength gen :: IO (MultiSequenceAlignment AminoAcid))
+    _       -> error "main: cannot simulate extended or IUPAC sequences"
+  let output = either (sequencesToFasta . toSequenceList) (sequencesToFasta . toSequenceList) msa
       outFile = argsOutFileBaseName args ++ ".fasta"
   lift $ L.writeFile outFile output
   logS ("Output written to file '" ++ outFile ++ "'.")

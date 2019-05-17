@@ -122,5 +122,4 @@ derivingUnbox "AminoAcid"
 instance C.Character AminoAcid where
   toWord   = toWord
   fromWord = fromWord
-  codeName = "Protein"
-  codeNameVerbose = "Protein (amino acids)"
+  code     = C.Protein

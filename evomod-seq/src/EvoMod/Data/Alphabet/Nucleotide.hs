@@ -63,5 +63,4 @@ derivingUnbox "Nucleotide"
 instance C.Character Nucleotide where
   toWord   = toWord
   fromWord = fromWord
-  codeName = "DNA"
-  codeNameVerbose = "DNA (nucleotides)"
+  code     = C.DNA

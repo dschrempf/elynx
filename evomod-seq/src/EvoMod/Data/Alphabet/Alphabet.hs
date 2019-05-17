@@ -25,19 +25,15 @@ Hierarchy:
 -}
 
 module EvoMod.Data.Alphabet.Alphabet
-  ( Code (..)
-  , alphabet
+  (
+    alphabet
   , alphabetLookup
   ) where
 
-import qualified Data.Set                        as S
+import qualified Data.Set                         as S
 
 import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Tools.Misc        (allValues)
-
--- | Available genetic codes.
-data Code = DNA | DNAX | DNAI | Protein | ProteinX | ProteinI
-  deriving (Show, Read, Eq, Ord, Enum, Bounded)
+import           EvoMod.Tools.Misc                (allValues)
 
 -- | Complete alphabet comprising the code associated with the characters.
 alphabet :: forall a . Character a => [a]
