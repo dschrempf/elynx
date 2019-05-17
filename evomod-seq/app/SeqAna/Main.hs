@@ -66,13 +66,6 @@ instance Logger Params where
 
 type Seq = ReaderT Params IO
 
--- examineSequences :: CharacterI a => Bool -> [Sequence a] -> L.ByteString
--- examineSequences perSiteFlag ss
---   | equalLength ss = summarizeSequenceList ss
---                      <> L.pack "\n"
---                      <> examineMSA perSiteFlag (fromSequenceList ss)
---   | otherwise      = summarizeSequenceList ss
-
 examineMSA :: CharacterI a => Bool -> MultiSequenceAlignment a -> L.ByteString
 examineMSA perSiteFlag msa =
   L.unlines [ L.pack $ "Total number of columns in alignment: "
@@ -127,8 +120,7 @@ examineS :: Seq ()
 examineS = do
   args <- arguments <$> ask
   let cd = argsCode args
-      -- TODO Analyze MSAs.
-      -- (Examine perSiteFlag) = argsCommand args
+      (Examine perSiteFlag) = argsCommand args
       --
       -- when equalLength ss $
       --   <> L.pack "\n"
@@ -162,6 +154,7 @@ examineS = do
       sss <- readSeqss @AminoAcidI
       io $ L.intercalate (L.pack "\n") $
         map summarizeSequenceList sss
+        ++ map (examineMSA perSiteFlag . fromSequenceList) sss
 
 concatenateS :: Seq ()
 concatenateS = do
