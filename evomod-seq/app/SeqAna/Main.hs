@@ -76,14 +76,14 @@ examineMSA perSiteFlag msa =
               ++ show (msaLength msaFltIUPAC)
             , L.empty
             , L.pack $ "Total chars: " ++ show nTot
-            , L.pack $ "Standard (i.e., not extended IUPAC) characters: " ++ show nNonStd
-            , L.pack $ "Non-standard (i.e., extended IUPAC) characters: " ++ show (nTot - nNonStd)
-            , L.pack $ "Gaps or unknown characters: " ++ show nGaps
+            , L.pack $ "Standard (i.e., not extended IUPAC) characters: " ++ show (nTot - nNonStd)
+            , L.pack $ "Non-standard (i.e., extended IUPAC) characters: " ++ show nNonStd
+            , L.pack $ "Gaps: " ++ show nGaps
             , L.pack $ "Percentage of standard characters: "
-              ++ printf "%.3f" percentageNonStd
-            , L.pack $ "Percentage of non-standard characters: "
               ++ printf "%.3f" (1.0 - percentageNonStd)
-            , L.pack $ "Percentage of gaps or unknown characters: "
+            , L.pack $ "Percentage of non-standard characters: "
+              ++ printf "%.3f" percentageNonStd
+            , L.pack $ "Percentage of gaps: "
               ++ printf "%.3f" percentageGaps
             , L.empty
             , L.pack "Mean effective number of used states:"
@@ -97,8 +97,8 @@ examineMSA perSiteFlag msa =
   <> perSiteBS
   where
     nTot                = msaLength msa * msaNSequences msa
-    nNonStd             = countStandardChars msa
-    nGaps               = countGapOrUnknownChars msa
+    nNonStd             = countIUPACChars msa
+    nGaps               = countGaps msa
     percentageNonStd    = fromIntegral nNonStd / fromIntegral nTot :: Double
     percentageGaps      = fromIntegral nGaps   / fromIntegral nTot :: Double
     msaFltGaps          = filterColumnsGaps msa

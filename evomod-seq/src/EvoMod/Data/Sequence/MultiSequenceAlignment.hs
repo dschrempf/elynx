@@ -36,8 +36,8 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , FrequencyData
   , toFrequencyData
   , kEff
-  , countStandardChars
-  , countGapOrUnknownChars
+  , countIUPACChars
+  , countGaps
   -- | * Sub sample
   , subSample
   , randomSubSample
@@ -201,13 +201,13 @@ kEff fd = parMapChunk 500 kEffEntropy (M.toColumns fd)
 
 -- | Count the number of standard (i.e., not extended IUPAC) characters in the
 -- alignment.
-countStandardChars :: CharacterI a => MultiSequenceAlignment a -> Int
-countStandardChars msa = V.length . V.filter isStandard $ allChars
+countIUPACChars :: CharacterI a => MultiSequenceAlignment a -> Int
+countIUPACChars msa = V.length . V.filter isIUPAC $ allChars
   where allChars = M.flatten $ msa^.matrix
 
 -- | Count the number of gaps or unknown characters in the alignment.
-countGapOrUnknownChars :: CharacterX a => MultiSequenceAlignment a -> Int
-countGapOrUnknownChars msa = V.length . V.filter isGap $ allChars
+countGaps :: CharacterX a => MultiSequenceAlignment a -> Int
+countGaps msa = V.length . V.filter isGap $ allChars
   where allChars = M.flatten $ msa^.matrix
 
 -- | Sample the given sites from a multi sequence alignment.

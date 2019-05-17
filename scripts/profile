@@ -17,9 +17,10 @@ source include
 seqana() {
     msg "Seq-Ana profiling run."
     file_profile="${project_root}/evomod-seq/data/BenchmarkEnsemblMouse.fa.gz"
+    file_profile="homo_trim_concat.fa"
     #file_profile="${project_root}/evomod-seq/data/Profile.fa.gz"
     stack exec seq-ana --work-dir $prof_dir -- \
-          examine -a DNAI "$file_profile" \
+          examine -a ProteinI "$file_profile" \
           +RTS -p -l -s || exit 1
     # +RTS -p -hy -l -s || exit 1
 }
