@@ -1,3 +1,8 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RankNTypes            #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeFamilies          #-}
+
 {- |
 Module      :  EvoMod.Data.Nucleotide
 Description :  Nucleotide related types and functions
@@ -44,59 +49,83 @@ Additionally, I add
 
 module EvoMod.Data.Alphabet.Nucleotide
   (
-    standard
-  , iupac
-  , gap
-  , unknown
-  , iupacToStandard
+  --   standard
+  -- , iupac
+  -- , gap
+  -- , unknown
+  -- , iupacToStandard
   ) where
 
-import qualified Data.Map.Strict                as M
+-- import qualified Data.Map.Strict                as M
+import           Data.Vector.Unboxed.Deriving
+import           Data.Word8
 
-import           EvoMod.Data.Alphabet.Character
+import qualified EvoMod.Data.Alphabet.Character as C
+import           EvoMod.Tools.ByteString        (c2w, w2c)
 
--- -- I tried various times, but it is just too complicated to build up a proper
--- -- type system for DNA, DNAX, DNAI, ...
--- -- | Nucleotides.
--- data Nucleotide = A | C | G | T
---   deriving (Show, Read, Eq, Ord, Enum, Bounded)
+-- | Nucleotides.
+data Nucleotide = A | C | G | T
+  deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
--- | Standard nucleotides; alphabetical order.
-standard :: [Character]
-standard = fromString "ACGT"
+toWord :: Nucleotide -> Word8
+toWord A = c2w 'A'
+toWord C = c2w 'C'
+toWord G = c2w 'G'
+toWord T = c2w 'T'
 
--- | Nucleotide IUPAC code characters.
-iupac :: [Character]
-iupac = fromString "UWSMKRYBDHVNZ-"
+fromWord :: Word8 -> Nucleotide
+fromWord w = case w2c w of
+               'A' -> A
+               'C' -> C
+               'G' -> G
+               'T' -> T
+               _   -> error "fromWord: cannot convert to Nucleotide."
 
--- | Nucleotide gap characters.
-gap :: [Character]
-gap = fromString "Z-."
+derivingUnbox "Nucleotide"
+    [t| Nucleotide -> Word8 |]
+    [| toWord |]
+    [| fromWord |]
 
--- | Nucleotide unknown characters.
-unknown :: [Character]
-unknown = fromString "N"
+instance C.Character Nucleotide where
+  toWord   = toWord
+  fromWord = fromWord
 
--- | Convert IUPAC code to set of normal nucleotides.
-iupacToStandard :: M.Map Character [Character]
-iupacToStandard = M.fromList $ map (\(k, v) -> (fromChar k, fromString v))
-                  [ ('A', "A")
-                  , ('C', "C")
-                  , ('G', "G")
-                  , ('T', "T")
-                  , ('U', "T")
-                  , ('W', "AT")
-                  , ('S', "GC")
-                  , ('M', "AC")
-                  , ('K', "GT")
-                  , ('R', "AG")
-                  , ('Y', "CT")
-                  , ('B', "CGT")
-                  , ('D', "AGT")
-                  , ('H', "ACT")
-                  , ('V', "ACG")
-                  , ('N', "ACGT")
-                  , ('Z', "")
-                  , ('-', "")
-                  , ('.', "")
-                  ]
+-- -- | Standard nucleotides; alphabetical order.
+-- standard :: [Character]
+-- standard = fromString "ACGT"
+
+-- -- | Nucleotide IUPAC code characters.
+-- iupac :: [Character]
+-- iupac = fromString "UWSMKRYBDHVNZ-"
+
+-- -- | Nucleotide gap characters.
+-- gap :: [Character]
+-- gap = fromString "Z-."
+
+-- -- | Nucleotide unknown characters.
+-- unknown :: [Character]
+-- unknown = fromString "N"
+
+-- -- | Convert IUPAC code to set of normal nucleotides.
+-- iupacToStandard :: M.Map Character [Character]
+-- iupacToStandard = M.fromList $ map (\(k, v) -> (fromChar k, fromString v))
+--                   [ ('A', "A")
+--                   , ('C', "C")
+--                   , ('G', "G")
+--                   , ('T', "T")
+--                   , ('U', "T")
+--                   , ('W', "AT")
+--                   , ('S', "GC")
+--                   , ('M', "AC")
+--                   , ('K', "GT")
+--                   , ('R', "AG")
+--                   , ('Y', "CT")
+--                   , ('B', "CGT")
+--                   , ('D', "AGT")
+--                   , ('H', "ACT")
+--                   , ('V', "ACG")
+--                   , ('N', "ACGT")
+--                   , ('Z', "")
+--                   , ('-', "")
+--                   , ('.', "")
+--                   ]

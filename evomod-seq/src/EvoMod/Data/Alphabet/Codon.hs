@@ -31,6 +31,7 @@ fromCharTriplet :: (Char, Char, Char) -> Codon
 fromCharTriplet (c1, c2, c3) = Codon (fromChar c1, fromChar c2, fromChar c3)
 
 -- | The different universal codes. See
+-- https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi?mode=c,
 -- http://www.bioinformatics.org/sms2/genetic_code.html and
 -- https://en.wikipedia.org/wiki/Genetic_code.
 data UniversalCode = Standard | VertebrateMitochondrial

@@ -1,6 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {- |
 Module      :  Character
@@ -18,59 +16,51 @@ See header of 'EvoMod.Data.Alphabet.Alphabet'.
 
 -}
 
+-- module EvoMod.Data.Alphabet.Character
+--   ( Character
+--   , fromChar
+--   , toChar
+--   , fromWord8
+--   , toWord8
+--   , fromString
+--   , toString
+--   ) where
+
 module EvoMod.Data.Alphabet.Character
-  ( Character
+  ( Character (..)
+  , CharacterI (..)
   , fromChar
   , toChar
-  , fromWord8
-  , toWord8
   , fromString
   , toString
   ) where
 
-import           Data.Vector.Unboxed.Deriving
-import           Data.Word8                   (Word8, toUpper)
+import           Data.Vector.Unboxed.Base (Unbox)
+import           Data.Word8               (Word8, toUpper)
 
-import           EvoMod.Tools.ByteString      (c2w, w2c)
+import           EvoMod.Tools.ByteString  (c2w, w2c)
+import           EvoMod.Tools.Misc        (allValues)
 
--- | A set of characters forms an 'EvoMod.Data.Alphabet.Alphabet'. At the
--- moment, 'Word8' is used, since none of the alphabets has more than 255
--- characters. The value constructor is not exported. This enables (1)
--- enforcement of upper case, and (2) easy change of underlying representation.
-newtype Character = Character Word8
-  deriving (Show, Read, Eq, Ord)
+class (Show a, Read a, Eq a, Ord a, Unbox a, Enum a, Bounded a) => Character a where
+  toWord   :: a -> Word8
+  fromWord :: Word8 -> a
 
-derivingUnbox "Character"
-    [t| Character -> Word8 |]
-    [| \(Character w) -> w |]
-    [| Character |]
+  alphabet :: [a]
+  alphabet = allValues :: [a]
 
--- | Convert 'Char' into 'Character', upper case is enforced.
-fromChar :: Char -> Character
-fromChar = Character . toUpper . c2w
--- {-# INLINE fromChar #-}
+class Character a => CharacterI a where
+  standard :: [a]
+  gap      :: [a]
+  unknown  :: [a]
 
--- | Convert 'Character' into 'Char'.
-toChar :: Character -> Char
-toChar (Character w) = w2c w
--- {-# INLINE toChar #-}
+toChar :: Character a => a -> Char
+toChar = w2c . toWord
 
--- | Convert 'Word8' into 'Character', upper case is enforced.
-fromWord8 :: Word8 -> Character
-fromWord8 = Character . toUpper
--- {-# INLINE fromWord8 #-}
+fromChar :: Character a => Char -> a
+fromChar = fromWord . toUpper . c2w
 
--- | Convert 'Character into ''Word8'.
-toWord8 :: Character -> Word8
-toWord8 (Character w) = w
--- {-# INLINE toWord8 #-}
-
--- | Convert 'String' into list of 'Character's.
-fromString :: String -> [Character]
-fromString = map fromChar
--- {-# INLINE fromString #-}
-
--- | Convert list of 'Character's into String.
-toString :: [Character] -> String
+toString :: Character a => [a] -> String
 toString = map toChar
--- {-# INLINE toString #-}
+
+fromString :: Character a => String -> [a]
+fromString = map fromChar
