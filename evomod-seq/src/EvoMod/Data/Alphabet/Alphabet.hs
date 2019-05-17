@@ -14,12 +14,13 @@ Creation date: Fri May 10 11:10:32 2019.
 
 Hierarchy:
 
-1. 'Character' type.
+TODO.
 
-2. Sets of 'Character's such as nucleotides 'N.standard' or amino acids
-   'A.standard'.
+1. 'Character' type class.
 
-3. 'Alphabet's. The different 'Code's are collected in a specific data type. New
+2. Sets of 'Character's such as nucleotides or amino acids.
+
+3. Alphabets. The different 'Code's are collected in a specific data type. New
    codes have to be added manually in this module.
 
 -}

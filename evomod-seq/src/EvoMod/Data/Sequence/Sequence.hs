@@ -28,7 +28,9 @@ module EvoMod.Data.Sequence.Sequence
   ( SequenceName
   , SequenceCharacters
   , Sequence (Sequence)
+  -- TODO: No documentation for lenses.
   , name
+  -- TODO: No documentation for lenses.
   , characters
   -- * Input
   , toCharacters

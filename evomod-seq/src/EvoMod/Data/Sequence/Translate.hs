@@ -31,15 +31,17 @@ import           EvoMod.Tools.List
 -- TODO: This function goes via lists. Super slow.
 -- | Translate from DNA to Protein with given reading frame (0, 1, 2).
 translateWith :: (Character a, Character b)
-              => (M.Map (Codon a) b) -> Int -> Sequence a -> Sequence b
+              => M.Map (Codon a) b -> Int -> Sequence a -> Sequence b
 translateWith m rf (Sequence n cs) | rf > 2    = error "translate: reading frame is larger than 2."
                                    | rf < 0    = error "translate: reading frame is negative."
                                    | otherwise  = Sequence n aas
   where codons = map Codon $ chop3 $ V.toList $ V.drop rf cs
         aas = V.fromList $ map (m M.!) codons
 
+-- | Translate DNA sequences.
 translateDNA :: UniversalCode -> Int -> Sequence Nucleotide -> Sequence AminoAcidS
 translateDNA uc = translateWith (universalCode uc)
 
+-- | Translate DNAX sequences.
 translateDNAX :: UniversalCode -> Int -> Sequence NucleotideX -> Sequence AminoAcidS
 translateDNAX uc = translateWith (universalCodeX uc)

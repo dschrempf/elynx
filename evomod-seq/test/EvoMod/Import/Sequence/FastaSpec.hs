@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 {- |
 Module      :  EvoMod.Import.Sequence.FastaSpec
 Copyright   :  (c) Dominik Schrempf 2019
@@ -15,7 +16,10 @@ module EvoMod.Import.Sequence.FastaSpec
   (spec) where
 
 import           Data.Either
-import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Alphabet.Nucleotide
+import           EvoMod.Data.Alphabet.NucleotideI
+import           EvoMod.Data.Alphabet.AminoAcid
+import           EvoMod.Data.Alphabet.AminoAcidI
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.InputOutput
@@ -26,25 +30,25 @@ spec :: Spec
 spec =
   describe "fastaFileMSA" $ do
     it "parses a fasta file with nucleotide sequences with equal length" $ do
-      msa <- fromSequenceList <$> parseFileWith (fasta DNA) fastaNucleotideFN
+      msa <- fromSequenceList <$> parseFileWith (fasta @Nucleotide) fastaNucleotideFN
       msaNSequences msa `shouldBe` 3
       msaLength msa `shouldBe` 40
 
     it "parses a fasta file with nucleotide IUPAC sequences with equal length" $ do
-      msa <- fromSequenceList <$> parseFileWith (fasta DNAI) fastaNucleotideIUPACFN
+      msa <- fromSequenceList <$> parseFileWith (fasta @NucleotideI) fastaNucleotideIUPACFN
       msaNSequences msa `shouldBe` 3
       msaLength msa `shouldBe` 40
 
     it "should not parse erroneous files" $ do
-      emsa <- runParserOnFile (fasta DNAI) fastaErroneousFN
+      emsa <- runParserOnFile (fasta @NucleotideI) fastaErroneousFN
       emsa  `shouldSatisfy` isLeft
 
     it "parses a fasta file with amino acid sequences with equal length" $ do
-      msa <- fromSequenceList <$> parseFileWith (fasta Protein) fastaAminoAcidFN
+      msa <- fromSequenceList <$> parseFileWith (fasta @AminoAcid) fastaAminoAcidFN
       msaNSequences msa `shouldBe` 2
       msaLength msa `shouldBe` 237
 
     it "should not parse erroneous files" $ do
-      msa <- runParserOnFile (fasta ProteinI) fastaErroneousFN
+      msa <- runParserOnFile (fasta @AminoAcidI) fastaErroneousFN
       msa  `shouldSatisfy` isLeft
 

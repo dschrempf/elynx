@@ -12,6 +12,9 @@ Portability :  portable
 
 Creation date: Tue Jan 29 19:17:40 2019.
 
+TODO: Model is meant to be imported qualified. Check this and reduce complexity
+of names in here.
+
 -}
 
 module EvoMod.Data.MarkovProcess.MixtureModel
@@ -19,6 +22,7 @@ module EvoMod.Data.MarkovProcess.MixtureModel
   , Component (Component)
   , summarizeMixtureModelComponent
   , MixtureModel (MixtureModel)
+  -- TODO. No documentation.
   , name
   , fromSubstitutionModels
   , concatenateMixtureModels
@@ -58,11 +62,9 @@ summarizeMixtureModelComponent mmc =
   L.pack "Weight: " <> (L.toLazyByteString . L.doubleDec $ mmc ^. weight)
   : S.summarizeSubstitutionModel (mmc ^. substModel)
 
-type Name = S.Name
-
 -- | A mixture model with its components.
 data MixtureModel = MixtureModel
-  { _name       :: Name
+  { _name       :: S.Name
   , _components :: [Component]
   }
   deriving (Show, Read)
@@ -70,12 +72,12 @@ data MixtureModel = MixtureModel
 makeLenses ''MixtureModel
 
 -- | Create a mixture model from a list of substitution models.
-fromSubstitutionModels :: Name -> [Weight] -> [S.SubstitutionModel] -> MixtureModel
+fromSubstitutionModels :: S.Name -> [Weight] -> [S.SubstitutionModel] -> MixtureModel
 fromSubstitutionModels n ws sms = MixtureModel n comps
   where comps = zipWith Component ws sms
 
 -- | Concatenate mixture models.
-concatenateMixtureModels :: Name -> [MixtureModel] -> MixtureModel
+concatenateMixtureModels :: S.Name -> [MixtureModel] -> MixtureModel
 concatenateMixtureModels n mms = MixtureModel n $ concatMap (view components) mms
 
 -- | Summarize a mixture model; lines to be printed to screen or log.
@@ -125,5 +127,5 @@ normalizeMixtureModel mm = scaleMixtureModel (1/c) mm
         scales  = map S.totalRateSubstitutionModel $ getSubstitutionModels mm
 
 -- | Append byte string to all substitution models of mixture model.
-appendNameMixtureModel :: Name -> MixtureModel -> MixtureModel
+appendNameMixtureModel :: S.Name -> MixtureModel -> MixtureModel
 appendNameMixtureModel n = over (components . traverse . substModel) (S.appendNameSubstitutionModel n)

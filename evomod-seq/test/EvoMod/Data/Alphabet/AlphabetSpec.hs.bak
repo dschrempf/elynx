@@ -12,7 +12,8 @@ Creation date: Thu Feb 28 11:36:26 2019.
 -}
 
 module EvoMod.Data.Alphabet.AlphabetSpec
-  ( spec
+  (
+    spec
   ) where
 
 import           Test.Hspec

@@ -12,13 +12,18 @@ Portability :  portable
 
 Creation date: Tue Jan 29 19:10:46 2019.
 
+TODO: Model is meant to be imported qualified. Check this and reduce complexity
+of names in here.
+
 -}
 
 module EvoMod.Data.MarkovProcess.SubstitutionModel
   ( Name
   , Params
   , SubstitutionModel
+  -- TODO. No documentation possible. Do not export?
   , code
+  -- TODO. No documentation possible. Do not export?
   , name
   , substitutionModel
   , substitutionModelUnnormalized

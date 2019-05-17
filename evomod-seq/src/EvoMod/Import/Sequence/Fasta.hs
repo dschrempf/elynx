@@ -69,7 +69,7 @@ sequenceLine s = do
 -- XXX: If sequences are parsed line by line, the lines have to be copied when
 -- forming the complete sequence. This is not memory efficient.
 
--- | Parse a sequence of 'Alphabet' 'EvoMod.Data.Alphabet.Character's.
+-- | Parse a sequence of characters.
 fastaSequence :: forall a . Character a => Parser (Sequence a)
 fastaSequence = do hd <- sequenceHeader
                    let !alph  = S.fromList $ map toWord (alphabet @a)
