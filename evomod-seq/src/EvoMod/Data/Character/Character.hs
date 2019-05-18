@@ -16,10 +16,9 @@ See header of 'EvoMod.Data.Alphabet.Alphabet'.
 
 -}
 
-module EvoMod.Data.Alphabet.Character
-  ( Code (..)
-  , codeNameVerbose
-  , Character (..)
+module EvoMod.Data.Character.Character
+  (
+    Character (..)
   , fromChar
   , toChar
   , fromString
@@ -37,21 +36,6 @@ import           Data.Word8               (Word8)
 
 import           EvoMod.Tools.ByteString  (c2w, w2c)
 
--- TODO. THIS IS UGLY. THERE MUST BE ANOTHER OPTION.
--- | Available genetic codes.
-data Code = DNA | DNAX | DNAI | Protein | ProteinX | ProteinS | ProteinI
-  deriving (Show, Read, Eq, Ord, Enum, Bounded)
-
--- | Verbose code name.
-codeNameVerbose :: Code -> String
-codeNameVerbose DNA      = "DNA (nucleotides)"
-codeNameVerbose DNAX     = "DNAX (nucleotides; extended; including gaps and unknowns)"
-codeNameVerbose DNAI     = "DNAI (nucleotides; including IUPAC codes)"
-codeNameVerbose Protein  = "Protein (amino acids)"
-codeNameVerbose ProteinX = "ProteinX (amino acids; extended; including gaps and unknowns)"
-codeNameVerbose ProteinS = "ProteinS (amino acids; including gaps and translation stops)"
-codeNameVerbose ProteinI = "ProteinI (amino acids; including IUPAC codes)"
-
 -- | A set of characters forms an 'EvoMod.Data.Alphabet.Alphabet'. At the
 -- moment, 'Word8' is used, since none of the alphabets has more than 255
 -- characters.
@@ -60,8 +44,6 @@ class (Show a, Read a, Eq a, Ord a, Enum a, Bounded a, Unbox a) => Character a w
   toWord   :: a -> Word8
   -- | Read characters.
   fromWord :: Word8 -> a
-  -- | Associated code.
-  code :: Code
 
 -- | Conversion to 'Char'.
 toChar :: Character a => a -> Char

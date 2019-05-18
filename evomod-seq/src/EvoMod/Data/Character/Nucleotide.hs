@@ -34,8 +34,8 @@ module EvoMod.Data.Alphabet.Nucleotide
 import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
-import qualified EvoMod.Data.Alphabet.Character as C
-import           EvoMod.Tools.ByteString        (c2w, w2c)
+import qualified EvoMod.Data.Character.Character as C
+import           EvoMod.Tools.ByteString        (c2w)
 
 -- | Nucleotides.
 data Nucleotide = A | C | G | T
@@ -48,12 +48,11 @@ toWord G = c2w 'G'
 toWord T = c2w 'T'
 
 fromWord :: Word8 -> Nucleotide
-fromWord w = case w2c w of
-               'A' -> A
-               'C' -> C
-               'G' -> G
-               'T' -> T
-               _   -> error "fromWord: cannot convert to Nucleotide."
+fromWord w | w == c2w 'A' = A
+           | w == c2w 'C' = C
+           | w == c2w 'G' = G
+           | w == c2w 'T' = T
+           | otherwise    = error "fromWord: cannot convert to Nucleotide."
 
 derivingUnbox "Nucleotide"
     [t| Nucleotide -> Word8 |]
@@ -63,4 +62,3 @@ derivingUnbox "Nucleotide"
 instance C.Character Nucleotide where
   toWord   = toWord
   fromWord = fromWord
-  code     = C.DNA

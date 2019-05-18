@@ -27,20 +27,39 @@ TODO.
 
 module EvoMod.Data.Alphabet.Alphabet
   (
-    alphabet
-  , alphabetLookup
+    C
+  , Alphabet
+  , AlphabetSpec
+  , alphabet
   ) where
 
-import qualified Data.Set                         as S
+import qualified Data.Set   as S
+import           Data.Word8
 
-import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Tools.Misc                (allValues)
+newtype C = C Word8
 
--- | Complete alphabet comprising the code associated with the characters.
-alphabet :: forall a . Character a => [a]
-alphabet = allValues :: [a]
+data AlphabetSpec = AlphabetSpec { standard   :: S.Set C
+                                 , gap        :: S.Set C
+                                 , iupac      :: S.Set C
+                                 , toStandard :: C -> [C] }
 
--- | Complete alphabet comprising the code associated with the characters.
--- Optimized for lookups.
-alphabetLookup :: Character a => S.Set a
-alphabetLookup = S.fromList alphabet
+data Alphabet = DNA | DNAX | DNAI
+              | AminoAcid | AminoAcidX | AminoAcidS | AminoAcidI
+
+alphabet :: Alphabet -> AlphabetSpec
+alphabet = undefined
+
+-- TODO.
+-- -- | Available genetic codes.
+-- data Code = DNA | DNAX | DNAI | Protein | ProteinX | ProteinS | ProteinI
+--   deriving (Show, Read, Eq, Ord, Enum, Bounded)
+
+-- -- | Verbose code name.
+-- codeNameVerbose :: Code -> String
+-- codeNameVerbose DNA      = "DNA (nucleotides)"
+-- codeNameVerbose DNAX     = "DNAX (nucleotides; extended; including gaps and unknowns)"
+-- codeNameVerbose DNAI     = "DNAI (nucleotides; including IUPAC codes)"
+-- codeNameVerbose Protein  = "Protein (amino acids)"
+-- codeNameVerbose ProteinX = "ProteinX (amino acids; extended; including gaps and unknowns)"
+-- codeNameVerbose ProteinS = "ProteinS (amino acids; including gaps and translation stops)"
+-- codeNameVerbose ProteinI = "ProteinI (amino acids; including IUPAC codes)"
