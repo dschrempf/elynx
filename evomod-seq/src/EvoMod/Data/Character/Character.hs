@@ -36,6 +36,8 @@ import           Data.Word8               (Word8)
 
 import           EvoMod.Tools.ByteString  (c2w, w2c)
 
+
+-- XXX: Remove name clash with EvoMod.Data.Alphabet.Alphabet.Character?
 -- | A set of characters forms an 'EvoMod.Data.Alphabet.Alphabet'. At the
 -- moment, 'Word8' is used, since none of the alphabets has more than 255
 -- characters.
@@ -57,7 +59,7 @@ fromChar = fromWord . c2w
 toString :: Character a => [a] -> String
 toString = map toChar
 
--- | Conversion from 'String'.
+  -- | Conversion from 'String'.
 fromString :: Character a => String -> [a]
 fromString = map fromChar
 

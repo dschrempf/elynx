@@ -1,4 +1,6 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeFamilies          #-}
 
 {- |
 Module      :  EvoMod.Data.Alphabet.Alphabet
@@ -27,39 +29,110 @@ TODO.
 
 module EvoMod.Data.Alphabet.Alphabet
   (
-    C
+    Character
   , Alphabet
   , AlphabetSpec
   , alphabet
   ) where
 
-import qualified Data.Set   as S
+import qualified Data.Set                     as S
+import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
-newtype C = C Word8
-
-data AlphabetSpec = AlphabetSpec { standard   :: S.Set C
-                                 , gap        :: S.Set C
-                                 , iupac      :: S.Set C
-                                 , toStandard :: C -> [C] }
+import           EvoMod.Tools.ByteString      (c2w, w2c)
 
 data Alphabet = DNA | DNAX | DNAI
-              | AminoAcid | AminoAcidX | AminoAcidS | AminoAcidI
+              | Protein | ProteinX | ProteinS | ProteinI
+              deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
-alphabet :: Alphabet -> AlphabetSpec
-alphabet = undefined
+newtype Character = Character Word8
+  deriving (Read, Show, Eq, Ord, Bounded)
 
--- TODO.
--- -- | Available genetic codes.
--- data Code = DNA | DNAX | DNAI | Protein | ProteinX | ProteinS | ProteinI
---   deriving (Show, Read, Eq, Ord, Enum, Bounded)
+toChar :: Character -> Char
+toChar (Character w) = w2c w
 
--- -- | Verbose code name.
--- codeNameVerbose :: Code -> String
--- codeNameVerbose DNA      = "DNA (nucleotides)"
--- codeNameVerbose DNAX     = "DNAX (nucleotides; extended; including gaps and unknowns)"
--- codeNameVerbose DNAI     = "DNAI (nucleotides; including IUPAC codes)"
--- codeNameVerbose Protein  = "Protein (amino acids)"
--- codeNameVerbose ProteinX = "ProteinX (amino acids; extended; including gaps and unknowns)"
--- codeNameVerbose ProteinS = "ProteinS (amino acids; including gaps and translation stops)"
--- codeNameVerbose ProteinI = "ProteinI (amino acids; including IUPAC codes)"
+fromChar :: Char -> Character
+fromChar = Character . c2w
+
+toString :: [Character] -> String
+toString = map toChar
+
+fromString :: String -> [Character]
+fromString = map fromChar
+
+derivingUnbox "Character"
+    [t| Character -> Word8 |]
+    [| \(Character w) -> w |]
+    [| Character |]
+
+data AlphabetSpec = AlphabetSpec { standard   :: S.Set Character
+                                 , gap        :: S.Set Character
+                                 , iupac      :: S.Set Character
+                                 , alphabet   :: S.Set Character
+                                 , toStandard :: Character -> [Character] }
+
+fromChars :: String -> String -> String -> (Char -> String) -> AlphabetSpec
+fromChars st ga iu toSt = AlphabetSpec st' ga' iu' al (fromString . toSt . toChar)
+  where
+    st' = S.fromList $ fromString st
+    ga' = S.fromList $ fromString ga
+    iu' = S.fromList $ fromString iu
+    al  = S.unions [st', ga', iu']
+
+dna :: AlphabetSpec
+dna = fromChars "ACGT" "" "" toStandardDNA
+
+toStandardDNA :: Char -> String
+toStandardDNA 'A' = "A"
+toStandardDNA 'C' = "C"
+toStandardDNA 'G' = "G"
+toStandardDNA 'T' = "T"
+toStandardDNA _   = error "dnaToStandard: cannot convert to standard nucleotide."
+
+dnaX :: AlphabetSpec
+dnaX = fromChars "ACGT" "-." "" toStandardDNAX
+
+toStandardDNAX :: Char -> String
+toStandardDNAX 'A' = "A"
+toStandardDNAX 'C' = "C"
+toStandardDNAX 'G' = "G"
+toStandardDNAX 'T' = "T"
+toStandardDNAX '-' = ""
+toStandardDNAX '.' = ""
+toStandardDNAX _   = error "dnaToStandard: cannot convert to standard nucleotide."
+
+dnaI :: AlphabetSpec
+dnaI = fromChars "ACGT" "-." "UWSMKRYBDHV" toStandardDNAI
+
+toStandardDNAI :: Char -> String
+toStandardDNAI 'A' = "A"
+toStandardDNAI 'C' = "C"
+toStandardDNAI 'G' = "G"
+toStandardDNAI 'T' = "T"
+toStandardDNAI 'U' = "T"
+toStandardDNAI 'W' = "AT"
+toStandardDNAI 'S' = "GC"
+toStandardDNAI 'M' = "AC"
+toStandardDNAI 'K' = "GT"
+toStandardDNAI 'R' = "AG"
+toStandardDNAI 'Y' = "CT"
+toStandardDNAI 'B' = "CGT"
+toStandardDNAI 'D' = "AGT"
+toStandardDNAI 'H' = "ACT"
+toStandardDNAI 'V' = "ACG"
+toStandardDNAI 'N' = "ACGT"
+toStandardDNAI '-' = ""
+toStandardDNAI '.' = ""
+
+codeSpec :: Alphabet -> AlphabetSpec
+codeSpec = undefined
+
+-- | Verbose code name.
+codeNameVerbose :: Alphabet -> String
+codeNameVerbose DNA      = "DNA (nucleotides)"
+codeNameVerbose DNAX     = "DNAX (nucleotides; extended; including gaps and unknowns)"
+codeNameVerbose DNAI     = "DNAI (nucleotides; including IUPAC codes)"
+codeNameVerbose Protein  = "Protein (amino acids)"
+codeNameVerbose ProteinX = "ProteinX (amino acids; extended; including gaps and unknowns)"
+codeNameVerbose ProteinS = "ProteinS (amino acids; including gaps and translation stops)"
+codeNameVerbose ProteinI = "ProteinI (amino acids; including IUPAC codes)"

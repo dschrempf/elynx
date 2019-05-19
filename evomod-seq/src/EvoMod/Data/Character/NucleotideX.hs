@@ -15,7 +15,7 @@ Portability :  portable
 
 See header of 'EvoMod.Data.Alphabet'.
 
-Extended nucleotides with gaps and unknowns. See also
+Extended nucleotides with gaps. See also
 https://www.bioinformatics.org/sms/iupac.html or
 https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry.
 
@@ -33,7 +33,7 @@ T       Thymine               T         A
 
 -}
 
-module EvoMod.Data.Alphabet.NucleotideX
+module EvoMod.Data.Character.NucleotideX
   ( NucleotideX (..)
   ) where
 
@@ -45,7 +45,7 @@ import           EvoMod.Tools.ByteString        (c2w, w2c)
 
 -- | Extended nucleotides.
 data NucleotideX = A | C | G | T
-                 | N | Gap
+                 | Gap
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 toWord :: NucleotideX -> Word8
@@ -53,7 +53,6 @@ toWord A   = c2w 'A'
 toWord C   = c2w 'C'
 toWord G   = c2w 'G'
 toWord T   = c2w 'T'
-toWord N   = c2w 'N'
 toWord Gap = c2w  '-'
 
 fromWord :: Word8 -> NucleotideX
@@ -62,7 +61,6 @@ fromWord w = case w2c w of
                'C' ->   C
                'G' ->   G
                'T' ->   T
-               'N' ->   N
                '-' ->   Gap
                '.' ->   Gap
                _   -> error "fromWord: cannot convert to NucleotideX."

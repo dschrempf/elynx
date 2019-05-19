@@ -57,7 +57,7 @@ X                 Xaa                 Any amino acid
 
 -}
 
-module EvoMod.Data.Alphabet.AminoAcidI
+module EvoMod.Data.Character.AminoAcidI
   ( AminoAcidI (..)
   ) where
 

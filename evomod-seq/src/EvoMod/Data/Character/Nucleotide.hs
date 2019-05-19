@@ -1,7 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE ViewPatterns #-}
 
 {- |
 Module      :  EvoMod.Data.Nucleotide
@@ -28,7 +27,7 @@ T       Thymine               T         A
 
 -}
 
-module EvoMod.Data.Alphabet.Nucleotide
+module EvoMod.Data.Character.Nucleotide
   ( Nucleotide (..)
   ) where
 

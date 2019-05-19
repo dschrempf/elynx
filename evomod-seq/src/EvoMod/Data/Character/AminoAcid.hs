@@ -45,7 +45,7 @@ Y                 Tyr                 Tyrosine
 
 -}
 
-module EvoMod.Data.Alphabet.AminoAcid
+module EvoMod.Data.Character.AminoAcid
   ( AminoAcid (..)
   ) where
 

@@ -47,7 +47,7 @@ N       any          A  C  G  T         N
 
 -}
 
-module EvoMod.Data.Alphabet.NucleotideI
+module EvoMod.Data.Character.NucleotideI
   ( NucleotideI (..)
   ) where
 

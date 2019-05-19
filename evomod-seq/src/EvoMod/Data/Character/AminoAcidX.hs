@@ -16,7 +16,7 @@ Creation date: Thu Oct  4 18:26:35 2018.
 
 See header of 'EvoMod.Data.Alphabet.Alphabet'.
 
-Extended amino acid with gaps and unknowns. See also
+Extended amino acid with gaps. See also
 https://www.bioinformatics.org/sms/iupac.html or
 https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry.
 
@@ -42,7 +42,6 @@ S                 Ser                 Serine
 T                 Thr                 Threonine
 V                 Val                 Valine
 W                 Trp                 Tryptophan
-
 Y                 Tyr                 Tyrosine
 -----------------
 -                 Gap                 No amino acid
@@ -51,7 +50,7 @@ Y                 Tyr                 Tyrosine
 
 -}
 
-module EvoMod.Data.Alphabet.AminoAcidX
+module EvoMod.Data.Character.AminoAcidX
   ( AminoAcidX (..)
   ) where
 
