@@ -1,5 +1,3 @@
-{-# LANGUAGE TypeApplications #-}
-
 {- |
 Module      :  EvoMod.Export.Sequence.FastaSpec
 Copyright   :  (c) Dominik Schrempf 2019
@@ -16,7 +14,7 @@ Creation date: Fri Jan 18 09:59:57 2019.
 module EvoMod.Export.Sequence.FastaSpec
   (spec) where
 
-import           EvoMod.Data.Alphabet.NucleotideI
+import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.InputOutput
@@ -27,7 +25,7 @@ spec :: Spec
 spec =
   describe "sequencesToFasta" $
     it "should create a fasta bytestring that, when parsed again, is the original sequence" $ do
-    ss <- parseFileWith (fasta @NucleotideI) fastaNucleotideIUPACFN
+    ss <- parseFileWith (fasta DNAI) fastaNucleotideIUPACFN
     let f   = sequencesToFasta ss
-        ss' = parseByteStringWith (fasta @NucleotideI) f
+        ss' = parseByteStringWith (fasta DNAI) f
     ss `shouldBe` ss'

@@ -25,7 +25,7 @@ module EvoMod.Data.MarkovProcess.PhyloModel
 import           Control.Lens
 import qualified Data.ByteString.Lazy.Char8                  as L
 
-import           EvoMod.Data.Alphabet.Character
+import           EvoMod.Data.Alphabet.Alphabet
 import qualified EvoMod.Data.MarkovProcess.MixtureModel      as M
 import qualified EvoMod.Data.MarkovProcess.SubstitutionModel as S
 
@@ -35,7 +35,7 @@ data PhyloModel = PhyloMixtureModel M.MixtureModel | PhyloSubstitutionModel S.Su
   deriving (Show, Read)
 
 -- | Extract code from phylogenetic model.
-pmCode :: PhyloModel -> Code
+pmCode :: PhyloModel -> AlphabetName
 pmCode (PhyloMixtureModel mm)      = M.getCodeMixtureModel mm
 pmCode (PhyloSubstitutionModel sm) = sm ^. S.code
 

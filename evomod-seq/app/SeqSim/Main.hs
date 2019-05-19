@@ -23,6 +23,7 @@ import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy                             as L
 import qualified Data.ByteString.Lazy.Char8                       as LC
+import qualified Data.Set                                         as Set
 import           Data.Tree
 import qualified Data.Vector.Unboxed                              as V
 import           Numeric.LinearAlgebra
@@ -32,9 +33,10 @@ import           System.Random.MWC
 import           OptionsSeqSim
 import           ParsePhyloModel
 
-import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Data.Alphabet.Nucleotide
-import           EvoMod.Data.Alphabet.AminoAcid
+import           EvoMod.Data.Alphabet.Alphabet
+-- import           EvoMod.Data.Alphabet.Character
+-- import           EvoMod.Data.Alphabet.Nucleotide
+-- import           EvoMod.Data.Alphabet.AminoAcid
 import           EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
 import qualified EvoMod.Data.MarkovProcess.MixtureModel           as M
 import           EvoMod.Data.MarkovProcess.PhyloModel
@@ -57,9 +59,9 @@ import           EvoMod.Tools.Options
 
 -- Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
-simulateMSA :: (Measurable a, Named a, Character b)
+simulateMSA :: (Measurable a, Named a)
             => PhyloModel -> Tree a -> Int -> GenIO
-            -> IO (MultiSequenceAlignment b)
+            -> IO MultiSequenceAlignment
 simulateMSA pm t n g = do
   c  <- getNumCapabilities
   gs <- splitGen c g
@@ -79,7 +81,10 @@ simulateMSA pm t n g = do
   -- or 'concatenateMSAs' can be used, which directly appends vectors.
   let leafStates = horizontalConcat leafStatesS
       leafNames  = map name $ leaves t
-      sequences  = [ Sequence sName (V.fromList $ map toEnum ss) |
+      code       = pmCode pm
+      -- TODO: Probably use type safe stuff here?
+      alph       = allCs $ alphabetSpec code
+      sequences  = [ Sequence sName code (V.fromList $ map (`Set.elemAt` alph) ss) |
                     (sName, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
 
@@ -153,12 +158,8 @@ simulate = do
                >> lift createSystemRandom
     Just s  -> logS ("Seed: " ++ show s ++ ".")
                >> lift (initialize (V.fromList s))
-  -- TODO: Something is wrong here.
-  msa <- case pmCode phyloModel of
-    DNA     -> Left <$> lift (simulateMSA phyloModel tree alignmentLength gen :: IO (MultiSequenceAlignment Nucleotide))
-    Protein -> Right <$> lift (simulateMSA phyloModel tree alignmentLength gen :: IO (MultiSequenceAlignment AminoAcid))
-    _       -> error "main: cannot simulate extended or IUPAC sequences"
-  let output = either (sequencesToFasta . toSequenceList) (sequencesToFasta . toSequenceList) msa
+  msa <- lift $ simulateMSA phyloModel tree alignmentLength gen
+  let output = (sequencesToFasta . toSequenceList) msa
       outFile = argsOutFileBaseName args ++ ".fasta"
   lift $ L.writeFile outFile output
   logS ("Output written to file '" ++ outFile ++ "'.")

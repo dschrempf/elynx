@@ -24,9 +24,9 @@ module EvoMod.Data.MarkovProcess.Nucleotide
 
 import           Numeric.LinearAlgebra                       hiding (normalize)
 
-import           EvoMod.Data.Alphabet.Character
+-- import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Data.Alphabet.Nucleotide
+-- import           EvoMod.Data.Alphabet.Nucleotide
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools.Vector
@@ -45,7 +45,10 @@ import           EvoMod.Tools.Vector
 -- data AASubstitutionModel = LG | ...
 
 n :: Int
-n = length (alphabet :: [Nucleotide])
+-- n = length (alphabet :: [Nucleotide])
+-- Hard code this here. Reduces model dependencies, and number of nucleotides
+-- will not change.
+n = 4
 
 -- | JC model matrix.
 jcExch :: ExchangeabilityMatrix

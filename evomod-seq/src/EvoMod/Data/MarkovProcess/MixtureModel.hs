@@ -40,7 +40,7 @@ import           Control.Lens
 import qualified Data.ByteString.Builder                     as L
 import qualified Data.ByteString.Lazy.Char8                  as L
 
-import           EvoMod.Data.Alphabet.Character
+import           EvoMod.Data.Alphabet.Alphabet
 import qualified EvoMod.Data.MarkovProcess.SubstitutionModel as S
 import           EvoMod.Tools.Equality                       (allEqual)
 
@@ -100,7 +100,7 @@ isValidMixtureModel mm = not (null $ mm ^. components)
 
 -- | Get code used with mixture model. Throws error if components use different
 -- 'Code's.
-getCodeMixtureModel :: MixtureModel -> Code
+getCodeMixtureModel :: MixtureModel -> AlphabetName
 getCodeMixtureModel mm = if isValidMixtureModel mm
             -- then S.code . substModel $ head (components mm)
             then head $ mm ^.. components . traverse . substModel . S.code

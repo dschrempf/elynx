@@ -1,5 +1,3 @@
-{-# LANGUAGE TypeApplications #-}
-
 {- |
 Module      :  EvoMod.Data.Sequence.SequenceSpec
 Copyright   :  (c) Dominik Schrempf 2018
@@ -19,7 +17,7 @@ module EvoMod.Data.Sequence.SequenceSpec
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Test.Hspec
 
-import           EvoMod.Data.Alphabet.Nucleotide
+import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.InputOutput
@@ -29,18 +27,18 @@ longestSequenceInFileBS :: L.ByteString
 longestSequenceInFileBS = L.unlines $ map L.pack [ ">SEQUENCE_3"
                                                  , "ATTTAAAAAAACCCAAAACCCGGGCCCCGGGTTTTTTTA" ]
 
-longestSequenceInFile :: Sequence Nucleotide
-longestSequenceInFile = parseByteStringWith (fastaSequence @Nucleotide) longestSequenceInFileBS
+longestSequenceInFile :: Sequence
+longestSequenceInFile = parseByteStringWith (fastaSequence DNA) longestSequenceInFileBS
 
 spec :: Spec
 spec = do
   describe "longest" $
     it "finds the longest sequence"$ do
-    ss <- parseFileWith (fasta @Nucleotide) fastaDifferentLengthFN
+    ss <- parseFileWith (fasta DNA) fastaDifferentLengthFN
     longest ss `shouldBe` longestSequenceInFile
 
   describe "filterLongerThan" $
     it "filters sequences that are longer than a specified length" $ do
-    ss  <- parseFileWith (fasta @Nucleotide) fastaDifferentLengthFN
-    ss' <- parseFileWith (fasta @Nucleotide) fastaDifferentLengthTrimmedFN
+    ss  <- parseFileWith (fasta DNA) fastaDifferentLengthFN
+    ss' <- parseFileWith (fasta DNA) fastaDifferentLengthTrimmedFN
     filterLongerThan 10 ss `shouldBe` ss'

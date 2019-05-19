@@ -1,5 +1,4 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications    #-}
 
 {- |
 Module      :  Main
@@ -38,17 +37,18 @@ import           Text.Printf
 
 import           OptionsSeqAna
 
-import           EvoMod.Data.Alphabet.AminoAcid
-import           EvoMod.Data.Alphabet.AminoAcidI
-import           EvoMod.Data.Alphabet.AminoAcidS
-import           EvoMod.Data.Alphabet.AminoAcidX
-import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Data.Alphabet.Nucleotide
-import           EvoMod.Data.Alphabet.NucleotideI
-import           EvoMod.Data.Alphabet.NucleotideX
+-- import           EvoMod.Data.Alphabet.AminoAcid
+-- import           EvoMod.Data.Alphabet.AminoAcidI
+-- import           EvoMod.Data.Alphabet.AminoAcidS
+-- import           EvoMod.Data.Alphabet.AminoAcidX
+import           EvoMod.Data.Alphabet.Alphabet
+-- import           EvoMod.Data.Alphabet.Character
+-- import           EvoMod.Data.Alphabet.Nucleotide
+-- import           EvoMod.Data.Alphabet.NucleotideI
+-- import           EvoMod.Data.Alphabet.NucleotideX
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
-import           EvoMod.Data.Sequence.Translate
+-- import           EvoMod.Data.Sequence.Translate
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.ByteString
@@ -66,7 +66,7 @@ instance Logger Params where
 
 type Seq = ReaderT Params IO
 
-examineMSA :: CharacterI a => Bool -> MultiSequenceAlignment a -> L.ByteString
+examineMSA :: Bool -> MultiSequenceAlignment -> L.ByteString
 examineMSA perSiteFlag msa =
   L.unlines [ L.pack $ "Total number of columns in alignment: "
               ++ show (msaLength msa)
@@ -119,158 +119,73 @@ examineMSA perSiteFlag msa =
 examineS :: Seq ()
 examineS = do
   args <- arguments <$> ask
-  let cd = argsCode args
-      (Examine perSiteFlag) = argsCommand args
+  let (Examine perSiteFlag) = argsCommand args
       --
       -- when equalLength ss $
       --   <> L.pack "\n"
       --   <> examineMSA perSiteFlag (fromSequenceList ss)
-  case cd of
-    DNA -> do
-      sss <- readSeqss @Nucleotide
-      io $ L.intercalate (L.pack "\n") $
-        map summarizeSequenceList sss
-    DNAX -> do
-      sss <- readSeqss @NucleotideX
-      io $ L.intercalate (L.pack "\n") $
-        map summarizeSequenceList sss
-    DNAI -> do
-      sss <- readSeqss @NucleotideI
-      io $ L.intercalate (L.pack "\n") $
-        map summarizeSequenceList sss
-    Protein -> do
-      sss <- readSeqss @AminoAcid
-      io $ L.intercalate (L.pack "\n") $
-        map summarizeSequenceList sss
-    ProteinX -> do
-      sss <- readSeqss @AminoAcidX
-      io $ L.intercalate (L.pack "\n") $
-        map summarizeSequenceList sss
-    ProteinS -> do
-      sss <- readSeqss @AminoAcidS
-      io $ L.intercalate (L.pack "\n") $
-        map summarizeSequenceList sss
-    ProteinI -> do
-      sss <- readSeqss @AminoAcidI
-      io $ L.intercalate (L.pack "\n") $
-        map summarizeSequenceList sss
-        ++ map (examineMSA perSiteFlag . fromSequenceList) sss
+  sss <- readSeqss
+  io $ L.intercalate (L.pack "\n") $
+    map summarizeSequenceList sss
+    ++ map (examineMSA perSiteFlag . fromSequenceList) sss
 
 concatenateS :: Seq ()
 concatenateS = do
-  args <- arguments <$> ask
-  let cd = argsCode args
-  case cd of
-    DNA -> do
-      sss <- readSeqss @Nucleotide
-      io $ sequencesToFasta $ concatenateSeqs sss
-    DNAX -> do
-      sss <- readSeqss @NucleotideX
-      io $ sequencesToFasta $ concatenateSeqs sss
-    DNAI -> do
-      sss <- readSeqss @NucleotideI
-      io $ sequencesToFasta $ concatenateSeqs sss
-    Protein -> do
-      sss <- readSeqss @AminoAcid
-      io $ sequencesToFasta $ concatenateSeqs sss
-    ProteinX -> do
-      sss <- readSeqss @AminoAcidX
-      io $ sequencesToFasta $ concatenateSeqs sss
-    ProteinS -> do
-      sss <- readSeqss @AminoAcidS
-      io $ sequencesToFasta $ concatenateSeqs sss
-    ProteinI -> do
-      sss <- readSeqss @AminoAcidI
-      io $ sequencesToFasta $ concatenateSeqs sss
+  sss <- readSeqss
+  io $ sequencesToFasta $ concatenateSeqs sss
 
 filterS :: Seq ()
 filterS = do
   args <- arguments <$> ask
-  let cd             = argsCode args
-      (Filter ml ms) = argsCommand args
-  case cd of
-    DNA -> do
-      sss <- readSeqss @Nucleotide
-      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
-                                       , filterShorterThan <$> ms ]
-      io $ sequencesToFasta $ compose filters $ concat sss
-    DNAX -> do
-      sss <- readSeqss @NucleotideX
-      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
-                                       , filterShorterThan <$> ms ]
-      io $ sequencesToFasta $ compose filters $ concat sss
-    DNAI -> do
-      sss <- readSeqss @NucleotideI
-      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
-                                       , filterShorterThan <$> ms ]
-      io $ sequencesToFasta $ compose filters $ concat sss
-    Protein -> do
-      sss <- readSeqss @AminoAcid
-      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
-                                       , filterShorterThan <$> ms ]
-      io $ sequencesToFasta $ compose filters $ concat sss
-    ProteinX -> do
-      sss <- readSeqss @AminoAcidX
-      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
-                                       , filterShorterThan <$> ms ]
-      io $ sequencesToFasta $ compose filters $ concat sss
-    ProteinS -> do
-      sss <- readSeqss @AminoAcidS
-      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
-                                       , filterShorterThan <$> ms ]
-      io $ sequencesToFasta $ compose filters $ concat sss
-    ProteinI -> do
-      sss <- readSeqss @AminoAcidI
-      let filters = map (fromMaybe id) [ filterLongerThan <$> ml
-                                       , filterShorterThan <$> ms ]
-      io $ sequencesToFasta $ compose filters $ concat sss
+  let (Filter ml ms) = argsCommand args
+  sss <- readSeqss
+  let filters = map (fromMaybe id) [ filterLongerThan <$> ml
+                                   , filterShorterThan <$> ms ]
+  io $ sequencesToFasta $ compose filters $ concat sss
 
 -- subsample nSites nSamples msa gen
-subsample :: (PrimMonad m, Character a)
-          => Int -> Int -> MultiSequenceAlignment a -> Gen (PrimState m) -> m [MultiSequenceAlignment a]
+subsample :: (PrimMonad m)
+          => Int -> Int -> MultiSequenceAlignment -> Gen (PrimState m) -> m [MultiSequenceAlignment]
 subsample n m msa g = replicateM m $ randomSubSample n msa g
 
 subSampleS :: Seq ()
 subSampleS = do
   args <- arguments <$> ask
-  let cd                 = argsCode args
-      (SubSample n m ms) = argsCommand args
-  case cd of
-    DNA -> do
-      sss <- readSeqss @Nucleotide
-      when (length sss > 1) $ error "can only sub-sample from one input file"
-      g <- lift $ maybe createSystemRandom (initialize . V.fromList) ms
-      let msa = fromSequenceList $ head sss
-      samples <- subsample n m msa g
-      let files = map (sequencesToFasta . toSequenceList) samples
-      mFileOut <- argsMaybeOutFileBaseName . arguments <$> ask
-      case mFileOut of
-        Nothing -> logLBSQuiet $ L.intercalate (L.pack "\n") files
-        Just fn -> do
-          let nDigits    = ceiling $ logBase (10 :: Double) (fromIntegral m)
-              digitStr i = L.unpack $ alignRightWith '0' nDigits (L.pack $ show i)
-              fns = [ fn ++ digitStr i ++ ".fasta" | i <- [0 .. m-1] ]
-          lift $ mapM_ (\i -> withFile (fns!!i) WriteMode (`L.hPutStr` (files!!i))) [0 .. m-1]
-          logS $ "Results written to files with basename '" ++ fn ++ "'."
-    _ -> error "TODO."
+  let (SubSample n m ms) = argsCommand args
+  sss <- readSeqss
+  when (length sss > 1) $ error "can only sub-sample from one input file"
+  g <- lift $ maybe createSystemRandom (initialize . V.fromList) ms
+  let msa = fromSequenceList $ head sss
+  samples <- subsample n m msa g
+  let files = map (sequencesToFasta . toSequenceList) samples
+  mFileOut <- argsMaybeOutFileBaseName . arguments <$> ask
+  case mFileOut of
+    Nothing -> logLBSQuiet $ L.intercalate (L.pack "\n") files
+    Just fn -> do
+      let nDigits    = ceiling $ logBase (10 :: Double) (fromIntegral m)
+          digitStr i = L.unpack $ alignRightWith '0' nDigits (L.pack $ show i)
+          fns = [ fn ++ digitStr i ++ ".fasta" | i <- [0 .. m-1] ]
+      lift $ mapM_ (\i -> withFile (fns!!i) WriteMode (`L.hPutStr` (files!!i))) [0 .. m-1]
+      logS $ "Results written to files with basename '" ++ fn ++ "'."
 
-translateS :: Seq ()
-translateS = do
-  args <- arguments <$> ask
-  let cd                = argsCode args
-      (Translate rf uc) = argsCommand args
-  logS "Translate sequences to amino acids."
-  logS $ "Universal code: " ++ show uc ++ "."
-  case cd of
-    DNA -> do
-      sss <- readSeqss @Nucleotide
-      io $ L.intercalate (L.pack "\n") $
-        map (sequencesToFasta . map (translateDNA uc rf)) sss
-    DNAX -> do
-      sss <- readSeqss @NucleotideX
-      io $ L.intercalate (L.pack "\n") $
-        map (sequencesToFasta . map (translateDNAX uc rf)) sss
-    _ -> error "translate: can only translate DNA and DNAX."
+-- TODO.
+-- translateS :: Seq ()
+-- translateS = do
+--   args <- arguments <$> ask
+--   let cd                = argsCode args
+--       (Translate rf uc) = argsCommand args
+--   logS "Translate sequences to amino acids."
+--   logS $ "Universal code: " ++ show uc ++ "."
+--   case cd of
+--     DNA -> do
+--       sss <- readSeqss @Nucleotide
+--       io $ L.intercalate (L.pack "\n") $
+--         map (sequencesToFasta . map (translateDNA uc rf)) sss
+--     DNAX -> do
+--       sss <- readSeqss @NucleotideX
+--       io $ L.intercalate (L.pack "\n") $
+--         map (sequencesToFasta . map (translateDNAX uc rf)) sss
+--     _ -> error "translate: can only translate DNA and DNAX."
 
 io :: L.ByteString -> Seq ()
 io res = do
@@ -285,13 +200,14 @@ io res = do
       lift $ withFile fn' WriteMode (`L.hPutStr` res)
       logS $ "Results written to file '" ++ fn' ++ "'."
 
-readSeqs :: Character a => FilePath -> IO [Sequence a]
-readSeqs = parseFileWith fasta
+readSeqs :: AlphabetName -> FilePath -> IO [Sequence]
+readSeqs a = parseFileWith (fasta a)
 
-readSeqss :: Character a => Seq [[Sequence a]]
+readSeqss :: Seq [[Sequence]]
 readSeqss = do
   fns <- argsFileNames . arguments <$> ask
-  lift $ mapM readSeqs fns
+  code <- argsCode . arguments <$> ask
+  lift $ mapM (readSeqs code) fns
 
 work :: Seq ()
 work = do
@@ -305,7 +221,7 @@ work = do
     Concatenate -> concatenateS
     Filter{}    -> filterS
     SubSample{} -> subSampleS
-    Translate{} -> translateS
+    -- Translate{} -> translateS
 
 main :: IO ()
 main = do

@@ -16,7 +16,7 @@ TODO: BM states can not be read and written like characters.
 
 -}
 
-module EvoMod.Data.Alphabet.BoundaryMutation
+module EvoMod.Data.Character.BoundaryMutation
   ( -- * Types
     Nucleotide
   , Allele
@@ -35,14 +35,11 @@ module EvoMod.Data.Alphabet.BoundaryMutation
   ) where
 
 import           Control.Lens
-import qualified Data.ByteString.Lazy.Char8      as L
-import           Numeric.SpecFunctions           (choose)
+import qualified Data.ByteString.Lazy.Char8       as L
+import           Numeric.SpecFunctions            (choose)
 
+import           EvoMod.Data.Character.Nucleotide
 import           EvoMod.Tools.Misc
-
--- | Nucleotides.
-data Nucleotide = A | C | G | T
-  deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 -- | Alleles are just nucleotides at the moment. However, I want to keep the
 -- code such that it can be extended easily to codons or amino acids.

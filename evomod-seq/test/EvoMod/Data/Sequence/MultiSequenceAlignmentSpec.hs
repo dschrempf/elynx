@@ -20,24 +20,24 @@ import qualified Data.ByteString.Lazy.Char8                  as L
 import qualified Data.Matrix.Unboxed                         as M
 import           Test.Hspec
 
-import           EvoMod.Data.Alphabet.NucleotideI
+import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.InputOutput
 import           Files
 
-ssData :: M.Matrix NucleotideI
+ssData :: M.Matrix Character
 ssData = M.fromLists $ map (reverse . map fromChar) [ "AAA", "GAA", "TAA" ]
 
-ssMSA :: MultiSequenceAlignment NucleotideI
-ssMSA = MultiSequenceAlignment (map L.pack ["SEQUENCE_1", "SEQUENCE_2", "SEQUENCE_3"]) ssData
+ssMSA :: MultiSequenceAlignment
+ssMSA = MultiSequenceAlignment (map L.pack ["SEQUENCE_1", "SEQUENCE_2", "SEQUENCE_3"]) DNAI ssData
 
 spec :: Spec
 spec =
   describe "subSample" $
   it "correctly sub sample an MSA" $ do
-    msa <- fromSequenceList <$> parseFileWith (fasta @NucleotideI) fastaNucleotideIUPACFN
+    msa <- fromSequenceList <$> parseFileWith (fasta DNAI) fastaNucleotideIUPACFN
     let ss = subSample [0,3,5] msa
     -- L.putStr $ summarizeMSA ss
     ss `shouldBe` ssMSA

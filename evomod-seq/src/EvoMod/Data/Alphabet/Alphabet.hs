@@ -1,7 +1,3 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE TypeFamilies          #-}
-
 {- |
 Module      :  EvoMod.Data.Alphabet.Alphabet
 Description :  Alphabets store hereditary information
@@ -10,13 +6,16 @@ License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
+
 Portability :  portable
 
 Creation date: Fri May 10 11:10:32 2019.
 
 Hierarchy:
 
-TODO.
+TODO. Create own character module.
+
+TODO. Rename stuff. AlphabetName ? AlphabetSpec ? allCs ?
 
 1. 'Character' type class.
 
@@ -29,47 +28,63 @@ TODO.
 
 module EvoMod.Data.Alphabet.Alphabet
   (
-    Character
-  , Alphabet
-  , AlphabetSpec
-  , alphabet
+    AlphabetName (..)
+  , AlphabetSpec (..)
+  , alphabetSpec
+  , alphabetNameVerbose
+  , isStd
+  , isGap
+  , isIUPAC
+  , isMember
   ) where
 
-import qualified Data.Set                     as S
-import           Data.Vector.Unboxed.Deriving
-import           Data.Word8
+import qualified Data.Set                       as S
 
-import           EvoMod.Tools.ByteString      (c2w, w2c)
+import           EvoMod.Data.Alphabet.Character
 
-data Alphabet = DNA | DNAX | DNAI
-              | Protein | ProteinX | ProteinS | ProteinI
-              deriving (Show, Read, Eq, Ord, Enum, Bounded)
+data AlphabetName = DNA | DNAX | DNAI
+                  | Protein | ProteinX | ProteinS | ProteinI
+                  deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
-newtype Character = Character Word8
-  deriving (Read, Show, Eq, Ord, Bounded)
+-- | Verbose alphabet name.
+alphabetNameVerbose :: AlphabetName -> String
+alphabetNameVerbose DNA      = "DNA (nucleotides)"
+alphabetNameVerbose DNAX     = "DNAX (nucleotides; extended; including gaps and unknowns)"
+alphabetNameVerbose DNAI     = "DNAI (nucleotides; including IUPAC codes)"
+alphabetNameVerbose Protein  = "Protein (amino acids)"
+alphabetNameVerbose ProteinX = "ProteinX (amino acids; extended; including gaps and unknowns)"
+alphabetNameVerbose ProteinS = "ProteinS (amino acids; including gaps and translation stops)"
+alphabetNameVerbose ProteinI = "ProteinI (amino acids; including IUPAC codes)"
 
-toChar :: Character -> Char
-toChar (Character w) = w2c w
+data AlphabetSpec = AlphabetSpec { std    :: S.Set Character
+                                 , gap    :: S.Set Character
+                                 , iupac  :: S.Set Character
+                                 , allCs  :: S.Set Character
+                                 , toStd  :: Character -> [Character] }
 
-fromChar :: Char -> Character
-fromChar = Character . c2w
+alphabetSpec :: AlphabetName -> AlphabetSpec
+alphabetSpec DNA      = dna
+alphabetSpec DNAX     = dnaX
+alphabetSpec DNAI     = dnaI
+alphabetSpec Protein  = protein
+alphabetSpec ProteinX = proteinX
+alphabetSpec ProteinS = proteinS
+alphabetSpec ProteinI = proteinI
 
-toString :: [Character] -> String
-toString = map toChar
+isWith :: (AlphabetSpec -> S.Set Character) -> AlphabetName -> Character -> Bool
+isWith set alph char = char `S.member` set (alphabetSpec alph)
 
-fromString :: String -> [Character]
-fromString = map fromChar
+isStd :: AlphabetName -> Character -> Bool
+isStd = isWith std
 
-derivingUnbox "Character"
-    [t| Character -> Word8 |]
-    [| \(Character w) -> w |]
-    [| Character |]
+isGap :: AlphabetName -> Character -> Bool
+isGap = isWith gap
 
-data AlphabetSpec = AlphabetSpec { standard   :: S.Set Character
-                                 , gap        :: S.Set Character
-                                 , iupac      :: S.Set Character
-                                 , alphabet   :: S.Set Character
-                                 , toStandard :: Character -> [Character] }
+isIUPAC :: AlphabetName -> Character -> Bool
+isIUPAC = isWith iupac
+
+isMember :: AlphabetName -> Character -> Bool
+isMember = isWith allCs
 
 fromChars :: String -> String -> String -> (Char -> String) -> AlphabetSpec
 fromChars st ga iu toSt = AlphabetSpec st' ga' iu' al (fromString . toSt . toChar)
@@ -80,59 +95,163 @@ fromChars st ga iu toSt = AlphabetSpec st' ga' iu' al (fromString . toSt . toCha
     al  = S.unions [st', ga', iu']
 
 dna :: AlphabetSpec
-dna = fromChars "ACGT" "" "" toStandardDNA
+dna = fromChars "ACGT" [] [] toStdDNA
 
-toStandardDNA :: Char -> String
-toStandardDNA 'A' = "A"
-toStandardDNA 'C' = "C"
-toStandardDNA 'G' = "G"
-toStandardDNA 'T' = "T"
-toStandardDNA _   = error "dnaToStandard: cannot convert to standard nucleotide."
+toStdDNA :: Char -> String
+toStdDNA 'A' = "A"
+toStdDNA 'C' = "C"
+toStdDNA 'G' = "G"
+toStdDNA 'T' = "T"
+toStdDNA _   = error "tostdDNA: cannot convert to standard nucleotide."
 
 dnaX :: AlphabetSpec
-dnaX = fromChars "ACGT" "-." "" toStandardDNAX
+dnaX = fromChars "ACGT" "-." [] toStdDNAX
 
-toStandardDNAX :: Char -> String
-toStandardDNAX 'A' = "A"
-toStandardDNAX 'C' = "C"
-toStandardDNAX 'G' = "G"
-toStandardDNAX 'T' = "T"
-toStandardDNAX '-' = ""
-toStandardDNAX '.' = ""
-toStandardDNAX _   = error "dnaToStandard: cannot convert to standard nucleotide."
+toStdDNAX :: Char -> String
+toStdDNAX 'A' = "A"
+toStdDNAX 'C' = "C"
+toStdDNAX 'G' = "G"
+toStdDNAX 'T' = "T"
+toStdDNAX '-' = []
+toStdDNAX '.' = []
+toStdDNAX _   = error "toStdDNAX: cannot convert to standard nucleotide."
 
 dnaI :: AlphabetSpec
-dnaI = fromChars "ACGT" "-." "UWSMKRYBDHV" toStandardDNAI
+dnaI = fromChars "ACGT" "-." "UWSMKRYBDHVN" toStdDNAI
 
-toStandardDNAI :: Char -> String
-toStandardDNAI 'A' = "A"
-toStandardDNAI 'C' = "C"
-toStandardDNAI 'G' = "G"
-toStandardDNAI 'T' = "T"
-toStandardDNAI 'U' = "T"
-toStandardDNAI 'W' = "AT"
-toStandardDNAI 'S' = "GC"
-toStandardDNAI 'M' = "AC"
-toStandardDNAI 'K' = "GT"
-toStandardDNAI 'R' = "AG"
-toStandardDNAI 'Y' = "CT"
-toStandardDNAI 'B' = "CGT"
-toStandardDNAI 'D' = "AGT"
-toStandardDNAI 'H' = "ACT"
-toStandardDNAI 'V' = "ACG"
-toStandardDNAI 'N' = "ACGT"
-toStandardDNAI '-' = ""
-toStandardDNAI '.' = ""
+toStdDNAI :: Char -> String
+toStdDNAI 'A' = "A"
+toStdDNAI 'C' = "C"
+toStdDNAI 'G' = "G"
+toStdDNAI 'T' = "T"
+toStdDNAI 'U' = "T"
+toStdDNAI 'W' = "AT"
+toStdDNAI 'S' = "GC"
+toStdDNAI 'M' = "AC"
+toStdDNAI 'K' = "GT"
+toStdDNAI 'R' = "AG"
+toStdDNAI 'Y' = "CT"
+toStdDNAI 'B' = "CGT"
+toStdDNAI 'D' = "AGT"
+toStdDNAI 'H' = "ACT"
+toStdDNAI 'V' = "ACG"
+toStdDNAI 'N' = "ACGT"
+toStdDNAI '-' = []
+toStdDNAI '.' = []
+toStdDNAI _   = error "toStdDNAI: cannot convert to standard nucleotide."
 
-codeSpec :: Alphabet -> AlphabetSpec
-codeSpec = undefined
+protein :: AlphabetSpec
+protein = fromChars "ACDEFGHIKLMNPQRSTVWY" [] [] toStdP
 
--- | Verbose code name.
-codeNameVerbose :: Alphabet -> String
-codeNameVerbose DNA      = "DNA (nucleotides)"
-codeNameVerbose DNAX     = "DNAX (nucleotides; extended; including gaps and unknowns)"
-codeNameVerbose DNAI     = "DNAI (nucleotides; including IUPAC codes)"
-codeNameVerbose Protein  = "Protein (amino acids)"
-codeNameVerbose ProteinX = "ProteinX (amino acids; extended; including gaps and unknowns)"
-codeNameVerbose ProteinS = "ProteinS (amino acids; including gaps and translation stops)"
-codeNameVerbose ProteinI = "ProteinI (amino acids; including IUPAC codes)"
+toStdP :: Char -> String
+toStdP 'A' = "A"
+toStdP 'C' = "C"
+toStdP 'D' = "D"
+toStdP 'E' = "E"
+toStdP 'F' = "F"
+toStdP 'G' = "G"
+toStdP 'H' = "H"
+toStdP 'I' = "I"
+toStdP 'K' = "K"
+toStdP 'L' = "L"
+toStdP 'M' = "M"
+toStdP 'N' = "N"
+toStdP 'P' = "P"
+toStdP 'Q' = "Q"
+toStdP 'R' = "R"
+toStdP 'S' = "S"
+toStdP 'T' = "T"
+toStdP 'V' = "V"
+toStdP 'W' = "W"
+toStdP 'Y' = "Y"
+toStdP _   = error "toStdP: cannot convert to standard amino acid."
+
+proteinX :: AlphabetSpec
+proteinX = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." [] toStdPX
+
+toStdPX :: Char -> String
+toStdPX 'A' = "A"
+toStdPX 'C' = "C"
+toStdPX 'D' = "D"
+toStdPX 'E' = "E"
+toStdPX 'F' = "F"
+toStdPX 'G' = "G"
+toStdPX 'H' = "H"
+toStdPX 'I' = "I"
+toStdPX 'K' = "K"
+toStdPX 'L' = "L"
+toStdPX 'M' = "M"
+toStdPX 'N' = "N"
+toStdPX 'P' = "P"
+toStdPX 'Q' = "Q"
+toStdPX 'R' = "R"
+toStdPX 'S' = "S"
+toStdPX 'T' = "T"
+toStdPX 'V' = "V"
+toStdPX 'W' = "W"
+toStdPX 'Y' = "Y"
+toStdPX '-' = ""
+toStdPX '.' = ""
+toStdPX _   = error "toStdPX: cannot convert to standard amino acid."
+
+proteinS :: AlphabetSpec
+proteinS = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." "*" toStdPS
+
+toStdPS :: Char -> String
+toStdPS 'A' = "A"
+toStdPS 'C' = "C"
+toStdPS 'D' = "D"
+toStdPS 'E' = "E"
+toStdPS 'F' = "F"
+toStdPS 'G' = "G"
+toStdPS 'H' = "H"
+toStdPS 'I' = "I"
+toStdPS 'K' = "K"
+toStdPS 'L' = "L"
+toStdPS 'M' = "M"
+toStdPS 'N' = "N"
+toStdPS 'P' = "P"
+toStdPS 'Q' = "Q"
+toStdPS 'R' = "R"
+toStdPS 'S' = "S"
+toStdPS 'T' = "T"
+toStdPS 'V' = "V"
+toStdPS 'W' = "W"
+toStdPS 'Y' = "Y"
+toStdPS '-' = ""
+toStdPS '.' = ""
+toStdPS '*' = ""
+toStdPS _   = error "toStdPX: cannot convert to standard amino acid."
+
+proteinI :: AlphabetSpec
+proteinI = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." "*JBZX" toStdPI
+
+toStdPI :: Char -> String
+toStdPI 'A' = "A"
+toStdPI 'C' = "C"
+toStdPI 'D' = "D"
+toStdPI 'E' = "E"
+toStdPI 'F' = "F"
+toStdPI 'G' = "G"
+toStdPI 'H' = "H"
+toStdPI 'I' = "I"
+toStdPI 'K' = "K"
+toStdPI 'L' = "L"
+toStdPI 'M' = "M"
+toStdPI 'N' = "N"
+toStdPI 'P' = "P"
+toStdPI 'Q' = "Q"
+toStdPI 'R' = "R"
+toStdPI 'S' = "S"
+toStdPI 'T' = "T"
+toStdPI 'V' = "V"
+toStdPI 'W' = "W"
+toStdPI 'Y' = "Y"
+toStdPI '-' = ""
+toStdPI '.' = ""
+toStdPI 'J' = "LI"
+toStdPI 'B' = "DN"
+toStdPI 'Z' = "EQ"
+toStdPI 'X' = "ACDEFGHIKLMNPQRSTVWY"
+toStdPI '*' = ""
+toStdPI _   = error "toStdPX: cannot convert to standard amino acid."

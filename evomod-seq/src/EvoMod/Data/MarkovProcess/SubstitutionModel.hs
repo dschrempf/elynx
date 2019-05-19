@@ -41,7 +41,7 @@ import           Control.Lens
 import qualified Data.ByteString.Lazy.Char8           as L
 import           Numeric.LinearAlgebra                hiding ((<>))
 
-import qualified EvoMod.Data.Alphabet.Character       as C
+import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Tools.Definitions
 import           EvoMod.Tools.LinearAlgebra
@@ -56,7 +56,7 @@ type Params = [Double]
 -- | Complete definition of a substitution model. Create instances with
 -- 'substitutionModel'.
 data SubstitutionModel = SubstitutionModel
-  { _code                   :: C.Code
+  { _code                   :: AlphabetName
   , _name                   :: Name
   , _params                 :: Params
   , _stationaryDistribution :: StationaryDistribution
@@ -67,13 +67,13 @@ data SubstitutionModel = SubstitutionModel
 makeLenses ''SubstitutionModel
 
 -- | Create normalized 'SubstitutionModel'. See 'normalizeSubstitutionModel'.
-substitutionModel :: C.Code -> Name -> Params
+substitutionModel :: AlphabetName -> Name -> Params
                   -> StationaryDistribution -> ExchangeabilityMatrix
                   -> SubstitutionModel
 substitutionModel c n ps d e = normalizeSubstitutionModel $ SubstitutionModel c n ps d e
 
 -- | Create UNNORMALIZED 'SubstitutionModel'. See 'substitutionModel'.
-substitutionModelUnnormalized :: C.Code -> Name -> Params
+substitutionModelUnnormalized :: AlphabetName -> Name -> Params
                   -> StationaryDistribution -> ExchangeabilityMatrix
                   -> SubstitutionModel
 substitutionModelUnnormalized = SubstitutionModel
@@ -116,11 +116,11 @@ summarizeSubstitutionModel sm = map L.pack $
   (show (sm ^. code) ++ " substitution model: " ++ sm ^. name ++ ".") :
   [ "Parameters: " ++ show (sm ^. params) ++ "." | not (null (sm ^. params))] ++
   case sm ^. code of
-    C.DNA -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
+    DNA -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
            , "Exchangeability matrix:\n" ++ dispmi 2 precision (sm ^. exchangeabilityMatrix) ++ "."
            , "Scale: " ++ show (roundN precision $ totalRateSubstitutionModel sm) ++ "."
            ]
-    C.Protein -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
+    Protein -> [ "Stationary distribution: " ++ dispv precision (sm ^. stationaryDistribution) ++ "."
                , "Scale: " ++ show (roundN precision $ totalRateSubstitutionModel sm) ++ "."
                ]
     _ -> error "Extended character sets are not supported with substitution models."

@@ -63,7 +63,7 @@ module EvoMod.Export.Sequence.CountsFile
 import qualified Data.ByteString.Lazy.Char8            as L
 import           Data.Maybe                            (fromMaybe)
 
-import           EvoMod.Data.Alphabet.BoundaryMutation
+import           EvoMod.Data.Character.BoundaryMutation
 import           EvoMod.Tools.ByteString               (alignLeft, alignRight)
 
 -- | The number of sites that will be printed.

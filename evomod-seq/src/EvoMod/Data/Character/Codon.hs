@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Data.Alphabet.Codon
+Module      :  EvoMod.Data.Character.Codon
 Description :  Codons are triplets of nucleotides
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -17,7 +17,7 @@ The different universal codes.
 
 -}
 
-module EvoMod.Data.Alphabet.Codon
+module EvoMod.Data.Character.Codon
   ( Codon (Codon)
   , UniversalCode (..)
   , universalCode
@@ -27,9 +27,9 @@ module EvoMod.Data.Alphabet.Codon
 import           Data.List
 import qualified Data.Map                         as M
 
-import           EvoMod.Data.Alphabet.AminoAcidS
-import qualified EvoMod.Data.Alphabet.Nucleotide  as N
-import qualified EvoMod.Data.Alphabet.NucleotideX as NX
+import           EvoMod.Data.Character.AminoAcidS
+import qualified EvoMod.Data.Character.Nucleotide  as N
+import qualified EvoMod.Data.Character.NucleotideX as NX
 
 -- | Codons are triplets of characters.
 newtype Codon a = Codon (a, a, a)

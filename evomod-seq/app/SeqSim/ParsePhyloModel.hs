@@ -26,9 +26,9 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
-import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Data.Alphabet.Nucleotide
-import           EvoMod.Data.Alphabet.AminoAcid
+-- import           EvoMod.Data.Alphabet.Alphabet
+-- import           EvoMod.Data.Alphabet.Nucleotide
+-- import           EvoMod.Data.Alphabet.AminoAcid
 import           EvoMod.Data.MarkovProcess.AminoAcid
 import           EvoMod.Data.MarkovProcess.CXXModels
 import qualified EvoMod.Data.MarkovProcess.MixtureModel         as M
@@ -47,10 +47,12 @@ bs :: String -> L.ByteString
 bs = L.pack
 
 nNuc :: Int
-nNuc = length (alphabet :: [Nucleotide])
+-- nNuc = length (alphabet :: [Nucleotide])
+nNuc = 4
 
 nAA :: Int
-nAA = length (alphabet :: [AminoAcid])
+-- nAA = length (alphabet :: [AminoAcid])
+nAA = 20
 
 -- Model parameters between square brackets.
 paramsStart :: Word8

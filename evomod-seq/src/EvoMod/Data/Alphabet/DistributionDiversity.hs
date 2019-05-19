@@ -25,6 +25,7 @@ module EvoMod.Data.Alphabet.DistributionDiversity
   , frequencyCharacters
   ) where
 
+import qualified Data.Set                       as S
 import qualified Data.Vector.Unboxed            as V
 
 import           EvoMod.Data.Alphabet.Alphabet
@@ -63,22 +64,21 @@ incrementElemIndexByOne is v = v V.// zip is es'
   where es' = [v V.! i + 1 | i <- is]
 
 -- For a given code and counts vector, increment the count of the given character.
-acc :: CharacterI a => V.Vector Int -> a -> V.Vector Int
-acc vec char = incrementElemIndexByOne is vec
+acc :: AlphabetSpec -> V.Vector Int -> Character -> V.Vector Int
+acc alph vec char = incrementElemIndexByOne is vec
   where
-    charsNonIupac = toStandard char
-    is            = map fromEnum charsNonIupac
+    is = [ S.findIndex c (std alph) | c <- toStd alph char ]
 
-countCharacters :: forall a . CharacterI a => V.Vector a -> V.Vector Int
-countCharacters =
-  V.foldl' acc zeroCounts
+countCharacters :: AlphabetSpec -> V.Vector Character -> V.Vector Int
+countCharacters alph =
+  V.foldl' (acc alph) zeroCounts
   where
-    nChars     = length (alphabet :: [a])
+    nChars     = length (std alph)
     zeroCounts = V.replicate nChars (0 :: Int)
 
 -- | For a given code vector of characters, calculate frequency of characters.
-frequencyCharacters :: CharacterI a => V.Vector a -> V.Vector Double
-frequencyCharacters d = V.map (\e -> fromIntegral e / fromIntegral s) counts
+frequencyCharacters :: AlphabetSpec -> V.Vector Character -> V.Vector Double
+frequencyCharacters alph d = V.map (\e -> fromIntegral e / fromIntegral s) counts
   where
-    counts = countCharacters d
+    counts = countCharacters alph d
     s      = sumVec counts
