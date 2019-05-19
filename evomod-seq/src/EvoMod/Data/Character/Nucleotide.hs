@@ -1,6 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE ViewPatterns #-}
 
 {- |
 Module      :  EvoMod.Data.Nucleotide
@@ -35,12 +36,16 @@ import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
 import qualified EvoMod.Data.Character.Character as C
-import           EvoMod.Tools.ByteString        (c2w)
+import           EvoMod.Tools.ByteString        (c2w, w2c)
 
 -- | Nucleotides.
 data Nucleotide = A | C | G | T
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
+-- See https://stackoverflow.com/a/31527024; apparently, pattern matching (and
+-- case statements) are fast because they are compiled to lookup tables. Hence,
+-- they are faster than guards (because equality has to be checked), and faster
+-- than lookups with sets.
 toWord :: Nucleotide -> Word8
 toWord A = c2w 'A'
 toWord C = c2w 'C'
@@ -48,11 +53,12 @@ toWord G = c2w 'G'
 toWord T = c2w 'T'
 
 fromWord :: Word8 -> Nucleotide
-fromWord w | w == c2w 'A' = A
-           | w == c2w 'C' = C
-           | w == c2w 'G' = G
-           | w == c2w 'T' = T
-           | otherwise    = error "fromWord: cannot convert to Nucleotide."
+fromWord w = case w2c w of
+               'A' -> A
+               'C' -> C
+               'G' -> G
+               'T' -> T
+               _   -> error "fromWord: cannot convert to Nucleotide."
 
 derivingUnbox "Nucleotide"
     [t| Nucleotide -> Word8 |]

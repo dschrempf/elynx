@@ -37,44 +37,35 @@ module EvoMod.Data.Alphabet.NucleotideX
   ( NucleotideX (..)
   ) where
 
-import qualified Data.Map.Strict                as M
 import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
-import qualified EvoMod.Data.Alphabet.Character as C
-import           EvoMod.Tools.ByteString        (c2w)
+import qualified EvoMod.Data.Character.Character as C
+import           EvoMod.Tools.ByteString        (c2w, w2c)
 
 -- | Extended nucleotides.
 data NucleotideX = A | C | G | T
                  | N | Gap
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
-toWordM :: M.Map NucleotideX Word8
-toWordM = M.fromList $ map (\(k, v) -> (k, c2w v))
-  [ (A, 'A')
-  , (C, 'C')
-  , (G, 'G')
-  , (T, 'T')
-  , (N, 'N')
-  , (Gap, '-')
-  ]
-
 toWord :: NucleotideX -> Word8
-toWord = (M.!) toWordM
-
-fromWordM :: M.Map Word8 NucleotideX
-fromWordM = M.fromList $ map (\(k, v) -> (c2w k, v))
-  [ ('A', A)
-  , ('C', C)
-  , ('G', G)
-  , ('T', T)
-  , ('N', N)
-  , ('-', Gap)
-  , ('.', Gap)                  -- Support dot gap character.
-  ]
+toWord A   = c2w 'A'
+toWord C   = c2w 'C'
+toWord G   = c2w 'G'
+toWord T   = c2w 'T'
+toWord N   = c2w 'N'
+toWord Gap = c2w  '-'
 
 fromWord :: Word8 -> NucleotideX
-fromWord = (M.!) fromWordM
+fromWord w = case w2c w of
+               'A' ->   A
+               'C' ->   C
+               'G' ->   G
+               'T' ->   T
+               'N' ->   N
+               '-' ->   Gap
+               '.' ->   Gap
+               _   -> error "fromWord: cannot convert to NucleotideX."
 
 derivingUnbox "NucleotideX"
     [t| NucleotideX -> Word8 |]
@@ -84,7 +75,6 @@ derivingUnbox "NucleotideX"
 instance C.Character NucleotideX where
   toWord   = toWord
   fromWord = fromWord
-  code     = C.DNAX
 
 instance C.CharacterX NucleotideX where
   gap        = Gap

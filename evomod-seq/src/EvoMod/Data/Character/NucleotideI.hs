@@ -51,12 +51,11 @@ module EvoMod.Data.Alphabet.NucleotideI
   ( NucleotideI (..)
   ) where
 
-import qualified Data.Map.Strict                as M
 import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
-import qualified EvoMod.Data.Alphabet.Character as C
-import           EvoMod.Tools.ByteString        (c2w)
+import qualified EvoMod.Data.Character.Character as C
+import           EvoMod.Tools.ByteString        (c2w, w2c)
 
 -- | NucleotideIs.
 data NucleotideI = A | C | G | T
@@ -65,54 +64,50 @@ data NucleotideI = A | C | G | T
                  | Gap
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
-toWordM :: M.Map NucleotideI Word8
-toWordM = M.fromList $ map (\(k, v) -> (k, c2w v))
-  [ (A, 'A')
-  , (C, 'C')
-  , (G, 'G')
-  , (T, 'T')
-  , (U, 'U')
-  , (W, 'W')
-  , (S, 'S')
-  , (M, 'M')
-  , (K, 'K')
-  , (R, 'R')
-  , (Y, 'Y')
-  , (B, 'B')
-  , (D, 'D')
-  , (H, 'H')
-  , (V, 'V')
-  , (N, 'N')
-  , (Gap, '-')
-  ]
-
+-- See https://stackoverflow.com/a/31527024; apparently, pattern matching (and
+-- case statements) are fast because they are compiled to lookup tables. Hence,
+-- they are faster than guards (because equality has to be checked), and faster
+-- than lookups with sets.
 toWord :: NucleotideI -> Word8
-toWord = (M.!) toWordM
-
-fromWordM :: M.Map Word8 NucleotideI
-fromWordM = M.fromList $ map (\(k, v) -> (c2w k, v))
-  [ ('A', A)
-  , ('C', C)
-  , ('G', G)
-  , ('T', T)
-  , ('U', U)
-  , ('W', W)
-  , ('S', S)
-  , ('M', M)
-  , ('K', K)
-  , ('R', R)
-  , ('Y', Y)
-  , ('B', B)
-  , ('D', D)
-  , ('H', H)
-  , ('V', V)
-  , ('N', N)
-  , ('-', Gap)
-  , ('.', Gap)
-  ]
+toWord A   = c2w 'A'
+toWord C   = c2w 'C'
+toWord G   = c2w 'G'
+toWord T   = c2w 'T'
+toWord U   = c2w 'U'
+toWord W   = c2w 'W'
+toWord S   = c2w 'S'
+toWord M   = c2w 'M'
+toWord K   = c2w 'K'
+toWord R   = c2w 'R'
+toWord Y   = c2w 'Y'
+toWord B   = c2w 'B'
+toWord D   = c2w 'D'
+toWord H   = c2w 'H'
+toWord V   = c2w 'V'
+toWord N   = c2w 'N'
+toWord Gap = c2w '-'
 
 fromWord :: Word8 -> NucleotideI
-fromWord = (M.!) fromWordM
+fromWord w = case w2c w of
+               'A' ->  A
+               'C' ->  C
+               'G' ->  G
+               'T' ->  T
+               'U' ->  U
+               'W' ->  W
+               'S' ->  S
+               'M' ->  M
+               'K' ->  K
+               'R' ->  R
+               'Y' ->  Y
+               'B' ->  B
+               'D' ->  D
+               'H' ->  H
+               'V' ->  V
+               'N' ->  N
+               '-' ->  Gap
+               '.' ->  Gap
+               _   -> error "fromWord: cannot convert to NucleotideI."
 
 derivingUnbox "NucleotideI"
     [t| NucleotideI -> Word8 |]
@@ -122,34 +117,29 @@ derivingUnbox "NucleotideI"
 instance C.Character NucleotideI where
   toWord   = toWord
   fromWord = fromWord
-  code     = C.DNAI
 
-toStandardM :: M.Map NucleotideI [NucleotideI]
-toStandardM = M.fromList
-  [
-    (A, [A])
-  , (C, [C])
-  , (G, [G])
-  , (T, [T])
-  , (U, [T])
-  , (W, [A, T])
-  , (S, [G, C])
-  , (M, [A, C])
-  , (K, [G, T])
-  , (R, [A, G])
-  , (Y, [C, T])
-  , (B, [C, G, T])
-  , (D, [A, G, T])
-  , (H, [A, C, T])
-  , (V, [A, C, G])
-  , (N, [A, C, G, T])
-  , (Gap, [])
-  ]
+toStandard :: NucleotideI -> [NucleotideI]
+toStandard A = [A]
+toStandard C = [C]
+toStandard G = [G]
+toStandard T = [T]
+toStandard U = [T]
+toStandard W = [A, T]
+toStandard S = [G, C]
+toStandard M = [A, C]
+toStandard K = [G, T]
+toStandard R = [A, G]
+toStandard Y = [C, T]
+toStandard B = [C, G, T]
+toStandard D = [A, G, T]
+toStandard H = [A, C, T]
+toStandard V = [A, C, G]
+toStandard N = [A, C, G, T]
+toStandard Gap = []
 
 instance C.CharacterX NucleotideI where
   gap        = Gap
 
 instance C.CharacterI NucleotideI where
-  -- XXX: Should the gap be in here?
-  iupac = [U, W, S, N, K, R, Y, B, D, H, V, N, Gap]
-  toStandard = (M.!) toStandardM
+  iupac = [U, W, S, N, K, R, Y, B, D, H, V, N]
+  toStandard = toStandard

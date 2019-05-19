@@ -61,12 +61,11 @@ module EvoMod.Data.Alphabet.AminoAcidI
   ( AminoAcidI (..)
   ) where
 
-import qualified Data.Map.Strict                as M
 import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
-import qualified EvoMod.Data.Alphabet.Character as C
-import           EvoMod.Tools.ByteString        (c2w)
+import qualified EvoMod.Data.Character.Character as C
+import           EvoMod.Tools.ByteString         (c2w, w2c)
 
 -- | Amino acids.
 data AminoAcidI = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
@@ -75,39 +74,6 @@ data AminoAcidI = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S 
                 | Stop
                 | Gap
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
-
--- toWordM :: M.Map AminoAcidI Word8
--- toWordM = M.fromList $ map (\(k, v) -> (k, c2w v))
---   [ (A,    'A')
---   , (C,    'C')
---   , (D,    'D')
---   , (E,    'E')
---   , (F,    'F')
---   , (G,    'G')
---   , (H,    'H')
---   , (I,    'I')
---   , (K,    'K')
---   , (L,    'L')
---   , (M,    'M')
---   , (N,    'N')
---   , (P,    'P')
---   , (Q,    'Q')
---   , (R,    'R')
---   , (S,    'S')
---   , (T,    'T')
---   , (V,    'V')
---   , (W,    'W')
---   , (Y,    'Y')
---   , (J,    'J')
---   , (B,    'B')
---   , (Z,    'Z')
---   , (X,    'X')
---   , (Stop, '*')
---   , (Gap,  '-')
---   ]
-
--- toWord :: AminoAcidI -> Word8
--- toWord = (M.!) toWordM
 
 toWord :: AminoAcidI -> Word8
 toWord A    = c2w 'A'
@@ -137,69 +103,36 @@ toWord X    = c2w 'X'
 toWord Stop = c2w '*'
 toWord Gap  = c2w '-'
 
--- fromWordM :: M.Map Word8 AminoAcidI
--- fromWordM = M.fromList $ map (\(k, v) -> (c2w k, v))
---   [ ('A', A)
---   , ('C', C)
---   , ('D', D)
---   , ('E', E)
---   , ('F', F)
---   , ('G', G)
---   , ('H', H)
---   , ('I', I)
---   , ('K', K)
---   , ('L', L)
---   , ('M', M)
---   , ('N', N)
---   , ('P', P)
---   , ('Q', Q)
---   , ('R', R)
---   , ('S', S)
---   , ('T', T)
---   , ('V', V)
---   , ('W', W)
---   , ('Y', Y)
---   , ('J', J)
---   , ('B', B)
---   , ('Z', Z)
---   , ('X', X)
---   , ('*', Stop)
---   , ('-', Gap)
---   , ('.', Gap)                  -- Support dot gap character.
---   ]
-
--- fromWord :: Word8 -> AminoAcidI
--- fromWord = (M.!) fromWordM
-
 fromWord :: Word8 -> AminoAcidI
-fromWord w | w == c2w 'A' = A
-           | w == c2w 'C' = C
-           | w == c2w 'D' = D
-           | w == c2w 'E' = E
-           | w == c2w 'F' = F
-           | w == c2w 'G' = G
-           | w == c2w 'H' = H
-           | w == c2w 'I' = I
-           | w == c2w 'K' = K
-           | w == c2w 'L' = L
-           | w == c2w 'M' = M
-           | w == c2w 'N' = N
-           | w == c2w 'P' = P
-           | w == c2w 'Q' = Q
-           | w == c2w 'R' = R
-           | w == c2w 'S' = S
-           | w == c2w 'T' = T
-           | w == c2w 'V' = V
-           | w == c2w 'W' = W
-           | w == c2w 'Y' = Y
-           | w == c2w 'J' = J
-           | w == c2w 'B' = B
-           | w == c2w 'Z' = Z
-           | w == c2w 'X' = X
-           | w == c2w '*' = S
-           | w == c2w '-' = Gap
-           | w == c2w '.' = Gap
-           | otherwise = error "fromWord: cannot convert Word8 to AminoAcidI"
+fromWord w = case w2c w of
+               'A' -> A
+               'C' -> C
+               'D' -> D
+               'E' -> E
+               'F' -> F
+               'G' -> G
+               'H' -> H
+               'I' -> I
+               'K' -> K
+               'L' -> L
+               'M' -> M
+               'N' -> N
+               'P' -> P
+               'Q' -> Q
+               'R' -> R
+               'S' -> S
+               'T' -> T
+               'V' -> V
+               'W' -> W
+               'Y' -> Y
+               'J' -> J
+               'B' -> B
+               'Z' -> Z
+               'X' -> X
+               '*' -> Stop
+               '-' -> Gap
+               '.' -> Gap
+               _   -> error "fromWord: cannot convert Word8 to AminoAcidI"
 
 derivingUnbox "AminoAcidI"
     [t| AminoAcidI -> Word8 |]
@@ -209,41 +142,38 @@ derivingUnbox "AminoAcidI"
 instance C.Character AminoAcidI where
   toWord   = toWord
   fromWord = fromWord
-  code     = C.ProteinI
 
 instance C.CharacterX AminoAcidI where
-  gap        = Gap
+  gap = Gap
 
-toStandardM :: M.Map AminoAcidI [AminoAcidI]
-toStandardM = M.fromList
-  [ (A, [A])
-  , (C, [C])
-  , (D, [D])
-  , (E, [E])
-  , (F, [F])
-  , (G, [G])
-  , (H, [H])
-  , (I, [I])
-  , (K, [K])
-  , (L, [L])
-  , (M, [M])
-  , (N, [N])
-  , (P, [P])
-  , (Q, [Q])
-  , (R, [R])
-  , (S, [S])
-  , (T, [T])
-  , (V, [V])
-  , (W, [W])
-  , (Y, [Y])
-  , (J, [L, I])
-  , (B, [D, N])
-  , (Z, [E, Q])
-  , (X, [A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y])
-  , (Gap, [])
-  ]
+toStandard :: AminoAcidI -> [AminoAcidI]
+toStandard A    = [A]
+toStandard C    = [C]
+toStandard D    = [D]
+toStandard E    = [E]
+toStandard F    = [F]
+toStandard G    = [G]
+toStandard H    = [H]
+toStandard I    = [I]
+toStandard K    = [K]
+toStandard L    = [L]
+toStandard M    = [M]
+toStandard N    = [N]
+toStandard P    = [P]
+toStandard Q    = [Q]
+toStandard R    = [R]
+toStandard S    = [S]
+toStandard T    = [T]
+toStandard V    = [V]
+toStandard W    = [W]
+toStandard Y    = [Y]
+toStandard J    = [L, I]
+toStandard B    = [D, N]
+toStandard Z    = [E, Q]
+toStandard X    = [A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y]
+toStandard Stop = []
+toStandard Gap  = []
 
 instance C.CharacterI AminoAcidI where
-  -- XXX: Should the gap be in here?
-  iupac = [J, B, Z, X, Gap]
-  toStandard = (M.!) toStandardM
+  iupac = [J, B, Z, X]
+  toStandard = toStandard
