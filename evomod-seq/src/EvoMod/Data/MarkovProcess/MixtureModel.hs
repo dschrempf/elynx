@@ -12,28 +12,26 @@ Portability :  portable
 
 Creation date: Tue Jan 29 19:17:40 2019.
 
-TODO: Model is meant to be imported qualified. Check this and reduce complexity
-of names in here.
+To be imported qualified.
 
 -}
 
 module EvoMod.Data.MarkovProcess.MixtureModel
   ( Weight
   , Component (Component)
-  , summarizeMixtureModelComponent
+  , summarizeComponent
   , MixtureModel (MixtureModel)
-  -- TODO. No documentation.
   , name
   , fromSubstitutionModels
-  , concatenateMixtureModels
-  , summarizeMixtureModel
-  , isValidMixtureModel
-  , getCodeMixtureModel
+  , concatenate
+  , summarize
+  , isValid
+  , getAlphabet
   , getWeights
   , getSubstitutionModels
-  , scaleMixtureModel
-  , normalizeMixtureModel
-  , appendNameMixtureModel
+  , scale
+  , normalize
+  , appendName
   ) where
 
 import           Control.Lens
@@ -57,10 +55,10 @@ data Component = Component
 makeLenses ''Component
 
 -- | Summarize a mixture model component; lines to be printed to screen or log.
-summarizeMixtureModelComponent :: Component -> [L.ByteString]
-summarizeMixtureModelComponent mmc =
+summarizeComponent :: Component -> [L.ByteString]
+summarizeComponent mmc =
   L.pack "Weight: " <> (L.toLazyByteString . L.doubleDec $ mmc ^. weight)
-  : S.summarizeSubstitutionModel (mmc ^. substModel)
+  : S.summarize (mmc ^. substModel)
 
 -- | A mixture model with its components.
 data MixtureModel = MixtureModel
@@ -77,14 +75,14 @@ fromSubstitutionModels n ws sms = MixtureModel n comps
   where comps = zipWith Component ws sms
 
 -- | Concatenate mixture models.
-concatenateMixtureModels :: S.Name -> [MixtureModel] -> MixtureModel
-concatenateMixtureModels n mms = MixtureModel n $ concatMap (view components) mms
+concatenate :: S.Name -> [MixtureModel] -> MixtureModel
+concatenate n mms = MixtureModel n $ concatMap (view components) mms
 
 -- | Summarize a mixture model; lines to be printed to screen or log.
-summarizeMixtureModel :: MixtureModel -> [L.ByteString]
-summarizeMixtureModel mm =
+summarize :: MixtureModel -> [L.ByteString]
+summarize mm =
   L.pack ("Mixture model: " ++ mm ^. name ++ ".")
-  : concat [ L.pack ("Component " ++ show i ++ ":") : summarizeMixtureModelComponent c
+  : concat [ L.pack ("Component " ++ show i ++ ":") : summarizeComponent c
             | (i, c) <- zip [1 :: Int ..] (mm ^. components) ]
 
 -- | Checks if a mixture model is valid.
@@ -93,17 +91,17 @@ summarizeMixtureModel mm =
 -- interest. For example, not exporting the constructor nor the record fields
 -- and providing an algebraic way of creating mixture models (empty and
 -- addComponent which performs necessary checks).
-isValidMixtureModel :: MixtureModel -> Bool
-isValidMixtureModel mm = not (null $ mm ^. components)
-                         && allEqual codes
-  where codes = mm ^.. components . traverse . substModel . S.code
+isValid :: MixtureModel -> Bool
+isValid mm = not (null $ mm ^. components)
+                         && allEqual alphabets
+  where alphabets = mm ^.. components . traverse . substModel . S.alphabet
 
--- | Get code used with mixture model. Throws error if components use different
--- 'Code's.
-getCodeMixtureModel :: MixtureModel -> AlphabetName
-getCodeMixtureModel mm = if isValidMixtureModel mm
-            -- then S.code . substModel $ head (components mm)
-            then head $ mm ^.. components . traverse . substModel . S.code
+-- | Get alphabet used with mixture model. Throws error if components use different
+-- 'Alphabet's.
+getAlphabet :: MixtureModel -> Alphabet
+getAlphabet mm = if isValid mm
+            -- then S.alphabet . substModel $ head (components mm)
+            then head $ mm ^.. components . traverse . substModel . S.alphabet
             else error "Mixture model is invalid."
 
 -- | Get weights.
@@ -115,17 +113,17 @@ getSubstitutionModels :: MixtureModel -> [S.SubstitutionModel]
 getSubstitutionModels m = m ^.. components . traverse . substModel
 
 -- | Scale all substitution models of the mixture model.
-scaleMixtureModel :: Double -> MixtureModel -> MixtureModel
-scaleMixtureModel s = over (components . traverse . substModel) (S.scaleSubstitutionModel s)
+scale :: Double -> MixtureModel -> MixtureModel
+scale s = over (components . traverse . substModel) (S.scale s)
 
 -- | Globally normalize a mixture model so that on average one event happens per
 -- unit time.
-normalizeMixtureModel :: MixtureModel -> MixtureModel
-normalizeMixtureModel mm = scaleMixtureModel (1/c) mm
+normalize :: MixtureModel -> MixtureModel
+normalize mm = scale (1/c) mm
   where c = sum $ zipWith (*) weights scales
         weights = getWeights mm
-        scales  = map S.totalRateSubstitutionModel $ getSubstitutionModels mm
+        scales  = map S.totalRate $ getSubstitutionModels mm
 
 -- | Append byte string to all substitution models of mixture model.
-appendNameMixtureModel :: S.Name -> MixtureModel -> MixtureModel
-appendNameMixtureModel n = over (components . traverse . substModel) (S.appendNameSubstitutionModel n)
+appendName :: S.Name -> MixtureModel -> MixtureModel
+appendName n = over (components . traverse . substModel) (S.appendName n)

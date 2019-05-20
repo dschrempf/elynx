@@ -28,9 +28,8 @@ module EvoMod.Data.Sequence.Sequence
   ( SequenceName
   , SequenceCharacters
   , Sequence (Sequence)
-  -- TODO: No documentation for lenses.
   , name
-  , alphName
+  , alphabet
   , characters
   -- * Input
   , toCharacters
@@ -77,7 +76,7 @@ type SequenceCharacters = V.Vector Character
 
 -- | Sequences have a name, a code and hopefully a lot of data.
 data Sequence = Sequence { _name       :: SequenceName
-                         , _alphName   :: A.AlphabetName
+                         , _alphabet   :: A.Alphabet
                          , _characters :: SequenceCharacters }
   deriving (Eq)
 
@@ -93,7 +92,7 @@ fromCharacters = L.pack . map toChar . V.toList
 
 showInfo :: Sequence -> L.ByteString
 showInfo s = L.unwords [ alignLeft defSequenceNameWidth (s^.name)
-                       , alignRight defFieldWidth (L.pack $ show $ s^.alphName)
+                       , alignRight defFieldWidth (L.pack $ show $ s^.alphabet)
                        , alignRight defFieldWidth (L.pack . show $ len)
                        , alignRight defFieldWidth (L.pack $ P.printf "%.3f" pGaps) ]
   where len = lengthSequence s
@@ -162,7 +161,7 @@ longest = maximumBy (comparing lengthSequence)
 
 -- | Count number of gaps or unknown characters in sequence.
 countGaps :: Sequence -> Int
-countGaps s = V.length . V.filter (A.isGap (s^.alphName)) $ s^.characters
+countGaps s = V.length . V.filter (A.isGap (s^.alphabet)) $ s^.characters
 
 -- | Trim to given length.
 trimSequence :: Int -> Sequence -> Sequence

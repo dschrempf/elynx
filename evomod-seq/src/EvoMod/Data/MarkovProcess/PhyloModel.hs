@@ -14,12 +14,14 @@ A phylogenetic model is a complete description of the evolutionary process. At
 the moment, it is either a mixture model or a plain substitution model, but more
 complicated models may be added in the future.
 
+To be imported qualified.
+
 -}
 
 module EvoMod.Data.MarkovProcess.PhyloModel
   ( PhyloModel (..)
-  , pmCode
-  , pmSummarize
+  , getAlphabet
+  , summarize
   ) where
 
 import           Control.Lens
@@ -31,15 +33,15 @@ import qualified EvoMod.Data.MarkovProcess.SubstitutionModel as S
 
 -- | A phylogenetic model is a mixture model or a substitution model. More
 -- complicated models may be added.
-data PhyloModel = PhyloMixtureModel M.MixtureModel | PhyloSubstitutionModel S.SubstitutionModel
+data PhyloModel = MixtureModel M.MixtureModel | SubstitutionModel S.SubstitutionModel
   deriving (Show, Read)
 
 -- | Extract code from phylogenetic model.
-pmCode :: PhyloModel -> AlphabetName
-pmCode (PhyloMixtureModel mm)      = M.getCodeMixtureModel mm
-pmCode (PhyloSubstitutionModel sm) = sm ^. S.code
+getAlphabet :: PhyloModel -> Alphabet
+getAlphabet (MixtureModel mm)      = M.getAlphabet mm
+getAlphabet (SubstitutionModel sm) = sm ^. S.alphabet
 
 -- | Summarize a phylogenetic model; lines to be printed to screen or log.
-pmSummarize :: PhyloModel -> [L.ByteString]
-pmSummarize (PhyloMixtureModel mm)      = M.summarizeMixtureModel mm
-pmSummarize (PhyloSubstitutionModel sm) = S.summarizeSubstitutionModel sm
+summarize :: PhyloModel -> [L.ByteString]
+summarize (MixtureModel mm)      = M.summarize mm
+summarize (SubstitutionModel sm) = S.summarize sm

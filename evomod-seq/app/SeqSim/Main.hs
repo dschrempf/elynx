@@ -33,13 +33,10 @@ import           System.Random.MWC
 import           OptionsSeqSim
 import           ParsePhyloModel
 
-import           EvoMod.Data.Alphabet.Alphabet
--- import           EvoMod.Data.Alphabet.Character
--- import           EvoMod.Data.Alphabet.Nucleotide
--- import           EvoMod.Data.Alphabet.AminoAcid
+import           EvoMod.Data.Alphabet.Alphabet                    as A
 import           EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
 import qualified EvoMod.Data.MarkovProcess.MixtureModel           as M
-import           EvoMod.Data.MarkovProcess.PhyloModel
+import qualified EvoMod.Data.MarkovProcess.PhyloModel             as P
 import qualified EvoMod.Data.MarkovProcess.SubstitutionModel      as S
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence                    hiding (name)
@@ -60,30 +57,30 @@ import           EvoMod.Tools.Options
 -- Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
 simulateMSA :: (Measurable a, Named a)
-            => PhyloModel -> Tree a -> Int -> GenIO
+            => P.PhyloModel -> Tree a -> Int -> GenIO
             -> IO MultiSequenceAlignment
 simulateMSA pm t n g = do
   c  <- getNumCapabilities
   gs <- splitGen c g
   let chunks = getChunks c n
   leafStatesS <- case pm of
-    PhyloSubstitutionModel sm -> mapConcurrently
+    P.SubstitutionModel sm -> mapConcurrently
       (\(num, gen) -> simulateAndFlattenNSitesAlongTree num d e t gen) (zip chunks gs)
-      where d = sm ^. S.smStationaryDistribution
-            e = sm ^. S.smExchangeabilityMatrix
-    PhyloMixtureModel mm      -> mapConcurrently
+      where d = sm ^. S.stationaryDistribution
+            e = sm ^. S.exchangeabilityMatrix
+    P.MixtureModel mm      -> mapConcurrently
       (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws ds es t gen) (zip chunks gs)
       where
         ws = vector $ M.getWeights mm
-        ds = map (view S.smStationaryDistribution) $ M.getSubstitutionModels mm
-        es = map (view S.smExchangeabilityMatrix) $ M.getSubstitutionModels mm
+        ds = map (view S.stationaryDistribution) $ M.getSubstitutionModels mm
+        es = map (view S.exchangeabilityMatrix) $ M.getSubstitutionModels mm
   -- XXX: The horizontal concatenation might be slow. If so, 'concatenateSeqs'
   -- or 'concatenateMSAs' can be used, which directly appends vectors.
   let leafStates = horizontalConcat leafStatesS
       leafNames  = map name $ leaves t
-      code       = pmCode pm
+      code       = P.getAlphabet pm
       -- TODO: Probably use type safe stuff here?
-      alph       = allCs $ alphabetSpec code
+      alph       = A.all $ alphabetSpec code
       sequences  = [ Sequence sName code (V.fromList $ map (`Set.elemAt` alph) ss) |
                     (sName, ss) <- zip leafNames leafStates ]
   return $ fromSequenceList sequences
@@ -103,7 +100,7 @@ instance Logger Params where
   verbosity = argsVerbosity . arguments
   mHandle   = mLogHandle
 
-reportModel :: PhyloModel -> Simulation ()
+reportModel :: P.PhyloModel -> Simulation ()
 reportModel m = do
   args <- arguments <$> ask
   let fnOut = argsOutFileBaseName args
@@ -142,10 +139,10 @@ simulate = do
   let maybeGammaParams = argsMaybeGammaParams args
   phyloModel <- case maybeGammaParams of
     Nothing         -> do
-      logLBS $ LC.unlines $ pmSummarize phyloModel'
+      logLBS $ LC.unlines $ P.summarize phyloModel'
       return phyloModel'
     Just (n, alpha) -> do
-      logLBS $ LC.unlines $ pmSummarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
+      logLBS $ LC.unlines $ P.summarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
       return $ expand n alpha phyloModel'
   reportModel phyloModel
 

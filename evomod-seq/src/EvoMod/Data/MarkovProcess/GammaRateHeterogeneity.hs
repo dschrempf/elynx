@@ -29,7 +29,7 @@ import           Statistics.Distribution
 import           Statistics.Distribution.Gamma
 
 import qualified EvoMod.Data.MarkovProcess.MixtureModel      as M
-import           EvoMod.Data.MarkovProcess.PhyloModel
+import qualified EvoMod.Data.MarkovProcess.PhyloModel        as P
 import qualified EvoMod.Data.MarkovProcess.SubstitutionModel as S
 
 -- | Short summary of gamma rate heterogeneity parameters.
@@ -42,11 +42,11 @@ summarizeGammaRateHeterogeneity n alpha = map L.pack
 -- | For a given number of rate categories, a gamma shape parameter alpha and a
 -- substitution model, compute the scaled substitution models corresponding to
 -- the gamma rates.
-expand :: Int -> Double -> PhyloModel -> PhyloModel
-expand n alpha (PhyloSubstitutionModel sm)
-  = PhyloMixtureModel $ expandSubstitutionModel n alpha sm
-expand n alpha (PhyloMixtureModel mm)
-  = PhyloMixtureModel $ expandMixtureModel n alpha mm
+expand :: Int -> Double -> P.PhyloModel -> P.PhyloModel
+expand n alpha (P.SubstitutionModel sm)
+  = P.MixtureModel $ expandSubstitutionModel n alpha sm
+expand n alpha (P.MixtureModel mm)
+  = P.MixtureModel $ expandMixtureModel n alpha mm
 
 getName :: Int -> Double -> String
 getName n alpha = " with discrete gamma rate heterogeneity; "
@@ -57,9 +57,9 @@ splitSubstitutionModel :: Int -> Double -> S.SubstitutionModel -> [S.Substitutio
 splitSubstitutionModel n alpha sm = renamedSMs
   where
     means = getMeans n alpha
-    scaledSMs = map (`S.scaleSubstitutionModel` sm) means
+    scaledSMs = map (`S.scale` sm) means
     names = map (("; gamma rate category " ++) . show) [1 :: Int ..]
-    renamedSMs = zipWith S.appendNameSubstitutionModel names scaledSMs
+    renamedSMs = zipWith S.appendName names scaledSMs
 
 expandSubstitutionModel :: Int -> Double -> S.SubstitutionModel -> M.MixtureModel
 expandSubstitutionModel n alpha sm = M.fromSubstitutionModels name (repeat 1.0) sms
@@ -68,13 +68,13 @@ expandSubstitutionModel n alpha sm = M.fromSubstitutionModels name (repeat 1.0) 
     sms  = splitSubstitutionModel n alpha sm
 
 expandMixtureModel :: Int -> Double -> M.MixtureModel -> M.MixtureModel
-expandMixtureModel n alpha mm = M.concatenateMixtureModels name renamedMMs
+expandMixtureModel n alpha mm = M.concatenate name renamedMMs
   where
     name = mm ^. M.name <> getName n alpha
     means = getMeans n alpha
-    scaledMMs = map (`M.scaleMixtureModel` mm) means
+    scaledMMs = map (`M.scale` mm) means
     names = map (("; gamma rate category " ++) . show) [1 :: Int ..]
-    renamedMMs = zipWith M.appendNameMixtureModel names scaledMMs
+    renamedMMs = zipWith M.appendName names scaledMMs
 
 -- For a given number of rate categories 'n' and a shape parameter 'alpha' (the
 -- rate or scale is set such that the mean is 1.0), return a list of rates that

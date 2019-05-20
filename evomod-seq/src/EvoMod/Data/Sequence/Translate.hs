@@ -17,15 +17,16 @@ module EvoMod.Data.Sequence.Translate
   )
 where
 
-import qualified Data.Map                          as M
-import qualified Data.Vector.Unboxed               as V
+import qualified Data.Map                       as M
+import qualified Data.Vector.Unboxed            as V
 
 import           EvoMod.Data.Alphabet.Alphabet
-import qualified EvoMod.Data.Alphabet.Character    as C
+import qualified EvoMod.Data.Alphabet.Character as C
 import           EvoMod.Data.Character.Codon
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Tools.Vector
 
+-- | Translate a sequence from 'DNA' or 'DNAX' to 'ProteinS'.
 translate :: UniversalCode -> Int -> Sequence -> Sequence
 translate uc rf (Sequence n a cs) = case a of
                                       DNA  -> Sequence n ProteinS (cs' universalCode)

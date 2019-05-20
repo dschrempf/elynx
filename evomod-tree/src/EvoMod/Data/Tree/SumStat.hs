@@ -23,11 +23,6 @@ import qualified Data.ByteString.Builder         as L
 import qualified Data.ByteString.Lazy.Char8      as L
 import           Data.Monoid                     ((<>))
 import           Data.Tree
--- import qualified Data.Text                        as T
--- import qualified Data.Text.Lazy                   as T (toStrict)
--- import qualified Data.Text.Lazy.Builder           as B
--- import qualified Data.Text.Lazy.Builder.Int       as B
--- import qualified Data.Text.Lazy.Builder.RealFloat as B
 import           EvoMod.Data.Tree.MeasurableTree
 
 -- This may be too specific, but I only change it if necessary. E.g., use types

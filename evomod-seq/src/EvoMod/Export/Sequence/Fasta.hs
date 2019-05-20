@@ -22,7 +22,7 @@ module EvoMod.Export.Sequence.Fasta
   ) where
 
 import           Control.Lens
-import qualified Data.ByteString.Lazy.Char8     as L
+import qualified Data.ByteString.Lazy.Char8    as L
 
 import           EvoMod.Data.Sequence.Sequence
 
@@ -33,8 +33,7 @@ fastaHeader i = L.singleton '>' <> i
 sequenceToFasta :: Sequence -> L.ByteString
 sequenceToFasta s = L.unlines [ fastaHeader $ s^.name , fromCharacters $ s^.characters ]
 
--- XXX: Remove newline between sequences.
 -- | Convert a list 'Sequence's to Fasta format. A newline is added between any
 -- two 'Sequence's.
 sequencesToFasta :: [Sequence] -> L.ByteString
-sequencesToFasta ss = L.unlines $ map sequenceToFasta ss
+sequencesToFasta ss = L.concat $ map sequenceToFasta ss

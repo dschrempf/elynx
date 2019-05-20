@@ -40,7 +40,7 @@ data Command = Examine { perSite :: Bool }
 
 data Args = Args
   {
-    argsCode                 :: AlphabetName
+    argsCode                 :: Alphabet
   , argsMaybeOutFileBaseName :: Maybe FilePath
   , argsVerbosity            :: Verbosity
   , argsCommand              :: Command
@@ -146,7 +146,7 @@ universalCodeOpt = option auto $
         codeWords = map show codes
         codeStr = intercalate ", " codeWords
 
-alphabetOpt :: Parser AlphabetName
+alphabetOpt :: Parser Alphabet
 alphabetOpt = option auto $
   long "alphabet"
   <> short 'a'
@@ -167,4 +167,4 @@ ftr = [ "File formats:" ] ++ fs ++
   where
     toListItem = ("  - " ++)
     fs = map toListItem ["FASTA"]
-    as = map (toListItem . alphabetNameVerbose) [(minBound :: AlphabetName) ..]
+    as = map (toListItem . alphabetNameVerbose) [(minBound :: Alphabet) ..]

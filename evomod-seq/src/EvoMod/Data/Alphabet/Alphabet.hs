@@ -13,22 +13,25 @@ Creation date: Fri May 10 11:10:32 2019.
 
 Hierarchy:
 
-TODO. Create own character module.
+1. 'Character' type.
 
-TODO. Rename stuff. AlphabetName ? AlphabetSpec ? allCs ?
+2. Sets of 'Character's form 'Alphabet's; each 'Alphabet' has a specification
+'AlphabetSpec'.
 
-1. 'Character' type class.
+New alphabets have to be added manually in this module.
 
-2. Sets of 'Character's such as nucleotides or amino acids.
-
-3. Alphabets. The different 'Code's are collected in a specific data type. New
-   codes have to be added manually in this module.
+This way of handling characters and alphabets IS NOT TYPE SAFE, but much, much
+faster. A second layer of modules such as 'EvoMod.Data.Character.Nucleotide'
+depend on a 'EvoMod.Data.Character.Character.Character' type class. Hence, they
+provide a type safe way of handling alphabets. Conversion is possible, for
+instance, with 'EvoMod.Data.Alphabet.Character.fromCVec', and
+'EvoMod.Data.Alphabet.Character.toCVec'.
 
 -}
 
 module EvoMod.Data.Alphabet.Alphabet
   (
-    AlphabetName (..)
+    Alphabet (..)
   , AlphabetSpec (..)
   , alphabetSpec
   , alphabetNameVerbose
@@ -40,31 +43,43 @@ module EvoMod.Data.Alphabet.Alphabet
   ) where
 
 import qualified Data.Set                       as S
+import           Prelude                        hiding (all)
 
 import           EvoMod.Data.Alphabet.Character
 
-data AlphabetName = DNA | DNAX | DNAI
-                  | Protein | ProteinX | ProteinS | ProteinI
-                  deriving (Show, Read, Eq, Ord, Enum, Bounded)
+-- | Available alphabets; for details see 'alphabetSpec'.
+data Alphabet = DNA | DNAX | DNAI
+              | Protein | ProteinX | ProteinS | ProteinI
+              deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 -- | Verbose alphabet name.
-alphabetNameVerbose :: AlphabetName -> String
+alphabetNameVerbose :: Alphabet -> String
 alphabetNameVerbose DNA      = "DNA (nucleotides)"
-alphabetNameVerbose DNAX     = "DNAX (nucleotides; extended; including gaps and unknowns)"
-alphabetNameVerbose DNAI     = "DNAI (nucleotides; including IUPAC codes)"
+alphabetNameVerbose DNAX     = "DNAX (nucleotides; including gaps)"
+alphabetNameVerbose DNAI     = "DNAI (nucleotides; including gaps, and IUPAC codes)"
 alphabetNameVerbose Protein  = "Protein (amino acids)"
-alphabetNameVerbose ProteinX = "ProteinX (amino acids; extended; including gaps and unknowns)"
-alphabetNameVerbose ProteinS = "ProteinS (amino acids; including gaps and translation stops)"
-alphabetNameVerbose ProteinI = "ProteinI (amino acids; including IUPAC codes)"
+alphabetNameVerbose ProteinX = "ProteinX (amino acids; including gaps)"
+alphabetNameVerbose ProteinS = "ProteinS (amino acids; including gaps, and translation stops)"
+alphabetNameVerbose ProteinI = "ProteinI (amino acids; including gaps, translation stops, and IUPAC codes)"
 
-data AlphabetSpec = AlphabetSpec { std     :: !(S.Set Character)
-                                 , gap     :: !(S.Set Character)
-                                 , unknown :: !(S.Set Character)
-                                 , iupac   :: !(S.Set Character)
-                                 , allCs   :: !(S.Set Character)
-                                 , toStd   :: Character -> [Character] }
+-- | Alphabet specification. 'S.Set' is used because it provides fast lookups.
+data AlphabetSpec = AlphabetSpec {
+  -- | Standard characters.
+  std       :: !(S.Set Character)
+  -- | Gap characters.
+  , gap     :: !(S.Set Character)
+  -- | Unknown characters.
+  , unknown :: !(S.Set Character)
+  -- | Other IUPAC codes.
+  , iupac   :: !(S.Set Character)
+  -- | All characters in the alphabet.
+  , all     :: !(S.Set Character)
+  -- | Convert from IUPAC to the corresponding standard characters.
+  , toStd   :: Character -> [Character]
+  }
 
-alphabetSpec :: AlphabetName -> AlphabetSpec
+-- | Get the alphabet specification for a given alphabet.
+alphabetSpec :: Alphabet -> AlphabetSpec
 alphabetSpec DNA      = dna
 alphabetSpec DNAX     = dnaX
 alphabetSpec DNAI     = dnaI
@@ -73,23 +88,28 @@ alphabetSpec ProteinX = proteinX
 alphabetSpec ProteinS = proteinS
 alphabetSpec ProteinI = proteinI
 
-isWith :: (AlphabetSpec -> S.Set Character) -> AlphabetName -> Character -> Bool
+isWith :: (AlphabetSpec -> S.Set Character) -> Alphabet -> Character -> Bool
 isWith set alph char = char `S.member` set (alphabetSpec alph)
 
-isStd :: AlphabetName -> Character -> Bool
+-- | Test if standard character.
+isStd :: Alphabet -> Character -> Bool
 isStd = isWith std
 
-isGap :: AlphabetName -> Character -> Bool
+-- | Test if gap.
+isGap :: Alphabet -> Character -> Bool
 isGap = isWith gap
 
-isUnknown :: AlphabetName -> Character -> Bool
+-- | Test if unknown.
+isUnknown :: Alphabet -> Character -> Bool
 isUnknown = isWith unknown
 
-isIUPAC :: AlphabetName -> Character -> Bool
+-- | Test if extended IUPAC character (excluding gaps and unknowns).
+isIUPAC :: Alphabet -> Character -> Bool
 isIUPAC = isWith iupac
 
-isMember :: AlphabetName -> Character -> Bool
-isMember = isWith allCs
+-- | Test if member of alphabet.
+isMember :: Alphabet -> Character -> Bool
+isMember = isWith all
 
 fromChars :: String -> String -> String -> String -> (Char -> String) -> AlphabetSpec
 fromChars st ga un iu to = AlphabetSpec st' ga' un' iu' al (fromString . to . toChar)

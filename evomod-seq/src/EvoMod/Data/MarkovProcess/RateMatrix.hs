@@ -12,6 +12,8 @@ continuous-time discrete-state Markov processes.
 
 * Changelog
 
+To be imported qualified.
+
 -}
 
 module EvoMod.Data.MarkovProcess.RateMatrix

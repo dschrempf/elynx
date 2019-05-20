@@ -67,7 +67,7 @@ import           EvoMod.Tools.Matrix
 -- | A collection of sequences.
 data MultiSequenceAlignment = MultiSequenceAlignment
                               { _names    :: [S.SequenceName]
-                              , _alphName :: A.AlphabetName
+                              , _alphName :: A.Alphabet
                               , _matrix   :: M.Matrix Character
                               }
   deriving (Read, Show, Eq)
@@ -82,14 +82,14 @@ msaLength = M.cols . view matrix
 msaNSequences :: MultiSequenceAlignment -> Int
 msaNSequences = M.rows . view matrix
 
--- | Create 'MultiSequenceAlignment' from a list of 'Sequence's.
+-- | Create 'MultiSequenceAlignment' from a list of 'S.Sequence's.
 fromSequenceList :: [S.Sequence] -> MultiSequenceAlignment
 fromSequenceList ss
-  | S.equalLength ss && allEqual (map (view S.alphName) ss) = MultiSequenceAlignment ns a d
+  | S.equalLength ss && allEqual (map (view S.alphabet) ss) = MultiSequenceAlignment ns a d
   | otherwise = error "Sequences do not have equal length or equal codes."
   where
     ns   = map (view S.name) ss
-    a    = head ss ^. S.alphName
+    a    = head ss ^. S.alphabet
     bss  = map (view S.characters) ss
     d    = M.fromRows bss
 
@@ -104,14 +104,14 @@ msaHeader = L.unwords [ alignLeft defSequenceNameWidth (L.pack "Name")
                       , L.pack "Sequence" ]
 
 -- | Show a 'Sequence', untrimmed.
-showSequenceOfMultiSequenceAlignment :: MultiSequenceAlignment -> Int -> L.ByteString
-showSequenceOfMultiSequenceAlignment m i =
+showSequence :: MultiSequenceAlignment -> Int -> L.ByteString
+showSequence m i =
   L.unwords [ alignLeft defSequenceNameWidth $ (m ^. names) !! i
             , S.fromCharacters $ M.takeRow (m ^. matrix) i ]
 
 -- | Show a 'Sequence', untrimmed.
-summarizeSequenceOfMultiSequenceAlignment :: MultiSequenceAlignment -> Int -> L.ByteString
-summarizeSequenceOfMultiSequenceAlignment m i =
+summarizeSequence :: MultiSequenceAlignment -> Int -> L.ByteString
+summarizeSequence m i =
   L.unwords [ alignLeft defSequenceNameWidth $ (m ^. names) !! i
             , summarizeByteString defSequenceSummaryLength $
               S.fromCharacters $ M.takeRow (m ^. matrix) i ]
@@ -119,7 +119,7 @@ summarizeSequenceOfMultiSequenceAlignment m i =
 -- | Show a 'MultiSequenceAlignment' in text form.
 showMSA :: MultiSequenceAlignment -> L.ByteString
 showMSA msa = L.unlines $ msaHeader :
-  map (showSequenceOfMultiSequenceAlignment msa) [0 .. (msaNSequences msa - 1)]
+  map (showSequence msa) [0 .. (msaNSequences msa - 1)]
 
 summarizeMSAHeader :: MultiSequenceAlignment -> L.ByteString
 summarizeMSAHeader msa = L.unlines $
@@ -136,10 +136,10 @@ summarizeMSAHeader msa = L.unlines $
             show (msaNSequences msa) ++ " sequences are shown."
           | msaNSequences msa > defSequenceListSummaryNumber ]
 
--- | Similar to 'summarizeSequenceList' but with different Header.
+-- | Similar to 'S.summarizeSequenceList' but with different Header.
 summarizeMSA :: MultiSequenceAlignment -> L.ByteString
 summarizeMSA msa = L.unlines $ summarizeMSAHeader msa :
-  map (summarizeSequenceOfMultiSequenceAlignment msa) [0 .. n - 1]
+  map (summarizeSequence msa) [0 .. n - 1]
   where n = min (msaNSequences msa) defSequenceListSummaryNumber
 
 -- | Join two 'MultiSequenceAlignment's vertically. That is, add more sequences

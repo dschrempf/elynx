@@ -60,11 +60,11 @@ module EvoMod.Export.Sequence.CountsFile
   , toCountsFile
   ) where
 
-import qualified Data.ByteString.Lazy.Char8            as L
-import           Data.Maybe                            (fromMaybe)
+import qualified Data.ByteString.Lazy.Char8             as L
+import           Data.Maybe                             (fromMaybe)
 
 import           EvoMod.Data.Character.BoundaryMutation
-import           EvoMod.Tools.ByteString               (alignLeft, alignRight)
+import           EvoMod.Tools.ByteString                (alignLeft, alignRight)
 
 -- | The number of sites that will be printed.
 type NSites = Int

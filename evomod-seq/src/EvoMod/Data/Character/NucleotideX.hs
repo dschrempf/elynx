@@ -41,7 +41,7 @@ import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
 import qualified EvoMod.Data.Character.Character as C
-import           EvoMod.Tools.ByteString        (c2w, w2c)
+import           EvoMod.Tools.ByteString         (c2w, w2c)
 
 -- | Extended nucleotides.
 data NucleotideX = A | C | G | T

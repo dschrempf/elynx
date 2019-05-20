@@ -13,7 +13,7 @@ Creation date: Thu Jan 24 08:33:26 2019.
 XXX: Maybe rename to something like /DNA substitution models/. Nucleotide ~
 Alphabet; DNA ~ Character.
 
-The order of nucleotides is A, C, G, T; see 'EvoMod.Data.Alphabet.Nucleotide'.
+The order of nucleotides is A, C, G, T; see 'EvoMod.Data.Character.Nucleotide'.
 
 -}
 
@@ -24,9 +24,7 @@ module EvoMod.Data.MarkovProcess.Nucleotide
 
 import           Numeric.LinearAlgebra                       hiding (normalize)
 
--- import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.Alphabet.Alphabet
--- import           EvoMod.Data.Alphabet.Nucleotide
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import           EvoMod.Data.MarkovProcess.SubstitutionModel
 import           EvoMod.Tools.Vector

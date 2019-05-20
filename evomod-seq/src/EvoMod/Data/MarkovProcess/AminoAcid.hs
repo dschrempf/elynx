@@ -32,8 +32,6 @@ import           Numeric.LinearAlgebra
 import           Numeric.SpecFunctions
 
 import           EvoMod.Data.Alphabet.Alphabet
--- import           EvoMod.Data.Alphabet.AminoAcid
--- import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import qualified EvoMod.Data.MarkovProcess.SubstitutionModel as S
 import           EvoMod.Tools.ByteString                     (c2w)
@@ -41,9 +39,6 @@ import           EvoMod.Tools.LinearAlgebra
 import           EvoMod.Tools.Vector
 
 n :: Int
--- n = length (alphabet :: [AminoAcid])
--- Hard code this here. Reduces model dependencies, and number of amino acids
--- will not change.
 n = 20
 
 -- Some matrices have to be converted from PAML order to alphabetical order. See
@@ -183,7 +178,7 @@ lgCustom mn d = S.substitutionModel Protein name [] d lgExch
 
 -- | LG substitution model with maybe a name and a custom stationary distribution.
 lgCustomUnnormalized :: Maybe String -> StationaryDistribution -> S.SubstitutionModel
-lgCustomUnnormalized mn d = S.substitutionModelUnnormalized Protein name [] d lgExch
+lgCustomUnnormalized mn d = S.unnormalized Protein name [] d lgExch
   where name = fromMaybe "LG-Custom-Unnormalized" mn
 
 -- WAG exchangeability list in PAML order.
@@ -236,7 +231,7 @@ wagCustom mn d = S.substitutionModel Protein name [] d wagExch
 
 -- | LG substitution model with maybe a name and a custom stationary distribution.
 wagCustomUnnormalized :: Maybe String -> StationaryDistribution -> S.SubstitutionModel
-wagCustomUnnormalized mn d = S.substitutionModelUnnormalized Protein name [] d wagExch
+wagCustomUnnormalized mn d = S.unnormalized Protein name [] d wagExch
   where name = fromMaybe "WAG-Custom-Unnormalized" mn
 
 uniformExch :: ExchangeabilityMatrix

@@ -53,7 +53,7 @@ import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
 import qualified EvoMod.Data.Character.Character as C
-import           EvoMod.Tools.ByteString        (c2w, w2c)
+import           EvoMod.Tools.ByteString         (c2w, w2c)
 
 -- | Amino acids.
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y

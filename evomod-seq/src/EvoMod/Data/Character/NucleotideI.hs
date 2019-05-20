@@ -55,7 +55,7 @@ import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
 import qualified EvoMod.Data.Character.Character as C
-import           EvoMod.Tools.ByteString        (c2w, w2c)
+import           EvoMod.Tools.ByteString         (c2w, w2c)
 
 -- | NucleotideIs.
 data NucleotideI = A | C | G | T
@@ -119,22 +119,22 @@ instance C.Character NucleotideI where
   fromWord = fromWord
 
 toStandard :: NucleotideI -> [NucleotideI]
-toStandard A = [A]
-toStandard C = [C]
-toStandard G = [G]
-toStandard T = [T]
-toStandard U = [T]
-toStandard W = [A, T]
-toStandard S = [G, C]
-toStandard M = [A, C]
-toStandard K = [G, T]
-toStandard R = [A, G]
-toStandard Y = [C, T]
-toStandard B = [C, G, T]
-toStandard D = [A, G, T]
-toStandard H = [A, C, T]
-toStandard V = [A, C, G]
-toStandard N = [A, C, G, T]
+toStandard A   = [A]
+toStandard C   = [C]
+toStandard G   = [G]
+toStandard T   = [T]
+toStandard U   = [T]
+toStandard W   = [A, T]
+toStandard S   = [G, C]
+toStandard M   = [A, C]
+toStandard K   = [G, T]
+toStandard R   = [A, G]
+toStandard Y   = [C, T]
+toStandard B   = [C, G, T]
+toStandard D   = [A, G, T]
+toStandard H   = [A, C, T]
+toStandard V   = [A, C, G]
+toStandard N   = [A, C, G, T]
 toStandard Gap = []
 
 instance C.CharacterX NucleotideI where

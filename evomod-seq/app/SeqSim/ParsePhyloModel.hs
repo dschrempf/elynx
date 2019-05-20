@@ -26,14 +26,11 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
--- import           EvoMod.Data.Alphabet.Alphabet
--- import           EvoMod.Data.Alphabet.Nucleotide
--- import           EvoMod.Data.Alphabet.AminoAcid
 import           EvoMod.Data.MarkovProcess.AminoAcid
 import           EvoMod.Data.MarkovProcess.CXXModels
 import qualified EvoMod.Data.MarkovProcess.MixtureModel         as M
 import           EvoMod.Data.MarkovProcess.Nucleotide
-import           EvoMod.Data.MarkovProcess.PhyloModel
+import qualified EvoMod.Data.MarkovProcess.PhyloModel           as P
 import           EvoMod.Data.MarkovProcess.RateMatrix
 import qualified EvoMod.Data.MarkovProcess.SubstitutionModel    as S
 import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes (EDMComponent)
@@ -175,10 +172,17 @@ mixtureModel (Just cs) mws           = edmModel cs mws
 -- @
 -- getPhyloModel maybeSubstitutionModelString maybeMixtureModelString maybeEDMComponents
 -- @
-getPhyloModel :: Maybe String -> Maybe String -> Maybe [M.Weight] -> Maybe [EDMComponent] -> Either String PhyloModel
-getPhyloModel Nothing Nothing _ _              = Left "No model was given. See help."
-getPhyloModel (Just _) (Just _) _ _            = Left "Both, substitution and mixture model string given; use only one."
-getPhyloModel (Just s) Nothing Nothing Nothing = Right $ PhyloSubstitutionModel $ parseStringWith parseSubstitutionModel s
-getPhyloModel (Just _) Nothing (Just _) _      = Left "Weights given; but cannot be used with substitution model."
-getPhyloModel (Just _) Nothing _ (Just _)      = Left "Empirical distribution mixture model components given; but cannot be used with substitution model."
-getPhyloModel Nothing (Just m) mws mcs         = Right $ PhyloMixtureModel $ parseStringWith (mixtureModel mcs mws) m
+getPhyloModel :: Maybe String -> Maybe String -> Maybe [M.Weight] -> Maybe [EDMComponent]
+              -> Either String P.PhyloModel
+getPhyloModel Nothing Nothing _ _ =
+  Left "No model was given. See help."
+getPhyloModel (Just _) (Just _) _ _ =
+  Left "Both, substitution and mixture model string given; use only one."
+getPhyloModel (Just s) Nothing Nothing Nothing =
+  Right $ P.SubstitutionModel $ parseStringWith parseSubstitutionModel s
+getPhyloModel (Just _) Nothing (Just _) _ =
+  Left "Weights given; but cannot be used with substitution model."
+getPhyloModel (Just _) Nothing _ (Just _) =
+  Left "Empirical distribution mixture model components given; but cannot be used with substitution model."
+getPhyloModel Nothing (Just m) mws mcs =
+  Right $ P.MixtureModel $ parseStringWith (mixtureModel mcs mws) m

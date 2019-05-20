@@ -37,15 +37,7 @@ import           Text.Printf
 
 import           OptionsSeqAna
 
--- import           EvoMod.Data.Alphabet.AminoAcid
--- import           EvoMod.Data.Alphabet.AminoAcidI
--- import           EvoMod.Data.Alphabet.AminoAcidS
--- import           EvoMod.Data.Alphabet.AminoAcidX
 import           EvoMod.Data.Alphabet.Alphabet
--- import           EvoMod.Data.Alphabet.Character
--- import           EvoMod.Data.Alphabet.Nucleotide
--- import           EvoMod.Data.Alphabet.NucleotideI
--- import           EvoMod.Data.Alphabet.NucleotideX
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Data.Sequence.Translate
@@ -180,6 +172,7 @@ translateS = do
   let (Translate rf uc) = argsCommand args
   logS "Translate sequences to amino acids."
   logS $ "Universal code: " ++ show uc ++ "."
+  logS ""
   sss <- readSeqss
   io $ L.intercalate (L.pack "\n") $
     map (sequencesToFasta . map (translate uc rf)) sss
@@ -197,7 +190,7 @@ io res = do
       lift $ withFile fn' WriteMode (`L.hPutStr` res)
       logS $ "Results written to file '" ++ fn' ++ "'."
 
-readSeqs :: AlphabetName -> FilePath -> IO [Sequence]
+readSeqs :: Alphabet -> FilePath -> IO [Sequence]
 readSeqs a = parseFileWith (fasta a)
 
 readSeqss :: Seq [[Sequence]]
