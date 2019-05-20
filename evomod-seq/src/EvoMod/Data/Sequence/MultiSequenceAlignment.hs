@@ -31,8 +31,8 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , msaJoin
   , msaConcatenate
   , msasConcatenate
-  , filterColumnsIUPAC
-  , filterColumnsGaps
+  , filterColumnsOnlyStd
+  , filterColumnsNoGaps
   -- | * Analysis
   , FrequencyData
   , toFrequencyData
@@ -187,12 +187,12 @@ filterColumns p = over matrix (M.fromColumns . filter p . M.toColumns)
 
 -- | Only keep columns with standard characters. Alignment columns with IUPAC
 -- characters are removed.
-filterColumnsIUPAC :: MultiSequenceAlignment -> MultiSequenceAlignment
-filterColumnsIUPAC msa = filterColumns (V.all $ A.isStd (msa^.alphName)) msa
+filterColumnsOnlyStd :: MultiSequenceAlignment -> MultiSequenceAlignment
+filterColumnsOnlyStd msa = filterColumns (V.all $ A.isStd (msa^.alphName)) msa
 
 -- | Only keep columns without gaps or unknown characters.
-filterColumnsGaps :: MultiSequenceAlignment -> MultiSequenceAlignment
-filterColumnsGaps msa = filterColumns (V.all $ A.isGap (msa^.alphName)) msa
+filterColumnsNoGaps :: MultiSequenceAlignment -> MultiSequenceAlignment
+filterColumnsNoGaps msa = filterColumns (V.all $ not . A.isGap (msa^.alphName)) msa
 
 -- | Frequency data; do not store the actual characters, but only their
 -- frequencies.

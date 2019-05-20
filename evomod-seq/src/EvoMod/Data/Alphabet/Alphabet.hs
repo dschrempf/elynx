@@ -56,10 +56,10 @@ alphabetNameVerbose ProteinX = "ProteinX (amino acids; extended; including gaps 
 alphabetNameVerbose ProteinS = "ProteinS (amino acids; including gaps and translation stops)"
 alphabetNameVerbose ProteinI = "ProteinI (amino acids; including IUPAC codes)"
 
-data AlphabetSpec = AlphabetSpec { std    :: S.Set Character
-                                 , gap    :: S.Set Character
-                                 , iupac  :: S.Set Character
-                                 , allCs  :: S.Set Character
+data AlphabetSpec = AlphabetSpec { std    :: !(S.Set Character)
+                                 , gap    :: !(S.Set Character)
+                                 , iupac  :: !(S.Set Character)
+                                 , allCs  :: !(S.Set Character)
                                  , toStd  :: Character -> [Character] }
 
 alphabetSpec :: AlphabetName -> AlphabetSpec
@@ -249,9 +249,9 @@ toStdPI 'W' = "W"
 toStdPI 'Y' = "Y"
 toStdPI '-' = ""
 toStdPI '.' = ""
+toStdPI '*' = ""
 toStdPI 'J' = "LI"
 toStdPI 'B' = "DN"
 toStdPI 'Z' = "EQ"
 toStdPI 'X' = "ACDEFGHIKLMNPQRSTVWY"
-toStdPI '*' = ""
 toStdPI _   = error "toStdPX: cannot convert to standard amino acid."

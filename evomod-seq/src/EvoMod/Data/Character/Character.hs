@@ -59,7 +59,7 @@ fromChar = fromWord . c2w
 toString :: Character a => [a] -> String
 toString = map toChar
 
-  -- | Conversion from 'String'.
+-- | Conversion from 'String'.
 fromString :: Character a => String -> [a]
 fromString = map fromChar
 

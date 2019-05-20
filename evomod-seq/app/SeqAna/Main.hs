@@ -71,16 +71,17 @@ examineMSA perSiteFlag msa =
   L.unlines [ L.pack $ "Total number of columns in alignment: "
               ++ show (msaLength msa)
             , L.pack $ "Number of columns without gaps: "
-              ++ show (msaLength msaFltGaps)
+              ++ show (msaLength msaNoGaps)
             , L.pack $ "Number of columns without extended IUPAC characters: "
-              ++ show (msaLength msaFltIUPAC)
+              ++ show (msaLength msaOnlyStd)
             , L.empty
             , L.pack $ "Total chars: " ++ show nTot
-            , L.pack $ "Standard (i.e., not extended IUPAC) characters: " ++ show (nTot - nNonStd)
+            , L.pack $ "Standard (i.e., not extended IUPAC) characters: "
+              ++ show (nTot - nNonStd - nGaps)
             , L.pack $ "Non-standard (i.e., extended IUPAC) characters: " ++ show nNonStd
             , L.pack $ "Gaps: " ++ show nGaps
             , L.pack $ "Percentage of standard characters: "
-              ++ printf "%.3f" (1.0 - percentageNonStd)
+              ++ printf "%.3f" (1.0 - percentageNonStd - percentageGaps)
             , L.pack $ "Percentage of non-standard characters: "
               ++ printf "%.3f" percentageNonStd
             , L.pack $ "Percentage of gaps: "
@@ -88,11 +89,11 @@ examineMSA perSiteFlag msa =
             , L.empty
             , L.pack "Mean effective number of used states:"
             , L.pack "Across whole alignment: "
-              <> L.pack (show kEffMean)
+              <> L.pack (printf "%.3f" kEffMean)
+            , L.pack "Across columns without gaps: "
+              <> L.pack (show kEffMeanNoGaps)
             , L.pack "Across columns without extended IUPAC characters: "
-              <> L.pack (show kEffMeanFltIUPAC)
-            , L.pack "Across columns without gaps or unknown characters: "
-              <> L.pack (show kEffMeanFltGaps)
+              <> L.pack (printf "%.3f" kEffMeanOnlyStd)
             ]
   <> perSiteBS
   where
@@ -101,14 +102,14 @@ examineMSA perSiteFlag msa =
     nGaps               = countGaps msa
     percentageNonStd    = fromIntegral nNonStd / fromIntegral nTot :: Double
     percentageGaps      = fromIntegral nGaps   / fromIntegral nTot :: Double
-    msaFltGaps          = filterColumnsGaps msa
-    msaFltIUPAC         = filterColumnsIUPAC msaFltGaps
+    msaNoGaps           = filterColumnsNoGaps msa
+    msaOnlyStd          = filterColumnsOnlyStd msaNoGaps
     kEffs               = kEff . toFrequencyData $ msa
-    kEffsFltGaps        = kEff . toFrequencyData $ msaFltGaps
-    kEffsFltIUPAC       = kEff . toFrequencyData $ msaFltIUPAC
+    kEffsNoGaps         = kEff . toFrequencyData $ msaNoGaps
+    kEffsOnlyStd        = kEff . toFrequencyData $ msaOnlyStd
     kEffMean            = sum kEffs / fromIntegral (length kEffs)
-    kEffMeanFltGaps     = sum kEffsFltGaps  / fromIntegral (length kEffsFltGaps)
-    kEffMeanFltIUPAC    = sum kEffsFltIUPAC / fromIntegral (length kEffsFltIUPAC)
+    kEffMeanNoGaps      = sum kEffsNoGaps  / fromIntegral (length kEffsNoGaps)
+    kEffMeanOnlyStd     = sum kEffsOnlyStd / fromIntegral (length kEffsOnlyStd)
     perSiteBS           = if perSiteFlag
                           then L.unlines [ L.pack "Effective number of used states per site:"
                                          , L.pack . show $ kEffs
