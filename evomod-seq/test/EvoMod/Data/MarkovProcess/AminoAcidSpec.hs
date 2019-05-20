@@ -19,18 +19,18 @@ import           Numeric.LinearAlgebra
 import           Test.Hspec
 
 import           EvoMod.Data.MarkovProcess.AminoAcid
-import           EvoMod.Data.MarkovProcess.RateMatrix
-import           EvoMod.Data.MarkovProcess.SubstitutionModel
+import qualified EvoMod.Data.MarkovProcess.RateMatrix        as R
+import qualified EvoMod.Data.MarkovProcess.SubstitutionModel as S
 import           EvoMod.Tools.Equality
 import           EvoMod.Tools.Vector
 
-statDistLGPython :: StationaryDistribution
+statDistLGPython :: R.StationaryDistribution
 statDistLGPython = normalizeSumVec 1.0 $
   fromList [ 0.079066, 0.012937, 0.053052, 0.071586, 0.042302, 0.057337, 0.022355
            , 0.062157, 0.064600, 0.099081, 0.022951, 0.041977, 0.044040, 0.040767
            , 0.055941, 0.061197, 0.053287, 0.069147, 0.012066, 0.034155]
 
-exchLGPython :: ExchangeabilityMatrix
+exchLGPython :: R.ExchangeabilityMatrix
 exchLGPython = fromLists
   [ [ 0.0000000e+00, 2.4890840e+00, 3.9514400e-01, 1.0385450e+00, 2.5370100e-01
     , 2.0660400e+00, 3.5885800e-01, 1.4983000e-01, 5.3651800e-01, 3.9533700e-01
@@ -113,17 +113,17 @@ exchLGPython = fromLists
     , 4.8130600e-01, 6.1202500e-01, 8.9613000e-02, 2.5733600e-01, 3.1444000e-01
     , 4.0054700e-01, 2.4584100e-01, 2.4931300e-01, 3.1518150e+00, 0.0000000e+00]]
 
-statDistUniform :: StationaryDistribution
+statDistUniform :: R.StationaryDistribution
 statDistUniform = vector $ replicate 20 0.05
 
-statDistLG :: StationaryDistribution
-statDistLG = lg ^. smStationaryDistribution
+statDistLG :: R.StationaryDistribution
+statDistLG = lg ^. S.stationaryDistribution
 
-exchLG :: ExchangeabilityMatrix
-exchLG = lg ^. smExchangeabilityMatrix
+exchLG :: R.ExchangeabilityMatrix
+exchLG = lg ^. S.exchangeabilityMatrix
 
-rmLG :: RateMatrix
-rmLG = getRateMatrix lg
+rmLG :: R.RateMatrix
+rmLG = S.getRateMatrix lg
 
 spec :: Spec
 spec = do
@@ -138,18 +138,18 @@ spec = do
 
   describe "lg" $
     it "stationary distribution can be extracted" $
-    nearlyEqVecWith 1e-4 (getStationaryDistribution rmLG) statDistLG `shouldBe` True
+    nearlyEqVecWith 1e-4 (R.getStationaryDistribution rmLG) statDistLG `shouldBe` True
 
   describe "lgCustom" $
     it "stationary distribution can be recovered" $ do
-    let f = getStationaryDistribution $ getRateMatrix $ lgCustom Nothing statDistUniform
+    let f = R.getStationaryDistribution $ S.getRateMatrix $ lgCustom Nothing statDistUniform
     f `nearlyEqVec` statDistUniform `shouldBe` True
 
   describe "poisson" $
     it "stationary distribution is uniform 1/20" $
-    getStationaryDistribution (getRateMatrix poisson) `nearlyEqVec` statDistUniform `shouldBe` True
+    R.getStationaryDistribution (S.getRateMatrix poisson) `nearlyEqVec` statDistUniform `shouldBe` True
 
   describe "poissonCustom" $
     it "stationary distribution can be recovered" $ do
-    let f = getStationaryDistribution $ getRateMatrix $ poissonCustom Nothing statDistLGPython
+    let f = R.getStationaryDistribution $ S.getRateMatrix $ poissonCustom Nothing statDistLGPython
     f `nearlyEqVec` statDistLGPython `shouldBe` True

@@ -20,7 +20,7 @@ import           System.Random.MWC
 import           Test.Hspec
 
 import           EvoMod.Data.MarkovProcess.Nucleotide
-import           EvoMod.Data.MarkovProcess.SubstitutionModel
+import qualified EvoMod.Data.MarkovProcess.SubstitutionModel as S
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Simulate.MarkovProcess
 import           EvoMod.Simulate.MarkovProcessAlongTree
@@ -55,6 +55,6 @@ spec =
       gen <- create
       tr <- simulateNSitesAlongTree 10 d e testTree gen
       (length . rootLabel $ tr) `shouldBe` 10
-        where d = jc ^. smStationaryDistribution
-              e = jc ^. smExchangeabilityMatrix
+        where d = jc ^. S.stationaryDistribution
+              e = jc ^. S.exchangeabilityMatrix
 
