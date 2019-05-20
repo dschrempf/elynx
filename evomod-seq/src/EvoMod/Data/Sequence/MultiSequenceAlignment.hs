@@ -39,6 +39,7 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , kEff
   , countIUPACChars
   , countGaps
+  , countUnknowns
   -- | * Sub sample
   , subSample
   , randomSubSample
@@ -213,9 +214,14 @@ countIUPACChars :: MultiSequenceAlignment -> Int
 countIUPACChars msa = V.length . V.filter (A.isIUPAC (msa^.alphName)) $ allChars
   where allChars = M.flatten $ msa^.matrix
 
--- | Count the number of gaps or unknown characters in the alignment.
+-- | Count the number of gaps in the alignment.
 countGaps :: MultiSequenceAlignment -> Int
 countGaps msa = V.length . V.filter (A.isGap (msa^.alphName)) $ allChars
+  where allChars = M.flatten $ msa^.matrix
+
+-- | Count the number of unknown characters in the alignment.
+countUnknowns :: MultiSequenceAlignment -> Int
+countUnknowns msa = V.length . V.filter (A.isUnknown (msa^.alphName)) $ allChars
   where allChars = M.flatten $ msa^.matrix
 
 -- | Sample the given sites from a multi sequence alignment.

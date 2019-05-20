@@ -25,12 +25,16 @@ module EvoMod.Data.Alphabet.Character
   , fromChar
   , toString
   , fromString
+  , toCVec
+  , fromCVec
   ) where
 
+import qualified Data.Vector.Unboxed             as V
 import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
-import           EvoMod.Tools.ByteString        (c2w, w2c)
+import qualified EvoMod.Data.Character.Character as C
+import           EvoMod.Tools.ByteString         (c2w, w2c)
 
 newtype Character = Character Word8
   deriving (Read, Show, Eq, Ord, Bounded)
@@ -52,6 +56,12 @@ toString = map toChar
 
 fromString :: String -> [Character]
 fromString = map fromChar
+
+toCVec :: C.Character a => V.Vector Character -> V.Vector a
+toCVec = V.map (C.fromWord . toWord)
+
+fromCVec :: C.Character a => V.Vector a -> V.Vector Character
+fromCVec = V.map (fromWord . C.toWord)
 
 derivingUnbox "Character"
     [t| Character -> Word8 |]

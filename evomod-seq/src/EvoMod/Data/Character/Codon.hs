@@ -19,13 +19,16 @@ The different universal codes.
 
 module EvoMod.Data.Character.Codon
   ( Codon (Codon)
+  , unsafeFromList
+  , unsafeFromVec
   , UniversalCode (..)
   , universalCode
   , universalCodeX
   ) where
 
 import           Data.List
-import qualified Data.Map                         as M
+import qualified Data.Map                          as M
+import qualified Data.Vector.Generic               as V
 
 import           EvoMod.Data.Character.AminoAcidS
 import qualified EvoMod.Data.Character.Nucleotide  as N
@@ -34,6 +37,14 @@ import qualified EvoMod.Data.Character.NucleotideX as NX
 -- | Codons are triplets of characters.
 newtype Codon a = Codon (a, a, a)
   deriving (Show, Read, Eq, Ord)
+
+-- | Unsafe conversion from list with three elements.
+unsafeFromList :: [a] -> Codon a
+unsafeFromList xs = Codon (head xs, head . tail $ xs, head . tail . tail $ xs)
+
+-- | Unsafe conversion from vector with three elements.
+unsafeFromVec :: V.Vector v a => v a -> Codon a
+unsafeFromVec xs = Codon (V.head xs, V.head . V.tail $ xs, V.head . V.tail . V.tail $ xs)
 
 -- | Universal codes.
 data UniversalCode = Standard | VertebrateMitochondrial

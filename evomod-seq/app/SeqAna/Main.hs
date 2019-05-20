@@ -48,7 +48,7 @@ import           EvoMod.Data.Alphabet.Alphabet
 -- import           EvoMod.Data.Alphabet.NucleotideX
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
--- import           EvoMod.Data.Sequence.Translate
+import           EvoMod.Data.Sequence.Translate
 import           EvoMod.Export.Sequence.Fasta
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.ByteString
@@ -72,20 +72,23 @@ examineMSA perSiteFlag msa =
               ++ show (msaLength msa)
             , L.pack $ "Number of columns without gaps: "
               ++ show (msaLength msaNoGaps)
-            , L.pack $ "Number of columns without extended IUPAC characters: "
+            , L.pack $ "Number of columns with standard characters only: "
               ++ show (msaLength msaOnlyStd)
             , L.empty
-            , L.pack $ "Total chars: " ++ show nTot
+            , L.pack $ "Total number of characters: " ++ show nTot
             , L.pack $ "Standard (i.e., not extended IUPAC) characters: "
-              ++ show (nTot - nNonStd - nGaps)
-            , L.pack $ "Non-standard (i.e., extended IUPAC) characters: " ++ show nNonStd
+              ++ show (nTot - nIUPAC - nGaps - nUnknowns)
+            , L.pack $ "Extended IUPAC characters: " ++ show nIUPAC
             , L.pack $ "Gaps: " ++ show nGaps
+            , L.pack $ "Unknowns: " ++ show nUnknowns
             , L.pack $ "Percentage of standard characters: "
-              ++ printf "%.3f" (1.0 - percentageNonStd - percentageGaps)
-            , L.pack $ "Percentage of non-standard characters: "
-              ++ printf "%.3f" percentageNonStd
+              ++ printf "%.3f" (1.0 - percentageIUPAC - percentageGaps - percentageUnknowns)
+            , L.pack $ "Percentage of extended IUPAC characters: "
+              ++ printf "%.3f" percentageIUPAC
             , L.pack $ "Percentage of gaps: "
               ++ printf "%.3f" percentageGaps
+            , L.pack $ "Percentage of unknowns: "
+              ++ printf "%.3f" percentageUnknowns
             , L.empty
             , L.pack "Mean effective number of used states:"
             , L.pack "Across whole alignment: "
@@ -98,10 +101,12 @@ examineMSA perSiteFlag msa =
   <> perSiteBS
   where
     nTot                = msaLength msa * msaNSequences msa
-    nNonStd             = countIUPACChars msa
+    nIUPAC              = countIUPACChars msa
     nGaps               = countGaps msa
-    percentageNonStd    = fromIntegral nNonStd / fromIntegral nTot :: Double
-    percentageGaps      = fromIntegral nGaps   / fromIntegral nTot :: Double
+    nUnknowns           = countUnknowns msa
+    percentageIUPAC     = fromIntegral nIUPAC    / fromIntegral nTot :: Double
+    percentageGaps      = fromIntegral nGaps     / fromIntegral nTot :: Double
+    percentageUnknowns  = fromIntegral nUnknowns / fromIntegral nTot :: Double
     msaNoGaps           = filterColumnsNoGaps msa
     msaOnlyStd          = filterColumnsOnlyStd msaNoGaps
     kEffs               = kEff . toFrequencyData $ msa
@@ -116,19 +121,19 @@ examineMSA perSiteFlag msa =
                                          ]
                           else L.empty
 
--- TODO. REDUCE REDUNDANCY IN CODE.
+examineOneS :: Bool -> [Sequence] -> L.ByteString
+examineOneS perSiteFlag ss = summarizeSequenceList ss <> sumMSA
+  where sumMSA = if equalLength ss
+                 then L.pack "\n" <> examineMSA perSiteFlag (fromSequenceList ss)
+                 else L.empty
+
 examineS :: Seq ()
 examineS = do
   args <- arguments <$> ask
   let (Examine perSiteFlag) = argsCommand args
-      --
-      -- when equalLength ss $
-      --   <> L.pack "\n"
-      --   <> examineMSA perSiteFlag (fromSequenceList ss)
   sss <- readSeqss
   io $ L.intercalate (L.pack "\n") $
-    map summarizeSequenceList sss
-    ++ map (examineMSA perSiteFlag . fromSequenceList) sss
+    map (examineOneS perSiteFlag) sss
 
 concatenateS :: Seq ()
 concatenateS = do
@@ -169,24 +174,15 @@ subSampleS = do
       lift $ mapM_ (\i -> withFile (fns!!i) WriteMode (`L.hPutStr` (files!!i))) [0 .. m-1]
       logS $ "Results written to files with basename '" ++ fn ++ "'."
 
--- TODO.
--- translateS :: Seq ()
--- translateS = do
---   args <- arguments <$> ask
---   let cd                = argsCode args
---       (Translate rf uc) = argsCommand args
---   logS "Translate sequences to amino acids."
---   logS $ "Universal code: " ++ show uc ++ "."
---   case cd of
---     DNA -> do
---       sss <- readSeqss @Nucleotide
---       io $ L.intercalate (L.pack "\n") $
---         map (sequencesToFasta . map (translateDNA uc rf)) sss
---     DNAX -> do
---       sss <- readSeqss @NucleotideX
---       io $ L.intercalate (L.pack "\n") $
---         map (sequencesToFasta . map (translateDNAX uc rf)) sss
---     _ -> error "translate: can only translate DNA and DNAX."
+translateS :: Seq ()
+translateS = do
+  args <- arguments <$> ask
+  let (Translate rf uc) = argsCommand args
+  logS "Translate sequences to amino acids."
+  logS $ "Universal code: " ++ show uc ++ "."
+  sss <- readSeqss
+  io $ L.intercalate (L.pack "\n") $
+    map (sequencesToFasta . map (translate uc rf)) sss
 
 io :: L.ByteString -> Seq ()
 io res = do
@@ -222,7 +218,7 @@ work = do
     Concatenate -> concatenateS
     Filter{}    -> filterS
     SubSample{} -> subSampleS
-    -- Translate{} -> translateS
+    Translate{} -> translateS
 
 main :: IO ()
 main = do

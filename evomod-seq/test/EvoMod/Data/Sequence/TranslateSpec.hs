@@ -12,16 +12,14 @@ Portability :  portable
 Creation date: Fri Oct  5 14:25:42 2018.
 
 -}
--- TODO.
 
 module EvoMod.Data.Sequence.TranslateSpec
   (spec) where
 
 import           Test.Hspec
 
-import           EvoMod.Data.Alphabet.NucleotideX
-import           EvoMod.Data.Alphabet.AminoAcidS
-import           EvoMod.Data.Alphabet.Codon
+import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Character.Codon
 import           EvoMod.Data.Sequence.Translate
 import           EvoMod.Import.Sequence.Fasta
 import           EvoMod.Tools.InputOutput
@@ -31,6 +29,6 @@ spec :: Spec
 spec =
   describe "translateDNAX" $
     it "correctly translates a test sequence" $ do
-    ss  <- parseFileWith (fasta @NucleotideX) fastaTranslateDNAFN
-    ss' <- parseFileWith (fasta @AminoAcidS) fastaTranslateProteinFN
-    map (translateDNAX VertebrateMitochondrial 0) ss `shouldBe` ss'
+    ss  <- parseFileWith (fasta DNAX) fastaTranslateDNAFN
+    ss' <- parseFileWith (fasta ProteinS) fastaTranslateProteinFN
+    map (translate VertebrateMitochondrial 0) ss `shouldBe` ss'

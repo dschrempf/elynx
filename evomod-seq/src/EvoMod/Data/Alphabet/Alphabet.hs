@@ -34,6 +34,7 @@ module EvoMod.Data.Alphabet.Alphabet
   , alphabetNameVerbose
   , isStd
   , isGap
+  , isUnknown
   , isIUPAC
   , isMember
   ) where
@@ -56,11 +57,12 @@ alphabetNameVerbose ProteinX = "ProteinX (amino acids; extended; including gaps 
 alphabetNameVerbose ProteinS = "ProteinS (amino acids; including gaps and translation stops)"
 alphabetNameVerbose ProteinI = "ProteinI (amino acids; including IUPAC codes)"
 
-data AlphabetSpec = AlphabetSpec { std    :: !(S.Set Character)
-                                 , gap    :: !(S.Set Character)
-                                 , iupac  :: !(S.Set Character)
-                                 , allCs  :: !(S.Set Character)
-                                 , toStd  :: Character -> [Character] }
+data AlphabetSpec = AlphabetSpec { std     :: !(S.Set Character)
+                                 , gap     :: !(S.Set Character)
+                                 , unknown :: !(S.Set Character)
+                                 , iupac   :: !(S.Set Character)
+                                 , allCs   :: !(S.Set Character)
+                                 , toStd   :: Character -> [Character] }
 
 alphabetSpec :: AlphabetName -> AlphabetSpec
 alphabetSpec DNA      = dna
@@ -80,22 +82,26 @@ isStd = isWith std
 isGap :: AlphabetName -> Character -> Bool
 isGap = isWith gap
 
+isUnknown :: AlphabetName -> Character -> Bool
+isUnknown = isWith unknown
+
 isIUPAC :: AlphabetName -> Character -> Bool
 isIUPAC = isWith iupac
 
 isMember :: AlphabetName -> Character -> Bool
 isMember = isWith allCs
 
-fromChars :: String -> String -> String -> (Char -> String) -> AlphabetSpec
-fromChars st ga iu toSt = AlphabetSpec st' ga' iu' al (fromString . toSt . toChar)
+fromChars :: String -> String -> String -> String -> (Char -> String) -> AlphabetSpec
+fromChars st ga un iu to = AlphabetSpec st' ga' un' iu' al (fromString . to . toChar)
   where
     st' = S.fromList $ fromString st
     ga' = S.fromList $ fromString ga
+    un' = S.fromList $ fromString un
     iu' = S.fromList $ fromString iu
-    al  = S.unions [st', ga', iu']
+    al  = S.unions [st', ga', un', iu']
 
 dna :: AlphabetSpec
-dna = fromChars "ACGT" [] [] toStdDNA
+dna = fromChars "ACGT" [] [] [] toStdDNA
 
 toStdDNA :: Char -> String
 toStdDNA 'A' = "A"
@@ -105,7 +111,7 @@ toStdDNA 'T' = "T"
 toStdDNA _   = error "tostdDNA: cannot convert to standard nucleotide."
 
 dnaX :: AlphabetSpec
-dnaX = fromChars "ACGT" "-." [] toStdDNAX
+dnaX = fromChars "ACGT" "-." [] [] toStdDNAX
 
 toStdDNAX :: Char -> String
 toStdDNAX 'A' = "A"
@@ -117,7 +123,7 @@ toStdDNAX '.' = []
 toStdDNAX _   = error "toStdDNAX: cannot convert to standard nucleotide."
 
 dnaI :: AlphabetSpec
-dnaI = fromChars "ACGT" "-." "UWSMKRYBDHVN" toStdDNAI
+dnaI = fromChars "ACGT" "-." "N" "UWSMKRYBDHV" toStdDNAI
 
 toStdDNAI :: Char -> String
 toStdDNAI 'A' = "A"
@@ -141,7 +147,7 @@ toStdDNAI '.' = []
 toStdDNAI _   = error "toStdDNAI: cannot convert to standard nucleotide."
 
 protein :: AlphabetSpec
-protein = fromChars "ACDEFGHIKLMNPQRSTVWY" [] [] toStdP
+protein = fromChars "ACDEFGHIKLMNPQRSTVWY" [] [] [] toStdP
 
 toStdP :: Char -> String
 toStdP 'A' = "A"
@@ -167,7 +173,7 @@ toStdP 'Y' = "Y"
 toStdP _   = error "toStdP: cannot convert to standard amino acid."
 
 proteinX :: AlphabetSpec
-proteinX = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." [] toStdPX
+proteinX = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." [] [] toStdPX
 
 toStdPX :: Char -> String
 toStdPX 'A' = "A"
@@ -195,7 +201,7 @@ toStdPX '.' = ""
 toStdPX _   = error "toStdPX: cannot convert to standard amino acid."
 
 proteinS :: AlphabetSpec
-proteinS = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." "*" toStdPS
+proteinS = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." [] "*" toStdPS
 
 toStdPS :: Char -> String
 toStdPS 'A' = "A"
@@ -224,7 +230,7 @@ toStdPS '*' = ""
 toStdPS _   = error "toStdPX: cannot convert to standard amino acid."
 
 proteinI :: AlphabetSpec
-proteinI = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." "*JBZX" toStdPI
+proteinI = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." "X" "*JBZ" toStdPI
 
 toStdPI :: Char -> String
 toStdPI 'A' = "A"

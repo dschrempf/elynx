@@ -19,6 +19,7 @@ module EvoMod.Tools.Vector
   , normalizeSumVec
   , uniformVec
   , meanVec
+  , chop
   ) where
 
 import qualified Data.Vector.Generic as V
@@ -40,3 +41,10 @@ uniformVec n = V.replicate n (1 / fromIntegral n)
 -- | Mean of a vector.
 meanVec :: (Fractional a, V.Vector v a) => v a -> a
 meanVec v = sumVec v / fromIntegral (V.length v)
+
+-- | Chop list into chunks of given length. If the last chop is shorter than
+-- length, it is dropped.
+chop :: V.Vector v a => Int -> v a -> [v a]
+chop n xs | V.length xs < n = []
+          | otherwise     = V.take n xs : chop n (V.drop n xs)
+
