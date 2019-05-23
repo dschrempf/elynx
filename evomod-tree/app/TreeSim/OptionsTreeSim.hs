@@ -25,15 +25,17 @@ import           Options.Applicative
 import           EvoMod.Tools.Options
 
 data Args = Args
-  { argsNTrees          :: Int    -- ^ Simulated trees.
-  , argsNLeaves         :: Int    -- ^ Number of leaves.
-  , argsHeight          :: Maybe Double -- ^ Tree height (time to origin).
-  , argsLambda          :: Double -- ^ Birth rate.
-  , argsMu              :: Double -- ^ Death rate.
-  , argsRho             :: Double -- ^ Smapling rate.
-  , argsSubSample       :: Bool   -- ^ Perform actual sub-sampling.
-  , argsSumStat         :: Bool   -- ^ Only print summary statistics?
-  , argsVerbosity       :: Verbosity   -- ^ Verbosity.
+  { argsNTrees          :: Int            -- ^ Simulated trees.
+  , argsNLeaves         :: Int            -- ^ Number of leaves.
+  , argsHeight          :: Maybe Double   -- ^ Tree height (time to origin or MRCA).
+  , argsConditionMRCA   :: Bool           -- ^ False: condition on origin; True:
+                                          --   condition on MRCA.
+  , argsLambda          :: Double         -- ^ Birth rate.
+  , argsMu              :: Double         -- ^ Death rate.
+  , argsRho             :: Double         -- ^ Smapling rate.
+  , argsSubSample       :: Bool           -- ^ Perform actual sub-sampling.
+  , argsSumStat         :: Bool           -- ^ Only print summary statistics?
+  , argsVerbosity       :: Verbosity      -- ^ Verbosity.
   , argsOutFileBaseName :: Maybe FilePath
   , argsSeed            :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
   }
@@ -51,8 +53,9 @@ reportArgs a =
                    , "Verbosity: " ++ show (argsVerbosity a)
                    , "Output file base name: " ++ fStr
                    , "Seed: " ++ sStr ]
-  where hStr = case argsHeight a of Nothing -> "Random"
-                                    Just h  -> show h
+  where hStr = case argsHeight a of Nothing -> "Random height of origin"
+                                    Just h  -> show h ++ ", conditioned on "
+                                      ++ if argsConditionMRCA a then "MRCA" else "origin"
         fStr = case argsOutFileBaseName a of Nothing -> "None"
                                              Just f  -> show f
         sStr = case argsSeed a of Nothing -> "Random"
@@ -63,6 +66,7 @@ argsParser = Args
   <$> nTreeOpt
   <*> nLeavesOpt
   <*> treeHeightOpt
+  <*> conditionMRCAOpt
   <*> lambdaOpt
   <*> muOpt
   <*> rhoOpt
@@ -73,75 +77,76 @@ argsParser = Args
   <*> seedOpt
 
 nTreeOpt :: Parser Int
-nTreeOpt = option auto
-  ( long "nTrees"
-    <> short 't'
-    <> metavar "INT"
-    <> value 10
-    <> showDefault
-    <> help "Number of trees" )
+nTreeOpt = option auto $
+  long "nTrees"
+  <> short 't'
+  <> metavar "INT"
+  <> value 10
+  <> showDefault
+  <> help "Number of trees"
 
 nLeavesOpt :: Parser Int
-nLeavesOpt = option auto
-  ( long "nLeaves"
-    <> short 'n'
-    <> metavar "INT"
-    <> value 5
-    <> showDefault
-    <> help "Number of leaves per tree" )
+nLeavesOpt = option auto $
+  long "nLeaves"
+  <> short 'n'
+  <> metavar "INT"
+  <> value 5
+  <> showDefault
+  <> help "Number of leaves per tree"
 
 treeHeightOpt :: Parser (Maybe Double)
-treeHeightOpt = optional $ option auto
-  ( long "height"
-    <> short 'H'
-    <> metavar "DOUBLE"
-    <> help "Fix tree height (no default)" )
+treeHeightOpt = optional $ option auto $
+  long "height"
+  <> short 'H'
+  <> metavar "DOUBLE"
+  <> help "Fix tree height (no default)"
 
+conditionMRCAOpt :: Parser Bool
+conditionMRCAOpt = switch $
+  long "condition-on-mrca"
+  <> short 'M'
+  <> showDefault
+  <> help "Do not condition on height of origin but on height of MRCA"
 
 lambdaOpt :: Parser Double
-lambdaOpt = option auto
-  ( long "lambda"
-    <> short 'l'
-    <> metavar "DOUBLE"
-    <> value 1.0
-    <> showDefault
-    <> help "Birth rate lambda" )
+lambdaOpt = option auto $
+  long "lambda"
+  <> short 'l'
+  <> metavar "DOUBLE"
+  <> value 1.0
+  <> showDefault
+  <> help "Birth rate lambda"
 
 muOpt :: Parser Double
-muOpt = option auto
-  ( long "mu"
-    <> short 'm'
-    <> metavar "DOUBLE"
-    <> value 0.9
-    <> showDefault
-    <> help "Death rate mu" )
+muOpt = option auto $
+  long "mu"
+  <> short 'm'
+  <> metavar "DOUBLE"
+  <> value 0.9
+  <> showDefault
+  <> help "Death rate mu"
 
 rhoOpt :: Parser Double
-rhoOpt = option auto
-  ( long "rho"
-    <> short 'r'
-    <> metavar "DOUBLE"
-    <> value 1.0
-    <> help "Sampling probability rho (default: 1.0)" )
+rhoOpt = option auto $
+  long "rho"
+  <> short 'r'
+  <> metavar "DOUBLE"
+  <> value 1.0
+  <> help "Sampling probability rho (default: 1.0)"
 
 subSampleOpt :: Parser Bool
-subSampleOpt = switch
-  ( long "sub-sample"
-    <> short 'u'
-    <> showDefault
-    <> help "Perform sub-sampling; see below.")
+subSampleOpt = switch $
+  long "sub-sample"
+  <> short 'u'
+  <> showDefault
+  <> help "Perform sub-sampling; see below."
 
 sumStatOpt :: Parser Bool
-sumStatOpt = switch
-  ( long "summary-statistics"
-    <> short 's'
-    <> showDefault
-    <> help "Only output number of children for each branch" )
-
--- getCommandLineStr :: String -> [String] -> String
--- getCommandLineStr n as = unlines
---   [ "Reconstructed trees simulator version " ++ showVersion version ++ "."
---   , "Command line: " ++ n ++ " " ++ unwords as ]
+sumStatOpt = switch $
+  long "summary-statistics"
+  <> short 's'
+  <> showDefault
+  <> help "Only output number of children for each branch"
 
 hdr :: [String]
 hdr = ["Simulate reconstructed trees using the point process. See Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005"]

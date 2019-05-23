@@ -36,8 +36,9 @@ import qualified EvoMod.Data.MarkovProcess.SubstitutionModel as S
 summarizeGammaRateHeterogeneity :: Int -> Double -> [L.ByteString]
 summarizeGammaRateHeterogeneity n alpha = map L.pack
   [ "Discrete gamma rate heterogeneity."
-  , "Number of categories: " ++ show n ++ "."
-  , "Shape parameter of gamma distribution: "++ show alpha ++ "." ]
+  , "Number of categories: " ++ show n
+  , "Shape parameter of gamma distribution: "++ show alpha
+  , "Rates: " ++ show (getMeans n alpha) ]
 
 -- | For a given number of rate categories, a gamma shape parameter alpha and a
 -- substitution model, compute the scaled substitution models corresponding to

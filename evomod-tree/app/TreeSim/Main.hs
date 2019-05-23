@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 {- |
    Description :  Simulate reconstructed trees
    Copyright   :  (c) Dominik Schrempf 2018
@@ -23,6 +25,7 @@ module Main where
 
 import           Control.Concurrent                   (getNumCapabilities)
 import           Control.Concurrent.Async.Lifted.Safe (mapConcurrently)
+import           Control.Monad
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import           Control.Parallel.Strategies
@@ -56,6 +59,8 @@ main = do
 simulate :: Simulation ()
 simulate = do
   a <- arguments <$> ask
+  when (isNothing (argsHeight a) && argsConditionMRCA a) $
+    error "main: cannot condition on MRCA (-M) when height is not given (-H)."
   let s = argsSumStat a
   c <- lift getNumCapabilities
   lift programHeader >>= logS
@@ -78,20 +83,22 @@ simulate = do
       logS $ "Results written to file '" ++ fn' ++ "'."
 
 simulateNTreesConcurrently :: Int -> Args -> Simulation [Tree PhyloIntLabel]
-simulateNTreesConcurrently c (Args nT nL h l m r _ _ _ _ s) = do
+simulateNTreesConcurrently c (Args nT nL h cM l m r _ _ _ _ s) = do
   let l' = l * r
       m' = m - l * (1.0 - r)
   gs <- lift $ getNGen c s
   let chunks = getChunks c nT
-  trss <- mapConcurrently (\(n, g) -> simulateNReconstructedTrees n nL h l' m' g) (zip chunks gs)
+      timeSpec = fmap (, cM) h
+  trss <- mapConcurrently (\(n, g) -> simulateNReconstructedTrees n nL timeSpec l' m' g) (zip chunks gs)
   return $ concat trss
 
 simulateAndSubSampleNTreesConcurrently :: Int -> Args -> Simulation [Tree PhyloIntLabel]
-simulateAndSubSampleNTreesConcurrently c (Args nT nL h l m r _ _ _ _ s) = do
+simulateAndSubSampleNTreesConcurrently c (Args nT nL h cM l m r _ _ _ _ s) = do
   let nLeavesBigTree = (round $ fromIntegral nL / r) :: Int
   gs <- lift $ getNGen c s
   let chunks = getChunks c nT
-  tr <- simulateReconstructedTree nLeavesBigTree h l m (head gs)
+      timeSpec = fmap (, cM) h
+  tr <- simulateReconstructedTree nLeavesBigTree timeSpec l m (head gs)
   logNewSection $ "Simulate one big tree with " ++ show nLeavesBigTree ++ " leaves."
   logLBS $ toNewickPhyloIntTree tr
   logNewSection $ "Sub sample " ++ show nT ++ " trees with " ++ show nL ++ " leaves."

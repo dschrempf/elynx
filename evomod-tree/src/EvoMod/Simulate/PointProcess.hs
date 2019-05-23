@@ -22,6 +22,7 @@ and death process.
 
 module EvoMod.Simulate.PointProcess
   ( PointProcess(..)
+  , TimeSpec
   , simulate
   , toReconstructedTree
   , simulateReconstructedTree
@@ -65,16 +66,22 @@ data PointProcess a b = PointProcess
   , values :: ![b]
   , origin :: !b } deriving (Read, Show, Eq)
 
+-- | If nothing, sample time of origin from respective distribution. If time is
+-- given, we need to know if we condition on the time of origin, or the time of
+-- the most recent common ancestor (MRCA).
+type TimeSpec = Maybe (Time, Bool)
+
 -- | Sample a point process using the 'BirthDeathDistribution'. The names of the
 -- points will be integers.
 simulate :: (PrimMonad m)
          => Int        -- ^ Number of points (samples)
-         -> Maybe Time -- ^ Time of origin
+         -> TimeSpec   -- ^ Time of origin or MRCA
          -> Rate       -- ^ Birth rate
          -> Rate       -- ^ Death rate
          -> Gen (PrimState m)   -- ^ Generator (see 'System.Random.MWC')
          -> m (PointProcess Int Double)
--- No time of origin given.
+-- No time of origin given. We also don't need to take care of the conditioning
+-- (origin or MRCA).
 simulate n Nothing l m g
   -- XXX. There is no formula for the over-critical process.
   | m > l    = error "Time of origin distribution formula not available when mu > lambda. Please specify height for the moment."
@@ -88,13 +95,13 @@ simulate n Nothing l m g
   -- For the near critical process, we use a special distribution.
   | abs (m-l) <= epsNearCriticalTimeOfOrigin = do
       t <- D.genContVar (TONCD n l m) g
-      simulate n (Just t) l m g
+      simulate n (Just (t, False)) l m g
   -- For a sub-critical branching process, we can use the formula from Tanja Stadler.
   | otherwise = do
       t <- D.genContVar (TOD n l m) g
-      simulate n (Just t) l m g
+      simulate n (Just (t, False)) l m g
 -- Time of origin is given.
-simulate n (Just t) l m g
+simulate n (Just (t, c)) l m g
   | n < 1     = error "Number of samples needs to be one or larger."
   | t < 0.0   = error "Time of origin needs to be positive."
   | l < 0.0   = error "Birth rate needs to be positive."
@@ -106,15 +113,28 @@ simulate n (Just t) l m g
   -- 1. The critical branching process.
   -- 2. The near critical branching process.
   -- 3. Normal values :).
-  | m =~= l   = do
+  | (m =~= l) && not c = do
       !vs <- replicateM (n-1) (D.genContVar (BDCD t l) g)
       return $ PointProcess [0..(n-1)] vs t
-  | abs (m - l) <= epsNearCriticalPointProcess = do
+  | (abs (m - l) <= epsNearCriticalPointProcess) && not c = do
       !vs <- replicateM (n-1) (D.genContVar (BDNCD t l m) g)
       return $ PointProcess [0..(n-1)] vs t
-  | otherwise = do
+  | not c = do
       !vs <- replicateM (n-1) (D.genContVar (BDD t l m) g)
       return $ PointProcess [0..(n-1)] vs t
+  | (m =~= l) && c = do
+      !vs <- replicateM (n-2) (D.genContVar (BDCD t l) g)
+      vs' <- randomInsert t vs g
+      return $ PointProcess [0..(n-1)] vs' t
+  | (abs (m - l) <= epsNearCriticalPointProcess) && c = do
+      !vs <- replicateM (n-2) (D.genContVar (BDNCD t l m) g)
+      vs' <- randomInsert t vs g
+      return $ PointProcess [0..(n-1)] vs' t
+  | c = do
+      !vs <- replicateM (n-2) (D.genContVar (BDD t l m) g)
+      vs' <- randomInsert t vs g
+      return $ PointProcess [0..(n-1)] vs' t
+  | otherwise = error "simulate: fell through guard, this is impossible"
 
 -- | Sort the values of a point process and their indices to be (the indices
 -- that they will have while creating the tree).
@@ -139,7 +159,7 @@ simulateNReconstructedTrees
   :: (PrimMonad m)
   => Int        -- ^ Number of trees
   -> Int        -- ^ Number of points (samples)
-  -> Maybe Time -- ^ Time of origin
+  -> TimeSpec   -- ^ Time of origin or MRCA
   -> Rate       -- ^ Birth rate
   -> Rate       -- ^ Death rate
   -> Gen (PrimState m)   -- ^ Generator (see 'System.Random.MWC')
@@ -154,7 +174,7 @@ simulateNReconstructedTrees nT nP t l m g
 simulateReconstructedTree
   :: (PrimMonad m)
   => Int        -- ^ Number of points (samples)
-  -> Maybe Time -- ^ Time of origin
+  -> TimeSpec   -- ^ Time of origin or MRCA
   -> Rate       -- ^ Birth rate
   -> Rate       -- ^ Death rate
   -> Gen (PrimState m)   -- ^ Generator (see 'System.Random.MWC')
