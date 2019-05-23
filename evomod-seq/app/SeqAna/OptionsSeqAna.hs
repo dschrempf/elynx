@@ -30,8 +30,9 @@ import           EvoMod.Tools.Options
 
 data Command = Examine { perSite :: Bool }
              | Concatenate
-             | Filter { longer  :: Maybe Int
-                      , shorter :: Maybe Int}
+             | FilterRows { longer  :: Maybe Int
+                          , shorter :: Maybe Int }
+             | FilterColumns { standard :: Maybe Double }
              | SubSample { nSites   :: Int
                          , nSamples :: Int
                          , mSeed    :: Maybe [Word32] }
@@ -60,23 +61,19 @@ commandArg = hsubparser $
   examineCommand <>
   -- summarizeCommand <>
   concatenateCommand <>
-  filterCommand <>
+  filterRowsCommand <>
+  filterColumnsCommand <>
   subSampleCommand <>
   translateCommand
-
--- summarizeCommand :: Mod CommandFields Command
--- summarizeCommand = command "summarize" $
---   info (pure Summarize) $ progDesc "Summarize sequences found in input files"
 
 concatenateCommand :: Mod CommandFields Command
 concatenateCommand = command "concatenate" $
   info (pure Concatenate) $ progDesc "Concatenate sequences found in input files"
 
-filterCommand :: Mod CommandFields Command
-filterCommand = command "filter" $
-  info (Filter <$> filterLongerThanOpt
-         <*> filterShorterThanOpt) $
-  progDesc "Filter sequences found in input Files"
+filterRowsCommand :: Mod CommandFields Command
+filterRowsCommand = command "filter-rows" $
+  info (FilterRows <$> filterLongerThanOpt <*> filterShorterThanOpt) $
+  progDesc "Filter rows (or sequences) found in input files"
 
 filterLongerThanOpt :: Parser (Maybe Int)
 filterLongerThanOpt = optional $ option auto $
@@ -90,15 +87,21 @@ filterShorterThanOpt = optional $ option auto $
   <> metavar "LENGTH"
   <> help "Only keep sequences shorter than LENGTH"
 
+filterColumnsCommand :: Mod CommandFields Command
+filterColumnsCommand = command "filter-columns" $
+  info (FilterColumns <$> filterStandardOpt) $
+  progDesc "Filter columns of multi-sequence alignments"
+
+filterStandardOpt :: Parser (Maybe Double)
+filterStandardOpt = optional $ option auto $
+  long "standard-chars"
+  <> metavar "DOUBLE"
+  <> help "Keep rows with a proportion standard (non-IUPAC) characters larger than DOUBLE in [0,1]"
+
 examineCommand :: Mod CommandFields Command
 examineCommand = command "examine" $
   info (Examine <$> examinePerSiteOpt) $
   progDesc "Examine sequences; if data is a multi sequence alignment, additionally analyze columns"
-
--- examineDropNonStandard :: Parser Bool
--- examineDropNonStandard = switch $
---   long "drop-non-standard"
---   <> help "Drop columns in alignment that contain non-standard characters such as gaps or extended IUPAC codes"
 
 examinePerSiteOpt :: Parser Bool
 examinePerSiteOpt = switch $

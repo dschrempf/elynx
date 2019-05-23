@@ -1,5 +1,3 @@
-{-# LANGUAGE TypeApplications #-}
-
 {- |
 Module      :  EvoMod.Data.Sequence.TranslateSpec
 Copyright   :  (c) Dominik Schrempf 2018

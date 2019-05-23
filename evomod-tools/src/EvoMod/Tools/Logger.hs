@@ -101,7 +101,7 @@ logLBSDebug = logSDebug . LC.unpack
 setupLogger :: Verbosity -> Maybe FilePath -> IO (Maybe Handle)
 setupLogger Quiet _         = return Nothing
 setupLogger _     Nothing   = return Nothing
-setupLogger _     (Just fn) = Just <$> openFile (fn ++ ".log") WriteMode
+setupLogger _     (Just fn) = Just <$> openFile (fn ++ ".log") AppendMode
 
 -- | Close the logging file handle.
 closeLogger :: Maybe Handle -> IO ()
@@ -110,7 +110,9 @@ closeLogger = mapM_ hClose
 
 -- | Convenience function. Create a visibly noticeable log entry.
 logNewSection :: Logger l => String -> ReaderT l IO ()
-logNewSection h = logS $ "\n-- " ++ h
+logNewSection h = do
+  logS ""
+  logS $ "-- " ++ h
 
 -- | Report the core this thread is running on.
 reportCapability :: Logger l => ReaderT l IO ()

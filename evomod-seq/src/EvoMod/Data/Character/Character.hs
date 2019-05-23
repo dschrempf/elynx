@@ -1,5 +1,3 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
-
 {- |
 Module      :  Character
 Description :  Character interface
@@ -26,8 +24,10 @@ module EvoMod.Data.Character.Character
   , CharacterX (..)
   , isGap
   , CharacterI (..)
+  , isUnknown
   , isIUPAC
   , isStandard
+  , convert
   ) where
 
 import qualified Data.Set                 as S
@@ -73,8 +73,12 @@ isGap c = c == gap
 
 -- | IUPAC characters with a mapping to extended characters.
 class CharacterX a => CharacterI a where
-  iupac :: [a]
+  unknown    :: a
+  iupac      :: [a]
   toStandard :: a -> [a]
+
+isUnknown :: CharacterI a => a -> Bool
+isUnknown c = c == unknown
 
 iupacLookup :: CharacterI a => S.Set a
 iupacLookup = S.fromList iupac
@@ -86,3 +90,7 @@ isIUPAC c = c `S.member` iupacLookup
 -- | Is the given character a standard character?
 isStandard :: CharacterI a => a -> Bool
 isStandard c = not $ isIUPAC c
+
+-- | Convert between character classes. May throw error.
+convert :: (Character a, Character b) => a -> b
+convert = fromWord . toWord

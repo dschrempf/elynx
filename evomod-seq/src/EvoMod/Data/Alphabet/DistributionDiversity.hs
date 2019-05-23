@@ -1,5 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-
 {- |
 Module      :  EvoMod.Data.Alphabet.DistributionDiversity
 Description :  Summarize statistics for alphabets

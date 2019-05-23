@@ -68,9 +68,14 @@ description = "The goal of the EvoMod suite is reproducible research. Evolutiona
 -- | Short, globally usable program header.
 programHeader :: IO String
 programHeader = do
+  t  <- formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z." `fmap` Data.Time.getCurrentTime
   p  <- getProgName
   as <- getArgs
-  return $ unlines [hdr, "Command line: " ++ p ++ " " ++ unwords as]
+  return $ intercalate "\n"
+    [ "----------------------------------------------------------------------"
+    , hdr
+    , "Time: " ++ t
+    , "Command line: " ++ p ++ " " ++ unwords as ]
 
 versionOpt :: Parser (a -> a)
 versionOpt = infoOption hdr

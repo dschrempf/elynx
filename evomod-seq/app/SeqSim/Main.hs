@@ -10,8 +10,6 @@ Portability :  portable
 
 Creation date: Mon Jan 28 14:12:52 2019.
 
-TODO: Use Quiet, Info, Debug.
-
 -}
 
 module Main where
@@ -79,7 +77,7 @@ simulateMSA pm t n g = do
   let leafStates = horizontalConcat leafStatesS
       leafNames  = map name $ leaves t
       code       = P.getAlphabet pm
-      -- TODO: Probably use type safe stuff here?
+      -- XXX: Probably use type safe stuff here?
       alph       = A.all $ alphabetSpec code
       sequences  = [ Sequence sName code (V.fromList $ map (`Set.elemAt` alph) ss) |
                     (sName, ss) <- zip leafNames leafStates ]

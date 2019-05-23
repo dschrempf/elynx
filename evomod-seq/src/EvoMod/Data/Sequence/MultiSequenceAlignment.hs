@@ -1,6 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell     #-}
-{-# LANGUAGE TypeApplications    #-}
 
 {- |
 Module      :  EvoMod.Data.MultiSequenceAlignment
@@ -32,6 +30,7 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   , msaConcatenate
   , msasConcatenate
   , filterColumnsOnlyStd
+  , filterColumnsStd
   , filterColumnsNoGaps
   -- | * Analysis
   , FrequencyData
@@ -67,7 +66,7 @@ import           EvoMod.Tools.Matrix
 -- | A collection of sequences.
 data MultiSequenceAlignment = MultiSequenceAlignment
                               { _names    :: [S.SequenceName]
-                              , _alphName :: A.Alphabet
+                              , _alphabet :: A.Alphabet
                               , _matrix   :: M.Matrix Character
                               }
   deriving (Read, Show, Eq)
@@ -124,7 +123,7 @@ showMSA msa = L.unlines $ msaHeader :
 summarizeMSAHeader :: MultiSequenceAlignment -> L.ByteString
 summarizeMSAHeader msa = L.unlines $
   [ L.pack "Multi sequence alignment."
-  , L.pack $ "Code: " ++ A.alphabetNameVerbose (msa^.alphName) ++ "."
+  , L.pack $ "Code: " ++ A.alphabetNameVerbose (msa^.alphabet) ++ "."
   , L.pack $ "Length: " ++ show (msaLength msa) ++ "." ]
   ++ reportLengthSummary ++ reportNumberSummary
   where reportLengthSummary =
@@ -150,14 +149,14 @@ msaJoin :: MultiSequenceAlignment
 -- top bottom.
 msaJoin t b
   | msaLength t == msaLength b
-    && t^.alphName == b^.alphName
+    && t^.alphabet == b^.alphabet
   = MultiSequenceAlignment ns a (tD === bD)
   | otherwise  = error "msaJoin: Multi sequence alignments do not have equal length."
   where
     ns = t^.names ++ b^.names
     tD = t^.matrix
     bD = t^.matrix
-    a  = t^.alphName
+    a  = t^.alphabet
 
 -- | Concatenate two 'MultiSequenceAlignment's horizontally. That is, add more
 -- sites to an alignment. See also 'msaJoin'.
@@ -167,13 +166,13 @@ msaConcatenate :: MultiSequenceAlignment
 -- left right.
 msaConcatenate l r
   | msaNSequences l == msaNSequences r
-    && l^.alphName == r^.alphName
+    && l^.alphabet == r^.alphabet
   = MultiSequenceAlignment (l ^. names) a (lD ||| rD)
   | otherwise = error "msaConcatenate: Multi sequence alignments do not have equal length."
   where
     lD = l^.matrix
     rD = r^.matrix
-    a  = l^.alphName
+    a  = l^.alphabet
 
 -- | Concatenate a list of 'MultiSequenceAlignment's horizontally. See
 -- 'msaConcatenate'.
@@ -183,17 +182,25 @@ msasConcatenate [msa] = msa
 msasConcatenate msas  = foldl' msaConcatenate (head msas) (tail msas)
 
 -- Only keep columns from alignment that satisfy given predicate.
-filterColumns :: (V.Vector Character -> Bool) -> MultiSequenceAlignment -> MultiSequenceAlignment
-filterColumns p = over matrix (M.fromColumns . filter p . M.toColumns)
+filterColumnsWith :: (V.Vector Character -> Bool) -> MultiSequenceAlignment -> MultiSequenceAlignment
+filterColumnsWith p = over matrix (M.fromColumns . filter p . M.toColumns)
 
 -- | Only keep columns with standard characters. Alignment columns with IUPAC
 -- characters are removed.
 filterColumnsOnlyStd :: MultiSequenceAlignment -> MultiSequenceAlignment
-filterColumnsOnlyStd msa = filterColumns (V.all $ A.isStd (msa^.alphName)) msa
+filterColumnsOnlyStd msa = filterColumnsWith (V.all $ A.isStd (msa^.alphabet)) msa
+
+-- | Filter columns with proportion of standard character larger than given number.
+filterColumnsStd :: Double -> MultiSequenceAlignment -> MultiSequenceAlignment
+filterColumnsStd prop msa = filterColumnsWith
+  (\col -> prop * nSeqs < fromIntegral (V.length (V.filter (A.isStd a) col)))
+  msa
+  where a = msa^.alphabet
+        nSeqs = fromIntegral $ msaNSequences msa
 
 -- | Only keep columns without gaps or unknown characters.
 filterColumnsNoGaps :: MultiSequenceAlignment -> MultiSequenceAlignment
-filterColumnsNoGaps msa = filterColumns (V.all $ not . A.isGap (msa^.alphName)) msa
+filterColumnsNoGaps msa = filterColumnsWith (V.all $ not . A.isGap (msa^.alphabet)) msa
 
 -- | Frequency data; do not store the actual characters, but only their
 -- frequencies.
@@ -202,7 +209,7 @@ type FrequencyData = M.Matrix Double
 -- | Calculcate frequency of characters in multi sequence alignment.
 toFrequencyData :: MultiSequenceAlignment -> FrequencyData
 toFrequencyData msa = fMapColParChunk 100 (frequencyCharacters spec) (msa^.matrix)
-  where spec = A.alphabetSpec (msa^.alphName)
+  where spec = A.alphabetSpec (msa^.alphabet)
 
 -- | Diversity analysis. See 'kEffEntropy'.
 kEff :: FrequencyData -> [Double]
@@ -211,17 +218,17 @@ kEff fd = parMapChunk 500 kEffEntropy (M.toColumns fd)
 -- | Count the number of standard (i.e., not extended IUPAC) characters in the
 -- alignment.
 countIUPACChars :: MultiSequenceAlignment -> Int
-countIUPACChars msa = V.length . V.filter (A.isIUPAC (msa^.alphName)) $ allChars
+countIUPACChars msa = V.length . V.filter (A.isIUPAC (msa^.alphabet)) $ allChars
   where allChars = M.flatten $ msa^.matrix
 
 -- | Count the number of gaps in the alignment.
 countGaps :: MultiSequenceAlignment -> Int
-countGaps msa = V.length . V.filter (A.isGap (msa^.alphName)) $ allChars
+countGaps msa = V.length . V.filter (A.isGap (msa^.alphabet)) $ allChars
   where allChars = M.flatten $ msa^.matrix
 
 -- | Count the number of unknown characters in the alignment.
 countUnknowns :: MultiSequenceAlignment -> Int
-countUnknowns msa = V.length . V.filter (A.isUnknown (msa^.alphName)) $ allChars
+countUnknowns msa = V.length . V.filter (A.isUnknown (msa^.alphabet)) $ allChars
   where allChars = M.flatten $ msa^.matrix
 
 -- | Sample the given sites from a multi sequence alignment.

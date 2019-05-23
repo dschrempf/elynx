@@ -22,21 +22,28 @@ module EvoMod.Data.Character.Codon
   , unsafeFromList
   , unsafeFromVec
   , UniversalCode (..)
-  , universalCode
-  , universalCodeX
+  , translate
+  , translateX
+  , translateI
   ) where
 
 import           Data.List
 import qualified Data.Map                          as M
 import qualified Data.Vector.Generic               as V
 
+import qualified EvoMod.Data.Character.AminoAcidI  as AI
 import           EvoMod.Data.Character.AminoAcidS
+import qualified EvoMod.Data.Character.Character   as C
 import qualified EvoMod.Data.Character.Nucleotide  as N
+import qualified EvoMod.Data.Character.NucleotideI as NI
 import qualified EvoMod.Data.Character.NucleotideX as NX
 
 -- | Codons are triplets of characters.
 newtype Codon a = Codon (a, a, a)
   deriving (Show, Read, Eq, Ord)
+
+convert :: (C.Character a, C.Character b) => Codon a -> Codon b
+convert (Codon (x, y, z)) = Codon (C.convert x, C.convert y, C.convert z)
 
 -- | Unsafe conversion from list with three elements.
 unsafeFromList :: [a] -> Codon a
@@ -90,20 +97,34 @@ vertebrateMitochondrial = [F, F, L, L, S, S, S, S, Y, Y, Stop, Stop, C, C, W, W,
                            V, V, A, A, A, A, D, D, E, E, G, G, G, G]
 -- "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG" ++ "--"
 
--- | Map from 'Codon' to amino acid character.
+-- | Translate a codon to amino acids including translation stops.
+translate :: UniversalCode -> Codon N.Nucleotide -> AminoAcidS
+translate code = (M.!) (universalCode code)
+
+-- | Translate a codon to amino acids including translation stops. Translate
+-- codons including gaps to amino acid gaps. XXX: Be careful, single or two
+-- character gaps could have led to a reading frame shift and hence, the
+-- translated sequence may be bogus.
+translateX :: UniversalCode -> Codon NX.NucleotideX -> AminoAcidS
+-- translateX _ (Codon (NX.Gap, NX.Gap, NX.Gap)) = Gap
+-- translateX code codon                         = C.convert . translate code . convert $ codon
+translateX code codon@(Codon (x,y,z)) | C.isGap x || C.isGap y || C.isGap z = Gap
+                                      | otherwise = C.convert . translate code . convert $ codon
+
+-- | Translate a codon to amino acids including translation stops. Translate gap
+-- triplets to amino acid gaps, and triplets including unknowns to amino acid
+-- unknowns. XXX: Be careful, also translates other IUPAC characters at the
+-- moment (to amino acid Xs)!
+-- translateI :: UniversalCode -> Codon NI.NucleotideI -> AI.AminoAcidI
+-- translateI _ (Codon (NI.N, _,    _   )) = AI.X
+-- translateI _ (Codon (_   , NI.N, _   )) = AI.X
+-- translateI _ (Codon (_,    _,    NI.N)) = AI.X
+-- translateI code codon                   = C.convert . translateX code . convert $ codon
+translateI :: UniversalCode -> Codon NI.NucleotideI -> AI.AminoAcidI
+translateI code codon@(Codon (x,y,z)) | C.isIUPAC x || C.isIUPAC y || C.isIUPAC z = AI.X
+                                      | otherwise = C.convert . translateX code . convert $ codon
+
+-- Map from 'Codon' to amino acid character.
 universalCode :: UniversalCode -> M.Map (Codon N.Nucleotide) AminoAcidS
 universalCode Standard                = mapFromLists base1 base2 base3 standard
 universalCode VertebrateMitochondrial = mapFromLists base1 base2 base3 vertebrateMitochondrial
-
--- | Map from 'Codon' to amino acid character.
-universalCodeX :: UniversalCode -> M.Map (Codon NX.NucleotideX) AminoAcidS
-universalCodeX Standard                = mapFromLists
-                                         (base1 ++ [NX.Gap])
-                                         (base2 ++ [NX.Gap])
-                                         (base3 ++ [NX.Gap])
-                                         (standard ++ [Gap])
-universalCodeX VertebrateMitochondrial = mapFromLists
-                                         (base1 ++ [NX.Gap])
-                                         (base2 ++ [NX.Gap])
-                                         (base3 ++ [NX.Gap])
-                                         (vertebrateMitochondrial ++ [Gap])

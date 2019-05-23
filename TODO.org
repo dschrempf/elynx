@@ -13,13 +13,11 @@ I decided that there should not be any automatic code detection. Reaons:
 ** TODO Uniform error messages
 Full sentence with full stop at end?
 
-** TODO Remove unneeded language pragmas
 * Medium
 ** TODO Improve output of (mixture, gamma) model
 
 ** TODO Enable description in FASTA files sequence headers
 
-** TODO Investigate the Haddock warning because of deriveUnboxed
 
 * Hard
 
@@ -28,25 +26,3 @@ Full sentence with full stop at end?
 
 ** TODO Separate seq-lib from seq-ana and seq-sim?
 ** TODO Also reduce complexity of tree data types
-** TODO Type classes
-I am still unsatisfied with how characters are treated. I still believe there
-should be type checking for nucleotides, amino acids, codons, boundary mutation
-model characters, and so on. Since the boundary mutation model does not have a fixed
-number of characters, I will have to use a type class.
-
-For example,
-#+BEGIN_SRC haskell :exports both
-class Code a where
-  toWord8   :: a -> Word8
-  fromWord8 :: Word8 -> a
-
-instance Code DNA where
-
-instance Code Protein where
-
-instance Code Codon where
-
-instance Code (BMMState k n) where
-#+END_SRC
-
-How do I add the notion of a =Code=?

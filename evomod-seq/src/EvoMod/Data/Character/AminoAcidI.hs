@@ -175,5 +175,6 @@ toStandard Stop = []
 toStandard Gap  = []
 
 instance C.CharacterI AminoAcidI where
-  iupac = [J, B, Z, X]
+  unknown    = X
+  iupac      = [J, B, Z, X]
   toStandard = toStandard

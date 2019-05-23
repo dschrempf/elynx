@@ -57,7 +57,7 @@ fromWord w = case w2c w of
                'C' -> C
                'G' -> G
                'T' -> T
-               _   -> error "fromWord: cannot convert to Nucleotide."
+               c   -> error $ "fromWord: cannot convert " ++ show c ++ " to Nucleotide."
 
 derivingUnbox "Nucleotide"
     [t| Nucleotide -> Word8 |]

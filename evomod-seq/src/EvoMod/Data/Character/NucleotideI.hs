@@ -141,5 +141,6 @@ instance C.CharacterX NucleotideI where
   gap        = Gap
 
 instance C.CharacterI NucleotideI where
-  iupac = [U, W, S, N, K, R, Y, B, D, H, V, N]
+  unknown    = N
+  iupac      = [U, W, S, M, K, R, Y, B, D, H, V, N]
   toStandard = toStandard

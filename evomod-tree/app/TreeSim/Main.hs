@@ -12,8 +12,6 @@ Creation date: Tue Feb 27 17:27:16 2018.
 See Gernhard, T. (2008). The conditioned reconstructed process. Journal of
 Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005.
 
-TODO: lambda ~ mu.
-
 Mon Feb 4 14:26:11 CET 2019: Adding sampling probability rho. See Article
 (Stadler2009) Stadler, T. On incomplete sampling under birth–death models and
 connections to the sampling-based coalescent Journal of Theoretical Biology,

@@ -18,6 +18,7 @@ module OptionsTreeSim
   , parseArgs
   ) where
 
+import           Data.List
 import           Data.Word
 import           Options.Applicative
 
@@ -39,17 +40,17 @@ data Args = Args
 
 reportArgs :: Args -> String
 reportArgs a =
-  unlines [ "Number of simulated trees: " ++ show (argsNTrees a)
-          , "Number of leaves per tree: " ++ show (argsNLeaves a)
-          , "Height of trees: " ++ hStr
-          , "Birth rate: " ++ show (argsLambda a)
-          , "Death rate: " ++ show (argsMu a)
-          , "Sampling probability: " ++ show (argsRho a)
-          , "Perform sub-sampling: " ++ show (argsSubSample a)
-          , "Summary statistics only: " ++ show (argsSumStat a)
-          , "Verbosity: " ++ show (argsVerbosity a)
-          , "Output file base name: " ++ fStr
-          , "Seed: " ++ sStr ]
+  intercalate "\n" [ "Number of simulated trees: " ++ show (argsNTrees a)
+                   , "Number of leaves per tree: " ++ show (argsNLeaves a)
+                   , "Height of trees: " ++ hStr
+                   , "Birth rate: " ++ show (argsLambda a)
+                   , "Death rate: " ++ show (argsMu a)
+                   , "Sampling probability: " ++ show (argsRho a)
+                   , "Perform sub-sampling: " ++ show (argsSubSample a)
+                   , "Summary statistics only: " ++ show (argsSumStat a)
+                   , "Verbosity: " ++ show (argsVerbosity a)
+                   , "Output file base name: " ++ fStr
+                   , "Seed: " ++ sStr ]
   where hStr = case argsHeight a of Nothing -> "Random"
                                     Just h  -> show h
         fStr = case argsOutFileBaseName a of Nothing -> "None"

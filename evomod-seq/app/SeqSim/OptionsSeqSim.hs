@@ -116,14 +116,14 @@ maybeMixtureWeights :: Parser (Maybe [Double])
 maybeMixtureWeights = optional $ option auto
   ( long "mixture-model-weights"
     <> short 'w'
-    <> metavar "[DOUBLE,DOUBLE,...]"
+    <> metavar "\"[DOUBLE,DOUBLE,...]\""
     <> help "Weights of mixture model components" )
 
 maybeGammaParams :: Parser (Maybe GammaRateHeterogeneityParams)
 maybeGammaParams = optional $ option auto
   ( long "gamma-rate-heterogeneity"
     <> short 'g'
-    <> metavar "(NCAT, SHAPE)"
+    <> metavar "\"(NCAT,SHAPE)\""
     <> help "Number of gamma rate categories and shape parameter" )
 
 lengthOpt :: Parser Int
@@ -142,7 +142,7 @@ ftr = sms ++ mms
   where
     sms =
       [ "Substitution models:"
-      , "-s MODEL[PARAMETER,PARAMETER,...]{STATIONARY_DISTRIBUTION}"
+      , "-s \"MODEL[PARAMETER,PARAMETER,...]{STATIONARY_DISTRIBUTION}\""
       , "   Supported DNA models: JC, HKY."
       , "     For example,"
       , "       -s HKY[KAPPA]{DOUBLE,DOUBLE,DOUBLE,DOUBLE}"
@@ -155,19 +155,19 @@ ftr = sms ++ mms
     mms =
       [ ""
       , "Mixture models:"
-      , "-m MIXTURE(SUBSTITUTION_MODEL_1,SUBSTITUTION_MODEL_2)"
+      , "-m \"MIXTURE(SUBSTITUTION_MODEL_1,SUBSTITUTION_MODEL_2)\""
       , "   For example,"
-      , "     -m MIXTURE(JC,HKY[6.0]{0.3,0.2,0.2,0.3})"
+      , "     -m \"MIXTURE(JC,HKY[6.0]{0.3,0.2,0.2,0.3})\""
       , "Mixture weights have to be provided with the -w option."
       , ""
       , "Special mixture models:"
       , "-m CXX"
       , "   where XX is 10, 20, 30, 40, 50, or 60; CXX models, Quang et al., 2008."
-      , "-m EDM(EXCHANGEABILITIES)"
+      , "-m \"EDM(EXCHANGEABILITIES)\""
       , "   Arbitrary empirical distribution mixture (EDM) models."
       , "   Stationary distributions have to be provided with the -e option."
       , "   For example,"
       , "     LG exchangeabilities with stationary distributions given in FILE."
-      , "     -m EDM(LG-Custom) -e FILE"
+      , "     -m \"EDM(LG-Custom)\" -e FILE"
       , "For special mixture models, mixture weights are optional."
       ]

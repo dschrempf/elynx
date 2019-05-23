@@ -1,5 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-
 {- |
 Module      :  Main
 Description :  Parse sequence file formats and analyze them
@@ -12,13 +10,7 @@ Portability :  portable
 
 Creation date: Fri Oct  5 08:41:05 2018.
 
-XXX: Somehow this implementation still uses 2.5 times the memory that it
-actually needs to use. I think that when parsing the sequences, the lines are
-copied into the complete sequence (see the function 'fastaSequence').
-
 XXX: Provide possibility to parse and handle sequences with different codes.
-
-TODO: Use Quiet, Info, Debug.
 
 -}
 
@@ -86,7 +78,7 @@ examineMSA perSiteFlag msa =
             , L.pack "Across whole alignment: "
               <> L.pack (printf "%.3f" kEffMean)
             , L.pack "Across columns without gaps: "
-              <> L.pack (show kEffMeanNoGaps)
+              <> L.pack (printf "%.3f" kEffMeanNoGaps)
             , L.pack "Across columns without extended IUPAC characters: "
               <> L.pack (printf "%.3f" kEffMeanOnlyStd)
             ]
@@ -132,14 +124,24 @@ concatenateS = do
   sss <- readSeqss
   io $ sequencesToFasta $ concatenateSeqs sss
 
-filterS :: Seq ()
-filterS = do
+filterRowsS :: Seq ()
+filterRowsS = do
   args <- arguments <$> ask
-  let (Filter ml ms) = argsCommand args
+  let (FilterRows ml ms) = argsCommand args
   sss <- readSeqss
   let filters = map (fromMaybe id) [ filterLongerThan <$> ml
                                    , filterShorterThan <$> ms ]
   io $ sequencesToFasta $ compose filters $ concat sss
+
+filterColumnsS :: Seq ()
+filterColumnsS = do
+  args <- arguments <$> ask
+  let (FilterColumns ms) = argsCommand args
+  sss <- readSeqss
+  let msas = map fromSequenceList sss
+  let filters = map (fromMaybe id) [ filterColumnsStd <$> ms ]
+  -- TODO: ONE INPUT FILE, NOT MANY. ONLY CONCAT HAS MANY INPUT FILES.
+  io $ L.concat $ map (sequencesToFasta . toSequenceList) [ compose filters msa | msa <- msas ]
 
 -- subsample nSites nSamples msa gen
 subsample :: (PrimMonad m)
@@ -175,7 +177,7 @@ translateS = do
   logS ""
   sss <- readSeqss
   io $ L.intercalate (L.pack "\n") $
-    map (sequencesToFasta . map (translate uc rf)) sss
+    map (sequencesToFasta . map (translateSeq uc rf)) sss
 
 io :: L.ByteString -> Seq ()
 io res = do
@@ -207,11 +209,12 @@ work = do
   logS $ "Read fasta file(s); code " ++ show c ++ "."
   logS ""
   case argsCommand args of
-    Examine{}   -> examineS
-    Concatenate -> concatenateS
-    Filter{}    -> filterS
-    SubSample{} -> subSampleS
-    Translate{} -> translateS
+    Examine{}       -> examineS
+    Concatenate     -> concatenateS
+    FilterRows{}    -> filterRowsS
+    FilterColumns{} -> filterColumnsS
+    SubSample{}     -> subSampleS
+    Translate{}     -> translateS
 
 main :: IO ()
 main = do
