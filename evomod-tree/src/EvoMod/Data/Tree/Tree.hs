@@ -1,3 +1,5 @@
+{-# LANGUAGE ViewPatterns #-}
+
 {- |
 Module      :  EvoMod.Data.Tree.Tree
 Description :  Functions related to phylogenetic trees
@@ -101,14 +103,17 @@ subSample :: (PrimMonad m, Ord a)
 subSample lvs n tree g
   | Seq.length lvs < n = error "Given list of leaves is shorter than requested number of leaves."
   | otherwise = do
-      sampledLeaves <- sample lvs n g
-      let leavesSet = Set.fromList sampledLeaves
-      return $ subTree (`Set.member` leavesSet) tree
+      sampledLs <- sample lvs n g
+      let ls = Set.fromList sampledLs
+      return $ subTree (`Set.member` ls) tree
 
 -- | See 'subSample', but n times.
 nSubSamples :: (PrimMonad m, Ord a)
             => Int -> Seq.Seq a -> Int -> Tree a -> Gen (PrimState m) -> m [Maybe (Tree a)]
 nSubSamples nS lvs nL tree g = replicateM nS $ subSample lvs nL tree g
+
+leavesSet :: Ord a => Tree a -> Set.Set a
+leavesSet = Set.fromList . leaves
 
 -- | Prune degree 2 inner nodes. The information stored in a pruned node can be
 -- used to change the daughter node. To discard this information, use,
@@ -120,25 +125,38 @@ pruneWith f    (Node paLbl [ch]) = let lbl = f (rootLabel ch) paLbl
                                      in pruneWith f $ Node lbl (subForest ch)
 pruneWith f    (Node paLbl chs)  = Node paLbl (map (pruneWith f) chs)
 
--- TODO: BUGGED! Leaves have to be passed to children.
+-- | Bipartitions with 'Set.Set's, since order of elements is not important.
+type Bipartition a = (Set.Set a, Set.Set a)
+
 -- | Get all bipartitions. XXX: This is slow at the moment, because 'leaves' is
 -- called excessively.
-bipartitions :: Tree a -> [([a], [a])]
-bipartitions (Node _ []    ) = []
-bipartitions (Node _ [c]   ) = bipartitions c
--- The crux is that we have to handle bifurcation in a special way. Otherwise,
--- we get our bipartitions twice!
-bipartitions (Node _ [l, r]) = (leaves l, leaves r) : (bipartitions l ++ bipartitions r)
--- For a multifurcation, take each leaf set in turn, and contrast it with the
--- the concatenation of the other leaves.
-bipartitions (Node _ xs    ) = bs ++ concatMap bipartitions xs
-  where lss = map leaves xs
-        bs  = [ (ls, concat $ take i lss ++ drop (i+1) lss) | (i, ls) <- zip [0..] lss ]
+bipartitions :: Ord a => Tree a -> [Bipartition a]
+bipartitions = bipartitions' Set.empty
+
+bipartitions' :: Ord a => Set.Set a -> Tree a -> [Bipartition a]
+bipartitions' _          (Node _ []    ) = []
+bipartitions' lsC (Node _ [c]   ) = bipartitions' lsC c
+bipartitions' lsC (Node _ xs    )
+  -- It really sucks that we have to treat a bifurcating root separately. But
+  -- that's just how it is.
+  | Set.null lsC && length xs == 2 =
+    let l = head xs
+        r = xs !! 1
+        lsL = leavesSet l
+        lsR = leavesSet r
+    in (lsL, lsR) : bipartitions' lsL r ++ bipartitions' lsR l
+  | otherwise = bs ++ concat (zipWith bipartitions' lsOthers xs)
+  where
+    nChildren  = length xs
+    lsChildren = map leavesSet xs
+    lsOthers   = [ Set.unions $ lsC : take i lsChildren ++ drop (i+1) lsChildren
+                      | i <- [0 .. (nChildren - 1)] ]
+    bs         = zip lsChildren lsOthers
 
 -- | Symmetric (Robinson-Foulds) distance between two trees. Assumes that the
 -- leaves have unique names! XXX: Comparing a list of trees with this function
 -- recomputes bipartitions.
-symmetricDistance :: Eq a => Tree a -> Tree a -> Int
+symmetricDistance :: (Ord a, Eq a) => Tree a -> Tree a -> Int
 symmetricDistance t1 t2 = length b1NotInb2 + length b2NotInb1
   where b1 = bipartitions t1
         b2 = bipartitions t2
