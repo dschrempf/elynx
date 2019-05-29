@@ -29,4 +29,4 @@ spec =
     it "correctly translates a test sequence" $ do
     ss  <- parseFileWith (fasta DNAX) fastaTranslateDNAFN
     ss' <- parseFileWith (fasta ProteinS) fastaTranslateProteinFN
-    map (translate VertebrateMitochondrial 0) ss `shouldBe` ss'
+    map (translateSeq VertebrateMitochondrial 0) ss `shouldBe` ss'

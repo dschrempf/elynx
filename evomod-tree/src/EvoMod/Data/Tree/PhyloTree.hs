@@ -29,11 +29,13 @@ module EvoMod.Data.Tree.PhyloTree
   ( PhyloLabel (..)
   , PhyloIntLabel
   , PhyloByteStringLabel
+  , removeBrLen
   ) where
 
 import qualified Data.ByteString.Lazy.Builder    as L
 import qualified Data.ByteString.Lazy.Char8      as L
 import           Data.Function
+import           Data.Tree
 
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.NamedTree
@@ -64,6 +66,10 @@ type PhyloByteStringLabel = PhyloLabel L.ByteString
 
 instance Named PhyloByteStringLabel where
   name = pLabel
+
+-- | Remove branch lengths from tree.
+removeBrLen :: Tree (PhyloLabel a) -> Tree a
+removeBrLen t = fmap pLabel t
 
 -- -- | A phylogenetic tree with 'Double' branch lengths arbitrary node labels.
 -- type PhyloTree a = Tree (PhyloLabel a)

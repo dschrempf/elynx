@@ -1,5 +1,5 @@
 name:                evomod-tree
-version:             0.3
+version:             0.4
 github:              "dschrempf/evomod"
 license:             GPL-3
 author:              "Dominik Schrempf"
@@ -13,6 +13,7 @@ extra-source-files:
 # Metadata used when publishing your package
 synopsis:            Handle phylogenetic trees in a reproducible way.
 category:            Bioinformatics
+
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
@@ -63,6 +64,22 @@ _defaults: &defaults
     - -with-rtsopts=-N
 
 executables:
+  tree-leaf-names:
+    <<: *defaults
+    main:                Main.hs
+    source-dirs:         app/TreeLeafNames
+    dependencies:
+      - evomod-tools
+      - evomod-tree
+
+  tree-rf:
+    <<: *defaults
+    main:                Main.hs
+    source-dirs:         app/TreeRF
+    dependencies:
+      - evomod-tools
+      - evomod-tree
+
   tree-sim:
     <<: *defaults
     main:                Main.hs

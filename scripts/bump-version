@@ -6,6 +6,9 @@ source include
 version_old=$(xargs < "${project_root}/version")
 version_new=$(echo "$version_old" 0.1 | awk '{printf "%.1f", $1 + $2}')
 
+echo "Version old: $version_old"
+echo "Version new: $version_new"
+
 echo "$version_new" > "${project_root}/version"
 
 fd '.*package.yaml' "${project_root}" -x \

@@ -41,6 +41,9 @@ module EvoMod.Data.Tree.Tree
   , subSample
   , nSubSamples
   , pruneWith
+  , bipartitions
+  , symmetricDistance
+  , incompatibleSplitsDistance
   ) where
 
 import           Control.Monad
@@ -116,3 +119,33 @@ pruneWith _  n@(Node _ [])       = n
 pruneWith f    (Node paLbl [ch]) = let lbl = f (rootLabel ch) paLbl
                                      in pruneWith f $ Node lbl (subForest ch)
 pruneWith f    (Node paLbl chs)  = Node paLbl (map (pruneWith f) chs)
+
+-- TODO: BUGGED! Leaves have to be passed to children.
+-- | Get all bipartitions. XXX: This is slow at the moment, because 'leaves' is
+-- called excessively.
+bipartitions :: Tree a -> [([a], [a])]
+bipartitions (Node _ []    ) = []
+bipartitions (Node _ [c]   ) = bipartitions c
+-- The crux is that we have to handle bifurcation in a special way. Otherwise,
+-- we get our bipartitions twice!
+bipartitions (Node _ [l, r]) = (leaves l, leaves r) : (bipartitions l ++ bipartitions r)
+-- For a multifurcation, take each leaf set in turn, and contrast it with the
+-- the concatenation of the other leaves.
+bipartitions (Node _ xs    ) = bs ++ concatMap bipartitions xs
+  where lss = map leaves xs
+        bs  = [ (ls, concat $ take i lss ++ drop (i+1) lss) | (i, ls) <- zip [0..] lss ]
+
+-- | Symmetric (Robinson-Foulds) distance between two trees. Assumes that the
+-- leaves have unique names! XXX: Comparing a list of trees with this function
+-- recomputes bipartitions.
+symmetricDistance :: Eq a => Tree a -> Tree a -> Int
+symmetricDistance t1 t2 = length b1NotInb2 + length b2NotInb1
+  where b1 = bipartitions t1
+        b2 = bipartitions t2
+        b1NotInb2 = filter (`notElem` b2) b1
+        b2NotInb1 = filter (`notElem` b1) b2
+
+-- | Number of incompatible splits. Similar to 'symmetricDistance' but merges
+-- multifurcations.
+incompatibleSplitsDistance :: Eq a => Tree a -> Tree a -> Int
+incompatibleSplitsDistance = undefined
