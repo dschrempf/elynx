@@ -32,17 +32,19 @@ module EvoMod.Data.Tree.PhyloTree
   , removeBrLen
   ) where
 
-import qualified Data.ByteString.Lazy.Builder    as L
-import qualified Data.ByteString.Lazy.Char8      as L
+import qualified Data.ByteString.Lazy.Builder        as L
+import qualified Data.ByteString.Lazy.Char8          as L
 import           Data.Function
 import           Data.Tree
 
+import           EvoMod.Data.Tree.BranchSupportTree
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.NamedTree
 
--- | A primitive label type for phylogenetic trees with an 'Int' label and a
--- 'Double' branch length.
+-- | A primitive label type for phylogenetic trees with a name, possibly a
+-- branch support value, and a 'Double' branch length.
 data PhyloLabel a = PhyloLabel { pLabel :: a
+                               , pBrSup :: Maybe Double
                                , pBrLen :: Double }
                  deriving (Read, Show, Eq)
 
@@ -51,8 +53,16 @@ instance Ord a => Ord (PhyloLabel a) where
 
 instance Measurable (PhyloLabel a) where
   getLen = pBrLen
-  setLen l (PhyloLabel lbl _) | l >= 0 = PhyloLabel lbl l
-                           | otherwise = error "Branch lengths cannot be negative."
+  setLen l (PhyloLabel lbl s _)
+    | l >= 0 = PhyloLabel lbl s l
+    | otherwise = error "Branch lengths cannot be negative."
+
+instance BranchSupportLabel (PhyloLabel a) where
+  getBranchSupport = pBrSup
+  setBranchSupport Nothing  l = l {pBrSup = Nothing}
+  setBranchSupport (Just s) l
+    | s > 0 = l {pBrSup = Just s}
+    | otherwise = error "Branch support cannot be negative."
 
 -- | Tree node with 'Int' label.
 type PhyloIntLabel = PhyloLabel Int
@@ -69,14 +79,4 @@ instance Named PhyloByteStringLabel where
 
 -- | Remove branch lengths from tree.
 removeBrLen :: Tree (PhyloLabel a) -> Tree a
-removeBrLen t = fmap pLabel t
-
--- -- | A phylogenetic tree with 'Double' branch lengths arbitrary node labels.
--- type PhyloTree a = Tree (PhyloLabel a)
-
--- -- | A phylogenetic tree with 'Double' branch lengths and 'Int' node labels.
--- type PhyloIntTree = Tree PhyloIntLabel
-
--- -- | Phylogenetic tree with 'Double' branch lengths and 'ByteString' node labels.
--- type PhyloByteStringTree = Tree PhyloByteStringLabel
-
+removeBrLen = fmap pLabel

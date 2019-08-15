@@ -200,7 +200,7 @@ toReconstructedTree pp@(PointProcess ps vs o)
   -- -- | otherwise = if isReconstructed treeOrigin then treeOrigin else error "Error in algorithm."
   | otherwise = treeOrigin
   where (vsSorted, isSorted) = sort pp
-        !lvs        = [ singleton (PhyloLabel p 0) | p <- ps ]
+        !lvs        = [ singleton (PhyloLabel p Nothing 0) | p <- ps ]
         !heights    = replicate (length ps) 0
         !treeRoot   = toReconstructedTree' isSorted vsSorted lvs heights
         !h          = last vsSorted
@@ -228,6 +228,6 @@ toReconstructedTree' is vs trs hs = toReconstructedTree' is' vs' trs'' hs'
         !tl    = lengthenRoot dvl $ trs !! i
         !tr    = lengthenRoot dvr $ trs !! (i+1)
         !h'    = hl + dvl       -- Should be the same as 'hr + dvr'.
-        !tm    = Node (PhyloLabel 0 0) [tl, tr]
+        !tm    = Node (PhyloLabel 0 Nothing 0) [tl, tr]
         !trs'' = take i trs ++ [tm] ++ drop (i+2) trs
         !hs'   = take i hs ++ [h'] ++ drop (i+2) hs

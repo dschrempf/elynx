@@ -193,7 +193,7 @@ filterColumnsOnlyStd msa = filterColumnsWith (V.all $ A.isStd (msa^.alphabet)) m
 -- | Filter columns with proportion of standard character larger than given number.
 filterColumnsStd :: Double -> MultiSequenceAlignment -> MultiSequenceAlignment
 filterColumnsStd prop msa = filterColumnsWith
-  (\col -> prop * nSeqs < fromIntegral (V.length (V.filter (A.isStd a) col)))
+  (\col -> prop * nSeqs <= fromIntegral (V.length (V.filter (A.isStd a) col)))
   msa
   where a = msa^.alphabet
         nSeqs = fromIntegral $ msaNSequences msa

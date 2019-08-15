@@ -1,5 +1,3 @@
-{-# LANGUAGE ViewPatterns #-}
-
 {- |
 Module      :  EvoMod.Data.Tree.Tree
 Description :  Functions related to phylogenetic trees
@@ -43,9 +41,6 @@ module EvoMod.Data.Tree.Tree
   , subSample
   , nSubSamples
   , pruneWith
-  , bipartitions
-  , symmetricDistance
-  , incompatibleSplitsDistance
   ) where
 
 import           Control.Monad
@@ -112,9 +107,6 @@ nSubSamples :: (PrimMonad m, Ord a)
             => Int -> Seq.Seq a -> Int -> Tree a -> Gen (PrimState m) -> m [Maybe (Tree a)]
 nSubSamples nS lvs nL tree g = replicateM nS $ subSample lvs nL tree g
 
-leavesSet :: Ord a => Tree a -> Set.Set a
-leavesSet = Set.fromList . leaves
-
 -- | Prune degree 2 inner nodes. The information stored in a pruned node can be
 -- used to change the daughter node. To discard this information, use,
 -- @pruneWith const tree@, otherwise @pruneWith (\daughter parent -> combined)
@@ -122,48 +114,5 @@ leavesSet = Set.fromList . leaves
 pruneWith :: (a -> a -> a) -> Tree a -> Tree a
 pruneWith _  n@(Node _ [])       = n
 pruneWith f    (Node paLbl [ch]) = let lbl = f (rootLabel ch) paLbl
-                                     in pruneWith f $ Node lbl (subForest ch)
+                                   in pruneWith f $ Node lbl (subForest ch)
 pruneWith f    (Node paLbl chs)  = Node paLbl (map (pruneWith f) chs)
-
--- | Bipartitions with 'Set.Set's, since order of elements is not important.
-type Bipartition a = (Set.Set a, Set.Set a)
-
--- | Get all bipartitions. XXX: This is slow at the moment, because 'leaves' is
--- called excessively.
-bipartitions :: Ord a => Tree a -> [Bipartition a]
-bipartitions = bipartitions' Set.empty
-
-bipartitions' :: Ord a => Set.Set a -> Tree a -> [Bipartition a]
-bipartitions' _          (Node _ []    ) = []
-bipartitions' lsC (Node _ [c]   ) = bipartitions' lsC c
-bipartitions' lsC (Node _ xs    )
-  -- It really sucks that we have to treat a bifurcating root separately. But
-  -- that's just how it is.
-  | Set.null lsC && length xs == 2 =
-    let l = head xs
-        r = xs !! 1
-        lsL = leavesSet l
-        lsR = leavesSet r
-    in (lsL, lsR) : bipartitions' lsL r ++ bipartitions' lsR l
-  | otherwise = bs ++ concat (zipWith bipartitions' lsOthers xs)
-  where
-    nChildren  = length xs
-    lsChildren = map leavesSet xs
-    lsOthers   = [ Set.unions $ lsC : take i lsChildren ++ drop (i+1) lsChildren
-                      | i <- [0 .. (nChildren - 1)] ]
-    bs         = zip lsChildren lsOthers
-
--- | Symmetric (Robinson-Foulds) distance between two trees. Assumes that the
--- leaves have unique names! XXX: Comparing a list of trees with this function
--- recomputes bipartitions.
-symmetricDistance :: (Ord a, Eq a) => Tree a -> Tree a -> Int
-symmetricDistance t1 t2 = length b1NotInb2 + length b2NotInb1
-  where b1 = bipartitions t1
-        b2 = bipartitions t2
-        b1NotInb2 = filter (`notElem` b2) b1
-        b2NotInb1 = filter (`notElem` b1) b2
-
--- | Number of incompatible splits. Similar to 'symmetricDistance' but merges
--- multifurcations.
-incompatibleSplitsDistance :: Eq a => Tree a -> Tree a -> Int
-incompatibleSplitsDistance = undefined

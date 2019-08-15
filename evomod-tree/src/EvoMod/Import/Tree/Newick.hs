@@ -58,13 +58,23 @@ tree = space *> (branched <|> leaf) <?> "tree"
 branched :: Parser (Tree PhyloByteStringLabel)
 branched = do
   f <- forest
+  s <- branchSupport
   n <- node
     <?> "branched"
-  return $ Node n f
+  let n' = n {pBrSup = s}
+  return $ Node n' f
 
 -- | A 'forest' is a set of trees separated by @,@ and enclosed by parentheses.
 forest :: Parser [Tree PhyloByteStringLabel]
-forest = char (c2w '(') *> tree `sepBy1` char (c2w ',') <* char (c2w ')') <?> "forest"
+forest = do
+  _ <- char (c2w '(')
+  f <- tree `sepBy1` char (c2w ',')
+  _ <- char (c2w ')')
+    <?> "forest"
+  return f
+
+branchSupport :: Parser (Maybe Double)
+branchSupport = optional $ try float <|> try decimalAsDouble
 
 -- | A 'leaf' is a 'node' without children.
 leaf :: Parser (Tree PhyloByteStringLabel)
@@ -79,7 +89,7 @@ node = do
   n <- name
   b <- branchLength
     <?> "node"
-  return $ PhyloLabel n b
+  return $ PhyloLabel n Nothing b
 
 checkNameCharacter :: Word8 -> Bool
 checkNameCharacter c = c `notElem` map c2w " :;()[],"
@@ -94,4 +104,7 @@ branchLength :: Parser Double
 branchLength = char (c2w ':') *> branchLengthGiven <|> pure 0 <?> "branchLength"
 
 branchLengthGiven :: Parser Double
-branchLengthGiven = try float <|> (fromIntegral <$> (decimal :: Parser Int))
+branchLengthGiven = try float <|> decimalAsDouble
+
+decimalAsDouble :: Parser Double
+decimalAsDouble = fromIntegral <$> (decimal :: Parser Int)

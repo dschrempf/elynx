@@ -129,8 +129,8 @@ filterRowsS = do
   args <- arguments <$> ask
   let (FilterRows ml ms) = argsCommand args
   sss <- readSeqss
-  let filters = map (fromMaybe id) [ filterLongerThan <$> ml
-                                   , filterShorterThan <$> ms ]
+  let filters =
+        map (fromMaybe id) [filterLongerThan <$> ml, filterShorterThan <$> ms]
   io $ sequencesToFasta $ compose filters $ concat sss
 
 filterColumnsS :: Seq ()

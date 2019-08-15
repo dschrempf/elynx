@@ -33,5 +33,5 @@ sampleNewickByteString1 = L.pack "(Aeropyrum0:0.5478645225,(((((((((Arabidopsi:0
 spec :: Spec
 spec = describe "parseByteStringWith newick $ toNewickPhyloByteString" $
        it "should be an invariant" $ do
-       let bs = toNewickPhyloByteStringTree samplePhyloByteStringTree
+       let bs = toNewick samplePhyloByteStringTree
        parseByteStringWith newick bs `shouldBe` samplePhyloByteStringTree

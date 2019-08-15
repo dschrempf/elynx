@@ -105,7 +105,7 @@ examineCommand = command "examine" $
 
 examinePerSiteOpt :: Parser Bool
 examinePerSiteOpt = switch $
-  long "mean"
+  long "per-site"
   <> help "Report per site summary statistics"
 
 subSampleCommand :: Mod CommandFields Command

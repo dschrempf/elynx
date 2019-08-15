@@ -42,7 +42,7 @@ import           EvoMod.Data.Tree.PhyloTree           (PhyloIntLabel)
 import           EvoMod.Data.Tree.SumStat             (formatNChildSumStat,
                                                        toNChildSumStat)
 import           EvoMod.Data.Tree.Tree
-import           EvoMod.Export.Tree.Newick            (toNewickPhyloIntTree)
+import           EvoMod.Export.Tree.Newick            (toNewick)
 import           EvoMod.Simulate.PointProcess         (simulateNReconstructedTrees,
                                                        simulateReconstructedTree)
 import           EvoMod.Tools.Concurrent
@@ -73,7 +73,7 @@ simulate = do
          else simulateNTreesConcurrently c a
   let ls = if s
            then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
-           else parMap rpar toNewickPhyloIntTree trs
+           else parMap rpar toNewick trs
   let mfn = argsOutFileBaseName a
   case mfn of
     Nothing -> logLBSQuiet $ L.unlines ls
@@ -100,7 +100,7 @@ simulateAndSubSampleNTreesConcurrently c (Args nT nL h cM l m r _ _ _ _ s) = do
       timeSpec = fmap (, cM) h
   tr <- simulateReconstructedTree nLeavesBigTree timeSpec l m (head gs)
   logNewSection $ "Simulate one big tree with " ++ show nLeavesBigTree ++ " leaves."
-  logLBS $ toNewickPhyloIntTree tr
+  logLBS $ toNewick tr
   logNewSection $ "Sub sample " ++ show nT ++ " trees with " ++ show nL ++ " leaves."
   let lvs = Seq.fromList $ leaves tr
   trss <- mapConcurrently (\(nSamples, g) -> nSubSamples nSamples lvs nL tr g) (zip chunks gs)
