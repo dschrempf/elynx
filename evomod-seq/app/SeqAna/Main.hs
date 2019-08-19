@@ -74,7 +74,7 @@ examineMSA perSiteFlag msa =
             , L.pack $ "Percentage of unknowns: "
               ++ printf "%.3f" percentageUnknowns
             , L.empty
-            , L.pack "Mean effective number of used states:"
+            , L.pack "Mean effective number of states (measured using entropy):"
             , L.pack "Across whole alignment: "
               <> L.pack (printf "%.3f" kEffMean)
             , L.pack "Across columns without gaps: "
@@ -93,9 +93,9 @@ examineMSA perSiteFlag msa =
     percentageUnknowns  = fromIntegral nUnknowns / fromIntegral nTot :: Double
     msaNoGaps           = filterColumnsNoGaps msa
     msaOnlyStd          = filterColumnsOnlyStd msaNoGaps
-    kEffs               = kEff . toFrequencyData $ msa
-    kEffsNoGaps         = kEff . toFrequencyData $ msaNoGaps
-    kEffsOnlyStd        = kEff . toFrequencyData $ msaOnlyStd
+    kEffs               = kEffEntropy . toFrequencyData $ msa
+    kEffsNoGaps         = kEffEntropy . toFrequencyData $ msaNoGaps
+    kEffsOnlyStd        = kEffEntropy . toFrequencyData $ msaOnlyStd
     kEffMean            = sum kEffs / fromIntegral (length kEffs)
     kEffMeanNoGaps      = sum kEffsNoGaps  / fromIntegral (length kEffsNoGaps)
     kEffMeanOnlyStd     = sum kEffsOnlyStd / fromIntegral (length kEffsOnlyStd)
@@ -141,7 +141,7 @@ filterColumnsS = do
   let msas = map fromSequenceList sss
   let filters = map (fromMaybe id) [ filterColumnsStd <$> ms ]
   -- TODO: ONE INPUT FILE, NOT MANY. ONLY CONCAT HAS MANY INPUT FILES.
-  io $ L.concat $ map (sequencesToFasta . toSequenceList) [ compose filters msa | msa <- msas ]
+  io $ L.concat [ sequencesToFasta . toSequenceList $ compose filters msa | msa <- msas ]
 
 -- subsample nSites nSamples msa gen
 subsample :: (PrimMonad m)

@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell     #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 {- |
 Module      :  EvoMod.Data.MultiSequenceAlignment
@@ -35,7 +35,8 @@ module EvoMod.Data.Sequence.MultiSequenceAlignment
   -- | * Analysis
   , FrequencyData
   , toFrequencyData
-  , kEff
+  , kEffEntropy
+  , kEffHomoplasy
   , countIUPACChars
   , countGaps
   , countUnknowns
@@ -55,7 +56,7 @@ import           System.Random.MWC
 
 import qualified EvoMod.Data.Alphabet.Alphabet              as A
 import           EvoMod.Data.Alphabet.Character
-import           EvoMod.Data.Alphabet.DistributionDiversity
+import qualified EvoMod.Data.Alphabet.DistributionDiversity as D
 import           EvoMod.Data.Sequence.Defaults
 import qualified EvoMod.Data.Sequence.Sequence              as S
 import           EvoMod.Tools.ByteString
@@ -208,12 +209,16 @@ type FrequencyData = M.Matrix Double
 
 -- | Calculcate frequency of characters in multi sequence alignment.
 toFrequencyData :: MultiSequenceAlignment -> FrequencyData
-toFrequencyData msa = fMapColParChunk 100 (frequencyCharacters spec) (msa^.matrix)
+toFrequencyData msa = fMapColParChunk 100 (D.frequencyCharacters spec) (msa^.matrix)
   where spec = A.alphabetSpec (msa^.alphabet)
 
 -- | Diversity analysis. See 'kEffEntropy'.
-kEff :: FrequencyData -> [Double]
-kEff fd = parMapChunk 500 kEffEntropy (M.toColumns fd)
+kEffEntropy :: FrequencyData -> [Double]
+kEffEntropy fd = parMapChunk 500 D.kEffEntropy (M.toColumns fd)
+
+-- | Diversity analysis. See 'kEffEntropy'.
+kEffHomoplasy :: FrequencyData -> [Double]
+kEffHomoplasy fd = parMapChunk 500 D.kEffHomoplasy (M.toColumns fd)
 
 -- | Count the number of standard (i.e., not extended IUPAC) characters in the
 -- alignment.

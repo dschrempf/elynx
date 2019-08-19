@@ -30,16 +30,19 @@ import           EvoMod.Data.Alphabet.Alphabet
 import           EvoMod.Data.Alphabet.Character
 import           EvoMod.Tools.Numeric
 import           EvoMod.Tools.Vector
+import           EvoMod.Tools.Definitions
 
 -- | Entropy of vector.
 entropy :: V.Vector Double -> Double
-entropy v = negate $ sumVec $ V.map xLogX v
+entropy v = if isNaN res
+  then error ("entropy: result of following vector is NaN: " ++ show v)
+  else res
+  where res = negate $ sumVec $ V.map xLogX v
 
 -- | Effective number of used characters measured using 'entropy'. The result
 -- only makes sense when the sum of the array is 1.0.
 kEffEntropy :: V.Vector Double -> Double
--- kEffEntropy v = exp . entropy
-kEffEntropy v = if e < 1e-8
+kEffEntropy v = if e < eps
                 then 1.0
                 else exp e
   where e = entropy v
@@ -74,9 +77,15 @@ countCharacters alph =
     nChars     = length (std alph)
     zeroCounts = V.replicate nChars (0 :: Int)
 
+saveDivision :: Int -> Int -> Double
+saveDivision value divisor =
+  if divisor == 0
+  then 0.0
+  else fromIntegral value / fromIntegral divisor
+
 -- | For a given code vector of characters, calculate frequency of characters.
 frequencyCharacters :: AlphabetSpec -> V.Vector Character -> V.Vector Double
-frequencyCharacters alph d = V.map (\e -> fromIntegral e / fromIntegral s) counts
+frequencyCharacters alph d = V.map (`saveDivision` s) counts
   where
     counts = countCharacters alph d
     s      = sumVec counts
