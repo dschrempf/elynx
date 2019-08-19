@@ -94,7 +94,7 @@ tests:
     main:                Spec.hs
     source-dirs:         test
     dependencies:
-    - evomod-tree
-    - evomod-tools
-    - hspec
-    - hspec-megaparsec
+      - evomod-tree
+      - evomod-tools
+      - hspec
+      - hspec-megaparsec
