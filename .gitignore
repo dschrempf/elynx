@@ -49,3 +49,4 @@ evomod-tree.cabal
 dist/
 dist-newstyle/
 /.dir-locals.el
+/stack.yaml.lock
