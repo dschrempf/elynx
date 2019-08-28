@@ -10,8 +10,6 @@ Portability :  portable
 
 Creation date: Fri Oct  5 08:41:05 2018.
 
-XXX: Provide possibility to parse and handle sequences with different codes.
-
 -}
 
 module Main where

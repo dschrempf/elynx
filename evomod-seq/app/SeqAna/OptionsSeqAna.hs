@@ -189,8 +189,8 @@ alphabetOpt = option auto $
 
 filePathArg :: Parser FilePath
 filePathArg = argument str $
-  metavar "INPUT-FILE-NAMES" <>
-  help "Read sequences from INPUT-FILE-NAMES"
+  metavar "INPUT-FILE-NAME" <>
+  help "Read sequences from INPUT-FILE-NAME"
 
 parseArgs :: IO Args
 parseArgs = parseArgsWith Nothing (Just ftr) args

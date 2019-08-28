@@ -86,7 +86,7 @@ logSDebug = logSWith Debug
 logLBSWith :: Logger l => Verbosity -> LC.ByteString -> ReaderT l IO ()
 logLBSWith lvl = logSWith lvl . LC.unpack
 
--- | See 'logSQuiet'; but for lazy byte strings.
+-- | See 'warnS'; but for lazy byte strings.
 warnLBS :: Logger l => LC.ByteString -> ReaderT l IO ()
 warnLBS = warnS . LC.unpack
 

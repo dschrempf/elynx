@@ -94,7 +94,7 @@ evoModSuiteFooter =
   , "Sequence simulation with 'seq-sim'"
   , "  Simulate evolutionary sequences (FASTA format)with seq-sim."
   , "Tree simulation with 'tree-sim'"
-  , "  Simulate phylogenetic trees (Newick format) with tree=sim."
+  , "  Simulate phylogenetic trees (Newick format) with tree-sim."
   ]
 
 -- | Read arguments with globally provided description, header, footer, and so
