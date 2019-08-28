@@ -35,7 +35,6 @@ spec :: Spec
 spec =
   describe "subSample" $
   it "correctly sub sample an MSA" $ do
-    msa <- fromSequenceList <$> parseFileWith (fasta DNAI) fastaNucleotideIUPACFN
+    msa <- either error id . fromSequenceList <$> parseFileWith (fasta DNAI) fastaNucleotideIUPACFN
     let ss = subSample [0,3,5] msa
-    -- L.putStr $ summarizeMSA ss
     ss `shouldBe` ssMSA

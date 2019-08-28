@@ -43,7 +43,7 @@ sampleTreeBS = L.pack "(Aeropyrum0:0.5478645225,(((((((((Arabidopsi:0.0701001024
 
 
 largeTree :: Tree PhyloByteStringLabel
-largeTree = parseByteStringWith newick sampleTreeBS
+largeTree = parseByteStringWith "Sample newick byte string" newick sampleTreeBS
 
 subSampleLargeTree :: Tree PhyloByteStringLabel
 subSampleLargeTree = fromJust $ subTree ((== 'P') . L.head . pLabel) largeTree

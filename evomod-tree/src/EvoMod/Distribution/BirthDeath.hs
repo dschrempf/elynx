@@ -75,7 +75,7 @@ quantile :: BirthDeathDistribution -> Double -> Time
 quantile (BDD t l m) p
   | p >= 0 && p <= 1 = res
   | otherwise        =
-    error $ "PointProcess.quantile: p must be in [0,1] range. Got: " ++ show p
+    error $ "PointProcess.quantile: p must be in [0,1] range. Got: " ++ show p ++ "."
  where d   = l - m
        t2  = (l - m*exp(-d*t)) / (1.0 - exp(-d*t))
        res = (-1.0/d) * log ((1.0 - p*l/t2)/(1.0 - p*m/t2))

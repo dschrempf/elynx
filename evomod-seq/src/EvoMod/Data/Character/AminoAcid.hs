@@ -103,7 +103,7 @@ fromWord w = case w2c w of
                'V' -> V
                'W' -> W
                'Y' -> Y
-               _   -> error "fromWord: cannot convert to AminoAcid."
+               _   -> error "fromWord: Cannot convert to AminoAcid."
 
 derivingUnbox "AminoAcid"
     [t| AminoAcid -> Word8 |]

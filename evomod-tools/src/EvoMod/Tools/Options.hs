@@ -28,7 +28,7 @@ module EvoMod.Tools.Options
   ) where
 
 import           Data.List
-import           Data.Maybe
+-- import           Data.Maybe
 import           Data.Time
 import           Data.Version                    (showVersion)
 import           Data.Word
@@ -43,7 +43,7 @@ import           Paths_evomod_tools              (version)
 -- Be careful; it is necessary to synchronize the evomod-xxx libraries, so that
 -- the version number of evomod-tools matches the others.
 versionString :: String
-versionString = "EvoMod suite version " ++ showVersion version ++ "."
+versionString = "EvoMod Suite version " ++ showVersion version ++ "."
 
 copyrightString :: String
 copyrightString = "Developed by Dominik Schrempf."
@@ -63,7 +63,7 @@ hdr = intercalate "\n" [ versionString
                        ]
 
 description :: String
-description = "The goal of the EvoMod suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without assuming anything about the data (e.g., the type of code), and without default values. The exact command with all arguments has to be stated by the user and is logged automatically. This leads to some work overhead in the beginning, but usually pays off in the end."
+description = "The EvoMod Suite is a Haskell library and a tool set for computational biology. The goal of the EvoMod Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without assuming anything about the data (e.g., the type of code), and without default values. The exact command with all arguments has to be stated by the user and is logged automatically. This leads to some work overhead in the beginning, but usually pays off in the end."
 
 -- | Short, globally usable program header.
 programHeader :: IO String
@@ -85,6 +85,18 @@ versionOpt = infoOption hdr
     <> help "Show version"
     <> hidden )
 
+evoModSuiteFooter :: [String]
+evoModSuiteFooter =
+  [ ""
+  , "The EvoMod Suite:"
+  , "Sequence analysis with 'seq-ana'"
+  , "  View, examine, and modify evolutionary sequences (FASTA format) with seq-ana."
+  , "Sequence simulation with 'seq-sim'"
+  , "  Simulate evolutionary sequences (FASTA format)with seq-sim."
+  , "Tree simulation with 'tree-sim'"
+  , "  Simulate phylogenetic trees (Newick format) with tree=sim."
+  ]
+
 -- | Read arguments with globally provided description, header, footer, and so
 -- on. Custom additional description (first argument) and footer (second
 -- argument) can be provided. print help if needed.
@@ -98,7 +110,8 @@ parseArgsWith md mf p = execParser $
     <> footerDoc (Just . (vcat . map pretty) $ ftr'))
   where
     dsc' = maybe description (\d -> unlines $ d ++ [description]) md
-    ftr' = fromMaybe [] mf
+    -- ftr' = fromMaybe [] mf
+    ftr' = maybe evoModSuiteFooter (++ evoModSuiteFooter) mf
 
 -- | Verbosity levels.
 data Verbosity = Quiet | Info | Debug

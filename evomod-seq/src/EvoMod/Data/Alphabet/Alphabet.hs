@@ -128,7 +128,7 @@ toStdDNA 'A' = "A"
 toStdDNA 'C' = "C"
 toStdDNA 'G' = "G"
 toStdDNA 'T' = "T"
-toStdDNA _   = error "tostdDNA: cannot convert to standard nucleotide."
+toStdDNA _   = error "tostdDNA: Cannot convert to standard nucleotide."
 
 dnaX :: AlphabetSpec
 dnaX = fromChars "ACGT" "-." [] [] toStdDNAX
@@ -140,7 +140,7 @@ toStdDNAX 'G' = "G"
 toStdDNAX 'T' = "T"
 toStdDNAX '-' = []
 toStdDNAX '.' = []
-toStdDNAX _   = error "toStdDNAX: cannot convert to standard nucleotide."
+toStdDNAX _   = error "toStdDNAX: Cannot convert to standard nucleotide."
 
 dnaI :: AlphabetSpec
 dnaI = fromChars "ACGT" "-." "N" "UWSMKRYBDHV" toStdDNAI
@@ -164,7 +164,7 @@ toStdDNAI 'V' = "ACG"
 toStdDNAI 'N' = "ACGT"
 toStdDNAI '-' = []
 toStdDNAI '.' = []
-toStdDNAI _   = error "toStdDNAI: cannot convert to standard nucleotide."
+toStdDNAI _   = error "toStdDNAI: Cannot convert to standard nucleotide."
 
 protein :: AlphabetSpec
 protein = fromChars "ACDEFGHIKLMNPQRSTVWY" [] [] [] toStdP
@@ -190,7 +190,7 @@ toStdP 'T' = "T"
 toStdP 'V' = "V"
 toStdP 'W' = "W"
 toStdP 'Y' = "Y"
-toStdP _   = error "toStdP: cannot convert to standard amino acid."
+toStdP _   = error "toStdP: Cannot convert to standard amino acid."
 
 proteinX :: AlphabetSpec
 proteinX = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." [] [] toStdPX
@@ -218,7 +218,7 @@ toStdPX 'W' = "W"
 toStdPX 'Y' = "Y"
 toStdPX '-' = ""
 toStdPX '.' = ""
-toStdPX _   = error "toStdPX: cannot convert to standard amino acid."
+toStdPX _   = error "toStdPX: Cannot convert to standard amino acid."
 
 proteinS :: AlphabetSpec
 proteinS = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." [] "*" toStdPS
@@ -247,7 +247,7 @@ toStdPS 'Y' = "Y"
 toStdPS '-' = ""
 toStdPS '.' = ""
 toStdPS '*' = ""
-toStdPS _   = error "toStdPX: cannot convert to standard amino acid."
+toStdPS _   = error "toStdPX: Cannot convert to standard amino acid."
 
 proteinI :: AlphabetSpec
 proteinI = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." "X" "*JBZ" toStdPI
@@ -280,4 +280,4 @@ toStdPI 'J' = "LI"
 toStdPI 'B' = "DN"
 toStdPI 'Z' = "EQ"
 toStdPI 'X' = "ACDEFGHIKLMNPQRSTVWY"
-toStdPI _   = error "toStdPX: cannot convert to standard amino acid."
+toStdPI _   = error "toStdPX: Cannot convert to standard amino acid."

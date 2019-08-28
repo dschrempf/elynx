@@ -28,7 +28,7 @@ longestSequenceInFileBS = L.unlines $ map L.pack [ ">SEQUENCE_3"
                                                  , "ATTTAAAAAAACCCAAAACCCGGGCCCCGGGTTTTTTTA" ]
 
 longestSequenceInFile :: Sequence
-longestSequenceInFile = parseByteStringWith (fastaSequence DNA) longestSequenceInFileBS
+longestSequenceInFile = parseByteStringWith "Fasta byte string" (fastaSequence DNA) longestSequenceInFileBS
 
 spec :: Spec
 spec = do

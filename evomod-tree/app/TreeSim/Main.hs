@@ -52,7 +52,7 @@ import           EvoMod.Tools.Options
 main :: IO ()
 main = do
   a <- parseArgs
-  h <- setupLogger (argsVerbosity a) (argsOutFileBaseName a)
+  h <- setupLogger (argsOutFileBaseName a)
   runReaderT simulate (Params a h)
   closeLogger h
 
@@ -60,7 +60,7 @@ simulate :: Simulation ()
 simulate = do
   a <- arguments <$> ask
   when (isNothing (argsHeight a) && argsConditionMRCA a) $
-    error "main: cannot condition on MRCA (-M) when height is not given (-H)."
+    error "Cannot condition on MRCA (-M) when height is not given (-H)."
   let s = argsSumStat a
   c <- lift getNumCapabilities
   lift programHeader >>= logS
@@ -76,7 +76,8 @@ simulate = do
            else parMap rpar toNewick trs
   let mfn = argsOutFileBaseName a
   case mfn of
-    Nothing -> logLBSQuiet $ L.unlines ls
+    -- TODO: This should be no warning, what is wrong here?
+    Nothing -> warnLBS $ L.unlines ls
     Just fn -> do
       let fn' = fn ++ ".tree"
       lift $ L.writeFile fn' $ L.unlines ls

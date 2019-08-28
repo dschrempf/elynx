@@ -17,19 +17,19 @@ XXX: Provide possibility to parse and handle sequences with different codes.
 module Main where
 
 import           Control.Monad
-import           Control.Monad.Primitive
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8                  as L
 import           Data.Maybe                                  (fromMaybe)
 import qualified Data.Vector                                 as V
+import           Data.Word
 import           System.IO
 import           System.Random.MWC
 import           Text.Printf
 
 import           OptionsSeqAna
 
-import           EvoMod.Data.Alphabet.Alphabet
+import           EvoMod.Data.Character.Codon
 import           EvoMod.Data.Sequence.MultiSequenceAlignment
 import           EvoMod.Data.Sequence.Sequence
 import           EvoMod.Data.Sequence.Translate
@@ -41,7 +41,7 @@ import           EvoMod.Tools.Logger
 import           EvoMod.Tools.Misc
 import           EvoMod.Tools.Options
 
-data Params = Params { arguments  :: Args
+data Params = Params { arguments  :: GlobalArgs
                      , mLogHandle :: Maybe Handle }
 
 instance Logger Params where
@@ -49,6 +49,27 @@ instance Logger Params where
   mHandle   = mLogHandle
 
 type Seq = ReaderT Params IO
+
+-- | Get output file name with provided suffix.
+getOutFilePath :: String -> Seq (Maybe FilePath)
+getOutFilePath suffix = do
+  mOutFilePath <- argsOutBaseName . arguments <$> ask
+  return $ (++ "." ++ suffix) <$> mOutFilePath
+
+-- | Get a given number of output file names with provided suffix.
+--
+-- > getOutFilePaths 11 "fasta"
+--
+-- Will result in @BasePath.00.fasta@ up to @BasePath.10.fasta@.
+getOutFilePaths :: Int -> String -> Seq [Maybe FilePath]
+getOutFilePaths n suffix = do
+  mOutFilePath <- argsOutBaseName . arguments <$> ask
+  case mOutFilePath of
+    Nothing -> return $ replicate n Nothing
+    Just fn -> return [ Just $ fn ++ "." ++ digitStr i ++ "." ++ suffix
+                      | i <- [0 .. n-1] ]
+  where nDigits    = ceiling $ logBase (10 :: Double) (fromIntegral n)
+        digitStr i = L.unpack $ alignRightWith '0' nDigits (L.pack $ show i)
 
 examineMSA :: Bool -> MultiSequenceAlignment -> L.ByteString
 examineMSA perSiteFlag msa =
@@ -105,120 +126,117 @@ examineMSA perSiteFlag msa =
                                          ]
                           else L.empty
 
-examineOneS :: Bool -> [Sequence] -> L.ByteString
-examineOneS perSiteFlag ss = summarizeSequenceList ss <> sumMSA
-  where sumMSA = if equalLength ss
-                 then L.pack "\n" <> examineMSA perSiteFlag (fromSequenceList ss)
-                 else L.empty
+examine :: Bool -> [Sequence] -> L.ByteString
+examine perSiteFlag ss = summarizeSequenceList ss <>
+  case fromSequenceList ss of
+    Left _    -> L.empty
+    Right msa -> L.pack "\n" <> examineMSA perSiteFlag msa
 
-examineS :: Seq ()
-examineS = do
-  args <- arguments <$> ask
-  let (Examine perSiteFlag) = argsCommand args
-  sss <- readSeqss
-  io $ L.intercalate (L.pack "\n") $
-    map (examineOneS perSiteFlag) sss
+examineCmd :: Bool -> Maybe FilePath -> Seq ()
+examineCmd perSiteFlag fp = do
+  logS "Command: Examine sequences."
+  ss <- readSeqs fp
+  let result = examine perSiteFlag ss
+  outFilePath <- getOutFilePath "out"
+  io result outFilePath
 
-concatenateS :: Seq ()
-concatenateS = do
-  sss <- readSeqss
-  io $ sequencesToFasta $ concatenateSeqs sss
+concatenateCmd :: [FilePath] -> Seq ()
+concatenateCmd fps = do
+  logS "Command: Concatenate sequences."
+  sss <- mapM (readSeqs . Just) fps
+  let result = sequencesToFasta $ concatenateSeqs sss
+  outFilePath <- getOutFilePath "fasta"
+  io result outFilePath
 
-filterRowsS :: Seq ()
-filterRowsS = do
-  args <- arguments <$> ask
-  let (FilterRows ml ms) = argsCommand args
-  sss <- readSeqss
-  let filters =
-        map (fromMaybe id) [filterLongerThan <$> ml, filterShorterThan <$> ms]
-  io $ sequencesToFasta $ compose filters $ concat sss
+filterRows :: Maybe Int -> Maybe Int -> [Sequence] -> L.ByteString
+filterRows ml ms ss = sequencesToFasta $ compose filters ss
+  where filters = map (fromMaybe id) [filterLongerThan <$> ml, filterShorterThan <$> ms]
 
-filterColumnsS :: Seq ()
-filterColumnsS = do
-  args <- arguments <$> ask
-  let (FilterColumns ms) = argsCommand args
-  sss <- readSeqss
-  let msas = map fromSequenceList sss
-  let filters = map (fromMaybe id) [ filterColumnsStd <$> ms ]
-  -- TODO: ONE INPUT FILE, NOT MANY. ONLY CONCAT HAS MANY INPUT FILES.
-  io $ L.concat [ sequencesToFasta . toSequenceList $ compose filters msa | msa <- msas ]
+filterRowsCmd :: Maybe Int -> Maybe Int -> Maybe FilePath -> Seq ()
+filterRowsCmd long short fp = do
+  logS "Command: Filter sequences of a list of sequences."
+  maybe (return ())
+    (\val -> logS $ "  Keep sequences longer than " ++ show val ++ ".") long
+  maybe (return ())
+    (\val -> logS $ "  Keep sequences shorter than " ++ show val ++ ".") short
+  ss <- readSeqs fp
+  let result = filterRows long short ss
+  outFilePath <- getOutFilePath "fasta"
+  io result outFilePath
 
--- subsample nSites nSamples msa gen
-subsample :: (PrimMonad m)
-          => Int -> Int -> MultiSequenceAlignment -> Gen (PrimState m) -> m [MultiSequenceAlignment]
-subsample n m msa g = replicateM m $ randomSubSample n msa g
+filterColumns :: Maybe Double -> [Sequence] -> L.ByteString
+filterColumns ms ss = sequencesToFasta . toSequenceList $ compose filters msa
+  where msa = either error id (fromSequenceList ss)
+        filters = map (fromMaybe id) [ filterColumnsStd <$> ms ]
 
-subSampleS :: Seq ()
-subSampleS = do
-  args <- arguments <$> ask
-  let (SubSample n m ms) = argsCommand args
-  sss <- readSeqss
-  when (length sss > 1) $ error "can only sub-sample from one input file"
-  g <- lift $ maybe createSystemRandom (initialize . V.fromList) ms
-  let msa = fromSequenceList $ head sss
-  samples <- subsample n m msa g
-  let files = map (sequencesToFasta . toSequenceList) samples
-  mFileOut <- argsMaybeOutFileBaseName . arguments <$> ask
-  case mFileOut of
-    Nothing -> logLBSQuiet $ L.intercalate (L.pack "\n") files
-    Just fn -> do
-      let nDigits    = ceiling $ logBase (10 :: Double) (fromIntegral m)
-          digitStr i = L.unpack $ alignRightWith '0' nDigits (L.pack $ show i)
-          fns = [ fn ++ digitStr i ++ ".fasta" | i <- [0 .. m-1] ]
-      lift $ mapM_ (\i -> withFile (fns!!i) WriteMode (`L.hPutStr` (files!!i))) [0 .. m-1]
-      logS $ "Results written to files with basename '" ++ fn ++ "'."
+filterColumnsCmd :: Maybe Double -> Maybe FilePath -> Seq ()
+filterColumnsCmd standard fp = do
+  logS "Command: Filter columns of a multi sequence alignment."
+  logS "  Keep columns only having standard characters."
+  ss <- readSeqs fp
+  let result = filterColumns standard ss
+  outFilePath <- getOutFilePath "fasta"
+  io result outFilePath
 
-translateS :: Seq ()
-translateS = do
-  args <- arguments <$> ask
-  let (Translate rf uc) = argsCommand args
-  logS "Translate sequences to amino acids."
-  logS $ "Universal code: " ++ show uc ++ "."
+subSampleCmd :: Int -> Int -> Maybe [Word32] -> Maybe FilePath -> Seq ()
+subSampleCmd nSites nAlignments seed fp = do
+  logS "Command: Sub sample from a multi sequence alignment."
+  logS $ "  Sample " ++ show nSites ++ " sites."
+  logS $ "  Sample " ++ show nAlignments ++ " multi sequence alignments."
+  ss <- readSeqs fp
+  g <- lift $ maybe createSystemRandom (initialize . V.fromList) seed
+  let msa = either error id (fromSequenceList ss)
+  samples <- replicateM nAlignments $ randomSubSample nSites msa g
+  let results = map (sequencesToFasta . toSequenceList) samples
+  outFilePaths <- getOutFilePaths nAlignments "fasta"
+  zipWithM_ io results outFilePaths
+
+translateSeqs :: Int -> UniversalCode -> [Sequence] -> [Sequence]
+translateSeqs rf uc = map (translateSeq uc rf)
+
+translateCmd :: Int -> UniversalCode -> Maybe FilePath -> Seq ()
+translateCmd rf uc fp = do
+  logS "Command: Translate sequences to amino acids."
+  logS $ "  Universal code: " ++ show uc ++ "."
+  logS $ "  Reading frame: " ++ show rf ++ "."
   logS ""
-  sss <- readSeqss
-  io $ L.intercalate (L.pack "\n") $
-    map (sequencesToFasta . map (translateSeq uc rf)) sss
+  ss <- readSeqs fp
+  let result = sequencesToFasta $ translateSeqs rf uc ss
+  outFilePath <- getOutFilePath "fasta"
+  io result outFilePath
 
-io :: L.ByteString -> Seq ()
-io res = do
-  mOutFileBaseName <- argsMaybeOutFileBaseName . arguments <$> ask
-  cmd <- argsCommand . arguments <$> ask
-  case mOutFileBaseName of
-    Nothing -> logLBSQuiet res
+readSeqs :: Maybe FilePath -> Seq [Sequence]
+readSeqs mfp = do
+  a <- argsAlphabet . arguments <$> ask
+  case mfp of
+    Nothing -> logS $ "Read sequences from standard input; alphabet " ++ show a ++ "."
+    Just fp -> logS $ "Read sequences from file " ++ fp ++ "; alphabet" ++ show a ++ "."
+  lift $ parseFileOrIOWith (fasta a) mfp
+
+io :: L.ByteString -> Maybe FilePath -> Seq ()
+io res mfp =
+  case mfp of
+    Nothing -> do
+      lift $ L.putStr res
+      logS "Results written to standard output."
     Just fn -> do
-      let fn' = case cmd of
-            Examine _ -> fn ++ ".out"
-            _         -> fn ++ ".fasta"
-      lift $ withFile fn' WriteMode (`L.hPutStr` res)
-      logS $ "Results written to file '" ++ fn' ++ "'."
+      lift $ withFile fn WriteMode (`L.hPutStr` res)
+      logS $ "Results written to file '" ++ fn ++ "'."
 
-readSeqs :: Alphabet -> FilePath -> IO [Sequence]
-readSeqs a = parseFileWith (fasta a)
-
-readSeqss :: Seq [[Sequence]]
-readSeqss = do
-  fns <- argsFileNames . arguments <$> ask
-  code <- argsCode . arguments <$> ask
-  lift $ mapM (readSeqs code) fns
-
-work :: Seq ()
-work = do
-  args <- arguments <$> ask
+work :: Command -> Seq ()
+work cmd = do
   lift programHeader >>= logS
-  let c = argsCode args
-  logS $ "Read fasta file(s); code " ++ show c ++ "."
-  logS ""
-  case argsCommand args of
-    Examine{}       -> examineS
-    Concatenate     -> concatenateS
-    FilterRows{}    -> filterRowsS
-    FilterColumns{} -> filterColumnsS
-    SubSample{}     -> subSampleS
-    Translate{}     -> translateS
+  case cmd of
+    Examine ps fp -> examineCmd ps fp
+    Concatenate fps -> concatenateCmd fps
+    FilterRows lo sh fp -> filterRowsCmd lo sh fp
+    FilterColumns st fp -> filterColumnsCmd st fp
+    SubSample ns na s fp -> subSampleCmd ns na s fp
+    Translate fr cd fp -> translateCmd fr cd fp
 
 main :: IO ()
 main = do
-  a <- parseArgs
-  h <- setupLogger (argsVerbosity a) (argsMaybeOutFileBaseName a)
-  runReaderT work (Params a h)
+  Args gArgs cmd <- parseArgs
+  h <- setupLogger (argsOutBaseName gArgs)
+  runReaderT (work cmd) (Params gArgs h)
   closeLogger h

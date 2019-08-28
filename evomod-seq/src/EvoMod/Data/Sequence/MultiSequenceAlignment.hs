@@ -83,10 +83,14 @@ msaNSequences :: MultiSequenceAlignment -> Int
 msaNSequences = M.rows . view matrix
 
 -- | Create 'MultiSequenceAlignment' from a list of 'S.Sequence's.
-fromSequenceList :: [S.Sequence] -> MultiSequenceAlignment
+fromSequenceList :: [S.Sequence] -> Either String MultiSequenceAlignment
 fromSequenceList ss
-  | S.equalLength ss && allEqual (map (view S.alphabet) ss) = MultiSequenceAlignment ns a d
-  | otherwise = error "Sequences do not have equal length or equal codes."
+  | S.equalLength ss && allEqual (map (view S.alphabet) ss) =
+      Right $ MultiSequenceAlignment ns a d
+  | S.equalLength ss =
+      Left "Sequences do not have equal codes."
+  | otherwise =
+      Left "Sequences do not have equal lengths."
   where
     ns   = map (view S.name) ss
     a    = head ss ^. S.alphabet

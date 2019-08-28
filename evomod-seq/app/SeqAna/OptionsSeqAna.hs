@@ -14,6 +14,7 @@ Creation date: Sun Oct  7 17:29:45 2018.
 
 module OptionsSeqAna
   ( Args (..)
+  , GlobalArgs (..)
   , Command (..)
   , parseArgs
   ) where
@@ -28,38 +29,52 @@ import           EvoMod.Data.Character.Codon
 import           EvoMod.Tools.Misc
 import           EvoMod.Tools.Options
 
-data Command = Examine { perSite :: Bool }
+data Command = Examine
+               { exPerSite       :: Bool
+               , exMbFp          :: Maybe FilePath }
              | Concatenate
-             | FilterRows { longer  :: Maybe Int
-                          , shorter :: Maybe Int }
-             | FilterColumns { standard :: Maybe Double }
-             | SubSample { nSites   :: Int
-                         , nSamples :: Int
-                         , mSeed    :: Maybe [Word32] }
-             | Translate { readingFrame  :: Int
-                         , universalCode :: UniversalCode }
+               { ccMbFps         :: [FilePath] }
+             | FilterRows
+               { frLonger        :: Maybe Int
+               , frShorter       :: Maybe Int
+               , frMbFp          :: Maybe FilePath }
+             | FilterColumns
+               { fcStandard      :: Maybe Double
+               , fcMbFp          :: Maybe FilePath }
+             | SubSample
+               { ssNSites        :: Int
+               , ssNAlignments   :: Int
+               , ssMbSeed        :: Maybe [Word32]
+               , ssMbFp          :: Maybe FilePath }
+             | Translate
+               { trReadingFrame  :: Int
+               , trUniversalCode :: UniversalCode
+               , trMbFp          :: Maybe FilePath }
+
+data GlobalArgs = GlobalArgs
+  { argsAlphabet    :: Alphabet
+  , argsOutBaseName :: Maybe FilePath
+  , argsVerbosity   :: Verbosity }
 
 data Args = Args
-  {
-    argsCode                 :: Alphabet
-  , argsMaybeOutFileBaseName :: Maybe FilePath
-  , argsVerbosity            :: Verbosity
-  , argsCommand              :: Command
-  , argsFileNames            :: [FilePath]
+  { argsGlobal  :: GlobalArgs
+  , argsCommand :: Command
   }
 
 args :: Parser Args
-args = Args
-  <$> alphabetOpt
-  <*> optional outFileBaseNameOpt
-  <*> verbosityOpt
-  <*> commandArg
-  <*> some fileNameArg
+args = Args <$>
+       globalArgs <*>
+       commandArg
+
+globalArgs :: Parser GlobalArgs
+globalArgs = GlobalArgs <$>
+             alphabetOpt <*>
+             optional outFileBaseNameOpt <*>
+             verbosityOpt
 
 commandArg :: Parser Command
 commandArg = hsubparser $
   examineCommand <>
-  -- summarizeCommand <>
   concatenateCommand <>
   filterRowsCommand <>
   filterColumnsCommand <>
@@ -68,98 +83,114 @@ commandArg = hsubparser $
 
 concatenateCommand :: Mod CommandFields Command
 concatenateCommand = command "concatenate" $
-  info (pure Concatenate) $ progDesc "Concatenate sequences found in input files"
+  info ( Concatenate <$>
+         some filePathArg ) $
+  progDesc "Concatenate sequences found in input files"
 
 filterRowsCommand :: Mod CommandFields Command
 filterRowsCommand = command "filter-rows" $
-  info (FilterRows <$> filterLongerThanOpt <*> filterShorterThanOpt) $
+  info ( FilterRows <$>
+         filterLongerThanOpt <*>
+         filterShorterThanOpt <*>
+         optional filePathArg ) $
   progDesc "Filter rows (or sequences) found in input files"
 
 filterLongerThanOpt :: Parser (Maybe Int)
 filterLongerThanOpt = optional $ option auto $
-  long "longer-than"
-  <> metavar "LENGTH"
-  <> help "Only keep sequences longer than LENGTH"
+  long "longer-than" <>
+  metavar "LENGTH" <>
+  help "Only keep sequences longer than LENGTH"
 
 filterShorterThanOpt :: Parser (Maybe Int)
 filterShorterThanOpt = optional $ option auto $
-  long "shorter-than"
-  <> metavar "LENGTH"
-  <> help "Only keep sequences shorter than LENGTH"
+  long "shorter-than" <>
+  metavar "LENGTH" <>
+  help "Only keep sequences shorter than LENGTH"
 
 filterColumnsCommand :: Mod CommandFields Command
 filterColumnsCommand = command "filter-columns" $
-  info (FilterColumns <$> filterStandardOpt) $
+  info ( FilterColumns <$>
+         filterStandardOpt <*>
+         optional filePathArg ) $
   progDesc "Filter columns of multi-sequence alignments"
 
 filterStandardOpt :: Parser (Maybe Double)
 filterStandardOpt = optional $ option auto $
-  long "standard-chars"
-  <> metavar "DOUBLE"
-  <> help "Keep rows with a proportion standard (non-IUPAC) characters larger than DOUBLE in [0,1]"
+  long "standard-chars" <>
+  metavar "DOUBLE" <>
+  help "Keep rows with a proportion standard (non-IUPAC) characters larger than DOUBLE in [0,1]"
 
 examineCommand :: Mod CommandFields Command
 examineCommand = command "examine" $
-  info (Examine <$> examinePerSiteOpt) $
+  info ( Examine <$>
+        examinePerSiteOpt <*>
+        optional filePathArg ) $
   progDesc "Examine sequences; if data is a multi sequence alignment, additionally analyze columns"
 
 examinePerSiteOpt :: Parser Bool
 examinePerSiteOpt = switch $
-  long "per-site"
-  <> help "Report per site summary statistics"
+  long "per-site" <>
+  help "Report per site summary statistics"
 
 subSampleCommand :: Mod CommandFields Command
 subSampleCommand = command "subsample" $
-  info (SubSample <$> subSampleNSitesOpt <*> subSampleNSamplesOpt <*> seedOpt ) $
-  progDesc "Sub-sample columns from multi sequence alignments"
+  info ( SubSample <$>
+         subSampleNSitesOpt <*>
+         subSampleNAlignmentsOpt <*>
+         seedOpt <*>
+         optional filePathArg ) $
+  progDesc "Sub-sample columns from multi sequence alignments. Creates a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment."
 
 subSampleNSitesOpt :: Parser Int
 subSampleNSitesOpt = option auto $
-  long "number-of-sites"
-  <> short 'n'
-  <> metavar "INT"
-  <> help "Number of sites to randomly sample with replacement"
+  long "number-of-sites" <>
+  short 'n' <>
+  metavar "INT" <>
+  help "Number of sites randomly drawn with replacement"
 
-subSampleNSamplesOpt :: Parser Int
-subSampleNSamplesOpt = option auto $
-  long "number-of-samples"
-  <> short 'm'
-  <> metavar "INT"
-  <> help "Number of random sub-samples"
+subSampleNAlignmentsOpt :: Parser Int
+subSampleNAlignmentsOpt = option auto $
+  long "number-of-alignments" <>
+  short 'm' <>
+  metavar "INT" <>
+  help "Number of multi sequence alignments to be created"
 
 translateCommand :: Mod CommandFields Command
 translateCommand = command "translate" $
-  info (Translate <$> readingFrameOpt <*> universalCodeOpt) $
+  info ( Translate <$>
+         readingFrameOpt <*>
+         universalCodeOpt <*>
+         optional filePathArg ) $
   progDesc "Translate from DNA to Protein or DNAX to ProteinX"
 
 readingFrameOpt :: Parser Int
 readingFrameOpt = option auto $
-  long "reading-frame"
-  <> short 'r'
-  <> metavar "INT"
-  <> help "Reading frame [0|1|2]."
+  long "reading-frame" <>
+  short 'r' <>
+  metavar "INT" <>
+  help "Reading frame [0|1|2]."
 
 universalCodeOpt :: Parser UniversalCode
 universalCodeOpt = option auto $
-  long "universal-code"
-  <> short 'u'
-  <> metavar "CODE"
-  <> help ("universal code; one of: " ++ codeStr ++ ".")
+  long "universal-code" <>
+  short 'u' <>
+  metavar "CODE" <>
+  help ("universal code; one of: " ++ codeStr ++ ".")
   where codes = allValues :: [UniversalCode]
         codeWords = map show codes
         codeStr = intercalate ", " codeWords
 
 alphabetOpt :: Parser Alphabet
 alphabetOpt = option auto $
-  long "alphabet"
-  <> short 'a'
-  <> metavar "NAME"
-  <> help "Specify alphabet type NAME"
+  long "alphabet" <>
+  short 'a' <>
+  metavar "NAME" <>
+  help "Specify alphabet type NAME"
 
-fileNameArg :: Parser FilePath
-fileNameArg = argument str $
-  metavar "INPUT-FILE-NAMES"
-  <> help "Read sequences from INPUT-FILE-NAMES"
+filePathArg :: Parser FilePath
+filePathArg = argument str $
+  metavar "INPUT-FILE-NAMES" <>
+  help "Read sequences from INPUT-FILE-NAMES"
 
 parseArgs :: IO Args
 parseArgs = parseArgsWith Nothing (Just ftr) args

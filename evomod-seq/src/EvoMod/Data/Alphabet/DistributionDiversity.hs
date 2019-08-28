@@ -35,7 +35,7 @@ import           EvoMod.Tools.Definitions
 -- | Entropy of vector.
 entropy :: V.Vector Double -> Double
 entropy v = if isNaN res
-  then error ("entropy: result of following vector is NaN: " ++ show v)
+  then error ("entropy: Sesult of following vector is NaN: " ++ show v ++ ".")
   else res
   where res = negate $ sumVec $ V.map xLogX v
 

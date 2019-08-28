@@ -107,7 +107,7 @@ fromWord w = case w2c w of
                'N' ->  N
                '-' ->  Gap
                '.' ->  Gap
-               _   -> error "fromWord: cannot convert to NucleotideI."
+               _   -> error "fromWord: Cannot convert to NucleotideI."
 
 derivingUnbox "NucleotideI"
     [t| NucleotideI -> Word8 |]

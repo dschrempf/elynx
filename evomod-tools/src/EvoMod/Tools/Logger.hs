@@ -19,15 +19,16 @@ module EvoMod.Tools.Logger
     -- * Logging
     Logger (..)
   , logSWith
-  , logSQuiet
   , logS
   , logSDebug
   , logLBSWith
-  , logLBSQuiet
   , logLBS
   , logLBSDebug
   , setupLogger
   , closeLogger
+  -- * Warnings
+  , warnS
+  , warnLBS
   -- * Helper functions
   , logNewSection
   , reportCapability
@@ -70,8 +71,8 @@ logSWith lvl msg = do
   lift $ logHandle mh msg
 
 -- | Always print 'String' to screen; even when verbosity level is 'Quiet'.
-logSQuiet :: Logger l => String -> ReaderT l IO ()
-logSQuiet = logSWith Quiet
+warnS :: Logger l => String -> ReaderT l IO ()
+warnS = logSWith Quiet
 
 -- | If not quiet, print 'String' to screen.
 logS :: Logger l => String -> ReaderT l IO ()
@@ -86,8 +87,8 @@ logLBSWith :: Logger l => Verbosity -> LC.ByteString -> ReaderT l IO ()
 logLBSWith lvl = logSWith lvl . LC.unpack
 
 -- | See 'logSQuiet'; but for lazy byte strings.
-logLBSQuiet :: Logger l => LC.ByteString -> ReaderT l IO ()
-logLBSQuiet = logSQuiet . LC.unpack
+warnLBS :: Logger l => LC.ByteString -> ReaderT l IO ()
+warnLBS = warnS . LC.unpack
 
 -- | See 'logS'; but for lazy byte strings.
 logLBS :: Logger l => LC.ByteString -> ReaderT l IO ()
@@ -98,10 +99,10 @@ logLBSDebug :: Logger l => LC.ByteString -> ReaderT l IO ()
 logLBSDebug = logSDebug . LC.unpack
 
 -- | Setup log handle, if not quiet and if filename is given.
-setupLogger :: Verbosity -> Maybe FilePath -> IO (Maybe Handle)
-setupLogger Quiet _         = return Nothing
-setupLogger _     Nothing   = return Nothing
-setupLogger _     (Just fn) = Just <$> openFile (fn ++ ".log") AppendMode
+setupLogger :: Maybe FilePath    -- ^ Log file base name.
+            -> IO (Maybe Handle)
+setupLogger Nothing   = return Nothing
+setupLogger (Just fn) = Just <$> openFile (fn ++ ".log") AppendMode
 
 -- | Close the logging file handle.
 closeLogger :: Maybe Handle -> IO ()

@@ -179,10 +179,10 @@ getPhyloModel Nothing Nothing _ _ =
 getPhyloModel (Just _) (Just _) _ _ =
   Left "Both, substitution and mixture model string given; use only one."
 getPhyloModel (Just s) Nothing Nothing Nothing =
-  Right $ P.SubstitutionModel $ parseStringWith parseSubstitutionModel s
+  Right $ P.SubstitutionModel $ parseStringWith "Substitution model string" parseSubstitutionModel s
 getPhyloModel (Just _) Nothing (Just _) _ =
   Left "Weights given; but cannot be used with substitution model."
 getPhyloModel (Just _) Nothing _ (Just _) =
   Left "Empirical distribution mixture model components given; but cannot be used with substitution model."
 getPhyloModel Nothing (Just m) mws mcs =
-  Right $ P.MixtureModel $ parseStringWith (mixtureModel mcs mws) m
+  Right $ P.MixtureModel $ parseStringWith "Mixture model string" (mixtureModel mcs mws) m

@@ -134,7 +134,7 @@ simulate n (Just (t, c)) l m g
       !vs <- replicateM (n-2) (D.genContVar (BDD t l m) g)
       vs' <- randomInsert t vs g
       return $ PointProcess [0..(n-1)] vs' t
-  | otherwise = error "simulate: fell through guard, this is impossible"
+  | otherwise = error "simulate: Fell through guard, this should never happen."
 
 -- | Sort the values of a point process and their indices to be (the indices
 -- that they will have while creating the tree).

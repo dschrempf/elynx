@@ -21,6 +21,7 @@ module EvoMod.Tools.InputOutput
     -- * Parsing.
   , runParserOnFile
   , parseFileWith
+  , parseFileOrIOWith
   , parseStringWith
   , parseByteStringWith
   ) where
@@ -28,6 +29,7 @@ module EvoMod.Tools.InputOutput
 import           Codec.Compression.GZip     (compress, decompress)
 import qualified Data.ByteString.Lazy.Char8 as L
 import           Data.List                  (isSuffixOf)
+import           Data.Maybe
 import           Text.Megaparsec
 
 -- | Read file. If file path ends with ".gz", assume gzipped file and decompress
@@ -43,22 +45,42 @@ writeGZFile f | ".gz" `isSuffixOf` f = L.writeFile f . compress
               | otherwise            = L.writeFile f
 
 -- | Parse a possibly gzipped file.
-runParserOnFile :: Parsec e L.ByteString a -> FilePath -> IO (Either (ParseErrorBundle L.ByteString e) a)
+runParserOnFile :: Parsec e L.ByteString a
+                -> FilePath -> IO (Either (ParseErrorBundle L.ByteString e) a)
 runParserOnFile p f = parse p f <$> readGZFile f
 
 -- | Parse a possibly gzipped file and extract the result.
-parseFileWith :: (ShowErrorComponent e) => Parsec e L.ByteString a -> FilePath -> IO a
-parseFileWith p f = do res <- runParserOnFile p f
-                       case res of
-                         Left  err -> error $ errorBundlePretty err
-                         Right val -> return val
+parseFileWith :: (ShowErrorComponent e)
+                  => Parsec e L.ByteString a -- ^ The parser.
+                  -> FilePath
+                  -> IO a
+parseFileWith p f = parseFileOrIOWith p (Just f)
+
+-- | Parse a possibly gzipped file, or standard input, and extract the result.
+parseFileOrIOWith :: (ShowErrorComponent e)
+                  => Parsec e L.ByteString a -- ^ The parser.
+                  -> Maybe FilePath          -- ^ If no file path is given, standard input is used.
+                  -> IO a
+parseFileOrIOWith p mf = do
+  contents <- case mf of
+                Nothing -> L.getContents
+                Just f  -> readGZFile f
+  return $ parseByteStringWith (fromMaybe "Standard input" mf) p contents
 
 -- | Parse a 'String' and extract the result.
-parseStringWith :: (ShowErrorComponent e) => Parsec e L.ByteString a -> String -> a
-parseStringWith p s = parseByteStringWith p (L.pack s)
+parseStringWith :: (ShowErrorComponent e)
+                => String                  -- ^ Name of string.
+                -> Parsec e L.ByteString a -- ^ Parser.
+                -> String                  -- ^ Input.
+                -> a
+parseStringWith s p l = parseByteStringWith s p (L.pack l)
 
 -- | Parse a 'L.ByteString' and extract the result.
-parseByteStringWith :: (ShowErrorComponent e) => Parsec e L.ByteString a -> L.ByteString -> a
-parseByteStringWith p s = case parse p "" s of
+parseByteStringWith :: (ShowErrorComponent e)
+                    => String                  -- ^ Name of byte string.
+                    -> Parsec e L.ByteString a -- ^ Parser.
+                    -> L.ByteString            -- ^ Input.
+                    -> a
+parseByteStringWith s p l = case parse p s l of
                             Left  err -> error $ errorBundlePretty err
                             Right val -> val

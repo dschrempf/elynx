@@ -115,7 +115,7 @@ fromWord w = case w2c w of
                '*' -> Stop
                '-' -> Gap
                '.' -> Gap
-               _   -> error "fromWord: cannot convert to AminoAcidS."
+               _   -> error "fromWord: Cannot convert to AminoAcidS."
 
 derivingUnbox "AminoAcidS"
     [t| AminoAcidS -> Word8 |]

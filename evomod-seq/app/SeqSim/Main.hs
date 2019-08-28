@@ -81,7 +81,7 @@ simulateMSA pm t n g = do
       alph       = A.all $ alphabetSpec code
       sequences  = [ Sequence sName code (V.fromList $ map (`Set.elemAt` alph) ss) |
                     (sName, ss) <- zip leafNames leafStates ]
-  return $ fromSequenceList sequences
+  return $ either error id $ fromSequenceList sequences
 
 -- Summarize EDM components; line to be printed to screen or log.
 summarizeEDMComponents :: [EDMComponent] -> L.ByteString
@@ -162,6 +162,6 @@ simulate = do
 main :: IO ()
 main = do
   a <- parseArgs
-  h <- setupLogger (argsVerbosity a) (Just $ argsOutFileBaseName a)
+  h <- setupLogger (Just $ argsOutFileBaseName a)
   runReaderT simulate (Params a h)
   closeLogger h

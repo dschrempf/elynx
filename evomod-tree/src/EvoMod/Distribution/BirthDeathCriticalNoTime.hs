@@ -67,7 +67,7 @@ quantile :: BirthDeathCriticalNoTimeDistribution -> Double -> Time
 quantile (BDCNTD l) p
   | p >= 0 && p <= 1 = p / (l - l*p)
   | otherwise        =
-    error $ "PointProcess.quantile: p must be in [0,1]. Got: " ++ show p
+    error $ "PointProcess.quantile: p must be in [0,1]. Got: " ++ show p ++ "."
 
 instance D.ContGen BirthDeathCriticalNoTimeDistribution where
   genContVar = D.genContinuous

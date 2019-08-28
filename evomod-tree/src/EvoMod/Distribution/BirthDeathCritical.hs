@@ -69,7 +69,7 @@ quantile :: BirthDeathCriticalDistribution -> Double -> Time
 quantile (BDCD t l) p
   | p >= 0 && p <= 1 = res
   | otherwise        =
-    error $ "PointProcess.quantile: p must be in [0,1] range. Got: " ++ show p
+    error $ "PointProcess.quantile: p must be in [0,1] range. Got: " ++ show p ++ "."
  where res = p * t / (1 + l*t - l*p*t)
 
 instance D.ContGen BirthDeathCriticalDistribution where

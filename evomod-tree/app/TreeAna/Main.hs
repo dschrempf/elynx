@@ -20,7 +20,7 @@ import           EvoMod.Import.Tree.Newick
 import           EvoMod.Tools.InputOutput
 
 getTree :: L.ByteString -> Tree PhyloByteStringLabel
-getTree = parseByteStringWith newick
+getTree = parseByteStringWith "Custom newick tree string" newick
 
 getLeaveNames :: L.ByteString -> L.ByteString
 getLeaveNames i = L.unwords lsStr

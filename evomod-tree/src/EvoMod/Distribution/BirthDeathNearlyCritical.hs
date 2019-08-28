@@ -77,7 +77,7 @@ quantile :: BirthDeathNearlyCriticalDistribution -> Double -> Time
 quantile (BDNCD t l m) p
   | p >= 0 && p <= 1 = res
   | otherwise        =
-    error $ "PointProcess.quantile: p must be in [0,1] range. Got: " ++ show p
+    error $ "PointProcess.quantile: p must be in [0,1] range. Got: " ++ show p ++ "."
  where
    den   = l*(-3.0 + 2.0*t*(-1.0+p)*l)+m
    t1    = (2.0 + t*(l - 4.0*p*l + m)) / den

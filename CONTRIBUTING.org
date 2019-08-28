@@ -1,0 +1,37 @@
+* Style guide
+** Use complete sentences
+Wherever possible, use complete sentences ended by full stops. This includes
+error messages and warnings. Headline, list items or mathematical objects may be
+excluded. For example,
+#+begin_example
+- A
+- B
+- C
+#+end_example
+or,
+#+begin_example
+Length: 10.13
+#+end_example
+
+** Positions of operators
+Put operators at the end of lines. For example,
+#+begin_src haskell
+args = Args <$>
+       alphabetOpt <*>
+       optional outFileBaseNameOpt <*>
+       verbosityOpt <*>
+       commandArg
+#+end_src
+This does not involve type declarations, because of documentation. For example,
+#+begin_src haskell
+subsample :: (PrimMonad m)
+          => Int                    -- ^ How many samples?
+          -> MultiSequenceAlignment -- ^ The alignment to sample from.
+          -> m MultiSequenceAlignment
+#+end_src
+
+* Design principles
+** Files and standard input
+Binaries should accept both, a file and standard input. If a binary works on
+multiple files, the files must be delimited by a specific delimiter when given
+through standard input.
