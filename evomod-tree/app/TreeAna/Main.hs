@@ -49,7 +49,8 @@ work = do
   trs <- readTrees (argsInFilePath a)
   let lsStrs = map summarize trs
   let outFilePath = (++ ".out") <$> argsOutBaseName a
-  io (L.unlines lsStrs) outFilePath
+  logNewSection "Results."
+  io (L.intercalate (L.pack "\n") lsStrs) outFilePath
 
 main :: IO ()
 main = do
