@@ -85,7 +85,7 @@ concatenateCommand :: Mod CommandFields Command
 concatenateCommand = command "concatenate" $
   info ( Concatenate <$>
          some filePathArg ) $
-  progDesc "Concatenate sequences found in input files"
+  progDesc "Concatenate sequences found in input files."
 
 filterRowsCommand :: Mod CommandFields Command
 filterRowsCommand = command "filter-rows" $
@@ -93,7 +93,7 @@ filterRowsCommand = command "filter-rows" $
          filterLongerThanOpt <*>
          filterShorterThanOpt <*>
          optional filePathArg ) $
-  progDesc "Filter rows (or sequences) found in input files"
+  progDesc "Filter rows (or sequences) found in input files."
 
 filterLongerThanOpt :: Parser (Maybe Int)
 filterLongerThanOpt = optional $ option auto $
@@ -112,7 +112,7 @@ filterColumnsCommand = command "filter-columns" $
   info ( FilterColumns <$>
          filterStandardOpt <*>
          optional filePathArg ) $
-  progDesc "Filter columns of multi-sequence alignments"
+  progDesc "Filter columns of multi-sequence alignments."
 
 filterStandardOpt :: Parser (Maybe Double)
 filterStandardOpt = optional $ option auto $
@@ -125,7 +125,7 @@ examineCommand = command "examine" $
   info ( Examine <$>
         examinePerSiteOpt <*>
         optional filePathArg ) $
-  progDesc "Examine sequences; if data is a multi sequence alignment, additionally analyze columns"
+  progDesc "Examine sequences. if data is a multi sequence alignment, additionally analyze columns."
 
 examinePerSiteOpt :: Parser Bool
 examinePerSiteOpt = switch $
@@ -139,7 +139,7 @@ subSampleCommand = command "subsample" $
          subSampleNAlignmentsOpt <*>
          seedOpt <*>
          optional filePathArg ) $
-  progDesc "Sub-sample columns from multi sequence alignments. Creates a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment."
+  progDesc "Sub-sample columns from multi sequence alignments. Create a given number of multi sequence alignments, each of which containing a given number of random sites drawn from the original multi sequence alignment."
 
 subSampleNSitesOpt :: Parser Int
 subSampleNSitesOpt = option auto $
@@ -161,7 +161,7 @@ translateCommand = command "translate" $
          readingFrameOpt <*>
          universalCodeOpt <*>
          optional filePathArg ) $
-  progDesc "Translate from DNA to Protein or DNAX to ProteinX"
+  progDesc "Translate from DNA to Protein or DNAX to ProteinX."
 
 readingFrameOpt :: Parser Int
 readingFrameOpt = option auto $
@@ -188,12 +188,15 @@ alphabetOpt = option auto $
   help "Specify alphabet type NAME"
 
 filePathArg :: Parser FilePath
-filePathArg = argument str $
-  metavar "INPUT-FILE-NAME" <>
-  help "Read sequences from INPUT-FILE-NAME"
+filePathArg = strArgument $
+  metavar "INPUT-FILE" <>
+  help "Read sequences from INPUT-FILE"
 
 parseArgs :: IO Args
-parseArgs = parseArgsWith Nothing (Just ftr) args
+parseArgs = parseArgsWith desc ftr args
+
+desc :: [String]
+desc = [ "Analyze multi sequence alignments." ]
 
 ftr :: [String]
 ftr = [ "File formats:" ] ++ fs ++

@@ -18,6 +18,7 @@ module EvoMod.Tools.InputOutput
     -- * Input, output.
     readGZFile
   , writeGZFile
+  , io
     -- * Parsing.
   , runParserOnFile
   , parseFileWith
@@ -27,10 +28,14 @@ module EvoMod.Tools.InputOutput
   ) where
 
 import           Codec.Compression.GZip     (compress, decompress)
+import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8 as L
 import           Data.List                  (isSuffixOf)
 import           Data.Maybe
 import           Text.Megaparsec
+
+import           EvoMod.Tools.Logger
 
 -- | Read file. If file path ends with ".gz", assume gzipped file and decompress
 -- before read.
@@ -84,3 +89,14 @@ parseByteStringWith :: (ShowErrorComponent e)
 parseByteStringWith s p l = case parse p s l of
                             Left  err -> error $ errorBundlePretty err
                             Right val -> val
+
+-- | Write result to file or standard output.
+io :: Logger l => L.ByteString -> Maybe FilePath -> ReaderT l IO ()
+io res mfp =
+  case mfp of
+    Nothing -> do
+      lift $ L.putStr res
+      logS "Results written to standard output."
+    Just fp -> do
+      lift $ writeGZFile fp res
+      logS $ "Results written to file '" ++ fp ++ "'."

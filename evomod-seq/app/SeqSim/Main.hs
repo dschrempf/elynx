@@ -110,8 +110,8 @@ reportModel m = do
 
 simulate :: Simulation ()
 simulate = do
+  lift (programHeader "seq-sim: Simulate sequences.") >>= logS
   args <- arguments <$> ask
-  lift programHeader >>= logS
   logS "Read tree."
   let treeFile = argsTreeFile args
   tree <- lift $ parseFileWith newick treeFile

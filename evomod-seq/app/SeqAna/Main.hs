@@ -211,19 +211,9 @@ readSeqs mfp = do
     Just fp -> logS $ "Read sequences from file " ++ fp ++ "; alphabet" ++ show a ++ "."
   lift $ parseFileOrIOWith (fasta a) mfp
 
-io :: L.ByteString -> Maybe FilePath -> Seq ()
-io res mfp =
-  case mfp of
-    Nothing -> do
-      lift $ L.putStr res
-      logS "Results written to standard output."
-    Just fn -> do
-      lift $ withFile fn WriteMode (`L.hPutStr` res)
-      logS $ "Results written to file '" ++ fn ++ "'."
-
 work :: Command -> Seq ()
 work cmd = do
-  lift programHeader >>= logS
+  lift (programHeader "seq-ana: Analyze sequences.") >>= logS
   case cmd of
     Examine ps fp -> examineCmd ps fp
     Concatenate fps -> concatenateCmd fps
@@ -235,6 +225,6 @@ work cmd = do
 main :: IO ()
 main = do
   Args gArgs cmd <- parseArgs
-  h <- setupLogger (argsOutBaseName gArgs)
-  runReaderT (work cmd) (Params gArgs h)
-  closeLogger h
+  logger <- setupLogger (argsOutBaseName gArgs)
+  runReaderT (work cmd) (Params gArgs logger)
+  closeLogger logger

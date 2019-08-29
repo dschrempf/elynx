@@ -65,14 +65,15 @@ hdr = intercalate "\n" [ versionString
 description :: String
 description = "The EvoMod Suite is a Haskell library and a tool set for computational biology. The goal of the EvoMod Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without assuming anything about the data (e.g., the type of code), and without default values. The exact command with all arguments has to be stated by the user and is logged automatically. This leads to some work overhead in the beginning, but usually pays off in the end."
 
--- | Short, globally usable program header.
-programHeader :: IO String
-programHeader = do
+-- | Short, globally usable program header with obligatory description.
+programHeader :: String -> IO String
+programHeader desc = do
   t  <- formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z." `fmap` Data.Time.getCurrentTime
   p  <- getProgName
   as <- getArgs
   return $ intercalate "\n"
     [ "----------------------------------------------------------------------"
+    , desc
     , hdr
     , "Time: " ++ t
     , "Command line: " ++ p ++ " " ++ unwords as ]
@@ -100,18 +101,16 @@ evoModSuiteFooter =
 -- | Read arguments with globally provided description, header, footer, and so
 -- on. Custom additional description (first argument) and footer (second
 -- argument) can be provided. print help if needed.
-parseArgsWith :: Maybe [String] -> Maybe [String] -> Parser a -> IO a
-parseArgsWith md mf p = execParser $
+parseArgsWith :: [String] -> [String] -> Parser a -> IO a
+parseArgsWith desc ftr p = execParser $
   info (helper <*> versionOpt <*> p)
   (fullDesc
     <> header hdr
     <> progDesc dsc'
-    -- <> footerDoc (Just . (vcat . map pretty) $ ftr'))
     <> footerDoc (Just . (vcat . map pretty) $ ftr'))
   where
-    dsc' = maybe description (\d -> unlines $ d ++ [description]) md
-    -- ftr' = fromMaybe [] mf
-    ftr' = maybe evoModSuiteFooter (++ evoModSuiteFooter) mf
+    dsc' = unlines $ desc ++ [description]
+    ftr' = ftr ++ evoModSuiteFooter
 
 -- | Verbosity levels.
 data Verbosity = Quiet | Info | Debug

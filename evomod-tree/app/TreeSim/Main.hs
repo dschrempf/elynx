@@ -58,12 +58,12 @@ main = do
 
 simulate :: Simulation ()
 simulate = do
+  lift (programHeader "tree-sim: Simulate trees.") >>= logS
   a <- arguments <$> ask
   when (isNothing (argsHeight a) && argsConditionMRCA a) $
     error "Cannot condition on MRCA (-M) when height is not given (-H)."
   let s = argsSumStat a
   c <- lift getNumCapabilities
-  lift programHeader >>= logS
   logNewSection "Arguments"
   logS $ reportArgs a
   logNewSection "Simulation"

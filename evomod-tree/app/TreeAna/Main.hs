@@ -11,27 +11,53 @@ Creation date: Fri May 24 13:47:56 2019.
 
 -}
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Reader
+import qualified Data.ByteString.Lazy.Char8      as L
+import qualified Data.ByteString.Lazy.Builder      as L
 import           Data.Tree
+import           System.IO
 
 import           OptionsTreeAna
 
+import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Data.Tree.Tree
 import           EvoMod.Import.Tree.Newick
 import           EvoMod.Tools.InputOutput
+import           EvoMod.Tools.Logger
+import           EvoMod.Tools.Options
 
-getTree :: L.ByteString -> Tree PhyloByteStringLabel
-getTree = parseByteStringWith "Custom newick tree string" newick
+data Params = Params { arguments  :: Args
+                     , mLogHandle :: Maybe Handle }
 
-getLeaveNames :: L.ByteString -> L.ByteString
-getLeaveNames i = L.unwords lsStr
-  where t = getTree i
-        ls = leaves t
-        lsStr = map pLabel ls
+instance Logger Params where
+  verbosity = argsVerbosity . arguments
+  mHandle   = mLogHandle
+
+type Ana = ReaderT Params IO
+
+readTrees :: Maybe FilePath -> Ana [Tree PhyloByteStringLabel]
+readTrees mfp = do
+  case mfp of
+    Nothing -> logS "Read tree(s) from standard input."
+    Just fp -> logS $ "Read tree(s) from file " ++ fp ++ "."
+  lift $ parseFileOrIOWith manyNewick mfp
+
+work :: Ana ()
+work = do
+  lift (programHeader "tree-ana: Analyze trees.") >>= logS
+  a <- arguments <$> ask
+  logNewSection "Results."
+  trs <- readTrees (argsInFilePath a)
+  let lsStrs = map summarize trs
+  let outFilePath = (++ ".out") <$> argsOutBaseName a
+  io (L.unlines lsStrs) outFilePath
 
 main :: IO ()
 main = do
-  _ <- parseArgs
-  L.interact getLeaveNames
+  args <- parseArgs
+  logger <- setupLogger (argsOutBaseName args)
+  runReaderT work (Params args logger)
+  closeLogger logger
 

@@ -15,6 +15,8 @@ Creation date: Thu Jan 17 14:16:34 2019.
 
 module EvoMod.Data.Tree.MeasurableTree
   ( Measurable (..)
+  , distancesRootLeaves
+  , averageDistanceRootLeaves
   , height
   , lengthenRoot
   , shortenRoot
@@ -44,12 +46,18 @@ class Measurable a where
   shorten :: Double -> a -> a
   shorten dl = lengthen (-dl)
 
--- | Distances from the root of the tree to its leaves.
+-- | Distances from the root of a tree to its leaves.
 distancesRootLeaves :: (Measurable a) => Tree a -> [Double]
 distancesRootLeaves (Node l []) = [getLen l]
 distancesRootLeaves (Node l f ) = concatMap (map (+ getLen l) . distancesRootLeaves) f
 
--- | Height of a tree.
+-- | Average distance from the root of a tree to its leaves.
+averageDistanceRootLeaves :: (Measurable a) => Tree a -> Double
+averageDistanceRootLeaves tr = sum ds / fromIntegral n
+  where ds = distancesRootLeaves tr
+        n  = length ds
+
+-- | Height of a tree. Returns 0 if the tree is empty.
 height :: (Measurable a) => Tree a -> Double
 height = maximum . distancesRootLeaves
 

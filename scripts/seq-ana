@@ -6,16 +6,14 @@ file_DNA="${project_root}/evomod-seq/data/Nucleotide.fasta"
 file_AA="${project_root}/evomod-seq/data/AminoAcid.fasta"
 
 msg "Seq-Ana; examine DNA."
-stack exec seq-ana -- examine -a DNA "$file_DNA" || exit 1
+stack exec seq-ana -- -a DNA examine "$file_DNA" || exit 1
 
 msg "Seq-Ana; examine protein data."
-stack exec seq-ana -- examine -a Protein "$file_AA" || exit 1
+stack exec seq-ana -- -a Protein examine "$file_AA" || exit 1
 
 msg "Seq-Ana; concatenate DNA."
-stack exec seq-ana -- concatenate -a DNA "$file_DNA" "$file_DNA" || exit 1
+stack exec seq-ana -- -a DNA concatenate "$file_DNA" "$file_DNA" || exit 1
 
 msg "Seq-Ana; examine; test if quiet."
-stack exec seq-ana -- examine -a DNA -v Quiet "$file_DNA" || exit 1
+stack exec seq-ana -- -a DNA -v Quiet examine "$file_DNA" || exit 1
 
-msg "Seq-Ana; analyze DNA."
-stack exec seq-ana -- analyze -a DNA "$file_DNA" || exit 1

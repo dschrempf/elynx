@@ -135,7 +135,10 @@ lengthOpt = option auto
 
 -- | Read the arguments and prints out help if needed.
 parseArgs :: IO Args
-parseArgs = parseArgsWith Nothing (Just ftr) args
+parseArgs = parseArgsWith desc ftr args
+
+desc :: [String]
+desc = [ "Simulate multi sequence alignments." ]
 
 ftr :: [String]
 ftr = sms ++ mms

@@ -22,10 +22,16 @@ data Tree a = Node {
 @
 
 This means, that the word 'Node' is reserved for the constructor of a tree, and
-has a label and a children. The terms 'Node' and /label/ are not to be confused.
+that a 'Node' has a label and a children. The terms 'Node' and /label/ are not
+to be confused.
 
 - Branches have /lengths/. For example, a branch length can be a distances or a
   time.
+
+NOTE: Trees in this library are all rooted. Unrooted trees can be treated with a
+rooted data structure equally well. However, in these cases, some functions have
+no meaning. For example, functions measuring the distance from the root to the
+leaves (the height of a rooted tree).
 
 NOTE: Try fgl or alga. Use functional graph library for unrooted trees see also
 the book /Haskell high performance programming from Thomasson/, p. 344.

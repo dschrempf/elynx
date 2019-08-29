@@ -23,12 +23,22 @@ import           EvoMod.Tools.Options
 
 data Args = Args
   { argsOutBaseName :: Maybe FilePath
-  , argsVerbosity   :: Verbosity }
+  , argsVerbosity   :: Verbosity
+  , argsInFilePath  :: Maybe FilePath }
 
 args :: Parser Args
 args = Args <$>
        optional outFileBaseNameOpt <*>
-       verbosityOpt
+       verbosityOpt <*>
+       optional filePathArg
+
+filePathArg :: Parser FilePath
+filePathArg = strArgument $
+  metavar "INPUT-FILE" <>
+  help "Read tree(s) from INPUT-FILE"
+
+description :: [String]
+description = [ "Analyze phylogenetic trees given in Newick format." ]
 
 parseArgs :: IO Args
-parseArgs = parseArgsWith Nothing Nothing args
+parseArgs = parseArgsWith description [] args

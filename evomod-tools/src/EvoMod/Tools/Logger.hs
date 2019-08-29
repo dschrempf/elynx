@@ -66,7 +66,7 @@ logHandle (Just h) msg = hPutStrLn h msg
 logSWith :: Logger l => Verbosity -> String -> ReaderT l IO ()
 logSWith lvl msg = do
   v  <- verbosity <$> ask
-  when (lvl <= v) (lift $ putStrLn msg)
+  when (lvl <= v) (lift $ hPutStrLn stderr msg)
   mh <- mHandle <$> ask
   lift $ logHandle mh msg
 

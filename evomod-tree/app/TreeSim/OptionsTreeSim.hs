@@ -160,4 +160,4 @@ ftr = [ "Height of Trees: if no tree height is given, the heights will be random
 -- | The impure IO action that reads the arguments and prints out help if
 -- needed.
 parseArgs :: IO Args
-parseArgs = parseArgsWith (Just hdr) (Just ftr) argsParser
+parseArgs = parseArgsWith hdr ftr argsParser
