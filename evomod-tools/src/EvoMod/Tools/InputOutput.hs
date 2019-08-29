@@ -95,8 +95,8 @@ io :: Logger l => L.ByteString -> Maybe FilePath -> ReaderT l IO ()
 io res mfp =
   case mfp of
     Nothing -> do
+      logS "Write results to standard output."
       lift $ L.putStr res
-      logS "Results written to standard output."
     Just fp -> do
+      logS $ "Write results to file '" ++ fp ++ "'."
       lift $ writeGZFile fp res
-      logS $ "Results written to file '" ++ fp ++ "'."

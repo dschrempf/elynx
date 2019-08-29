@@ -14,7 +14,6 @@ Creation date: Fri May 24 13:47:56 2019.
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8      as L
-import qualified Data.ByteString.Lazy.Builder      as L
 import           Data.Tree
 import           System.IO
 
@@ -22,7 +21,6 @@ import           OptionsTreeAna
 
 import           EvoMod.Data.Tree.MeasurableTree
 import           EvoMod.Data.Tree.PhyloTree
-import           EvoMod.Data.Tree.Tree
 import           EvoMod.Import.Tree.Newick
 import           EvoMod.Tools.InputOutput
 import           EvoMod.Tools.Logger
@@ -48,7 +46,6 @@ work :: Ana ()
 work = do
   lift (programHeader "tree-ana: Analyze trees.") >>= logS
   a <- arguments <$> ask
-  logNewSection "Results."
   trs <- readTrees (argsInFilePath a)
   let lsStrs = map summarize trs
   let outFilePath = (++ ".out") <$> argsOutBaseName a
