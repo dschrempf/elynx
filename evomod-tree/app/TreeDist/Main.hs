@@ -17,6 +17,7 @@ Creation date: Wed May 29 18:09:39 2019.
 -}
 
 
+import           Control.Monad
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Builder            as L
@@ -48,10 +49,6 @@ showTriplet n args (i, j, d) = i' <> j' <> d'
         j' = alignLeft  (n+2) $ L.pack (args !! j)
         d' = alignRight 20    $ L.toLazyByteString (L.intDec d)
 
-distanceMeasure :: (Ord a, Eq a) => Tree a -> Tree a -> Int
--- distanceMeasure = symmetricDistance
-distanceMeasure = incompatibleSplitsDistance
-
 type Dist = ReaderT Params IO
 
 data Params = Params { arguments  :: Args
@@ -65,31 +62,55 @@ worker :: Dist ()
 worker = do
   lift (programHeader "tree-dist: Calculate distances between trees.") >>= logS
   args <- arguments <$> ask
+  -- Determine output handle (stdout or file).
+  let outFilePath = (++ ".out") <$> argsOutFileBaseName args
+  outH <- lift $ maybe (pure stdout) (`openFile` WriteMode) outFilePath
   let tfps = argsInFilePaths args
   (trees, names) <- if length tfps == 1
     then
     do let f = head tfps
-       logS $ "Read trees from file: " ++ show f ++ "."
-       ts <- lift $ parseFileWith manyNewick (head tfps)
+       logS $ "Read trees from file: " ++ f ++ "."
+       ts <- lift $ parseFileWith manyNewick f
        let n = length ts
+       when (n <= 1) (error "Not enough trees found in file.")
+       lift $ hPutStrLn outH "Compute pairwise distances between trees in the same file."
+       lift $ hPutStrLn outH $ "Trees are numbered from 0 to " ++ show (n-1) ++ "."
        return (ts, take n (map show [0 :: Int ..]))
     else
     do logS "Read trees from files."
        ts <- lift $ mapM (parseFileWith newick) tfps
+       when (length ts <= 1) (error "Not enough trees found in files.")
+       lift $ hPutStrLn outH "Compute pairwise distances between trees from different files."
+       lift $ hPutStrLn outH "Trees are named according to their file names."
        return (ts, tfps)
-  let n   = maximum $ map length names
-      tsN = map normalize trees
-      tsC = map (collapse 0.95) tsN
-      ts' = map removeBrLen tsC
-      ds = [ (i, j, distanceMeasure a b)
-           | (i:ir, a:ar) <- zip (tails [0..]) (tails ts')
+  case outFilePath of
+    Nothing -> logS "Write results to standard output."
+    Just f  -> logS $ "Write results to file " ++ f ++ "."
+  let n        = maximum $ map length names
+      tsN      = map normalize trees
+      distance = argsDistance args
+  case distance of
+    Symmetric -> lift $ hPutStrLn outH "Use symmetric (Robinson-Foulds) distance."
+    IncompatibleSplit val -> do
+      lift $ hPutStrLn outH "Use incompatible split distance."
+      lift $ hPutStrLn outH $ "Collapse nodes with support less than " ++ show val ++ "."
+  let distanceMeasure :: Tree L.ByteString -> Tree L.ByteString -> Int
+      distanceMeasure = case distance of
+        Symmetric           -> symmetricDistance
+        IncompatibleSplit _ -> incompatibleSplitsDistance
+  let treesCollapsed = case distance of
+        Symmetric             -> trees
+        IncompatibleSplit val -> map (collapse val) tsN
+      treesNoBrLen = map removeBrLen treesCollapsed
+  let ds = [ (i, j, distanceMeasure a b)
+           | (i:ir, a:ar) <- zip (tails [0..]) (tails treesNoBrLen)
            , (j, b) <- zip ir ar ]
   -- L.putStrLn $ L.unlines $ map toNewick ts
   -- L.putStrLn $ L.unlines $ map toNewick tsN
   -- L.putStrLn $ L.unlines $ map toNewick tsC
-  let res = header n <> L.unlines (map (showTriplet n tfps) ds)
-      outFilePath = (++ ".out") <$> argsOutFileBaseName args
-  io res outFilePath
+  lift $ L.hPutStrLn outH $ header n
+  lift $ L.hPutStr outH $ L.unlines (map (showTriplet n names) ds)
+  lift $ hClose outH
 
 main :: IO ()
 main = do

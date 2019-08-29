@@ -12,6 +12,8 @@ Creation date: Tue Mar  5 22:08:50 2019.
 
 Monad that supports some basic logging features.
 
+TODO: Use monad-logger, https://hackage.haskell.org/package/monad-logger-0.3.30.
+
 -}
 
 module EvoMod.Tools.Logger

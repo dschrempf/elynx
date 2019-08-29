@@ -14,6 +14,7 @@ Creation date: Thu Aug 29 13:02:22 2019.
 
 module OptionsTreeDist
   ( Args (..)
+  , Distance (..)
   , parseArgs
   ) where
 
@@ -33,6 +34,7 @@ data Args = Args
   , argsVerbosity       :: Verbosity
   , argsInFilePaths     :: [FilePath]
   , argsDistance        :: Distance
+  , argsAverage         :: Bool
   }
 
 args :: Parser Args
@@ -40,7 +42,8 @@ args = Args <$>
   optional outFileBaseNameOpt <*>
   verbosityOpt <*>
   some filePathArg <*>
-  distanceOpt
+  distanceOpt <*>
+  averageSwitch
 
 filePathArg :: Parser FilePath
 filePathArg = strArgument $
@@ -69,7 +72,14 @@ distanceOpt :: Parser Distance
 distanceOpt = option (megaReadM distanceParser) $
   long "distance" <>
   short 'd' <>
-  help "Type of distance to calculate"
+  -- TODO: Put available distances into footer.
+  help "Type of distance to calculate; avilable distances: symmetric, incompatible-split[VAL] where branches with support below 0.0<VAL<1.0 are collaped"
+
+averageSwitch :: Parser Bool
+averageSwitch = switch $
+  long "average" <>
+  short 'a' <>
+  help "Compute average of pairwise distances only"
 
 desc :: [String]
 desc = [ "Compute distances between phylogenetic trees." ]
