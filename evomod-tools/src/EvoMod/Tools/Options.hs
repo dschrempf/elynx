@@ -25,17 +25,24 @@ module EvoMod.Tools.Options
   , verbosityOpt
   , seedOpt
   , outFileBaseNameOpt
+    -- * Options meta
+  , megaReadM
+    -- * Formatting
+  , fillParagraph
   ) where
 
-import           Data.List
+import           Data.List                       hiding (group)
 -- import           Data.Maybe
 import           Data.Time
 import           Data.Version                    (showVersion)
+import           Data.Void
 import           Data.Word
 import           Language.Haskell.TH
-import           Options.Applicative
+import           Options.Applicative             hiding (empty)
 import           Options.Applicative.Help.Pretty
 import           System.Environment
+import           Text.Megaparsec                 (Parsec, errorBundlePretty,
+                                                  runParser)
 
 import           EvoMod.Tools.Misc
 import           Paths_evomod_tools              (version)
@@ -62,9 +69,6 @@ hdr = intercalate "\n" [ versionString
                        , compilationString
                        ]
 
-description :: String
-description = "The EvoMod Suite is a Haskell library and a tool set for computational biology. The goal of the EvoMod Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without assuming anything about the data (e.g., the type of code), and without default values. The exact command with all arguments has to be stated by the user and is logged automatically. This leads to some work overhead in the beginning, but usually pays off in the end."
-
 -- | Short, globally usable program header with obligatory description.
 programHeader :: String -> IO String
 programHeader desc = do
@@ -86,17 +90,15 @@ versionOpt = infoOption hdr
     <> help "Show version"
     <> hidden )
 
-evoModSuiteFooter :: [String]
+evoModSuiteFooter :: [Doc]
 evoModSuiteFooter =
-  [ ""
-  , "The EvoMod Suite:"
-  , "Sequence analysis with 'seq-ana'"
-  , "  View, examine, and modify evolutionary sequences (FASTA format) with seq-ana."
-  , "Sequence simulation with 'seq-sim'"
-  , "  Simulate evolutionary sequences (FASTA format)with seq-sim."
-  , "Tree simulation with 'tree-sim'"
-  , "  Simulate phylogenetic trees (Newick format) with tree-sim."
-  ]
+  [ bold $ text "The EvoMod Suite."
+  , fillParagraph "A Haskell library and a tool set for computational biology. The goal of the EvoMod Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without assuming anything about the data (e.g., the type of code), and without default values. The exact command with all arguments has to be stated by the user and is logged automatically. This leads to some work overhead in the beginning, but usually pays off in the end."
+  , fill 9 (bold $ text "seq-ana")   <+> text "View, examine, and modify evolutionary sequences."
+  , fill 9 (bold $ text "seq-sim")   <+> text "Simulate evolutionary sequences."
+  , fill 9 (bold $ text "tree-ana")  <+> text "Analyze phylogenetic trees."
+  , fill 9 (bold $ text "tree-dist") <+> text "Compute distances between phylogenetic trees."
+  , fill 9 (bold $ text "tree-sim")  <+> text "Simulate phylogenetic trees." ]
 
 -- | Read arguments with globally provided description, header, footer, and so
 -- on. Custom additional description (first argument) and footer (second
@@ -107,10 +109,10 @@ parseArgsWith desc ftr p = execParser $
   (fullDesc
     <> header hdr
     <> progDesc dsc'
-    <> footerDoc (Just . (vcat . map pretty) $ ftr'))
+    <> footerDoc (Just ftr'))
   where
-    dsc' = unlines $ desc ++ [description]
-    ftr' = ftr ++ evoModSuiteFooter
+    dsc' = unlines desc
+    ftr' = vsep $ map pretty ftr ++ evoModSuiteFooter
 
 -- | Verbosity levels.
 data Verbosity = Quiet | Info | Debug
@@ -128,16 +130,6 @@ verbosityOpt = option auto
   where
     vs = allValues :: [Verbosity]
 
--- Difficult to handle with the verbosity option. I decided to go with a
--- verbosity data type that includes Quiet.
--- -- | Boolean option; be quiet; default NO.
--- quietOpt :: Parser Bool
--- quietOpt = switch
---   ( long "quiet"
---     <> short 'q'
---     <> showDefault
---     <> help "Be quiet; incompatible with -v" )
-
 -- | Seed option for MWC. Defaults to RANDOM.
 seedOpt :: Parser (Maybe [Word32])
 seedOpt = optional $ option auto
@@ -154,3 +146,17 @@ outFileBaseNameOpt = strOption
     <> short 'o'
     <> metavar "NAME"
     <> help "Specify base name of output file")
+
+-- | See 'eitherReader', but for Megaparsec.
+megaReadM :: Parsec Void String a -> ReadM a
+megaReadM p = eitherReader $ \input ->
+  let eea = runParser p "" input
+  in
+    case eea of
+      Left eb -> Left $ errorBundlePretty eb
+      Right a -> Right a
+
+-- | Fill a string so that it becomes a paragraph with line breaks. Useful for
+-- descriptions, headers and footers.
+fillParagraph :: String -> Doc
+fillParagraph = fillSep . map text . words

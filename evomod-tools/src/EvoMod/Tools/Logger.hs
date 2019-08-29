@@ -58,6 +58,10 @@ class Logger l where
   verbosity :: l -> Verbosity
   mHandle   :: l -> Maybe Handle
 
+instance Logger (IO a) where
+  verbosity _ = Info
+  mHandle _ = Nothing
+
 logHandle :: Maybe Handle -> String -> IO ()
 logHandle Nothing  _   = return ()
 logHandle (Just h) msg = hPutStrLn h msg

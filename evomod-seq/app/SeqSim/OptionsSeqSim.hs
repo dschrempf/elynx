@@ -45,17 +45,6 @@ import           Options.Applicative
 
 import           EvoMod.Tools.Options
 
--- -- Ugly convenience function to read in more complicated command line options
--- -- with megaparsec and optparse
--- -- (https://github.com/pcapriotti/optparse-applicative#option-readers).
--- megaReadM :: MegaParser a -> ReadM a
--- megaReadM p = eitherReader $ \input ->
---   let eea = runParser p "" input
---   in
---     case eea of
---       Left eb -> Left $ errorBundlePretty eb
---       Right a -> Right a
-
 type GammaRateHeterogeneityParams = (Int, Double)
 
 data Args = Args

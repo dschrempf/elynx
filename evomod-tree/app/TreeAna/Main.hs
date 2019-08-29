@@ -48,14 +48,14 @@ work = do
   a <- arguments <$> ask
   trs <- readTrees (argsInFilePath a)
   let lsStrs = map summarize trs
-  let outFilePath = (++ ".out") <$> argsOutBaseName a
+  let outFilePath = (++ ".out") <$> argsOutFileBaseName a
   logNewSection "Results."
   io (L.intercalate (L.pack "\n") lsStrs) outFilePath
 
 main :: IO ()
 main = do
   args <- parseArgs
-  logger <- setupLogger (argsOutBaseName args)
+  logger <- setupLogger (argsOutFileBaseName args)
   runReaderT work (Params args logger)
   closeLogger logger
 

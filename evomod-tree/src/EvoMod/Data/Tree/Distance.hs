@@ -15,7 +15,7 @@ Creation date: Thu Jun 13 17:15:54 2019.
 module EvoMod.Data.Tree.Distance
   ( bipartitions
   , multipartitions
-  , robinsonFouldsDistance
+  , symmetricDistance
   , incompatibleSplitsDistance
   ) where
 
@@ -109,18 +109,18 @@ multipartitions' lsC n
   | Set.null lsC = []
   | otherwise = [(lsC, leavesSet n)]
 
-symmetricDistance :: Eq a => [a] -> [a] -> Int
-symmetricDistance xs ys = length xsNotInYs + length ysNotInXs
+symmetricDifference :: Eq a => [a] -> [a] -> Int
+symmetricDifference xs ys = length xsNotInYs + length ysNotInXs
   where xsNotInYs = filter (`notElem` ys) xs
         ysNotInXs = filter (`notElem` xs) ys
 
 -- | Symmetric (Robinson-Foulds) distance between two trees. Assumes that the
 -- leaves have unique names! XXX: Comparing a list of trees with this function
 -- recomputes bipartitions.
-robinsonFouldsDistance :: (Ord a, Eq a) => Tree a -> Tree a -> Int
-robinsonFouldsDistance t1 t2 = symmetricDistance (bipartitions t1) (bipartitions t2)
+symmetricDistance :: (Ord a, Eq a) => Tree a -> Tree a -> Int
+symmetricDistance t1 t2 = symmetricDifference (bipartitions t1) (bipartitions t2)
 
 -- | Number of incompatible splits. Similar to 'symmetricDistance' but merges
 -- multifurcations.
 incompatibleSplitsDistance :: (Ord a, Eq a) => Tree a -> Tree a -> Int
-incompatibleSplitsDistance t1 t2 = symmetricDistance (multipartitions t1) (multipartitions t2)
+incompatibleSplitsDistance t1 t2 = symmetricDifference (multipartitions t1) (multipartitions t2)
