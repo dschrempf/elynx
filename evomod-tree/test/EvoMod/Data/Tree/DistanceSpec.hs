@@ -19,6 +19,7 @@ import           Data.Tree
 import           Test.Hspec
 
 import           EvoMod.Data.Tree.Distance
+import qualified EvoMod.Data.Tree.NamedTree as T
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Import.Tree.Newick
 import           EvoMod.Tools.InputOutput
@@ -63,11 +64,11 @@ spec = do
     it "calculates correct distances for sample trees" $ do
       simpleTrees <- getSimpleTrees
       symmetricDistance (head simpleTrees) (simpleTrees !! 1) `shouldBe` 2
-      manyTrees <- map removeBrLen <$> getManyTrees
+      manyTrees <- getManyTrees
       -- Since treedist computes the distance between adjacent pairs, in the
       -- following manner: [tr0, tr1, tr2, tr3] -> [dist tr0 tr1, dist tr2 tr3],
       -- we have to skip some distances.
-      each 2 (computeAdjacentDistances symmetricDistance manyTrees) `shouldBe` manyAnswers
+      each 2 (computeAdjacentDistances (symmetricDistanceWith T.name) manyTrees) `shouldBe` manyAnswers
   -- -- TODO.
   -- describe "incompatibleSplitDistance" $
   --   it "calculates correct distances for sample trees" $ do

@@ -32,6 +32,7 @@ import           OptionsTreeDist
 
 import           EvoMod.Data.Tree.BranchSupportTree
 import           EvoMod.Data.Tree.Distance
+import qualified EvoMod.Data.Tree.NamedTree         as T
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Import.Tree.Newick
 -- import           EvoMod.Export.Tree.Newick
@@ -96,15 +97,14 @@ worker = do
     IncompatibleSplit val -> do
       lift $ hPutStrLn outH "Use incompatible split distance."
       lift $ hPutStrLn outH $ "Collapse nodes with support less than " ++ show val ++ "."
-  let distanceMeasure :: Tree L.ByteString -> Tree L.ByteString -> Int
+  let distanceMeasure :: Tree PhyloByteStringLabel -> Tree PhyloByteStringLabel -> Int
       distanceMeasure = case distance of
-        Symmetric           -> symmetricDistance
-        IncompatibleSplit _ -> incompatibleSplitsDistance
+        Symmetric           -> symmetricDistanceWith T.name
+        IncompatibleSplit _ -> incompatibleSplitsDistanceWith T.name
   let treesCollapsed = case distance of
         Symmetric             -> trees
         IncompatibleSplit val -> map (collapse val) tsN
-      treesNoBrLen = map removeBrLen treesCollapsed
-  let dsTriplets = computePairwiseDistances distanceMeasure treesNoBrLen
+  let dsTriplets = computePairwiseDistances distanceMeasure treesCollapsed
       ds = map (\(_, _, x) -> fromIntegral x) dsTriplets :: [Double]
       dsVec = V.fromList ds
   lift $ hPutStrLn outH "Summary statistics of distance:"
