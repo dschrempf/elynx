@@ -10,10 +10,6 @@ Portability :  portable
 
 Creation date: Thu Jun 13 17:15:54 2019.
 
-TODO: Compare with http://evolution.genetics.washington.edu/phylip/doc/treedist.html.
-
-TODO: Implement branch score distance.
-
 -}
 
 module EvoMod.Data.Tree.Distance
@@ -30,16 +26,17 @@ module EvoMod.Data.Tree.Distance
   ) where
 
 import           Data.List
-import qualified Data.Set              as Set
+import qualified Data.Map                     as Map
+import qualified Data.Set                     as Set
 import           Data.Tree
 
-import           EvoMod.Data.Tree.Tree
 import           EvoMod.Data.Tree.Bipartition
+import           EvoMod.Data.Tree.Tree
 
 leavesSet :: Ord a => Tree a -> Set.Set a
 leavesSet = Set.fromList . leaves
 
--- TODO.
+-- XXX.
 -- -- | Each node of a tree is root of a subtree. Set the node label to the leaves
 -- -- of this subtree.
 -- toLeavesTree :: Tree a -> Tree [a]
@@ -78,6 +75,38 @@ bipartitions' lsC (Node _ xs    )
     lsOthers   = [ Set.unions $ lsC : take i lsChildren ++ drop (i+1) lsChildren
                       | i <- [0 .. (nChildren - 1)] ]
     bs         = zipWith bp lsChildren lsOthers
+
+-- | Convert a tree into a 'Map' from each 'Bipartition' to the branch length.
+-- This allows unique identification of branches, since each branch is uniquely
+-- defined by the induced bipartition.
+bipartitionToBranchLen :: Ord a => Tree a -> Map.Map (Bipartition a) Double
+bipartitionToBranchLen = bipartitionsToBranchLen' Map.empty
+
+bipartitionsToBranchLen' :: Ord a
+                         => Map.Map (Bipartition a) Double
+                         -> Tree a
+                         -> Map.Map (Bipartition a) Double
+-- TODO. Write this function. Somehow all this redundant code freaks me out. I
+-- think one should be able to use a fold here. But how?
+bipartitionsToBranchLen' = undefined
+-- bipartitionsToBranchLen' _   (Node _ []    ) = []
+-- bipartitionsToBranchLen' lsC (Node _ [c]   ) = bipartitions' lsC c
+-- bipartitionsToBranchLen' lsC (Node _ xs    )
+--   -- It really sucks that we have to treat a bifurcating root separately. But
+--   -- that's just how it is.
+--   | Set.null lsC && length xs == 2 =
+--     let l = head xs
+--         r = xs !! 1
+--         lsL = leavesSet l
+--         lsR = leavesSet r
+--     in bp lsL lsR : bipartitions' lsL r ++ bipartitions' lsR l
+--   | otherwise = bs ++ concat (zipWith bipartitions' lsOthers xs)
+--   where
+--     nChildren  = length xs
+--     lsChildren = map leavesSet xs
+--     lsOthers   = [ Set.unions $ lsC : take i lsChildren ++ drop (i+1) lsChildren
+--                       | i <- [0 .. (nChildren - 1)] ]
+--     bs         = zipWith bp lsChildren lsOthers
 
 -- XXX: Rename this function. It does not compute multipartitions, rather it
 -- computes bipartitions, but merges leaves for multifurcations.
@@ -118,7 +147,22 @@ multipartitions' lsC n
   | Set.null lsC = []
   | otherwise = [ bp lsC $ leavesSet n ]
 
--- Symmetric difference between two lists.
+
+-- -- Difference between two 'Set's, see 'Set.difference'. Do not compare elements
+-- -- directly but apply a function beforehand.
+-- differenceWith :: (Ord a, Ord b) => (a -> b) -> Set.Set a -> Set.Set a -> Set.Set a
+-- differenceWith f xs ys = Set.filter (\e -> f e `Set.notMember` ys') xs
+--   where ys' = Set.map f ys
+
+-- -- Symmetric difference between two 'Set's. Do not compare elements directly but
+-- -- apply a function beforehand.
+-- symmetricDifferenceWith :: (Ord a, Ord b) => (a -> b) -> Set.Set a -> Set.Set a -> Set.Set a
+-- symmetricDifferenceWith f xs ys = xsNotInYs `Set.union` ysNotInXs
+--   where
+--     xsNotInYs = differenceWith f xs ys
+--     ysNotInXs = differenceWith f ys xs
+
+-- Symmetric difference between two 'Set's.
 symmetricDifference :: Ord a => Set.Set a -> Set.Set a -> Set.Set a
 symmetricDifference xs ys = Set.difference xs ys `Set.union` Set.difference ys xs
 
@@ -146,14 +190,17 @@ incompatibleSplitsDistanceWith f t1 t2 = length $ symmetricDifference (ms t1) (m
 incompatibleSplitsDistance :: (Ord a) => Tree a -> Tree a -> Int
 incompatibleSplitsDistance = incompatibleSplitsDistanceWith id
 
--- -- | Compute branch score distance between two trees. Before comparing the leaf
--- -- labels, apply a function. This is useful to compare the labels of 'Named'
--- -- trees on their names only.
--- branchScoreDistanceWith :: (Ord b, Floating c)
---                         => (a -> b) -- ^ Label to compare on
---                         -> (a -> c) -- ^ Branch length associated with a node
---                         -> Tree a -> Tree a -> Double
--- branchScoreDistanceWith f g t1 t2 = undefined
+-- | Compute branch score distance between two trees. Before comparing the leaf
+-- labels, apply a function. This is useful to compare the labels of 'Named'
+-- trees on their names only.
+branchScoreDistanceWith :: (Ord a, Ord b, Floating c)
+                        => (a -> b) -- ^ Label to compare on
+                        -> (a -> c) -- ^ Branch length associated with a node
+                        -> Tree a -> Tree a -> Double
+branchScoreDistanceWith f g t1 t2 = undefined
+  where bs t = Set.fromList $ bipartitions $ fmap f t
+        dBs  = symmetricDifference (bs t1) (bs t2)
+        -- TODO: Now we need the 'Map Bipartition Double' to get the distances.
 
 -- -- | See 'branchScoreDistanceWith', use 'id' for comparisons.
 -- branchScoreDistance :: Ord a => Tree a -> Tree a -> Double
