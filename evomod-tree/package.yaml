@@ -32,6 +32,7 @@ dependencies:
   - containers
   # - data-memocombinators
   # - distribution
+  # - hstats
   # - hmatrix
   # - integration
   # - lens

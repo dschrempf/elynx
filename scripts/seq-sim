@@ -2,7 +2,7 @@
 
 source include
 
-file_tree="${project_root}/evomod-seq/data/Newick.tree"
+file_tree="${project_root}/evomod-tree/data/Newick.tree"
 
 if [[ $1 == "s" || $1 == "a" ]]
 then

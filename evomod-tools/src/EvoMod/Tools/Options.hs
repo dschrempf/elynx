@@ -92,7 +92,8 @@ versionOpt = infoOption hdr
 
 evoModSuiteFooter :: [Doc]
 evoModSuiteFooter =
-  [ bold $ text "The EvoMod Suite."
+  [ empty
+  , bold $ text "The EvoMod Suite."
   , fillParagraph "A Haskell library and a tool set for computational biology. The goal of the EvoMod Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without assuming anything about the data (e.g., the type of code), and without default values. The exact command with all arguments has to be stated by the user and is logged automatically. This leads to some work overhead in the beginning, but usually pays off in the end."
   , fill 9 (bold $ text "seq-ana")   <+> text "View, examine, and modify evolutionary sequences."
   , fill 9 (bold $ text "seq-sim")   <+> text "Simulate evolutionary sequences."

@@ -26,7 +26,7 @@ seqana() {
 
 seqsim() {
     msg "Seq-Sim profiling run."
-    file_tree="${project_root}/evomod-seq/data/Newick.tree"
+    file_tree="${project_root}/evomod-tree/data/Newick.tree"
     file_edm="${project_root}/evomod-seq/data/EDMDistsPhylobayes.txt"
     stack exec seq-sim --work-dir $prof_dir -- \
           -t "$file_tree" -o seq-sim.out -e "$file_edm" -m "EDM(LG-Custom)" -l 5000 -S [0] \

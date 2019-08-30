@@ -30,11 +30,11 @@ data Distance = Symmetric | IncompatibleSplit Double
   deriving (Show, Read)
 
 data Args = Args
-  { argsOutFileBaseName :: Maybe FilePath
-  , argsVerbosity       :: Verbosity
-  , argsInFilePaths     :: [FilePath]
-  , argsDistance        :: Distance
-  , argsAverage         :: Bool
+  { argsOutFileBaseName   :: Maybe FilePath
+  , argsVerbosity         :: Verbosity
+  , argsInFilePaths       :: [FilePath]
+  , argsDistance          :: Distance
+  , argsSummaryStatistics :: Bool
   }
 
 args :: Parser Args
@@ -42,8 +42,8 @@ args = Args <$>
   optional outFileBaseNameOpt <*>
   verbosityOpt <*>
   some filePathArg <*>
-  distanceOpt <*>
-  averageSwitch
+  distanceOpt
+  <*> summaryStatisticsSwitch
 
 filePathArg :: Parser FilePath
 filePathArg = strArgument $
@@ -72,17 +72,24 @@ distanceOpt :: Parser Distance
 distanceOpt = option (megaReadM distanceParser) $
   long "distance" <>
   short 'd' <>
-  -- TODO: Put available distances into footer.
-  help "Type of distance to calculate; avilable distances: symmetric, incompatible-split[VAL] where branches with support below 0.0<VAL<1.0 are collaped"
+  metavar "MEASURE" <>
+  help "Type of distance to calculate (available distance measures are listed below)"
 
-averageSwitch :: Parser Bool
-averageSwitch = switch $
-  long "average" <>
-  short 'a' <>
-  help "Compute average of pairwise distances only"
+summaryStatisticsSwitch :: Parser Bool
+summaryStatisticsSwitch = switch $
+  long "summary-statistics" <>
+  short 's' <>
+  help "Report summary statistics only"
 
 desc :: [String]
 desc = [ "Compute distances between phylogenetic trees." ]
 
+ftr :: [String]
+ftr = [ "Available distance measures:"
+      , "  Symmetric distance: -d symmetric"
+      , "  Incompatible split distance: -d incompatible-split[VAL]"
+      , "    Collapse branches with support less than VAL before distance calculation;"
+      , "    in this way, only well supported difference contribute to the distance measure." ]
+
 parseArgs :: IO Args
-parseArgs = parseArgsWith desc [] args
+parseArgs = parseArgsWith desc ftr args

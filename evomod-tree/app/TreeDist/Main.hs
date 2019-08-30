@@ -22,8 +22,10 @@ import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Builder            as L
 import qualified Data.ByteString.Lazy.Char8         as L
-import           Data.List
+-- import           Data.List
 import           Data.Tree
+import qualified Data.Vector.Unboxed                as V
+import           Statistics.Sample
 import           System.IO
 
 import           OptionsTreeDist
@@ -84,8 +86,8 @@ worker = do
        lift $ hPutStrLn outH "Trees are named according to their file names."
        return (ts, tfps)
   case outFilePath of
-    Nothing -> logS "Write results to standard output."
-    Just f  -> logS $ "Write results to file " ++ f ++ "."
+    Nothing -> logNewSection "Write results to standard output."
+    Just f  -> logNewSection $ "Write results to file " ++ f ++ "."
   let n        = maximum $ map length names
       tsN      = map normalize trees
       distance = argsDistance args
@@ -102,14 +104,21 @@ worker = do
         Symmetric             -> trees
         IncompatibleSplit val -> map (collapse val) tsN
       treesNoBrLen = map removeBrLen treesCollapsed
-  let ds = [ (i, j, distanceMeasure a b)
-           | (i:ir, a:ar) <- zip (tails [0..]) (tails treesNoBrLen)
-           , (j, b) <- zip ir ar ]
+  let dsTriplets = computePairwiseDistances distanceMeasure treesNoBrLen
+      ds = map (\(_, _, x) -> fromIntegral x) dsTriplets :: [Double]
+      dsVec = V.fromList ds
+  lift $ hPutStrLn outH "Summary statistics of distance:"
+  lift $ hPutStrLn outH $ "Mean: " ++ show (mean dsVec)
+  lift $ hPutStrLn outH $ "Variance: " ++ show (variance dsVec)
   -- L.putStrLn $ L.unlines $ map toNewick ts
   -- L.putStrLn $ L.unlines $ map toNewick tsN
   -- L.putStrLn $ L.unlines $ map toNewick tsC
-  lift $ L.hPutStrLn outH $ header n
-  lift $ L.hPutStr outH $ L.unlines (map (showTriplet n names) ds)
+  unless (argsSummaryStatistics args) (
+    do
+      lift $ hPutStrLn outH ""
+      lift $ L.hPutStrLn outH $ header n
+      lift $ L.hPutStr outH $ L.unlines (map (showTriplet n names) dsTriplets)
+    )
   lift $ hClose outH
 
 main :: IO ()
