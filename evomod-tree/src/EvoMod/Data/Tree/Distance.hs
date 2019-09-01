@@ -10,6 +10,9 @@ Portability :  portable
 
 Creation date: Thu Jun 13 17:15:54 2019.
 
+TODO: All trees are assumed to be UNROOTED. State this in the function
+documentations and the help text of the binaries.
+
 -}
 
 module EvoMod.Data.Tree.Distance
@@ -26,7 +29,8 @@ module EvoMod.Data.Tree.Distance
   ) where
 
 import           Data.List
-import qualified Data.Map                     as Map
+import qualified Data.Map.Strict              as Map
+import           Data.Maybe
 import qualified Data.Set                     as Set
 import           Data.Tree
 
@@ -46,8 +50,8 @@ leavesSet = Set.fromList . leaves
 
 -- | Get all bipartitions. XXX: This is slow at the moment, because 'leaves' is
 -- called excessively.
-bipartitions :: Ord a => Tree a -> [Bipartition a]
-bipartitions = bipartitions' Set.empty
+bipartitions :: Ord a => Tree a -> Set.Set (Bipartition a)
+bipartitions = Set.fromList . bipartitions' Set.empty
 
 -- XXX: A helper function could reduce redundancy a lot in the next functions.
 -- bipartitionsThisNode :: Tree a -> [Bipartition a]
@@ -76,37 +80,44 @@ bipartitions' lsC (Node _ xs    )
                       | i <- [0 .. (nChildren - 1)] ]
     bs         = zipWith bp lsChildren lsOthers
 
--- | Convert a tree into a 'Map' from each 'Bipartition' to the branch length.
--- This allows unique identification of branches, since each branch is uniquely
--- defined by the induced bipartition.
-bipartitionToBranchLen :: Ord a => Tree a -> Map.Map (Bipartition a) Double
-bipartitionToBranchLen = bipartitionsToBranchLen' Map.empty
+-- -- | Convert a tree into a 'Map' from each 'Bipartition' to the respective
+-- -- branch. The information about each branch is extracted from the nodes with a
+-- -- given function. One branch may be split into smaller parts with degree two
+-- -- nodes. That's why we need some means of combining the extracted information
+-- -- (see Semigroup constraint). This allows unique identification of branches,
+-- -- since each branch is uniquely defined by the induced bipartition.
+-- bipartitionToBranch :: (Ord a, Semigroup b)
+--                     => (a -> b) -- ^ Convert node to branch length
+--                     -> Tree a        -- ^ Tree to dissect
+--                     -> Map.Map (Bipartition a) b
+-- bipartitionToBranch = bipartitionToBranch' Set.empty Nothing
 
-bipartitionsToBranchLen' :: Ord a
-                         => Map.Map (Bipartition a) Double
-                         -> Tree a
-                         -> Map.Map (Bipartition a) Double
--- TODO. Write this function. Somehow all this redundant code freaks me out. I
--- think one should be able to use a fold here. But how?
-bipartitionsToBranchLen' = undefined
--- bipartitionsToBranchLen' _   (Node _ []    ) = []
--- bipartitionsToBranchLen' lsC (Node _ [c]   ) = bipartitions' lsC c
--- bipartitionsToBranchLen' lsC (Node _ xs    )
---   -- It really sucks that we have to treat a bifurcating root separately. But
---   -- that's just how it is.
---   | Set.null lsC && length xs == 2 =
---     let l = head xs
---         r = xs !! 1
---         lsL = leavesSet l
---         lsR = leavesSet r
---     in bp lsL lsR : bipartitions' lsL r ++ bipartitions' lsR l
---   | otherwise = bs ++ concat (zipWith bipartitions' lsOthers xs)
---   where
---     nChildren  = length xs
---     lsChildren = map leavesSet xs
---     lsOthers   = [ Set.unions $ lsC : take i lsChildren ++ drop (i+1) lsChildren
---                       | i <- [0 .. (nChildren - 1)] ]
---     bs         = zipWith bp lsChildren lsOthers
+-- TODO: Write function at root!
+-- TODO: Testing!
+-- XXX. Can fold or traversable be used?
+bipartitionToBranch' :: (Ord a, Monoid b)
+                     => Set.Set a     -- ^ Complementary set of leaves towards the stem
+                     -> b             -- ^ Maybe we have to pass along some
+                                      -- information from above (degree two
+                                      -- nodes)
+                     -> (a -> b)      -- ^ Extract information about branch from node
+                     -> Tree a
+                     -> Map.Map (Bipartition a) b
+bipartitionToBranch' lvsS br f (Node l []  ) = Map.singleton (bp lvsS (Set.singleton l)) (br <> f l)
+bipartitionToBranch' lvsS br f (Node l [c] ) = bipartitionToBranch' lvsS (br <> f l) f c
+bipartitionToBranch' lvsS br f (Node l xs  )
+  | Set.null lvsS = error "bipartitionToBranch': no complementing leaf set."
+  | otherwise    = Map.insert (bp lvsS lvsCh) (br <> f l)
+                               $ Map.unions [ bipartitionToBranch' lvs mempty f x
+                                            | (lvs, x) <- zip lvsSs xs ]
+  -- | otherwise = bs ++ concat (zipWith bipartitions' lsOthers xs)
+  where
+    nCh   = length xs
+    lvsChs = map leavesSet xs
+    lvsCh = foldl1 (<>) lvsChs
+    lvsOthers   = [ Set.unions $ lvsS : take i lvsChs ++ drop (i+1) lvsChs
+                  | i <- [0 .. (nCh - 1)] ]
+    lvsSs = map (Set.union lvsS) lvsOthers
 
 -- XXX: Rename this function. It does not compute multipartitions, rather it
 -- computes bipartitions, but merges leaves for multifurcations.
@@ -173,7 +184,7 @@ symmetricDifference xs ys = Set.difference xs ys `Set.union` Set.difference ys x
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
 symmetricDistanceWith :: (Ord b) => (a -> b) -> Tree a -> Tree a -> Int
 symmetricDistanceWith f t1 t2 = length $ symmetricDifference (bs t1) (bs t2)
-  where bs t = Set.fromList $ bipartitions $ fmap f t
+  where bs t = bipartitions $ fmap f t
 
 -- | See 'symmetricDistanceWith', but with 'id' for comparisons.
 symmetricDistance :: Ord a => Tree a -> Tree a -> Int
@@ -198,7 +209,7 @@ branchScoreDistanceWith :: (Ord a, Ord b, Floating c)
                         -> (a -> c) -- ^ Branch length associated with a node
                         -> Tree a -> Tree a -> Double
 branchScoreDistanceWith f g t1 t2 = undefined
-  where bs t = Set.fromList $ bipartitions $ fmap f t
+  where bs t = bipartitions $ fmap f t
         dBs  = symmetricDifference (bs t1) (bs t2)
         -- TODO: Now we need the 'Map Bipartition Double' to get the distances.
 
