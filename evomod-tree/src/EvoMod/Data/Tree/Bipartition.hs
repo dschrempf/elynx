@@ -30,17 +30,20 @@ module EvoMod.Data.Tree.Bipartition
   , bpmap
   ) where
 
-import           Data.Set
-import           Prelude  hiding (map)
+import           Data.List
+import qualified Data.Set  as S
 
 -- | Bipartitions with 'Set.Set's, since order of elements within the leaf sets
 -- is not important. Also the order of the two leaf sets of the bipartition is
 -- not important (see 'Eq' instance definition).
-newtype Bipartition a = Bipartition (Set a, Set a)
-  deriving (Show)
+newtype Bipartition a = Bipartition (S.Set a, S.Set a)
+
+instance Show a => Show (Bipartition a) where
+  show (Bipartition (x, y)) = "(" ++ showSet x ++ "|" ++ showSet y ++  ")"
+    where showSet s = intercalate "," $ map show $ S.toList s
 
 -- | Create a bipartition from two 'Set's.
-bp :: Ord a => Set a -> Set a -> Bipartition a
+bp :: Ord a => S.Set a -> S.Set a -> Bipartition a
 bp x y = if x >= y
          then Bipartition (x, y)
          else Bipartition (y, x)
@@ -53,4 +56,4 @@ instance (Ord a) => Ord (Bipartition a) where
 
 -- | Map a function over all elements in the 'Bipartition's.
 bpmap :: (Ord a, Ord b) => (a -> b) -> Bipartition a -> Bipartition b
-bpmap f (Bipartition (x, y)) = Bipartition (map f x, map f y)
+bpmap f (Bipartition (x, y)) = Bipartition (S.map f x, S.map f y)

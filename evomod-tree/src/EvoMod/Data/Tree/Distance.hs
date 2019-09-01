@@ -22,15 +22,15 @@ module EvoMod.Data.Tree.Distance
   , symmetricDistanceWith
   , incompatibleSplitsDistance
   , incompatibleSplitsDistanceWith
-  -- , branchScoreDistance
-  -- , branchScoreDistanceWith
   , computePairwiseDistances
   , computeAdjacentDistances
+  , bipartitionToBranch
+  -- , branchScoreDistance
+  -- , branchScoreDistanceWith
   ) where
 
 import           Data.List
 import qualified Data.Map.Strict              as Map
-import           Data.Maybe
 import qualified Data.Set                     as Set
 import           Data.Tree
 
@@ -80,19 +80,37 @@ bipartitions' lsC (Node _ xs    )
                       | i <- [0 .. (nChildren - 1)] ]
     bs         = zipWith bp lsChildren lsOthers
 
--- -- | Convert a tree into a 'Map' from each 'Bipartition' to the respective
--- -- branch. The information about each branch is extracted from the nodes with a
--- -- given function. One branch may be split into smaller parts with degree two
--- -- nodes. That's why we need some means of combining the extracted information
--- -- (see Semigroup constraint). This allows unique identification of branches,
--- -- since each branch is uniquely defined by the induced bipartition.
--- bipartitionToBranch :: (Ord a, Semigroup b)
---                     => (a -> b) -- ^ Convert node to branch length
---                     -> Tree a        -- ^ Tree to dissect
---                     -> Map.Map (Bipartition a) b
--- bipartitionToBranch = bipartitionToBranch' Set.empty Nothing
+forestGetLeafSets :: (Ord a) => Set.Set a -> [Tree a] -> [Set.Set a]
+forestGetLeafSets lvsS xs = lvsStemAndOthers
+  where
+    nCh              = length xs
+    lvsChs           = map leavesSet xs
+    lvsOthers        = [ Set.unions $ lvsS : take i lvsChs ++ drop (i+1) lvsChs
+                      | i <- [0 .. (nCh - 1)] ]
+    lvsStemAndOthers = map (Set.union lvsS) lvsOthers
 
--- TODO: Write function at root!
+-- | Each branch on a 'Tree' defines a unique 'Bipartition' of leaves. Convert a
+-- tree into a 'Map' from each 'Bipartition' to the inducing branch. The
+-- information about the branch is extracted from the nodes with a given
+-- function. If the tree has degree 2 nodes, the branch values are combined (see
+-- 'Monoid' constraint).
+bipartitionToBranch :: (Ord a, Monoid b)
+                    => (a -> b)      -- ^ Convert node to branch length
+                    -> Tree a        -- ^ Tree to dissect
+                    -> Map.Map (Bipartition a) b
+-- A leaf does not induce any bipartition.
+bipartitionToBranch _ (Node _ [] ) = Map.empty
+-- If the stem at the root is split by degree two nodes, just go on and ignore
+-- the branch information, because the stem does not induce any bipartition
+-- anyways..
+bipartitionToBranch f (Node _ [x]) = bipartitionToBranch f x
+-- We have rose trees, so we need to through the list of children and combine
+-- each of them with the rest.
+bipartitionToBranch f (Node _ xs ) =
+  Map.unionsWith (<>) [ bipartitionToBranch' lvs mempty f x
+                      | (lvs, x) <- zip leafSets xs ]
+  where leafSets = forestGetLeafSets Set.empty xs
+
 -- TODO: Testing!
 -- XXX. Can fold or traversable be used?
 bipartitionToBranch' :: (Ord a, Monoid b)
@@ -103,21 +121,25 @@ bipartitionToBranch' :: (Ord a, Monoid b)
                      -> (a -> b)      -- ^ Extract information about branch from node
                      -> Tree a
                      -> Map.Map (Bipartition a) b
-bipartitionToBranch' lvsS br f (Node l []  ) = Map.singleton (bp lvsS (Set.singleton l)) (br <> f l)
-bipartitionToBranch' lvsS br f (Node l [c] ) = bipartitionToBranch' lvsS (br <> f l) f c
 bipartitionToBranch' lvsS br f (Node l xs  )
-  | Set.null lvsS = error "bipartitionToBranch': no complementing leaf set."
-  | otherwise    = Map.insert (bp lvsS lvsCh) (br <> f l)
-                               $ Map.unions [ bipartitionToBranch' lvs mempty f x
-                                            | (lvs, x) <- zip lvsSs xs ]
-  -- | otherwise = bs ++ concat (zipWith bipartitions' lsOthers xs)
+  | Set.null lvsS   = error "bipartitionToBranch': no complementing leaf set."
+  -- Leaf; return a singleton map; bipartition with the leaf and the rest of the tree.
+  | null xs         = Map.singleton (bp lvsS (Set.singleton l)) (br <> f l)
+  -- Pass the creation of the map entry on, but extend the branch.
+  | length xs == 1  = bipartitionToBranch' lvsS (br <> f l) f (head xs)
+  -- We have rose trees, so we need to through the list of children and combine
+  -- each of them with the rest. Also, we use up the possible branch information
+  -- 'br' and start afresh with 'mempty'.
+  | otherwise       = Map.insert (bp lvsS lvsCh) (br <> f l)
+                      $ Map.unions [ bipartitionToBranch' lvs mempty f x
+                                   | (lvs, x) <- zip lvsStemAndOthers xs ]
   where
-    nCh   = length xs
-    lvsChs = map leavesSet xs
-    lvsCh = foldl1 (<>) lvsChs
-    lvsOthers   = [ Set.unions $ lvsS : take i lvsChs ++ drop (i+1) lvsChs
-                  | i <- [0 .. (nCh - 1)] ]
-    lvsSs = map (Set.union lvsS) lvsOthers
+    nCh              = length xs
+    lvsChs           = map leavesSet xs
+    lvsCh            = foldl1 (<>) lvsChs
+    lvsOthers        = [ Set.unions $ lvsS : take i lvsChs ++ drop (i+1) lvsChs
+                      | i <- [0 .. (nCh - 1)] ]
+    lvsStemAndOthers = map (Set.union lvsS) lvsOthers
 
 -- XXX: Rename this function. It does not compute multipartitions, rather it
 -- computes bipartitions, but merges leaves for multifurcations.
@@ -201,17 +223,17 @@ incompatibleSplitsDistanceWith f t1 t2 = length $ symmetricDifference (ms t1) (m
 incompatibleSplitsDistance :: (Ord a) => Tree a -> Tree a -> Int
 incompatibleSplitsDistance = incompatibleSplitsDistanceWith id
 
--- | Compute branch score distance between two trees. Before comparing the leaf
--- labels, apply a function. This is useful to compare the labels of 'Named'
--- trees on their names only.
-branchScoreDistanceWith :: (Ord a, Ord b, Floating c)
-                        => (a -> b) -- ^ Label to compare on
-                        -> (a -> c) -- ^ Branch length associated with a node
-                        -> Tree a -> Tree a -> Double
-branchScoreDistanceWith f g t1 t2 = undefined
-  where bs t = bipartitions $ fmap f t
-        dBs  = symmetricDifference (bs t1) (bs t2)
-        -- TODO: Now we need the 'Map Bipartition Double' to get the distances.
+-- -- | Compute branch score distance between two trees. Before comparing the leaf
+-- -- labels, apply a function. This is useful to compare the labels of 'Named'
+-- -- trees on their names only.
+-- branchScoreDistanceWith :: (Ord a, Ord b, Floating c)
+--                         => (a -> b) -- ^ Label to compare on
+--                         -> (a -> c) -- ^ Branch length associated with a node
+--                         -> Tree a -> Tree a -> Double
+-- branchScoreDistanceWith f g t1 t2 = undefined
+--   where bs t = bipartitions $ fmap f t
+--         dBs  = symmetricDifference (bs t1) (bs t2)
+--         -- TODO: Now we need the 'Map Bipartition Double' to get the distances.
 
 -- -- | See 'branchScoreDistanceWith', use 'id' for comparisons.
 -- branchScoreDistance :: Ord a => Tree a -> Tree a -> Double
