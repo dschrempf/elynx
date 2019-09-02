@@ -32,11 +32,12 @@ module EvoMod.Data.Tree.Bipartition
     -- * Working with 'Bipartition's.
   , bipartitions
   , bipartitionToBranch
-  , multipartitions
+  , bipartitionsCombined
   ) where
 
-import           Data.List
+-- import           Data.List
 import qualified Data.Map              as M
+import           Data.Maybe
 import qualified Data.Set              as S
 import           Data.Tree
 
@@ -46,16 +47,21 @@ import           EvoMod.Data.Tree.Tree
 -- is not important. Also the order of the two leaf sets of the bipartition is
 -- not important (see 'Eq' instance definition).
 newtype Bipartition a = Bipartition (S.Set a, S.Set a)
+  deriving (Show, Read)
 
-instance Show a => Show (Bipartition a) where
-  show (Bipartition (x, y)) = "(" ++ showSet x ++ "|" ++ showSet y ++  ")"
-    where showSet s = intercalate "," $ map show $ S.toList s
+-- instance Show a => Show (Bipartition a) where
+--   show (Bipartition (x, y)) = "(" ++ showSet x ++ "|" ++ showSet y ++  ")"
+--     where showSet s = intercalate "," $ map show $ S.toList s
 
 -- | Create a bipartition from two 'Set's.
 bp :: Ord a => S.Set a -> S.Set a -> Bipartition a
 bp x y = if x >= y
          then Bipartition (x, y)
          else Bipartition (y, x)
+
+-- | Create a bipartition from two 'Set's.
+bpWith :: (Ord a, Ord b) => (a -> b) -> S.Set a -> S.Set a -> Bipartition b
+bpWith f x y = bpmap f $ bp x y
 
 instance (Eq a) => Eq (Bipartition a) where
   Bipartition x == Bipartition y = x == y
@@ -65,150 +71,145 @@ instance (Ord a) => Ord (Bipartition a) where
 
 -- | Map a function over all elements in the 'Bipartition's.
 bpmap :: (Ord a, Ord b) => (a -> b) -> Bipartition a -> Bipartition b
-bpmap f (Bipartition (x, y)) = Bipartition (S.map f x, S.map f y)
+bpmap f (Bipartition (x, y)) = bp (S.map f x) (S.map f y)
 
--- XXX.
--- -- | Each node of a tree is root of a subtree. Set the node label to the leaves
--- -- of this subtree.
--- toLeavesTree :: Tree a -> Tree [a]
--- toLeavesTree (Node l []) = Node [l] []
--- toLeavesTree (Node _ xs) = Node (concatMap rootLabel xs') xs'
---   where xs' = map toLeavesTree xs
+-- | Each node of a tree is root of a subtree. Get the leaves of the subtree of
+-- each node.
+leavesTree :: (Ord a) => Tree a -> Tree (S.Set a)
+leavesTree (Node l []) = Node (S.singleton l) []
+leavesTree (Node _ xs) = Node (S.unions $ map rootLabel xs') xs'
+  where xs' = map leavesTree xs
 
--- TODO: Documentation.
-leavesSet :: Ord a => Tree a -> S.Set a
-leavesSet = S.fromList . leaves
-
--- TODO: Documentation.
-forestGetLeafSets :: (Ord a) => S.Set a -> [Tree a] -> (S.Set a, [S.Set a])
-forestGetLeafSets lvsS xs = (lvsCh, lvsStemAndOthers)
+-- | Loop through each tree in a forest to report the complementary leaf sets.
+subForestGetLeafSets :: (Ord a)
+                     => S.Set a          -- ^ Complementary leaf set at the stem
+                     -> Tree (S.Set a)   -- ^ Tree with leaf set nodes
+                     -> [S.Set a]
+subForestGetLeafSets lvsS t = lvsOthers
   where
-    nCh              = length xs
-    lvsChs           = map leavesSet xs
-    lvsCh            = foldl1 (<>) lvsChs
-    lvsOthers        = [ S.unions $ lvsS : take i lvsChs ++ drop (i+1) lvsChs
-                      | i <- [0 .. (nCh - 1)] ]
-    lvsStemAndOthers = map (S.union lvsS) lvsOthers
+    xs               = subForest t
+    nChildren        = length xs
+    lvsChildren      = map rootLabel xs
+    lvsOtherChildren = [ S.unions $ lvsS
+                         : take i lvsChildren ++ drop (i+1) lvsChildren
+                       | i <- [0 .. (nChildren - 1)] ]
+    lvsOthers        = map (S.union lvsS) lvsOtherChildren
 
--- | Get all bipartitions. XXX: This is slow at the moment, because 'leaves' is
--- called excessively.
+-- | Get all bipartitions.
+
+-- TODO: Check uniqueness of leaves.
 bipartitions :: Ord a => Tree a -> S.Set (Bipartition a)
-bipartitions = S.fromList . bipartitions' S.empty
-
--- XXX: A helper function could reduce redundancy a lot in the next functions.
--- bipartitionsThisNode :: Tree a -> [Bipartition a]
--- But:
--- 1. The calling function need to pass on the leaves of the other branches, and
---    so, they have to be recalculated.
--- 2. The unnecessary recalculation of leaves is fostered.
--- XXX: Use 'toLeaves'.
-bipartitions' :: Ord a => S.Set a -> Tree a -> [Bipartition a]
-bipartitions' _   (Node _ []    ) = []
-bipartitions' lsC (Node _ [c]   ) = bipartitions' lsC c
-bipartitions' lsC (Node _ xs    )
-  -- It really sucks that we have to treat a bifurcating root separately. But
-  -- that's just how it is.
-  | S.null lsC && length xs == 2 =
-    let l = head xs
-        r = xs !! 1
-        lsL = leavesSet l
-        lsR = leavesSet r
-    in bp lsL lsR : bipartitions' lsL r ++ bipartitions' lsR l
-  | otherwise = bs ++ concat (zipWith bipartitions' lsOthers xs)
-  where
-    nChildren  = length xs
-    lsChildren = map leavesSet xs
-    lsOthers   = [ S.unions $ lsC : take i lsChildren ++ drop (i+1) lsChildren
-                 | i <- [0 .. (nChildren - 1)] ]
-    bs         = zipWith bp lsChildren lsOthers
-
--- | Each branch on a 'Tree' defines a unique 'Bipartition' of leaves. Convert a
--- tree into a 'Map' from each 'Bipartition' to the inducing branch. The
--- information about the branch is extracted from the nodes with a given
--- function. If the tree has degree 2 nodes, the branch values are combined (see
--- 'Monoid' constraint).
-bipartitionToBranch :: (Ord a, Monoid b)
-                    => (a -> b)      -- ^ Convert node to branch length
-                    -> Tree a        -- ^ Tree to dissect
-                    -> M.Map (Bipartition a) b
--- A leaf does not induce any bipartition.
-bipartitionToBranch _ (Node _ [] ) = M.empty
--- If the stem at the root is split by degree two nodes, just go on and ignore
--- the branch information, because the stem does not induce any bipartition
--- anyways..
-bipartitionToBranch f (Node _ [x]) = bipartitionToBranch f x
+bipartitions (Node _ [] ) = S.empty
+-- If the root stem is split by degree two nodes, just go on since the root stem
+-- does not induce any bipartitions.
+bipartitions (Node _ [x]) = bipartitions x
 -- We have rose trees, so we need to through the list of children and combine
 -- each of them with the rest.
-bipartitionToBranch f (Node _ xs ) =
-  M.unionsWith (<>) [ bipartitionToBranch' lvs mempty f x
-                      | (lvs, x) <- zip leafSets xs ]
-  where leafSets = snd $ forestGetLeafSets S.empty xs
+bipartitions t =
+  S.unions [ bipartitions' lvs x
+           | (lvs, x) <- zip lvsOthers (subForest lvsTree) ]
+  where
+    lvsTree = leavesTree t
+    lvsOthers = subForestGetLeafSets S.empty lvsTree
 
--- TODO: Testing!
--- XXX. Can fold or traversable be used?
-bipartitionToBranch' :: (Ord a, Monoid b)
-                     => S.Set a     -- ^ Complementary set of leaves towards the stem
-                     -> b             -- ^ Maybe we have to pass along some
-                                      -- information from above (degree two
-                                      -- nodes)
-                     -> (a -> b)      -- ^ Extract information about branch from node
-                     -> Tree a
-                     -> M.Map (Bipartition a) b
-bipartitionToBranch' lvsS br f (Node l xs  )
-  | S.null lvsS   = error "bipartitionToBranch': no complementing leaf set."
+bipartitions' :: Ord a => S.Set a -> Tree (S.Set a) -> S.Set (Bipartition a)
+bipartitions' lvsStem t@(Node lvs xs)
+  | S.null lvsStem = error "bipartitions': no complementing leaf set."
   -- Leaf; return a singleton map; bipartition with the leaf and the rest of the tree.
-  | null xs         = M.singleton (bp lvsS (S.singleton l)) (br <> f l)
-  -- Pass the creation of the map entry on, but extend the branch.
-  | length xs == 1  = bipartitionToBranch' lvsS (br <> f l) f (head xs)
+  | null xs        = S.singleton $ bp lvsStem lvs
+  -- For degree two nodes, pass the creation of the set on.
+  | length xs == 1 = bipartitions' lvsStem (head xs)
   -- We have rose trees, so we need to through the list of children and combine
   -- each of them with the rest. Also, we use up the possible branch information
   -- 'br' and start afresh with 'mempty'.
-  | otherwise       = M.insert (bp lvsS lvsCh) (br <> f l)
-                      $ M.unions [ bipartitionToBranch' lvs mempty f x
-                                   | (lvs, x) <- zip lvsStemAndOthers xs ]
+  | otherwise      = S.unions $ S.singleton (bp lvsStem lvs) : zipWith bipartitions' lvsOthers xs
   where
-    nCh              = length xs
-    lvsChs           = map leavesSet xs
-    lvsCh            = foldl1 (<>) lvsChs
-    lvsOthers        = [ S.unions $ lvsS : take i lvsChs ++ drop (i+1) lvsChs
-                      | i <- [0 .. (nCh - 1)] ]
-    lvsStemAndOthers = map (S.union lvsS) lvsOthers
+    lvsOthers = subForestGetLeafSets lvsStem t
 
--- XXX: Rename this function. It does not compute multipartitions, rather it
--- computes bipartitions, but merges leaves for multifurcations.
+-- | Each branch on a 'Tree' defines a unique 'Bipartition' of leaves. Convert a
+-- tree into a 'Map' from each 'Bipartition' to the branch inducing the
+-- respective 'Bipartition'. The information about the branch is extracted from
+-- the nodes with a given function. If the tree has degree two nodes, the branch
+-- values are combined; a unity element is required, and so we need the 'Monoid'
+-- type class constraint.
+
+-- TODO: Check uniqueness of leaves.
+bipartitionToBranch :: (Ord a, Ord b, Monoid c)
+                    => (a -> b)      -- ^ Value to compare on
+                    -> (a -> c)      -- ^ Convert node to branch length
+                    -> Tree a        -- ^ Tree to dissect
+                    -> M.Map (Bipartition b) c
+bipartitionToBranch _ _ (Node _ [] ) = M.empty
+-- If the root stem is split by degree two nodes, just go on and ignore the
+-- branch information, because the stem does not induce any bipartition
+-- anyways..
+bipartitionToBranch f g (Node _ [x]) = bipartitionToBranch f g x
+-- We have rose trees, so we need to through the list of children and combine
+-- each of them with the rest.
+bipartitionToBranch f g t =
+  M.unionsWith (<>) [ bipartitionToBranch' lvs mempty f g x
+                    | (lvs, x) <- zip lvsOthers (subForest nodeAndLeavesTrees) ]
+  where
+    lvsTree            = leavesTree t
+    nodeAndLeavesTrees = fromJust $ merge t lvsTree
+    lvsOthers          = subForestGetLeafSets S.empty lvsTree
+
+-- We need information about the nodes, and also about the leaves of the induced
+-- sub trees. Hence, we need a somewhat complicated node type @(a, S.Set a)@.
+bipartitionToBranch' :: (Ord a, Ord b, Monoid c)
+                     => S.Set a           -- ^ Complementary set of leaves
+                                          -- towards the stem
+                     -> c                 -- ^ Maybe we have to pass along some
+                                          -- information from above (degree two
+                                          -- nodes)
+                     -> (a -> b)          -- ^ Extract value to compare on
+                     -> (a -> c)          -- ^ Extract information about branch
+                                          -- from node
+                     -> Tree (a, S.Set a) -- ^ Tree containing nodes and sub
+                                          -- tree leaf sets
+                     -> M.Map (Bipartition b) c
+bipartitionToBranch' lvsStem br f g t@(Node l xs )
+  | S.null lvsStem  = error "bipartitionToBranch': no complementing leaf set."
+  -- Leaf; return a singleton map; bipartition with the leaf and the rest of the tree.
+  | null xs         = M.singleton (bpWith f lvsStem lvsThisNode) (br <> g label)
+  -- Pass the creation of the map entry on, but extend the branch.
+  | length xs == 1  = bipartitionToBranch' lvsStem (br <> g label) f g (head xs)
+  -- We have rose trees, so we need to through the list of children and combine
+  -- each of them with the rest. Also, we use up the possible branch information
+  -- 'br' and start afresh with 'mempty'.
+  | otherwise       = M.insert (bpWith f lvsStem lvsThisNode) (br <> g label)
+                      $ M.unions [ bipartitionToBranch' lvs mempty f g x
+                                 | (lvs, x) <- zip lvsOthers xs ]
+  where
+    label       = fst l
+    lvsThisNode = snd l
+    lvsOthers   = subForestGetLeafSets lvsStem $ fmap snd t
+
 -- | Get all bipartitions, but combine leaves from multi-furcations. This is
--- useful to find incompatible splits. See 'incompatibleSplitsDistance'.
-multipartitions :: Ord a => Tree a -> [Bipartition a]
--- Assume that a root node with three children actually corresponds to an
--- unrooted tree.
-multipartitions (Node _ [a, b, c]) = bp lsA lsBC
-                                     : bp lsB lsAC
-                                     : bp lsC lsAB
-                                     : multipartitions' lsBC a
-                                     ++ multipartitions' lsAC b
-                                     ++ multipartitions' lsAB c
+-- useful to find incompatible splits. See
+-- 'EvoMod.Data.Tree.Distance.incompatibleSplitsDistance'. Assume that a root
+-- node with three children is actually not a multifurcation (because then we
+-- would have no induced bypartitions), but rather corresponds to an unrooted
+-- tree.
+bipartitionsCombined :: Ord a => Tree a -> S.Set (Bipartition a)
+bipartitionsCombined t@(Node _ xs)
+  | null xs        = S.empty
+  | length xs == 1 = bipartitionsCombined (head xs)
+  -- One big multifurcation does not induce any bipartitions.
+  | length xs >  3 = S.empty
+  | otherwise      = S.unions [ bipartitionsCombined' lvs x
+                              | (lvs, x) <- zip lvsOthers (subForest lvsTree) ]
   where
-    lsA = leavesSet a
-    lsB = leavesSet b
-    lsC = leavesSet c
-    lsAB = lsA `S.union` lsB
-    lsAC = lsA `S.union` lsC
-    lsBC = lsB `S.union` lsC
-multipartitions n                  = multipartitions' S.empty n
+    lvsTree = leavesTree t
+    lvsOthers = subForestGetLeafSets S.empty lvsTree
 
-multipartitions' :: Ord a => S.Set a -> Tree a -> [Bipartition a]
-multipartitions' _   (Node _ []    ) = []
-multipartitions' lsC (Node _ [c]   ) = multipartitions' lsC c
-multipartitions' lsC (Node _ [l, r])
-  | S.null lsC = let lsL = leavesSet l
-                     lsR = leavesSet r
-                   in bp lsL lsR : multipartitions' lsL r ++ multipartitions' lsR l
-  | otherwise = let lsL = leavesSet l
-                    lsR = leavesSet r
-                    lsCL = lsL `S.union` lsC
-                    lsCR = lsR `S.union` lsC
-                in bp lsCL lsR : bp lsCR lsL :
-                   multipartitions' lsCL r ++ multipartitions' lsCR l
-multipartitions' lsC n
-  | S.null lsC = []
-  | otherwise = [ bp lsC $ leavesSet n ]
+bipartitionsCombined' :: Ord a => S.Set a -> Tree (S.Set a) -> S.Set (Bipartition a)
+bipartitionsCombined' lvsStem t@(Node l xs)
+  | S.null lvsStem = error "bipartitionsCombined': no complementing leaf set."
+  | null xs        = S.singleton $ bp lvsStem l
+  | length xs == 1 = bipartitionsCombined' lvsStem (head xs)
+  | length xs == 2 = S.unions [ bipartitionsCombined' lvs x
+                              | (lvs, x) <- zip lvsOthers xs ]
+  | otherwise      = S.singleton $ bp lvsStem l
+  where
+    lvsOthers = subForestGetLeafSets lvsStem t

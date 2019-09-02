@@ -20,6 +20,8 @@ module EvoMod.Tools.Equality
   , eps
   , nearlyEq
   , (=~=)
+  , nearlyEqListWith
+  , nearlyEqList
   , nearlyEqVecWith
   , nearlyEqVec
   , nearlyEqMatWith
@@ -53,6 +55,14 @@ nearlyEq = nearlyEqWith eps
 -- Test if the given number is nearly equal to all elements of a vector.
 nearlyEqValListWith :: Double -> Double -> [Double] -> Bool
 nearlyEqValListWith tol a = all (nearlyEqWith tol a)
+
+-- | Test if two lists are nearly equal.
+nearlyEqListWith :: Double -> [Double] -> [Double] -> Bool
+nearlyEqListWith tol xs ys = nearlyEqValListWith tol 0 (zipWith (-) xs ys)
+
+-- | Test if two lists are nearly equal; use tolerance 'eps'.
+nearlyEqList :: [Double] -> [Double] -> Bool
+nearlyEqList = nearlyEqListWith eps
 
 -- | Test if two vectors are nearly equal.
 nearlyEqVecWith :: Double -> Vector R -> Vector R -> Bool

@@ -46,7 +46,7 @@ toNewick t =
                        <> mconcat (intersperse (L.word8 $ c2w ',') $ map go ts)
                        <> L.word8 (c2w ')') <> brSup l
                        <> lbl l
-    lbl l = L.lazyByteString (name l)
+    lbl l = L.lazyByteString (getName l)
             <> L.word8 (c2w ':')
             <> L.doubleDec (getLen l)
     brSup l = maybe mempty L.doubleDec (getBranchSupport l)

@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {- |
 Module      :  EvoMod.Data.Tree.DistanceSpec
 Copyright   :  (c) Dominik Schrempf 2019
@@ -15,16 +16,16 @@ module EvoMod.Data.Tree.DistanceSpec
   (spec
   ) where
 
-import qualified Data.Map                   as Map
-import           Data.Monoid
 import           Data.Tree
 import           Test.Hspec
+import           Test.QuickCheck
+import           Test.QuickCheck.Instances.Containers ()
 
 import           EvoMod.Data.Tree.Distance
-import           EvoMod.Data.Tree.Bipartition
-import qualified EvoMod.Data.Tree.NamedTree as T
+import           EvoMod.Data.Tree.NamedTree
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Import.Tree.Newick
+import           EvoMod.Tools.Equality
 import           EvoMod.Tools.InputOutput
 
 treeFileSimple :: FilePath
@@ -41,31 +42,40 @@ getManyTrees = parseFileWith manyNewick treeFileMany
 
 -- I used treedist from Phylip to get the correct results.
 -- See http://evolution.genetics.washington.edu/phylip/doc/treedist.html.
-manyAnswers :: [Int]
-manyAnswers = [ 6, 8, 0, 0, 12, 20, 18, 20, 10, 2, 10, 4, 4, 4, 4, 4, 10, 16, 8,
-                2, 4, 0, 0, 0, 10, 4, 0, 0, 2, 2, 0, 0, 4, 0, 2, 0, 8, 6, 2, 6,
-                4, 4, 8, 0, 0, 4, 2, 0, 10, 0, 0, 10 ]
+symmetricDistanceAnswers :: [Int]
+symmetricDistanceAnswers =
+  [ 6, 8, 0, 0, 12, 20, 18, 20, 10, 2, 10, 4, 4, 4, 4, 4, 10, 16, 8, 2, 4, 0, 0,
+    0, 10, 4, 0, 0, 2, 2, 0, 0, 4, 0, 2, 0, 8, 6, 2, 6, 4, 4, 8, 0, 0, 4, 2, 0,
+    10, 0, 0, 10 ]
 
-bipartitionAnswer :: String
-bipartitionAnswer = "[((\"B\"|\"A\",\"C\",\"D\",\"E\"),Sum {getSum = 0.3}),((\"B\",\"C\",\"D\",\"E\"|\"A\"),Sum {getSum = 0.1}),((\"B\",\"C\",\"E\"|\"A\",\"D\"),Sum {getSum = 5.0e-2}),((\"B\",\"E\"|\"A\",\"C\",\"D\"),Sum {getSum = 0.4}),((\"C\"|\"A\",\"B\",\"D\",\"E\"),Sum {getSum = 1.0e-2}),((\"D\"|\"A\",\"B\",\"C\",\"E\"),Sum {getSum = 0.25}),((\"E\"|\"A\",\"B\",\"C\",\"D\"),Sum {getSum = 0.8})]"
+branchScoreDistanceAnswers :: [Double]
+branchScoreDistanceAnswers =
+  [ 8.567916e-02, 9.570577e-02, 1.704571e-02, 7.603990e-03, 6.149761e-01,
+    3.557070e-01, 2.329811e-01, 3.820208e-01, 1.895421e-02, 6.302364e-03,
+    2.083286e-02, 1.023777e-03, 2.138244e-02, 1.444380e-02, 1.958628e-02,
+    6.089461e-03, 2.551873e-02, 8.041220e-02, 4.123102e-02, 8.241811e-03,
+    2.623805e-02, 2.109278e-02, 1.953769e-02, 4.459926e-03, 6.594537e-02,
+    7.040703e-02, 8.603133e-03, 3.878009e-03, 2.969969e-02, 2.505262e-02,
+    2.095988e-02, 8.461041e-03, 5.228005e-02, 6.001320e-02, 8.276652e-03,
+    6.966115e-03, 7.701581e-02, 4.946339e-02, 2.548024e-02, 5.800598e-03,
+    3.875927e-02, 2.836737e-02, 9.059706e-02, 1.333325e-02, 5.071356e-02,
+    7.433056e-02, 3.854717e-02, 3.255993e-02, 1.581909e-01, 6.813096e-02,
+    8.210513e-02, 7.664642e-02 ]
 
+prop_dist_same_tree :: (Num b, Eq b) => (Tree a -> Tree a -> b) -> Tree a -> Bool
+prop_dist_same_tree distanceMeasure t = distanceMeasure t t == 0
+
+-- TODO: Microsporidia trees with branch support values.
 -- getMicrospoPoissonTree :: IO (Tree PhyloByteStringLabel)
--- getMicrospoPoissonTree = parseFileWith newick "TODO"
+-- getMicrospoPoissonTree = parseFileWith newick "data/MicrospoPoisson.tree"
+-- getMicrospoUDM32Tree = parseFileWith newick "data/MicrospoEDM32.tree"
+-- getMicrospoUDM64Tree = parseFileWith newick "data/MicrospoEDM64.tree"
 
 each :: Int -> [a] -> [a]
 each n = map head . takeWhile (not . null) . iterate (drop n)
 
 spec :: Spec
 spec = do
-  -- describe "bipartitions" $
-  --   it "calculates correct bipartitions for sample trees" $ do
-  --     simpleTrees <- map removeBrLen <$> getSimpleTrees
-  --     let t1 = head simpleTrees
-  --         t2 = simpleTrees !! 1
-  --         b1 = bipartitions t1
-  --         b2 = bipartitions t2
-  --     print b1
-  --     print b2
   describe "symmetricDistance" $
     it "calculates correct distances for sample trees" $ do
       simpleTrees <- getSimpleTrees
@@ -74,21 +84,16 @@ spec = do
       -- Since treedist computes the distance between adjacent pairs, in the
       -- following manner: [tr0, tr1, tr2, tr3] -> [dist tr0 tr1, dist tr2 tr3],
       -- we have to skip some distances.
-      each 2 (computeAdjacentDistances (symmetricDistanceWith T.name) manyTrees) `shouldBe` manyAnswers
-  describe "bipartitionToBranch" $
-    it "creates a map from bipartitions to branch lengths" $ do
-      simpleTrees <- getSimpleTrees
-      -- XXX: This test is very fragile, for instance when the Show instance of
-      -- Bipartition is changed.
-      show (Map.toList $ Map.mapKeys (bpmap pLabel) $ bipartitionToBranch (Sum . pBrLen) (simpleTrees !! 2))
-        `shouldBe` bipartitionAnswer
-  -- -- TODO.
-  -- describe "incompatibleSplitDistance" $
-  --   it "calculates correct distances for sample trees" $ do
-  --     simpleTrees <- getSimpleTrees
-  --     symmetricDistance (head simpleTrees) (simpleTrees !! 1) `shouldBe` 2
-  --     manyTrees <- map removeBrLen <$> getManyTrees
-  --     -- Since treedist computes the distance between adjacent pairs, in the
-  --     -- following manner: [tr0, tr1, tr2, tr3] -> [dist tr0 tr1, dist tr2 tr3],
-  --     -- we have to skip some distances.
-  --     each 2 (computeAdjacentDistances symmetricDistance manyTrees) `shouldBe` manyAnswers
+      each 2 (computeAdjacentDistances (symmetricDistanceWith getName) manyTrees)
+        `shouldBe` symmetricDistanceAnswers
+
+  describe "incompatibleSplitDistance" $
+    it "calculates correct distances for completely collapsed trees" $
+    property $ prop_dist_same_tree (incompatibleSplitsDistance :: Tree PhyloIntLabel -> Tree PhyloIntLabel -> Int)
+
+  describe "branchScoreDistance" $
+    it "calculates correct distances for sample trees" $ do
+      manyTrees <- getManyTrees
+      print branchScoreDistanceAnswers
+      each 2 (computeAdjacentDistances branchScoreDistance manyTrees)
+        `shouldSatisfy` nearlyEqListWith 1e-5 branchScoreDistanceAnswers

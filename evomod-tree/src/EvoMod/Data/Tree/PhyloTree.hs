@@ -32,10 +32,11 @@ module EvoMod.Data.Tree.PhyloTree
   , removeBrLen
   ) where
 
-import qualified Data.ByteString.Lazy.Builder        as L
-import qualified Data.ByteString.Lazy.Char8          as L
+import qualified Data.ByteString.Lazy.Builder       as L
+import qualified Data.ByteString.Lazy.Char8         as L
 import           Data.Function
 import           Data.Tree
+import           Test.QuickCheck
 
 import           EvoMod.Data.Tree.BranchSupportTree
 import           EvoMod.Data.Tree.MeasurableTree
@@ -64,18 +65,24 @@ instance BranchSupportLabel (PhyloLabel a) where
     | s > 0 = l {pBrSup = Just s}
     | otherwise = error "Branch support cannot be negative."
 
+instance Arbitrary a => Arbitrary (PhyloLabel a) where
+  arbitrary = PhyloLabel
+    <$> arbitrary
+    <*> (Just <$> choose (0, 100))
+    <*> choose (0, 10)
+
 -- | Tree node with 'Int' label.
 type PhyloIntLabel = PhyloLabel Int
 
 instance Named PhyloIntLabel where
-  name = L.toLazyByteString . L.intDec . pLabel
+  getName = L.toLazyByteString . L.intDec . pLabel
 
 -- | Tree node with 'L.ByteString' label. Important for parsing
 -- 'EvoMod.Import.Tree.Newick' files.
 type PhyloByteStringLabel = PhyloLabel L.ByteString
 
 instance Named PhyloByteStringLabel where
-  name = pLabel
+  getName = pLabel
 
 -- | Remove branch lengths from tree.
 removeBrLen :: Tree (PhyloLabel a) -> Tree a

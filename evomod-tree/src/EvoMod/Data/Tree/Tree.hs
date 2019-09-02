@@ -47,6 +47,8 @@ module EvoMod.Data.Tree.Tree
   , subSample
   , nSubSamples
   , pruneWith
+  , merge
+  , tZipWith
   ) where
 
 import           Control.Monad
@@ -54,6 +56,7 @@ import           Control.Monad.Primitive
 import           Data.Maybe
 import qualified Data.Sequence           as Seq
 import qualified Data.Set                as Set
+import           Data.Traversable
 import           Data.Tree
 import           System.Random.MWC
 
@@ -122,3 +125,18 @@ pruneWith _  n@(Node _ [])       = n
 pruneWith f    (Node paLbl [ch]) = let lbl = f (rootLabel ch) paLbl
                                    in pruneWith f $ Node lbl (subForest ch)
 pruneWith f    (Node paLbl chs)  = Node paLbl (map (pruneWith f) chs)
+
+-- | Merge two trees with the same topology. Returns 'Nothing' if the topologies are different.
+merge :: Tree a -> Tree b -> Maybe (Tree (a, b))
+merge (Node l xs) (Node r ys) =
+  if length xs == length ys
+  -- I am proud of that :)).
+  then zipWithM merge xs ys >>= Just . Node (l, r)
+  else Nothing
+
+-- | Apply a function with different effect on each node to a 'Traversable'.
+-- Based on https://stackoverflow.com/a/41523456.
+tZipWith :: Traversable t => (a -> b -> c) -> [a] -> t b -> Maybe (t c)
+tZipWith f xs = sequenceA . snd . mapAccumL pair xs
+    where pair [] _     = ([], Nothing)
+          pair (y:ys) z = (ys, Just (f y z))

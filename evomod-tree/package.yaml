@@ -43,6 +43,8 @@ dependencies:
   - optparse-applicative
   - parallel
   - primitive
+  - QuickCheck
+  - quickcheck-instances
   - statistics
   - transformers
   - vector

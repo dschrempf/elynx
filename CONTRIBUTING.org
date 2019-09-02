@@ -14,16 +14,18 @@ Length: 10.13
 #+end_example
 
 ** Positions of operators
-Put operators at the end of lines. For example,
+Put operators at the beginning of lines. For example,
 #+begin_src haskell
-args = Args <$>
-       alphabetOpt <*>
-       optional outFileBaseNameOpt <*>
-       verbosityOpt <*>
-       commandArg
-#+end_src
-This does not involve type declarations, because of documentation. For example,
-#+begin_src haskell
+args = Args
+       <$> alphabetOpt
+       <*> optional outFileBaseNameOpt
+       <*> verbosityOpt
+       <*> commandArg
+
+list = [ x1
+       , x2
+       , x3 ]
+
 subsample :: (PrimMonad m)
           => Int                    -- ^ How many samples?
           -> MultiSequenceAlignment -- ^ The alignment to sample from.

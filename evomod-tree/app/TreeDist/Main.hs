@@ -32,7 +32,7 @@ import           OptionsTreeDist
 
 import           EvoMod.Data.Tree.BranchSupportTree
 import           EvoMod.Data.Tree.Distance
-import qualified EvoMod.Data.Tree.NamedTree         as T
+import           EvoMod.Data.Tree.NamedTree
 import           EvoMod.Data.Tree.PhyloTree
 import           EvoMod.Import.Tree.Newick
 -- import           EvoMod.Export.Tree.Newick
@@ -99,8 +99,8 @@ worker = do
       lift $ hPutStrLn outH $ "Collapse nodes with support less than " ++ show val ++ "."
   let distanceMeasure :: Tree PhyloByteStringLabel -> Tree PhyloByteStringLabel -> Int
       distanceMeasure = case distance of
-        Symmetric           -> symmetricDistanceWith T.name
-        IncompatibleSplit _ -> incompatibleSplitsDistanceWith T.name
+        Symmetric           -> symmetricDistanceWith getName
+        IncompatibleSplit _ -> incompatibleSplitsDistanceWith getName
   let treesCollapsed = case distance of
         Symmetric             -> trees
         IncompatibleSplit val -> map (collapse val) tsN

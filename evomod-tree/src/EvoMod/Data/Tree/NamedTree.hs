@@ -20,4 +20,4 @@ import qualified Data.ByteString.Lazy.Char8 as L
 
 -- | Data types with names.
 class Named a where
-  name :: a -> L.ByteString
+  getName :: a -> L.ByteString

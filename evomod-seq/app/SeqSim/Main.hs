@@ -75,7 +75,7 @@ simulateMSA pm t n g = do
   -- XXX: The horizontal concatenation might be slow. If so, 'concatenateSeqs'
   -- or 'concatenateMSAs' can be used, which directly appends vectors.
   let leafStates = horizontalConcat leafStatesS
-      leafNames  = map name $ leaves t
+      leafNames  = map getName $ leaves t
       code       = P.getAlphabet pm
       -- XXX: Probably use type safe stuff here?
       alph       = A.all $ alphabetSpec code

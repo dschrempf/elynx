@@ -22,15 +22,19 @@ module EvoMod.Data.Tree.Distance
   , incompatibleSplitsDistanceWith
   , computePairwiseDistances
   , computeAdjacentDistances
-  -- , branchScoreDistance
-  -- , branchScoreDistanceWith
+  , branchScoreDistance
+  , branchScoreDistanceWith
   ) where
 
 import           Data.List
-import qualified Data.Set                     as S
+import qualified Data.Map                        as M
+import           Data.Monoid
+import qualified Data.Set                        as S
 import           Data.Tree
 
 import           EvoMod.Data.Tree.Bipartition
+import           EvoMod.Data.Tree.MeasurableTree
+import           EvoMod.Data.Tree.NamedTree
 
 -- -- Difference between two 'Set's, see 'Set.difference'. Do not compare elements
 -- -- directly but apply a function beforehand.
@@ -47,8 +51,12 @@ import           EvoMod.Data.Tree.Bipartition
 --     ysNotInXs = differenceWith f ys xs
 
 -- Symmetric difference between two 'Set's.
-symmetricDifference :: Ord a => S.Set a -> S.Set a -> S.Set a
-symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
+symmetricDifferenceS :: Ord a => S.Set a -> S.Set a -> S.Set a
+symmetricDifferenceS xs ys = S.difference xs ys `S.union` S.difference ys xs
+
+-- -- Symmetric difference between two 'Map's.
+-- symmetricDifferenceM :: Ord k => M.Map k a -> M.Map k a -> M.Map k a
+-- symmetricDifferenceM x y = M.difference x y `M.union` M.difference y x
 
 -- | Symmetric (Robinson-Foulds) distance between two trees. Assumes that the
 -- leaves have unique names! Before comparing the leaf labels, apply a function
@@ -56,7 +64,7 @@ symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
 symmetricDistanceWith :: (Ord b) => (a -> b) -> Tree a -> Tree a -> Int
-symmetricDistanceWith f t1 t2 = length $ symmetricDifference (bs t1) (bs t2)
+symmetricDistanceWith f t1 t2 = length $ symmetricDifferenceS (bs t1) (bs t2)
   where bs t = bipartitions $ fmap f t
 
 -- | See 'symmetricDistanceWith', but with 'id' for comparisons.
@@ -66,29 +74,34 @@ symmetricDistance = symmetricDistanceWith id
 -- | Number of incompatible splits. Similar to 'symmetricDistance' but merges
 -- multifurcations. Before comparing the leaf labels, apply a function . This is
 -- useful to compare the labels of 'Named' trees on their names only.
+--
+-- XXX: Comparing a list of trees with this function recomputes bipartitions.
 incompatibleSplitsDistanceWith :: (Ord b) => (a -> b) -> Tree a -> Tree a -> Int
-incompatibleSplitsDistanceWith f t1 t2 = length $ symmetricDifference (ms t1) (ms t2)
-  where ms t = S.fromList $ multipartitions $ fmap f t
+incompatibleSplitsDistanceWith f t1 t2 = length $ symmetricDifferenceS (ms t1) (ms t2)
+  where ms t = bipartitionsCombined $ fmap f t
 
 -- | See 'incompatibleSplitsDistanceWith', use 'id' for comparisons.
 incompatibleSplitsDistance :: (Ord a) => Tree a -> Tree a -> Int
 incompatibleSplitsDistance = incompatibleSplitsDistanceWith id
 
--- -- | Compute branch score distance between two trees. Before comparing the leaf
--- -- labels, apply a function. This is useful to compare the labels of 'Named'
--- -- trees on their names only.
--- branchScoreDistanceWith :: (Ord a, Ord b, Floating c)
---                         => (a -> b) -- ^ Label to compare on
---                         -> (a -> c) -- ^ Branch length associated with a node
---                         -> Tree a -> Tree a -> Double
--- branchScoreDistanceWith f g t1 t2 = undefined
---   where bs t = bipartitions $ fmap f t
---         dBs  = symmetricDifference (bs t1) (bs t2)
---         -- TODO: Now we need the 'Map Bipartition Double' to get the distances.
+-- | Compute branch score distance between two trees. Before comparing the leaf
+-- labels, apply a function. This is useful to compare the labels of 'Named'
+-- trees on their names only.
+--
+-- XXX: Comparing a list of trees with this function recomputes bipartitions.
+branchScoreDistanceWith :: (Ord a, Ord b, Floating c)
+                        => (a -> b) -- ^ Label to compare on
+                        -> (a -> c) -- ^ Branch information (e.g., length)
+                                    -- associated with a node
+                        -> Tree a -> Tree a -> c
+branchScoreDistanceWith f g t1 t2 = sqrt dsSquared
+  where bs        = bipartitionToBranch f (Sum . g)
+        dBs       = M.map getSum $ M.unionWith (-) (bs t1) (bs t2)
+        dsSquared = foldl' (\acc e -> acc + e*e) 0 dBs
 
--- -- | See 'branchScoreDistanceWith', use 'id' for comparisons.
--- branchScoreDistance :: Ord a => Tree a -> Tree a -> Double
--- branchScoreDistance = branchScoreDistanceWith id id
+-- | See 'branchScoreDistanceWith', use 'id' for comparisons.
+branchScoreDistance :: (Ord a, Measurable a, Named a) => Tree a -> Tree a -> Double
+branchScoreDistance = branchScoreDistanceWith getName getLen
 
 -- | Compute pairwise distances of a list of input trees. Use given distance
 -- measure function. Returns a triple, the first two elements are the indices of
@@ -102,8 +115,8 @@ computePairwiseDistances dist trs = [ (i, j, dist x y)
 
 -- | Compute distances between adjacent pairs of a list of input trees. Use
 -- given distance measure function.
-computeAdjacentDistances :: (Tree a -> Tree a -> Int) -- ^ Distance function
+computeAdjacentDistances :: (Tree a -> Tree a -> b) -- ^ Distance function
                          -> [Tree a]                  -- ^ Input trees
-                         -> [Int]
+                         -> [b]
 computeAdjacentDistances dist trs = [ dist x y | (x, y) <- zip trs (tail trs) ]
 
