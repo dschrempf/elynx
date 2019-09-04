@@ -51,11 +51,6 @@ dependencies:
   # - word8
   # - zlib
 
-library:
-  source-dirs: src
-  dependencies:
-    - evomod-tools
-
 # Defaults for executables.
 _defaults: &defaults
   # Development options.
@@ -72,32 +67,21 @@ executables:
     main:                Main.hs
     source-dirs:         app/TreeAna
     dependencies:
-      - evomod-tools
-      - evomod-tree
+      - evolib-tools
+      - evolib-tree
 
   tree-dist:
     <<: *defaults
     main:                Main.hs
     source-dirs:         app/TreeDist
     dependencies:
-      - evomod-tools
-      - evomod-tree
+      - evolib-tools
+      - evolib-tree
 
   tree-sim:
     <<: *defaults
     main:                Main.hs
     source-dirs:         app/TreeSim
     dependencies:
-      - evomod-tools
-      - evomod-tree
-
-tests:
-  tree-test:
-    <<: *defaults
-    main:                Spec.hs
-    source-dirs:         test
-    dependencies:
-      - evomod-tree
-      - evomod-tools
-      - hspec
-      - hspec-megaparsec
+      - evolib-tools
+      - evolib-tree

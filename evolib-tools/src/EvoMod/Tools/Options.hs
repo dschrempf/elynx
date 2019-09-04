@@ -45,10 +45,10 @@ import           Text.Megaparsec                 (Parsec, errorBundlePretty,
                                                   runParser)
 
 import           EvoMod.Tools.Misc
-import           Paths_evomod_tools              (version)
+import           Paths_evolib_tools              (version)
 
 -- Be careful; it is necessary to synchronize the evomod-xxx libraries, so that
--- the version number of evomod-tools matches the others.
+-- the version number of evolib-tools matches the others.
 versionString :: String
 versionString = "EvoMod Suite version " ++ showVersion version ++ "."
 

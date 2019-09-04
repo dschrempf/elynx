@@ -1,4 +1,4 @@
-name:                evomod-tools
+name:                evolib-tree
 version:             0.4
 github:              "dschrempf/evomod"
 license:             GPL-3
@@ -6,18 +6,12 @@ author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
 copyright:           "Dominik Schrempf (2018)"
 
-ghc-options:
-  - -Wall
-  - -O2
-  # # LLVM 6.0 not available for Arch anymore.
-  # - -fllvm
-
 extra-source-files:
 - README.org
 - ChangeLog.org
 
 # Metadata used when publishing your package
-synopsis:            Tools for EvoMod.
+synopsis:            Handle phylogenetic trees in a reproducible way.
 category:            Bioinformatics
 
 # To avoid duplicated efforts in documentation and dealing with the
@@ -25,29 +19,55 @@ category:            Bioinformatics
 # common to point users to the README.org file.
 description:         Please see the README on GitHub at <https://github.com/dschrempf/evomod>.
 
+ghc-options:
+  - -Wall
+  - -O2
+  # # LLVM 6.0 not available for Arch anymore.
+  # - -fllvm
+
 dependencies:
-  # - async
+  - lifted-async
   - base
   - bytestring
   - containers
   # - data-memocombinators
-  - hmatrix
+  # - distribution
+  # - hstats
+  # - hmatrix
   # - integration
   # - lens
-  # - math-functions
-  - matrices
+  - math-functions
+  # - matrices
   - megaparsec
   - mwc-random
   - optparse-applicative
   - parallel
   - primitive
-  # - statistics
-  - template-haskell
-  - time
+  - QuickCheck
+  - quickcheck-instances
+  - statistics
   - transformers
   - vector
   # - word8
-  - zlib
+  # - zlib
 
 library:
   source-dirs: src
+  dependencies:
+    - evolib-tools
+
+tests:
+  tree-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+      # Deactivate eventlog for production.
+      - -eventlog
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - evolib-tools
+      - evolib-tree
+      - hspec
+      - hspec-megaparsec

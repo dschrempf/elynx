@@ -1,4 +1,4 @@
-name:                evomod-seq
+name:                evolib-seq
 version:             0.4
 github:              "dschrempf/evomod"
 license:             GPL-3
@@ -48,30 +48,25 @@ dependencies:
   - word8
   # - zlib
 
-# Defaults for executables.
-_defaults: &defaults
-  # Development options.
-  ghc-options:
-    # Deactivate eventlog for production.
-    - -eventlog
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+library:
+  source-dirs: src
+  dependencies:
+    - evolib-tree
+    - evolib-tools
 
-executables:
-  seq-ana:
-    <<: *defaults
-    main:                Main.hs
-    source-dirs:         app/SeqAna
+tests:
+  seq-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+      # Deactivate eventlog for production.
+      - -eventlog
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-      - evolib-seq
-      - evolib-tools
-
-  seq-sim:
-    <<: *defaults
-    main:                Main.hs
-    source-dirs:         app/SeqSim
-    dependencies:
-      - evolib-seq
-      - evolib-tools
-      - evolib-tree
+    - evolib-seq
+    - evolib-tools
+    - evolib-tree
+    - hspec
+    - hspec-megaparsec

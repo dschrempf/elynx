@@ -1,0 +1,66 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.32.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: bd3f12062d4bf7cd08309c082b8673a6cb6b9437a400bfe10d9644b8e29b550d
+
+name:           evolib-tools
+version:        0.4
+synopsis:       Tools for EvoMod.
+description:    Please see the README on GitHub at <https://github.com/dschrempf/evomod>.
+category:       Bioinformatics
+homepage:       https://github.com/dschrempf/evomod#readme
+bug-reports:    https://github.com/dschrempf/evomod/issues
+author:         Dominik Schrempf
+maintainer:     dominik.schrempf@gmail.com
+copyright:      Dominik Schrempf (2018)
+license:        GPL-3
+build-type:     Simple
+extra-source-files:
+    README.org
+    ChangeLog.org
+
+source-repository head
+  type: git
+  location: https://github.com/dschrempf/evomod
+
+library
+  exposed-modules:
+      EvoMod.Tools.ByteString
+      EvoMod.Tools.Concurrent
+      EvoMod.Tools.Definitions
+      EvoMod.Tools.Equality
+      EvoMod.Tools.InputOutput
+      EvoMod.Tools.LinearAlgebra
+      EvoMod.Tools.List
+      EvoMod.Tools.Logger
+      EvoMod.Tools.Matrix
+      EvoMod.Tools.Misc
+      EvoMod.Tools.Numeric
+      EvoMod.Tools.Options
+      EvoMod.Tools.Random
+      EvoMod.Tools.Vector
+  other-modules:
+      Paths_evolib_tools
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -O2
+  build-depends:
+      base
+    , bytestring
+    , containers
+    , hmatrix
+    , matrices
+    , megaparsec
+    , mwc-random
+    , optparse-applicative
+    , parallel
+    , primitive
+    , template-haskell
+    , time
+    , transformers
+    , vector
+    , zlib
+  default-language: Haskell2010

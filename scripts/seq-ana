@@ -2,8 +2,8 @@
 
 source include
 
-file_DNA="${project_root}/evomod-seq/data/Nucleotide.fasta"
-file_AA="${project_root}/evomod-seq/data/AminoAcid.fasta"
+file_DNA="${project_root}/evolib-seq/data/Nucleotide.fasta"
+file_AA="${project_root}/evolib-seq/data/AminoAcid.fasta"
 
 msg "Seq-Ana; examine DNA."
 stack exec seq-ana -- -a DNA examine "$file_DNA" || exit 1
