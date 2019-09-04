@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 source include
 
 file_DNA="${project_root}/evolib-seq/data/Nucleotide.fasta"

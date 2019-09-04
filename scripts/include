@@ -32,7 +32,7 @@ if [[ -t 2 ]]; then
 fi
 readonly ALL_OFF BOLD BLUE GREEN RED YELLOW
 
-project_root=$(stack path | grep project-root | cut -d " " -f 2)
+project_root=$(stack path | grep "project-root" | tr -s " " | cut -d " " -f 2)
 if [[ -z $project_root ]]
 then
     echo "Error during project root determination."

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 source include
 
 file_tree="${project_root}/evolib-tree/data/Newick.tree"

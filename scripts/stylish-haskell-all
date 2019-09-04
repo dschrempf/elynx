@@ -7,8 +7,3 @@ pr="$project_root"
 cd "${pr}" || exit 1
 
 fd -e hs -x stylish-haskell -i
-
-# while IFS= read -r -d '' file
-# do
-#     stylish-haskell -i "$file"
-# done < <(find "${pr}/src"/ "${pr}/test"/ "${pr}/app/" -name '*.hs' -print0)
