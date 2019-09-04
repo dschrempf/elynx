@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8dfee123f2bcb219224f8bba73d3d1752d18d0d4d7aa3c9f4b3bb457a6dedf46
+-- hash: b40655e20a03db1048dbd984278b466abea7410497bbc16f3452cc995e527984
 
 name:           evolib-seq
-version:        0.4
+version:        0.5.1
 synopsis:       Read and modify molecular sequence data in a reproducible way.
 description:    Please see the README on GitHub at <https://github.com/dschrempf/evomod>.
 category:       Bioinformatics

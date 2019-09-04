@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 331b5579d72771195de1ac98e2776ca55fb9f7c1cc8d9fa269f9b6b5b7f57267
+-- hash: b6d0fd8f7e6d2eca1ba7fb25cc11a2294aa35835b2436529f193faf830683015
 
 name:           evolib-tree
-version:        0.4
+version:        0.5.1
 synopsis:       Handle phylogenetic trees in a reproducible way.
 description:    Please see the README on GitHub at <https://github.com/dschrempf/evomod>.
 category:       Bioinformatics

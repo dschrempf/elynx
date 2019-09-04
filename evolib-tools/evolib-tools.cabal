@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bd3f12062d4bf7cd08309c082b8673a6cb6b9437a400bfe10d9644b8e29b550d
+-- hash: 8497772949f6bc62bab5b4b312c0a5a25425ac20cdccb4dd63f976fb7795c66d
 
 name:           evolib-tools
-version:        0.4
+version:        0.5.1
 synopsis:       Tools for EvoMod.
 description:    Please see the README on GitHub at <https://github.com/dschrempf/evomod>.
 category:       Bioinformatics

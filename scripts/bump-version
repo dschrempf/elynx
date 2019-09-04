@@ -1,16 +1,49 @@
 #!/usr/bin/env bash
 
+set -e
+
 source include
+
+usage() {
+    echo "Usage: $(basename "$0") [MAJOR|major|minor]"
+}
+
+increment() {
+    echo "$1" 1 | awk '{printf "%d", $1 + $2}'
+}
 
 # Also removes whitespace.
 version_old=$(xargs < "${project_root}/version")
-version_new=$(echo "$version_old" 0.1 | awk '{printf "%.1f", $1 + $2}')
+version_MAJOR="${version_old%%.*}"
+version_major_tmp="${version_old#*.}"
+version_major="${version_major_tmp%.*}"
+version_minor="${version_old##*.}"
 
+if [[ $1 == "MAJOR" ]]
+then
+    version_MAJOR=$(increment "$version_MAJOR")
+    version_major="0"
+    version_minor="0"
+elif [[ $1 == "major" ]]
+then
+    version_major=$(increment "$version_major")
+    version_minor="0"
+elif [[ $1 == "minor" ]]
+then
+    version_minor=$(increment "$version_minor")
+else
+    usage
+    exit 1
+fi
+version_new="${version_MAJOR}.${version_major}.${version_minor}"
+
+echo "Bump $1 version number."
 echo "Version old: $version_old"
 echo "Version new: $version_new"
 
 echo "$version_new" > "${project_root}/version"
 
 fd '.*package.yaml' "${project_root}" -x \
-   sed -i -r '/^version:\s+/s/[0-9]+\.[0-9]+/'"${version_new}"'/'
+   sed -i -r '/^version:\s+/s/[0-9]+\.[0-9]+\.[0-9]+/'"${version_new}"'/'
 
+echo "Done."
