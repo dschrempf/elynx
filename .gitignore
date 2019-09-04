@@ -18,12 +18,14 @@ evomod-tree.cabal
 /scripts/seq-sim.prof
 /scripts/seq-sim.ps
 /scripts/seq-sim.out
+/scripts/seq-sim.out.fasta
 /scripts/seq-sim.out.log
 /scripts/seq-sim.out.model
 /scripts/tree-sim.aux
 /scripts/tree-sim.eventlog
 /scripts/tree-sim.hp
 /scripts/tree-sim.out
+/scripts/tree-sim.out.tree
 /scripts/tree-sim.prof
 /scripts/tree-sim.ps
 /scripts/iqtree-verify.*

@@ -16,26 +16,26 @@ set -e
 
 source include
 
-seqana() {
+seq-ana() {
     msg "Seq-Ana profiling run."
     file_profile="${project_root}/evomod-seq/data/Profile.fa.gz"
-    stack exec seq-ana --work-dir $prof_dir -- \
+    stack exec --work-dir $prof_dir --profile seq-ana -- \
           -a ProteinI examine "$file_profile" \
           +RTS -p -l -s || exit 1
 }
 
-seqsim() {
+seq-sim() {
     msg "Seq-Sim profiling run."
     file_tree="${project_root}/evolib-tree/data/Newick.tree"
     file_edm="${project_root}/evolib-seq/data/EDMDistsPhylobayes.txt"
-    stack exec seq-sim --work-dir $prof_dir -- \
+    stack  exec --work-dir $prof_dir --profile seq-sim  -- \
           -t "$file_tree" -o seq-sim.out -e "$file_edm" -m "EDM(LG-Custom)" -l 5000 -S [0] \
           +RTS -p -hc -l -s || exit 1
 }
 
-treesim() {
+tree-sim() {
     msg "Tree-Sim profiling run."
-    stack exec tree-sim --work-dir $prof_dir -- \
+    stack exec --work-dir $prof_dir --profile tree-sim -- \
           -t 10 -n 3000 -r 0.5 -u -o tree-sim.out -S [0] \
           +RTS -p -hc -l -s || exit 1
 }
@@ -48,15 +48,15 @@ graph() {
     done
 }
 
-if [[ $1 == "seqana" ]]
+if [[ $1 == "seq-ana" ]]
 then
-    seqana
-elif [[ $1 == "seqsim" ]]
+    seq-ana
+elif [[ $1 == "seq-sim" ]]
 then
-    seqsim
-elif [[ $1 == "treesim" ]]
+    seq-sim
+elif [[ $1 == "tree-sim" ]]
 then
-    treesim
+    tree-sim
 else
     echo "Usage: $(basename "$0") (seqana|seqsim|treesim)"
     exit 1

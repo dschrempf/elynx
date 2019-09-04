@@ -50,7 +50,6 @@ dependencies:
 
 # Defaults for executables.
 _defaults: &defaults
-  # Development options.
   ghc-options:
     # Deactivate eventlog for production.
     - -eventlog
