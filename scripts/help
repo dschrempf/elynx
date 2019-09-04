@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
+set -e
+
 source include
 
-programs=("seq-ana" "seq-sim" "tree-sim")
+programs=("seq-ana" "seq-sim" "tree-ana" "tree-dist" "tree-sim")
 
 for p in "${programs[@]}"
 do
