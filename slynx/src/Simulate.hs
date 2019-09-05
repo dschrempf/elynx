@@ -1,5 +1,5 @@
 {- |
-Module      :  Main
+Module      :  Simulate
 Description :  Simulate multiple sequence alignments
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -12,7 +12,7 @@ Creation date: Mon Jan 28 14:12:52 2019.
 
 -}
 
-module Main where
+module Simulate where
 
 import           Control.Concurrent
 import           Control.Concurrent.Async
@@ -28,8 +28,8 @@ import           Numeric.LinearAlgebra
 import           System.IO
 import           System.Random.MWC
 
-import           OptionsSeqSim
-import           ParsePhyloModel
+import           Simulate.Options
+import           Simulate.PhyloModel
 
 import           ELynx.Data.Alphabet.Alphabet                    as A
 import           ELynx.Data.MarkovProcess.GammaRateHeterogeneity

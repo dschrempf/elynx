@@ -1,5 +1,5 @@
 {- |
-Module      :  ParsePhyloModel
+Module      :  Simulate.PhyloModel
 Description :  Parse and interpret the model string
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -12,7 +12,7 @@ Creation date: Fri Feb  1 13:32:16 2019.
 
 -}
 
-module ParsePhyloModel
+module Simulate.PhyloModel
   ( getPhyloModel
   ) where
 

@@ -48,6 +48,13 @@ dependencies:
   - word8
   # - zlib
 
+library:
+  source-dirs: src
+  dependencies:
+    - elynx-seq
+    - elynx-tools
+    - elynx-tree
+
 # Defaults for executables.
 _defaults: &defaults
   ghc-options:
@@ -58,19 +65,9 @@ _defaults: &defaults
     - -with-rtsopts=-N
 
 executables:
-  seq-ana:
+  slynx:
     <<: *defaults
     main:                Main.hs
-    source-dirs:         app/SeqAna
+    source-dirs:         app
     dependencies:
-      - elynx-seq
-      - elynx-tools
-
-  seq-sim:
-    <<: *defaults
-    main:                Main.hs
-    source-dirs:         app/SeqSim
-    dependencies:
-      - elynx-seq
-      - elynx-tools
-      - elynx-tree
+      - slynx
