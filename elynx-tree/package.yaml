@@ -1,6 +1,6 @@
-name:                evomod-tree
+name:                elynx-tree
 version:             0.5.1
-github:              "dschrempf/evomod"
+github:              "dschrempf/elynx"
 license:             GPL-3
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
@@ -17,7 +17,7 @@ category:            Bioinformatics
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.org file.
-description:         Please see the README on GitHub at <https://github.com/dschrempf/evomod>.
+description:         Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
 
 ghc-options:
   - -Wall
@@ -51,36 +51,23 @@ dependencies:
   # - word8
   # - zlib
 
-# Defaults for executables.
-_defaults: &defaults
-  ghc-options:
-    # Deactivate eventlog for production.
-    - -eventlog
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+library:
+  source-dirs: src
+  dependencies:
+    - elynx-tools
 
-executables:
-  tree-ana:
-    <<: *defaults
-    main:                Main.hs
-    source-dirs:         app/TreeAna
+tests:
+  tree-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+      # Deactivate eventlog for production.
+      - -eventlog
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-      - evolib-tools
-      - evolib-tree
-
-  tree-dist:
-    <<: *defaults
-    main:                Main.hs
-    source-dirs:         app/TreeDist
-    dependencies:
-      - evolib-tools
-      - evolib-tree
-
-  tree-sim:
-    <<: *defaults
-    main:                Main.hs
-    source-dirs:         app/TreeSim
-    dependencies:
-      - evolib-tools
-      - evolib-tree
+      - elynx-tools
+      - elynx-tree
+      - hspec
+      - hspec-megaparsec

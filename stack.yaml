@@ -35,11 +35,11 @@ resolver: lts-14.1
 #  - auto-update
 #  - wai
 packages:
-  - evolib-seq
-  - evolib-tools
-  - evolib-tree
-  - evomod-seq
-  - evomod-tree
+  - elynx-seq
+  - elynx-tools
+  - elynx-tree
+  - slynx
+  - tlynx
 
 # Dependency packages to be pulled from upstream that are not in the resolver
 # using the same syntax as the packages field.

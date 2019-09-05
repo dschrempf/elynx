@@ -1,0 +1,6 @@
+* TODO Handle evolutionary trees
+Simulate birth and death trees with =tlynx simulate=.
+
+#+BEGIN_SRC sh :exports both :results output verbatim
+tlynx simulate --help
+#+END_SRC

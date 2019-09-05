@@ -1,4 +1,1 @@
-* Changelog for EvoMod
-  :PROPERTIES:
-  :CUSTOM_ID: changelog-for-evomod
-  :END:
+* Changelog for ELynx

@@ -1,19 +1,13 @@
 * Reproducible evolution made easy
 
-The EvoMod suite is a Haskell library and a tool set for computational biology.
+The ELynx suite is a Haskell library and a tool set for computational biology.
 
-- [[file:evomod-seq/README.org][Sequence analysis]] :: View, examine, and modify evolutionary sequences (FASTA
-     format) with =seq-ana=.
-- [[file:evomod-seq/README.org][Sequence simulation]] :: Simulate evolutionary sequences (FASTA format)with
-     =seq-sim=.
-- [[file:evomod-tree/README.org][Tree simulation]] :: Simulate phylogenetic trees (Newick format) with
-     =tree-sim=.
+- [[file:slynx/README.org][SLynx]] :: Examine, modify, and simulate evolutionary sequences (FASTA format).
+- [[file:evomod-tree/README.org][TLynx]] :: Analyze, and simulate phylogenetic trees (Newick format).
      
 * Installation
 
-EvoMod is written in [[https://www.haskell.org/][Haskell]] and can be
-installed with
-[[https://docs.haskellstack.org/en/stable/README/][Stack]].
+ELynx is written in [[https://www.haskell.org/][Haskell]] and can be installed with [[https://docs.haskellstack.org/en/stable/README/][Stack]].
 
 1. Install Stack with your package manager, or directly from the web
    page.
@@ -22,13 +16,13 @@ installed with
        curl -sSL https://get.haskellstack.org/ | sh
    #+END_EXAMPLE
 
-2. Clone the EvoMod repository.
+2. Clone the ELynx repository.
 
    #+BEGIN_EXAMPLE
-       git clone clone https://github.com/dschrempf/evomod
+       git clone clone https://github.com/dschrempf/elynx
    #+END_EXAMPLE
 
-3. Navigate to the newly created =evomod= folder and build the binaries.
+3. Navigate to the newly created =elynx= folder and build the binaries.
    This will take a while.
 
    #+BEGIN_EXAMPLE
@@ -38,7 +32,7 @@ installed with
 4. Run a binary from within the project directory. For example,
 
    #+BEGIN_EXAMPLE
-       stack exec tree-sim -- --help
+       stack exec tlynx -- --help
    #+END_EXAMPLE
 
 5. If needed, install the binaries.
@@ -47,7 +41,6 @@ installed with
        stack install
    #+END_EXAMPLE
 
-   The binaries are installed into =~/.local/bin/= which has to be added
-   [[https://en.wikipedia.org/wiki/PATH_(variable)][PATH]]. Now, the
-   binary can be directly used.
+   The binaries are installed into =~/.local/bin/= which has to be added [[https://en.wikipedia.org/wiki/PATH_(variable)][PATH]].
+   Then, they can be used directly.
 

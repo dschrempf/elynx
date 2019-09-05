@@ -1,6 +1,6 @@
-name:                evolib-tools
+name:                elynx-tools
 version:             0.5.1
-github:              "dschrempf/evomod"
+github:              "dschrempf/elynx"
 license:             GPL-3
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
@@ -17,13 +17,13 @@ extra-source-files:
 - ChangeLog.org
 
 # Metadata used when publishing your package
-synopsis:            Tools for EvoMod.
+synopsis:            Tools for ELynx.
 category:            Bioinformatics
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.org file.
-description:         Please see the README on GitHub at <https://github.com/dschrempf/evomod>.
+description:         Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
 
 dependencies:
   # - async

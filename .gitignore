@@ -2,9 +2,7 @@
 .stack-work/
 .stack-work-profiling/
 .stack-work-production/
-evomod-seq.cabal
-evomod-tools.cabal
-evomod-tree.cabal
+*.cabal
 
 # Profile files.
 /scripts/seq-ana.aux
@@ -30,8 +28,8 @@ evomod-tree.cabal
 /scripts/tree-sim.ps
 /scripts/iqtree-verify.*
 /scripts/module-dependencies-*
-/evomod-seq/data/BenchmarkEnsemblMouse.fa
-/evomod-seq/data/Profile.fa
+/slynx/data/BenchmarkEnsemblMouse.fa
+/slynx/data/Profile.fa
 
 # IQ-TREE files.
 *.bionj
