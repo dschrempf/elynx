@@ -19,7 +19,7 @@ module OptionsTreeAna
 
 import           Options.Applicative
 
-import           EvoMod.Tools.Options
+import           ELynx.Tools.Options
 
 data Args = Args
   { argsOutFileBaseName :: Maybe FilePath

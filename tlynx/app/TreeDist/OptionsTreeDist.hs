@@ -24,7 +24,7 @@ import           Text.Megaparsec      (Parsec, try)
 import           Text.Megaparsec.Char (char, string)
 import           Text.Megaparsec.Char.Lexer (float)
 
-import           EvoMod.Tools.Options
+import           ELynx.Tools.Options
 
 data Distance = Symmetric | IncompatibleSplit Double
   deriving (Show, Read)

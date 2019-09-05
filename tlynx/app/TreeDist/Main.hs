@@ -30,16 +30,16 @@ import           System.IO
 
 import           OptionsTreeDist
 
-import           EvoMod.Data.Tree.BranchSupportTree
-import           EvoMod.Data.Tree.Distance
-import           EvoMod.Data.Tree.NamedTree
-import           EvoMod.Data.Tree.PhyloTree
-import           EvoMod.Import.Tree.Newick
--- import           EvoMod.Export.Tree.Newick
-import           EvoMod.Tools.ByteString            (alignLeft, alignRight)
-import           EvoMod.Tools.InputOutput
-import           EvoMod.Tools.Logger
-import           EvoMod.Tools.Options
+import           ELynx.Data.Tree.BranchSupportTree
+import           ELynx.Data.Tree.Distance
+import           ELynx.Data.Tree.NamedTree
+import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Import.Tree.Newick
+-- import           ELynx.Export.Tree.Newick
+import           ELynx.Tools.ByteString            (alignLeft, alignRight)
+import           ELynx.Tools.InputOutput
+import           ELynx.Tools.Logger
+import           ELynx.Tools.Options
 
 header :: Int -> L.ByteString
 header n = alignLeft (n+2) "Tree 1"

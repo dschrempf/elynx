@@ -3,7 +3,7 @@
 The ELynx suite is a Haskell library and a tool set for computational biology.
 
 - [[file:slynx/README.org][SLynx]] :: Examine, modify, and simulate evolutionary sequences (FASTA format).
-- [[file:evomod-tree/README.org][TLynx]] :: Analyze, and simulate phylogenetic trees (Newick format).
+- [[file:elynx-tree/README.org][TLynx]] :: Analyze, and simulate phylogenetic trees (Newick format).
      
 * Installation
 

@@ -31,26 +31,26 @@ import           System.Random.MWC
 import           OptionsSeqSim
 import           ParsePhyloModel
 
-import           EvoMod.Data.Alphabet.Alphabet                    as A
-import           EvoMod.Data.MarkovProcess.GammaRateHeterogeneity
-import qualified EvoMod.Data.MarkovProcess.MixtureModel           as M
-import qualified EvoMod.Data.MarkovProcess.PhyloModel             as P
-import qualified EvoMod.Data.MarkovProcess.SubstitutionModel      as S
-import           EvoMod.Data.Sequence.MultiSequenceAlignment
-import           EvoMod.Data.Sequence.Sequence                    hiding (name)
-import           EvoMod.Data.Tree.MeasurableTree
-import           EvoMod.Data.Tree.NamedTree
-import           EvoMod.Data.Tree.Tree
-import           EvoMod.Export.Sequence.Fasta
-import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes   hiding
+import           ELynx.Data.Alphabet.Alphabet                    as A
+import           ELynx.Data.MarkovProcess.GammaRateHeterogeneity
+import qualified ELynx.Data.MarkovProcess.MixtureModel           as M
+import qualified ELynx.Data.MarkovProcess.PhyloModel             as P
+import qualified ELynx.Data.MarkovProcess.SubstitutionModel      as S
+import           ELynx.Data.Sequence.MultiSequenceAlignment
+import           ELynx.Data.Sequence.Sequence                    hiding (name)
+import           ELynx.Data.Tree.MeasurableTree
+import           ELynx.Data.Tree.NamedTree
+import           ELynx.Data.Tree.Tree
+import           ELynx.Export.Sequence.Fasta
+import           ELynx.Import.MarkovProcess.EDMModelPhylobayes   hiding
                                                                    (Parser)
-import           EvoMod.Import.Tree.Newick                        hiding (name)
-import           EvoMod.Simulate.MarkovProcessAlongTree
-import           EvoMod.Tools.Concurrent
-import           EvoMod.Tools.InputOutput
-import           EvoMod.Tools.Logger
-import           EvoMod.Tools.Misc
-import           EvoMod.Tools.Options
+import           ELynx.Import.Tree.Newick                        hiding (name)
+import           ELynx.Simulate.MarkovProcessAlongTree
+import           ELynx.Tools.Concurrent
+import           ELynx.Tools.InputOutput
+import           ELynx.Tools.Logger
+import           ELynx.Tools.Misc
+import           ELynx.Tools.Options
 
 -- Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.

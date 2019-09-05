@@ -19,12 +19,12 @@ import           System.IO
 
 import           OptionsTreeAna
 
-import           EvoMod.Data.Tree.MeasurableTree
-import           EvoMod.Data.Tree.PhyloTree
-import           EvoMod.Import.Tree.Newick
-import           EvoMod.Tools.InputOutput
-import           EvoMod.Tools.Logger
-import           EvoMod.Tools.Options
+import           ELynx.Data.Tree.MeasurableTree
+import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Import.Tree.Newick
+import           ELynx.Tools.InputOutput
+import           ELynx.Tools.Logger
+import           ELynx.Tools.Options
 
 data Params = Params { arguments  :: Args
                      , mLogHandle :: Maybe Handle }

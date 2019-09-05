@@ -1,6 +1,6 @@
 {- |
 Module      :  OptionsSeqSim
-Description :  EvoModSim argument parsing
+Description :  ELynxSim argument parsing
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 
@@ -43,7 +43,7 @@ module OptionsSeqSim
 import           Data.Word
 import           Options.Applicative
 
-import           EvoMod.Tools.Options
+import           ELynx.Tools.Options
 
 type GammaRateHeterogeneityParams = (Int, Double)
 

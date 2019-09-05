@@ -22,7 +22,7 @@ import           Data.List
 import           Data.Word
 import           Options.Applicative
 
-import           EvoMod.Tools.Options
+import           ELynx.Tools.Options
 
 data Args = Args
   { argsNTrees          :: Int            -- ^ Simulated trees.

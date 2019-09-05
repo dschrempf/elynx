@@ -1,6 +1,6 @@
 {- |
 Module      :  OptionsSeqAna
-Description :  EvoModSeq argument parsing
+Description :  ELynxSeq argument parsing
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
 
@@ -24,10 +24,10 @@ import           Data.List
 import           Data.Word
 import           Options.Applicative
 
-import           EvoMod.Data.Alphabet.Alphabet
-import           EvoMod.Data.Character.Codon
-import           EvoMod.Tools.Misc
-import           EvoMod.Tools.Options
+import           ELynx.Data.Alphabet.Alphabet
+import           ELynx.Data.Character.Codon
+import           ELynx.Tools.Misc
+import           ELynx.Tools.Options
 
 data Command = Examine
                { exPerSite       :: Bool

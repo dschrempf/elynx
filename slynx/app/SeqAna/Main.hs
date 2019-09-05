@@ -27,17 +27,17 @@ import           Text.Printf
 
 import           OptionsSeqAna
 
-import           EvoMod.Data.Character.Codon
-import           EvoMod.Data.Sequence.MultiSequenceAlignment
-import           EvoMod.Data.Sequence.Sequence
-import           EvoMod.Data.Sequence.Translate
-import           EvoMod.Export.Sequence.Fasta
-import           EvoMod.Import.Sequence.Fasta
-import           EvoMod.Tools.ByteString
-import           EvoMod.Tools.InputOutput
-import           EvoMod.Tools.Logger
-import           EvoMod.Tools.Misc
-import           EvoMod.Tools.Options
+import           ELynx.Data.Character.Codon
+import           ELynx.Data.Sequence.MultiSequenceAlignment
+import           ELynx.Data.Sequence.Sequence
+import           ELynx.Data.Sequence.Translate
+import           ELynx.Export.Sequence.Fasta
+import           ELynx.Import.Sequence.Fasta
+import           ELynx.Tools.ByteString
+import           ELynx.Tools.InputOutput
+import           ELynx.Tools.Logger
+import           ELynx.Tools.Misc
+import           ELynx.Tools.Options
 
 data Params = Params { arguments  :: GlobalArgs
                      , mLogHandle :: Maybe Handle }

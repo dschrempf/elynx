@@ -4,8 +4,8 @@ set -e
 
 source include
 
-file_DNA="${project_root}/evolib-seq/data/Nucleotide.fasta"
-file_AA="${project_root}/evolib-seq/data/AminoAcid.fasta"
+file_DNA="${project_root}/elynx-seq/data/Nucleotide.fasta"
+file_AA="${project_root}/elynx-seq/data/AminoAcid.fasta"
 
 msg "Seq-Ana; examine DNA."
 stack exec seq-ana -- -a DNA examine "$file_DNA" || exit 1

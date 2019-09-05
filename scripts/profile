@@ -18,7 +18,7 @@ source include
 
 seq-ana() {
     msg "Seq-Ana profiling run."
-    file_profile="${project_root}/evomod-seq/data/Profile.fa.gz"
+    file_profile="${project_root}/slynx/data/Profile.fa.gz"
     stack exec --work-dir $prof_dir --profile seq-ana -- \
           -a ProteinI examine "$file_profile" \
           +RTS -p -l -s || exit 1
@@ -26,8 +26,8 @@ seq-ana() {
 
 seq-sim() {
     msg "Seq-Sim profiling run."
-    file_tree="${project_root}/evolib-tree/data/Newick.tree"
-    file_edm="${project_root}/evolib-seq/data/EDMDistsPhylobayes.txt"
+    file_tree="${project_root}/elynx-tree/data/Newick.tree"
+    file_edm="${project_root}/elynx-seq/data/EDMDistsPhylobayes.txt"
     stack  exec --work-dir $prof_dir --profile seq-sim  -- \
           -t "$file_tree" -o seq-sim.out -e "$file_edm" -m "EDM(LG-Custom)" -l 5000 -S [0] \
           +RTS -p -hc -l -s || exit 1

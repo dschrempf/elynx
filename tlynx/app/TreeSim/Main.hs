@@ -37,17 +37,17 @@ import           System.IO
 
 import           OptionsTreeSim
 
-import           EvoMod.Data.Tree.MeasurableTree
-import           EvoMod.Data.Tree.PhyloTree           (PhyloIntLabel)
-import           EvoMod.Data.Tree.SumStat             (formatNChildSumStat,
+import           ELynx.Data.Tree.MeasurableTree
+import           ELynx.Data.Tree.PhyloTree           (PhyloIntLabel)
+import           ELynx.Data.Tree.SumStat             (formatNChildSumStat,
                                                        toNChildSumStat)
-import           EvoMod.Data.Tree.Tree
-import           EvoMod.Export.Tree.Newick            (toNewick)
-import           EvoMod.Simulate.PointProcess         (simulateNReconstructedTrees,
+import           ELynx.Data.Tree.Tree
+import           ELynx.Export.Tree.Newick            (toNewick)
+import           ELynx.Simulate.PointProcess         (simulateNReconstructedTrees,
                                                        simulateReconstructedTree)
-import           EvoMod.Tools.Concurrent
-import           EvoMod.Tools.Logger
-import           EvoMod.Tools.Options
+import           ELynx.Tools.Concurrent
+import           ELynx.Tools.Logger
+import           ELynx.Tools.Options
 
 main :: IO ()
 main = do

@@ -26,17 +26,17 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
-import           EvoMod.Data.MarkovProcess.AminoAcid
-import           EvoMod.Data.MarkovProcess.CXXModels
-import qualified EvoMod.Data.MarkovProcess.MixtureModel         as M
-import           EvoMod.Data.MarkovProcess.Nucleotide
-import qualified EvoMod.Data.MarkovProcess.PhyloModel           as P
-import           EvoMod.Data.MarkovProcess.RateMatrix
-import qualified EvoMod.Data.MarkovProcess.SubstitutionModel    as S
-import           EvoMod.Import.MarkovProcess.EDMModelPhylobayes (EDMComponent)
-import           EvoMod.Tools.ByteString
-import           EvoMod.Tools.Equality
-import           EvoMod.Tools.InputOutput
+import           ELynx.Data.MarkovProcess.AminoAcid
+import           ELynx.Data.MarkovProcess.CXXModels
+import qualified ELynx.Data.MarkovProcess.MixtureModel         as M
+import           ELynx.Data.MarkovProcess.Nucleotide
+import qualified ELynx.Data.MarkovProcess.PhyloModel           as P
+import           ELynx.Data.MarkovProcess.RateMatrix
+import qualified ELynx.Data.MarkovProcess.SubstitutionModel    as S
+import           ELynx.Import.MarkovProcess.EDMModelPhylobayes (EDMComponent)
+import           ELynx.Tools.ByteString
+import           ELynx.Tools.Equality
+import           ELynx.Tools.InputOutput
 
 type Parser = Parsec Void L.ByteString
 
