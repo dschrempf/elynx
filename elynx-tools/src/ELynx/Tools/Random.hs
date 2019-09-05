@@ -1,7 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 
 {- |
-Module      :  EvoMod.Tools.Random
+Module      :  ELynx.Tools.Random
 Description :  Tools for random sampling
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -14,7 +14,7 @@ Creation date: Tue May  7 11:22:12 2019.
 
 -}
 
-module EvoMod.Tools.Random
+module ELynx.Tools.Random
   ( sample
   ) where
 

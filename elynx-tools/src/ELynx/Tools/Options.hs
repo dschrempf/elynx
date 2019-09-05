@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 {- |
-Module      :  EvoMod.Tools.Options
+Module      :  ELynx.Tools.Options
 Description :  Global command line options and arguments
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -14,7 +14,7 @@ Creation date: Fri May  3 18:20:11 2019.
 
 -}
 
-module EvoMod.Tools.Options
+module ELynx.Tools.Options
   (
     -- * Header
     programHeader
@@ -44,13 +44,13 @@ import           System.Environment
 import           Text.Megaparsec                 (Parsec, errorBundlePretty,
                                                   runParser)
 
-import           EvoMod.Tools.Misc
-import           Paths_evolib_tools              (version)
+import           ELynx.Tools.Misc
+import           Paths_elynx_tools              (version)
 
 -- Be careful; it is necessary to synchronize the evomod-xxx libraries, so that
--- the version number of evolib-tools matches the others.
+-- the version number of elynx-tools matches the others.
 versionString :: String
-versionString = "EvoMod Suite version " ++ showVersion version ++ "."
+versionString = "ELynx Suite version " ++ showVersion version ++ "."
 
 copyrightString :: String
 copyrightString = "Developed by Dominik Schrempf."
@@ -93,8 +93,8 @@ versionOpt = infoOption hdr
 evoModSuiteFooter :: [Doc]
 evoModSuiteFooter =
   [ empty
-  , bold $ text "The EvoMod Suite."
-  , fillParagraph "A Haskell library and a tool set for computational biology. The goal of the EvoMod Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without assuming anything about the data (e.g., the type of code), and without default values. The exact command with all arguments has to be stated by the user and is logged automatically. This leads to some work overhead in the beginning, but usually pays off in the end."
+  , bold $ text "The ELynx Suite."
+  , fillParagraph "A Haskell library and a tool set for computational biology. The goal of the ELynx Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without assuming anything about the data (e.g., the type of code), and without default values. The exact command with all arguments has to be stated by the user and is logged automatically. This leads to some work overhead in the beginning, but usually pays off in the end."
   , fill 9 (bold $ text "seq-ana")   <+> text "View, examine, and modify evolutionary sequences."
   , fill 9 (bold $ text "seq-sim")   <+> text "Simulate evolutionary sequences."
   , fill 9 (bold $ text "tree-ana")  <+> text "Analyze phylogenetic trees."

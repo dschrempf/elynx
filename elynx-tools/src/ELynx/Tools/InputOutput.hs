@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Tools.InputOutput
+Module      :  ELynx.Tools.InputOutput
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -13,7 +13,7 @@ Tools involving input, output, and parsing.
 
 -}
 
-module EvoMod.Tools.InputOutput
+module ELynx.Tools.InputOutput
   (
     -- * Input, output.
     readGZFile
@@ -35,7 +35,7 @@ import           Data.List                  (isSuffixOf)
 import           Data.Maybe
 import           Text.Megaparsec
 
-import           EvoMod.Tools.Logger
+import           ELynx.Tools.Logger
 
 -- | Read file. If file path ends with ".gz", assume gzipped file and decompress
 -- before read.

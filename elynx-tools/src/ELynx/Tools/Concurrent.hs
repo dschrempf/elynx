@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Tools.Concurrent
+Module      :  ELynx.Tools.Concurrent
 Description :  Tools for concurrent random calculations
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -12,7 +12,7 @@ Creation date: Tue May  7 10:33:24 2019.
 
 -}
 
-module EvoMod.Tools.Concurrent
+module ELynx.Tools.Concurrent
   (
     -- * MWC
     getNGen

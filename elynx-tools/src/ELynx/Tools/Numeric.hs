@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Tools.Numeric
+Module      :  ELynx.Tools.Numeric
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -13,13 +13,13 @@ Numerical functions.
 
 -}
 
-module EvoMod.Tools.Numeric
+module ELynx.Tools.Numeric
   ( harmonic
   , xLogX
   , roundN
   ) where
 
-import           EvoMod.Tools.Equality
+import           ELynx.Tools.Equality
 
 -- | Calculate the nth harmonic number.
 harmonic :: Int -> Double

@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Tools.LinearAlgebra
+Module      :  ELynx.Tools.LinearAlgebra
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -13,7 +13,7 @@ Tools for matrices from 'Numeric.LinearAlgebra'.
 
 -}
 
-module EvoMod.Tools.LinearAlgebra
+module ELynx.Tools.LinearAlgebra
   (
     -- * Matrices.
     matrixSeparateSymSkew

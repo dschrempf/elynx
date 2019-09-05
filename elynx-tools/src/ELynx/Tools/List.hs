@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Tools.List
+Module      :  ELynx.Tools.List
 Description :  Additional tools for lists
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -12,7 +12,7 @@ Creation date: Thu May  2 18:57:39 2019.
 
 -}
 
-module EvoMod.Tools.List
+module ELynx.Tools.List
   ( sortWithIndices
   , randomInsert
   ) where

@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Tools.Matrix
+Module      :  ELynx.Tools.Matrix
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -13,7 +13,7 @@ Tools for matrices from 'Numeric.LinearAlgebra'.
 
 -}
 
-module EvoMod.Tools.Matrix
+module ELynx.Tools.Matrix
   (
     fMapRowSeq
   , fMapRowPar

@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Tools.Misc
+Module      :  ELynx.Tools.Misc
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -13,7 +13,7 @@ Miscellaneous tools that do not have their own category (yet).
 
 -}
 
-module EvoMod.Tools.Misc
+module ELynx.Tools.Misc
   (
     -- * Not yet classified stuff
     ensure

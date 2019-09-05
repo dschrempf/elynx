@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Tools.ByteString
+Module      :  ELynx.Tools.ByteString
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -13,7 +13,7 @@ indispensable tools for ByteString handling :).
 
 -}
 
-module EvoMod.Tools.ByteString
+module ELynx.Tools.ByteString
   (
     -- * ByteString handling.
     alignRightWith

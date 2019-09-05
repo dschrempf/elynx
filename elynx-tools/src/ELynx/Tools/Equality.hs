@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Tools.Equality
+Module      :  ELynx.Tools.Equality
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -13,7 +13,7 @@ Equality tests.
 
 -}
 
-module EvoMod.Tools.Equality
+module ELynx.Tools.Equality
   (
     allEqual
   , nearlyEqWith
@@ -30,7 +30,7 @@ module EvoMod.Tools.Equality
 
 import           Numeric.LinearAlgebra
 
-import           EvoMod.Tools.Definitions
+import           ELynx.Tools.Definitions
 
 -- | Test if all elements of a list are equal; returns True for empty list.
 allEqual :: Eq a => [a] -> Bool

@@ -1,5 +1,5 @@
 {- |
-Module      :  EvoMod.Tools.Vector
+Module      :  ELynx.Tools.Vector
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -13,7 +13,7 @@ Tools for vectors from 'Data.Vector.Generic'.
 
 -}
 
-module EvoMod.Tools.Vector
+module ELynx.Tools.Vector
   (
     sumVec
   , normalizeSumVec
