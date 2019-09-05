@@ -37,27 +37,32 @@ Available options:
 
 module Simulate.Options
   ( Args (..)
+  , Simulation
   , parseArgs
   ) where
 
+import           Control.Monad.Trans.Reader
 import           Data.Word
 import           Options.Applicative
+import           System.IO
 
+import           ELynx.Tools.Logger
 import           ELynx.Tools.Options
 
 type GammaRateHeterogeneityParams = (Int, Double)
 
 data Args = Args
-  { argsTreeFile                     :: FilePath
-  , argsMaybeSubstitutionModelString :: Maybe String
-  , argsMaybeMixtureModelString      :: Maybe String
-  , argsMaybeEDMFile                 :: Maybe FilePath
-  , argsMaybeMixtureWeights          :: Maybe [Double]
-  , argsMaybeGammaParams             :: Maybe GammaRateHeterogeneityParams
-  , argsLength                       :: Int
-  , argsMaybeSeed                    :: Maybe [Word32]
-  , argsVerbosity                    :: Verbosity
-  , argsOutFileBaseName              :: FilePath
+  { argsTreeFile                :: FilePath
+  , argsSubstitutionModelString :: Maybe String
+  , argsMixtureModelString      :: Maybe String
+  , argsEDMFile                 :: Maybe FilePath
+  , argsMixtureWeights          :: Maybe [Double]
+  , argsGammaParams             :: Maybe GammaRateHeterogeneityParams
+  , argsLength                  :: Int
+  , argsMaybeSeed               :: Maybe [Word32]
+  , argsVerbosity               :: Verbosity
+  , argsOutFileBaseName         :: FilePath
+  , argsLogHandle               :: Maybe Handle
   }
 
 args :: Parser Args
@@ -72,6 +77,13 @@ args = Args
   <*> seedOpt
   <*> verbosityOpt
   <*> outFileBaseNameOpt
+  <*> pure Nothing
+
+type Simulation = ReaderT Args IO
+
+instance Logger Args where
+  verbosity = argsVerbosity
+  mHandle   = argsLogHandle
 
 treeFileOpt :: Parser FilePath
 treeFileOpt = strOption

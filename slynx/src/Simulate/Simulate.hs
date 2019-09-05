@@ -1,5 +1,5 @@
 {- |
-Module      :  Simulate
+Module      :  Simulate.Simulate
 Description :  Simulate multiple sequence alignments
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -12,20 +12,21 @@ Creation date: Mon Jan 28 14:12:52 2019.
 
 -}
 
-module Simulate where
+module Simulate.Simulate
+  ( simulate )
+where
 
 import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Lens
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
-import qualified Data.ByteString.Lazy                             as L
-import qualified Data.ByteString.Lazy.Char8                       as LC
-import qualified Data.Set                                         as Set
+import qualified Data.ByteString.Lazy                            as L
+import qualified Data.ByteString.Lazy.Char8                      as LC
+import qualified Data.Set                                        as Set
 import           Data.Tree
-import qualified Data.Vector.Unboxed                              as V
+import qualified Data.Vector.Unboxed                             as V
 import           Numeric.LinearAlgebra
-import           System.IO
 import           System.Random.MWC
 
 import           Simulate.Options
@@ -42,8 +43,7 @@ import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.Tree
 import           ELynx.Export.Sequence.Fasta
-import           ELynx.Import.MarkovProcess.EDMModelPhylobayes   hiding
-                                                                   (Parser)
+import           ELynx.Import.MarkovProcess.EDMModelPhylobayes   hiding (Parser)
 import           ELynx.Import.Tree.Newick                        hiding (name)
 import           ELynx.Simulate.MarkovProcessAlongTree
 import           ELynx.Tools.Concurrent
@@ -89,18 +89,9 @@ summarizeEDMComponents cs = LC.pack
                             $ "Empiricial distribution mixture model with "
                             ++ show (length cs) ++ " components."
 
-type Simulation = ReaderT Params IO
-
-data Params = Params { arguments  :: Args
-                     , mLogHandle :: Maybe Handle }
-
-instance Logger Params where
-  verbosity = argsVerbosity . arguments
-  mHandle   = mLogHandle
-
 reportModel :: P.PhyloModel -> Simulation ()
 reportModel m = do
-  args <- arguments <$> ask
+  args <- ask
   let fnOut = argsOutFileBaseName args
       modelFn = fnOut ++ ".model"
   -- TODO. Provide human readable model file.
@@ -111,14 +102,14 @@ reportModel m = do
 simulate :: Simulation ()
 simulate = do
   lift (programHeader "seq-sim: Simulate sequences.") >>= logS
-  args <- arguments <$> ask
+  args <- ask
   logS "Read tree."
   let treeFile = argsTreeFile args
   tree <- lift $ parseFileWith newick treeFile
   logLBS $ summarize tree
 
-  let maybeEDMFile = argsMaybeEDMFile args
-  edmCs <- case maybeEDMFile of
+  let edmFile = argsEDMFile args
+  edmCs <- case edmFile of
     Nothing   -> return Nothing
     Just edmF -> do
       logS "Read EDM file."
@@ -126,15 +117,15 @@ simulate = do
   maybe (return ()) (logLBS . summarizeEDMComponents) edmCs
 
   logS "Read model string."
-  let ms = argsMaybeSubstitutionModelString args
-      mm = argsMaybeMixtureModelString args
-      mws = argsMaybeMixtureWeights args
+  let ms = argsSubstitutionModelString args
+      mm = argsMixtureModelString args
+      mws = argsMixtureWeights args
       eitherPhyloModel' = getPhyloModel ms mm mws edmCs
   phyloModel' <- case eitherPhyloModel' of
     Left err -> lift $ error err
     Right pm -> return pm
 
-  let maybeGammaParams = argsMaybeGammaParams args
+  let maybeGammaParams = argsGammaParams args
   phyloModel <- case maybeGammaParams of
     Nothing         -> do
       logLBS $ LC.unlines $ P.summarize phyloModel'
@@ -158,10 +149,3 @@ simulate = do
       outFile = argsOutFileBaseName args ++ ".fasta"
   lift $ L.writeFile outFile output
   logS ("Output written to file '" ++ outFile ++ "'.")
-
-main :: IO ()
-main = do
-  a <- parseArgs
-  h <- setupLogger (Just $ argsOutFileBaseName a)
-  runReaderT simulate (Params a h)
-  closeLogger h

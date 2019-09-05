@@ -1,5 +1,5 @@
 {- |
-Module      :  Analyze
+Module      :  Analyze.Analyze
 Description :  Parse sequence file formats and analyze them
 Copyright   :  (c) Dominik Schrempf 2018
 License     :  GPL-3
@@ -12,7 +12,7 @@ Creation date: Fri Oct  5 08:41:05 2018.
 
 -}
 
-module Analyze where
+module Analyze.Analyze where
 
 import           Control.Monad
 import           Control.Monad.Trans.Class

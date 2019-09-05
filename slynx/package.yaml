@@ -70,4 +70,5 @@ executables:
     main:                Main.hs
     source-dirs:         app
     dependencies:
+      - elynx-tools
       - slynx
