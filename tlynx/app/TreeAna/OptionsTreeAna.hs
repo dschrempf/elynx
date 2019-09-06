@@ -13,32 +13,13 @@ Creation date: Thu Aug 29 08:16:45 2019.
 -}
 
 module OptionsTreeAna
-  ( Args (..)
-  , parseArgs
+  ( parseArguments
   ) where
 
-import           Options.Applicative
-
 import           ELynx.Tools.Options
-
-data Args = Args
-  { argsOutFileBaseName :: Maybe FilePath
-  , argsVerbosity       :: Verbosity
-  , argsInFilePath      :: Maybe FilePath }
-
-args :: Parser Args
-args = Args <$>
-       optional outFileBaseNameOpt <*>
-       verbosityOpt <*>
-       optional filePathArg
-
-filePathArg :: Parser FilePath
-filePathArg = strArgument $
-  metavar "INPUT-FILE" <>
-  help "Read tree(s) from INPUT-FILE"
 
 desc :: [String]
 desc = [ "Analyze phylogenetic trees." ]
 
-parseArgs :: IO Args
-parseArgs = parseArgsWith desc [] args
+parseArguments :: IO GlobalArguments
+parseArguments = parseArgumentsWith desc [] globalArguments

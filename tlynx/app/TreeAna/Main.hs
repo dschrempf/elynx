@@ -1,3 +1,6 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
+
 {- |
 Description :  Analyze trees
 Copyright   :  (c) Dominik Schrempf 2019
@@ -11,11 +14,12 @@ Creation date: Fri May 24 13:47:56 2019.
 
 -}
 
+import           Control.Monad.IO.Class
+import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
-import qualified Data.ByteString.Lazy.Char8      as L
+import qualified Data.ByteString.Lazy.Char8     as L
 import           Data.Tree
-import           System.IO
 
 import           OptionsTreeAna
 
@@ -26,36 +30,32 @@ import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Options
 
-data Params = Params { arguments  :: Args
-                     , mLogHandle :: Maybe Handle }
-
-instance Logger Params where
-  verbosity = argsVerbosity . arguments
-  mHandle   = mLogHandle
-
-type Ana = ReaderT Params IO
+type Ana = LoggingT (ReaderT GlobalArguments IO)
 
 readTrees :: Maybe FilePath -> Ana [Tree PhyloByteStringLabel]
 readTrees mfp = do
   case mfp of
-    Nothing -> logS "Read tree(s) from standard input."
-    Just fp -> logS $ "Read tree(s) from file " ++ fp ++ "."
-  lift $ parseFileOrIOWith manyNewick mfp
+    Nothing -> $(logInfo) "Read tree(s) from standard input."
+    Just fp -> $(logInfoSH) $ "Read tree(s) from file " <> fp <> "."
+  liftIO $ parseFileOrIOWith manyNewick mfp
 
 work :: Ana ()
 work = do
-  lift (programHeader "tree-ana: Analyze trees.") >>= logS
-  a <- arguments <$> ask
-  trs <- readTrees (argsInFilePath a)
+  h <- liftIO $ programHeader "tree-ana: Analyze trees."
+  $(logInfoSH) h
+  a <- lift ask
+  trs <- readTrees (inFile a)
   let lsStrs = map summarize trs
-  let outFilePath = (++ ".out") <$> argsOutFileBaseName a
+  let outFilePath = (++ ".out") <$> outFileBaseName a
   logNewSection "Results."
-  io (L.intercalate (L.pack "\n") lsStrs) outFilePath
+  io "results of tree analysis" (L.intercalate (L.pack "\n") lsStrs) outFilePath
 
 main :: IO ()
 main = do
-  args <- parseArgs
-  logger <- setupLogger (argsOutFileBaseName args)
-  runReaderT work (Params args logger)
-  closeLogger logger
+  a <- parseArguments
+  let f = outFileBaseName a
+      l = case f of
+        Nothing -> runStderrLoggingT work
+        Just fn -> runFileLoggingT fn work
+  runReaderT l a
 

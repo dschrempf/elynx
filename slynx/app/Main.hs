@@ -14,17 +14,19 @@ Creation date: Thu Sep  5 21:53:07 2019.
 
 module Main where
 
+import           Control.Monad.Logger
 import           Control.Monad.Trans.Reader
 
-import qualified Simulate.Options           as S
+import           Simulate.Options
 import           Simulate.Simulate
 
-import           ELynx.Tools.Logger
+import           ELynx.Tools.Options
 
 main :: IO ()
 main = do
-  a <- S.parseArgs
-  h <- setupLogger (Just $ S.argsOutFileBaseName a)
-  let a' = a { S.argsLogHandle = h }
-  runReaderT simulate a'
-  closeLogger h
+  a <- parseArguments
+  let f = outFileBaseName $ globalArgs a
+      l = case f of
+        Nothing -> runStderrLoggingT simulate
+        Just fn -> runFileLoggingT fn simulate
+  runReaderT l a

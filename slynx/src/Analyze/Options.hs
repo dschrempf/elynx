@@ -13,13 +13,16 @@ Creation date: Sun Oct  7 17:29:45 2018.
 -}
 
 module Analyze.Options
-  ( Args (..)
-  , GlobalArgs (..)
-  , Command (..)
-  , parseArgs
+  ( Arguments (..)
+  , GlobalArguments (..)
+  , CommandArguments (..)
+  , Seq
+  , parseArguments
   ) where
 
 import           Control.Applicative
+import           Control.Monad.Logger
+import           Control.Monad.Trans.Reader
 import           Data.List
 import           Data.Word
 import           Options.Applicative
@@ -29,51 +32,43 @@ import           ELynx.Data.Character.Codon
 import           ELynx.Tools.Misc
 import           ELynx.Tools.Options
 
-data Command = Examine
-               { exPerSite       :: Bool
-               , exMbFp          :: Maybe FilePath }
-             | Concatenate
-               { ccMbFps         :: [FilePath] }
-             | FilterRows
-               { frLonger        :: Maybe Int
-               , frShorter       :: Maybe Int
-               , frMbFp          :: Maybe FilePath }
-             | FilterColumns
-               { fcStandard      :: Maybe Double
-               , fcMbFp          :: Maybe FilePath }
-             | SubSample
-               { ssNSites        :: Int
-               , ssNAlignments   :: Int
-               , ssMbSeed        :: Maybe [Word32]
-               , ssMbFp          :: Maybe FilePath }
-             | Translate
-               { trReadingFrame  :: Int
-               , trUniversalCode :: UniversalCode
-               , trMbFp          :: Maybe FilePath }
+data CommandArguments =
+  Examine
+    { exPerSite :: Bool
+    , exMbFp    :: Maybe FilePath }
+  | Concatenate
+    { ccMbFps         :: [FilePath] }
+  | FilterRows
+    { frLonger  :: Maybe Int
+    , frShorter :: Maybe Int
+    , frMbFp    :: Maybe FilePath }
+  | FilterColumns
+    { fcStandard :: Maybe Double
+    , fcMbFp     :: Maybe FilePath }
+  | SubSample
+    { ssNSites      :: Int
+    , ssNAlignments :: Int
+    , ssMbSeed      :: Maybe [Word32]
+    , ssMbFp        :: Maybe FilePath }
+  | Translate
+    { trReadingFrame  :: Int
+    , trUniversalCode :: UniversalCode
+    , trMbFp          :: Maybe FilePath }
 
-data GlobalArgs = GlobalArgs
-  { argsAlphabet    :: Alphabet
-  , argsOutBaseName :: Maybe FilePath
-  , argsVerbosity   :: Verbosity }
+data Arguments = Arguments { globalArgs  :: GlobalArguments
+                           , alphabetArg :: Alphabet
+                           , commandArgs :: CommandArguments }
 
-data Args = Args
-  { argsGlobal  :: GlobalArgs
-  , argsCommand :: Command
-  }
+type Seq = LoggingT (ReaderT Arguments IO)
 
-args :: Parser Args
-args = Args <$>
-       globalArgs <*>
-       commandArg
+arguments :: Parser Arguments
+arguments = Arguments
+  <$> globalArguments
+  <*> alphabetOpt
+  <*> commandArguments
 
-globalArgs :: Parser GlobalArgs
-globalArgs = GlobalArgs <$>
-             alphabetOpt <*>
-             optional outFileBaseNameOpt <*>
-             verbosityOpt
-
-commandArg :: Parser Command
-commandArg = hsubparser $
+commandArguments :: Parser CommandArguments
+commandArguments = hsubparser $
   examineCommand <>
   concatenateCommand <>
   filterRowsCommand <>
@@ -81,13 +76,13 @@ commandArg = hsubparser $
   subSampleCommand <>
   translateCommand
 
-concatenateCommand :: Mod CommandFields Command
+concatenateCommand :: Mod CommandFields CommandArguments
 concatenateCommand = command "concatenate" $
   info ( Concatenate <$>
          some filePathArg ) $
   progDesc "Concatenate sequences found in input files."
 
-filterRowsCommand :: Mod CommandFields Command
+filterRowsCommand :: Mod CommandFields CommandArguments
 filterRowsCommand = command "filter-rows" $
   info ( FilterRows <$>
          filterLongerThanOpt <*>
@@ -107,7 +102,7 @@ filterShorterThanOpt = optional $ option auto $
   metavar "LENGTH" <>
   help "Only keep sequences shorter than LENGTH"
 
-filterColumnsCommand :: Mod CommandFields Command
+filterColumnsCommand :: Mod CommandFields CommandArguments
 filterColumnsCommand = command "filter-columns" $
   info ( FilterColumns <$>
          filterStandardOpt <*>
@@ -120,7 +115,7 @@ filterStandardOpt = optional $ option auto $
   metavar "DOUBLE" <>
   help "Keep rows with a proportion standard (non-IUPAC) characters larger than DOUBLE in [0,1]"
 
-examineCommand :: Mod CommandFields Command
+examineCommand :: Mod CommandFields CommandArguments
 examineCommand = command "examine" $
   info ( Examine <$>
         examinePerSiteOpt <*>
@@ -132,7 +127,7 @@ examinePerSiteOpt = switch $
   long "per-site" <>
   help "Report per site summary statistics"
 
-subSampleCommand :: Mod CommandFields Command
+subSampleCommand :: Mod CommandFields CommandArguments
 subSampleCommand = command "subsample" $
   info ( SubSample <$>
          subSampleNSitesOpt <*>
@@ -155,7 +150,7 @@ subSampleNAlignmentsOpt = option auto $
   metavar "INT" <>
   help "Number of multi sequence alignments to be created"
 
-translateCommand :: Mod CommandFields Command
+translateCommand :: Mod CommandFields CommandArguments
 translateCommand = command "translate" $
   info ( Translate <$>
          readingFrameOpt <*>
@@ -192,8 +187,8 @@ filePathArg = strArgument $
   metavar "INPUT-FILE" <>
   help "Read sequences from INPUT-FILE"
 
-parseArgs :: IO Args
-parseArgs = parseArgsWith desc ftr args
+parseArguments :: IO Arguments
+parseArguments = parseArgumentsWith desc ftr arguments
 
 desc :: [String]
 desc = [ "Analyze multi sequence alignments." ]

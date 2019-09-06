@@ -13,15 +13,16 @@ Creation date: Thu Aug 29 13:02:22 2019.
 -}
 
 module OptionsTreeDist
-  ( Args (..)
+  ( CommandArguments (..)
+  , Arguments (..)
   , Distance (..)
-  , parseArgs
+  , parseArguments
   ) where
 
 import           Data.Void
 import           Options.Applicative
-import           Text.Megaparsec      (Parsec, try)
-import           Text.Megaparsec.Char (char, string)
+import           Text.Megaparsec            (Parsec, try)
+import           Text.Megaparsec.Char       (char, string)
 import           Text.Megaparsec.Char.Lexer (float)
 
 import           ELynx.Tools.Options
@@ -29,26 +30,34 @@ import           ELynx.Tools.Options
 data Distance = Symmetric | IncompatibleSplit Double
   deriving (Show, Read)
 
-data Args = Args
-  { argsOutFileBaseName   :: Maybe FilePath
-  , argsVerbosity         :: Verbosity
-  , argsInFilePaths       :: [FilePath]
-  , argsDistance          :: Distance
+data CommandArguments = CommandArguments
+  { argsDistance          :: Distance
   , argsSummaryStatistics :: Bool
   }
 
-args :: Parser Args
-args = Args <$>
-  optional outFileBaseNameOpt <*>
-  verbosityOpt <*>
-  some filePathArg <*>
+commandArguments :: Parser CommandArguments
+commandArguments = CommandArguments <$>
   distanceOpt
   <*> summaryStatisticsSwitch
 
-filePathArg :: Parser FilePath
-filePathArg = strArgument $
-  metavar "INPUT-FILES" <>
-  help "Read tree(s) from INPUT-FILES; if more files are given, one tree is expected per file"
+data Arguments = Arguments
+  { globalArgs  :: GlobalArguments
+  , commandArgs :: CommandArguments }
+
+arguments :: Parser Arguments
+arguments = Arguments
+  <$> globalArguments
+  <*> commandArguments
+
+-- XXX: For the moment, only one input file is take (consistency with other commands).
+
+-- TODO: Make the input file part of the CommandArguments. This would also with
+-- with the input file having different formats.
+
+-- filePathArg :: Parser FilePath
+-- filePathArg = strArgument $
+--   metavar "INPUT-FILES" <>
+--   help "Read tree(s) from INPUT-FILES; if more files are given, one tree is expected per file"
 
 symmetric :: Parsec Void String Distance
 symmetric = do
@@ -91,5 +100,5 @@ ftr = [ "Available distance measures:"
       , "    Collapse branches with support less than VAL before distance calculation;"
       , "    in this way, only well supported difference contribute to the distance measure." ]
 
-parseArgs :: IO Args
-parseArgs = parseArgsWith desc ftr args
+parseArguments :: IO Arguments
+parseArguments = parseArgumentsWith desc ftr arguments

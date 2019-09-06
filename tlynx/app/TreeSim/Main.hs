@@ -1,4 +1,6 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TupleSections     #-}
 
 {- |
    Description :  Simulate reconstructed trees
@@ -26,6 +28,8 @@ module Main where
 import           Control.Concurrent                   (getNumCapabilities)
 import           Control.Concurrent.Async.Lifted.Safe (mapConcurrently)
 import           Control.Monad
+import           Control.Monad.IO.Class
+import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import           Control.Parallel.Strategies
@@ -33,17 +37,16 @@ import qualified Data.ByteString.Lazy.Char8           as L
 import           Data.Maybe
 import qualified Data.Sequence                        as Seq
 import           Data.Tree
-import           System.IO
 
 import           OptionsTreeSim
 
 import           ELynx.Data.Tree.MeasurableTree
-import           ELynx.Data.Tree.PhyloTree           (PhyloIntLabel)
-import           ELynx.Data.Tree.SumStat             (formatNChildSumStat,
+import           ELynx.Data.Tree.PhyloTree            (PhyloIntLabel)
+import           ELynx.Data.Tree.SumStat              (formatNChildSumStat,
                                                        toNChildSumStat)
 import           ELynx.Data.Tree.Tree
-import           ELynx.Export.Tree.Newick            (toNewick)
-import           ELynx.Simulate.PointProcess         (simulateNReconstructedTrees,
+import           ELynx.Export.Tree.Newick             (toNewick)
+import           ELynx.Simulate.PointProcess          (simulateNReconstructedTrees,
                                                        simulateReconstructedTree)
 import           ELynx.Tools.Concurrent
 import           ELynx.Tools.Logger
@@ -51,68 +54,72 @@ import           ELynx.Tools.Options
 
 main :: IO ()
 main = do
-  a <- parseArgs
-  h <- setupLogger (argsOutFileBaseName a)
-  runReaderT simulate (Params a h)
-  closeLogger h
+  a <- parseArguments
+  let f = outFileBaseName $ globalArgs a
+      l = case f of
+        Nothing -> runStderrLoggingT simulate
+        Just fn -> runFileLoggingT fn simulate
+  runReaderT l a
 
 simulate :: Simulation ()
 simulate = do
-  lift (programHeader "tree-sim: Simulate trees.") >>= logS
-  a <- arguments <$> ask
-  when (isNothing (argsHeight a) && argsConditionMRCA a) $
+  h <- liftIO $ programHeader "tree-sim: Simulate trees."
+  $(logInfoSH) h
+  Arguments g c <- lift ask
+  when (isNothing (argsHeight c) && argsConditionMRCA c) $
     error "Cannot condition on MRCA (-M) when height is not given (-H)."
-  let s = argsSumStat a
-  c <- lift getNumCapabilities
+  let s = argsSumStat c
+  nCap <- liftIO getNumCapabilities
   logNewSection "Arguments"
-  logS $ reportArgs a
+  $(logInfoSH) $ reportCommandArguments c
   logNewSection "Simulation"
-  logS $ "Number of used cores: " ++ show c
-  trs <- if argsSubSample a
-         then simulateAndSubSampleNTreesConcurrently c a
-         else simulateNTreesConcurrently c a
+  $(logInfoSH) $ "Number of used cores: " <> show nCap
+  trs <- if argsSubSample c
+         then simulateAndSubSampleNTreesConcurrently nCap
+         else simulateNTreesConcurrently nCap
   let ls = if s
            then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
            else parMap rpar toNewick trs
-  let mfn = argsOutFileBaseName a
+  let mfn = outFileBaseName g
   case mfn of
     -- TODO: This should be no warning, what is wrong here?
-    Nothing -> warnLBS $ L.unlines ls
+    Nothing -> $(logWarnSH) $ L.unlines ls
     Just fn -> do
       let fn' = fn ++ ".tree"
-      lift $ L.writeFile fn' $ L.unlines ls
-      logS $ "Results written to file '" ++ fn' ++ "'."
+      liftIO $ L.writeFile fn' $ L.unlines ls
+      $(logInfoSH) $ "Results written to file '" <> fn' <> "'."
 
-simulateNTreesConcurrently :: Int -> Args -> Simulation [Tree PhyloIntLabel]
-simulateNTreesConcurrently c (Args nT nL h cM l m r _ _ _ _ s) = do
+simulateNTreesConcurrently :: Int -> Simulation [Tree PhyloIntLabel]
+simulateNTreesConcurrently c = do
+  (CommandArguments nT nL h cM l m r _ _ s) <- commandArgs <$> lift ask
   let l' = l * r
       m' = m - l * (1.0 - r)
-  gs <- lift $ getNGen c s
+  gs <- liftIO $ getNGen c s
   let chunks = getChunks c nT
       timeSpec = fmap (, cM) h
-  trss <- mapConcurrently (\(n, g) -> simulateNReconstructedTrees n nL timeSpec l' m' g) (zip chunks gs)
+  trss <- liftIO $ mapConcurrently
+          (\(n, g) -> simulateNReconstructedTrees n nL timeSpec l' m' g)
+          (zip chunks gs)
   return $ concat trss
 
-simulateAndSubSampleNTreesConcurrently :: Int -> Args -> Simulation [Tree PhyloIntLabel]
-simulateAndSubSampleNTreesConcurrently c (Args nT nL h cM l m r _ _ _ _ s) = do
+simulateAndSubSampleNTreesConcurrently :: Int -> Simulation [Tree PhyloIntLabel]
+simulateAndSubSampleNTreesConcurrently c = do
+  (CommandArguments nT nL h cM l m r _ _ s) <- commandArgs <$> lift ask
   let nLeavesBigTree = (round $ fromIntegral nL / r) :: Int
-  gs <- lift $ getNGen c s
+  gs <- liftIO $ getNGen c s
   let chunks = getChunks c nT
       timeSpec = fmap (, cM) h
-  tr <- simulateReconstructedTree nLeavesBigTree timeSpec l m (head gs)
-  logNewSection $ "Simulate one big tree with " ++ show nLeavesBigTree ++ " leaves."
-  logLBS $ toNewick tr
-  logNewSection $ "Sub sample " ++ show nT ++ " trees with " ++ show nL ++ " leaves."
+  tr <- liftIO $ simulateReconstructedTree nLeavesBigTree timeSpec l m (head gs)
+  logNewSection $ "Simulate one big tree with " <> show nLeavesBigTree <> " leaves."
+  -- TODO: Output is logged?
+  $(logInfoSH) $ toNewick tr
+  logNewSection $ "Sub sample " <> show nT <> " trees with " <> show nL <> " leaves."
   let lvs = Seq.fromList $ leaves tr
-  trss <- mapConcurrently (\(nSamples, g) -> nSubSamples nSamples lvs nL tr g) (zip chunks gs)
+  trss <- liftIO $ mapConcurrently
+          (\(nSamples, g) -> nSubSamples nSamples lvs nL tr g)
+          (zip chunks gs)
   let trs = catMaybes $ concat trss
   return $ map prune trs
 
-type Simulation = ReaderT Params IO
 
-data Params = Params { arguments  :: Args
-                     , mLogHandle :: Maybe Handle }
-
-instance Logger Params where
-  verbosity = argsVerbosity . arguments
-  mHandle = mLogHandle
+type Simulation = LoggingT (ReaderT Arguments IO)

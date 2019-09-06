@@ -1,3 +1,6 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
+
 {- |
 Module      :  Simulate.Simulate
 Description :  Simulate multiple sequence alignments
@@ -19,6 +22,8 @@ where
 import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Lens
+import           Control.Monad.Logger
+import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy                            as L
@@ -26,7 +31,7 @@ import qualified Data.ByteString.Lazy.Char8                      as LC
 import qualified Data.Set                                        as Set
 import           Data.Tree
 import qualified Data.Vector.Unboxed                             as V
-import           Numeric.LinearAlgebra
+import           Numeric.LinearAlgebra                           hiding ((<>))
 import           System.Random.MWC
 
 import           Simulate.Options
@@ -46,11 +51,14 @@ import           ELynx.Export.Sequence.Fasta
 import           ELynx.Import.MarkovProcess.EDMModelPhylobayes   hiding (Parser)
 import           ELynx.Import.Tree.Newick                        hiding (name)
 import           ELynx.Simulate.MarkovProcessAlongTree
+
+import           ELynx.Tools.ByteString
 import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Logger
 import           ELynx.Tools.Misc
 import           ELynx.Tools.Options
+
+type Simulation = LoggingT (ReaderT Arguments IO)
 
 -- Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
@@ -91,61 +99,58 @@ summarizeEDMComponents cs = LC.pack
 
 reportModel :: P.PhyloModel -> Simulation ()
 reportModel m = do
-  args <- ask
-  let fnOut = argsOutFileBaseName args
-      modelFn = fnOut ++ ".model"
+  g <- globalArgs <$> lift ask
+  let modelFn = (<> ".model") <$> outFileBaseName g
   -- TODO. Provide human readable model file.
-  lift $ writeFile modelFn (show m)
-  logS $ "Exact model definition written to '" ++ modelFn ++ "' (machine readable)."
-  logS ""
+  io "model definition (machine readable)" (bsShow m) modelFn
 
 simulate :: Simulation ()
 simulate = do
-  lift (programHeader "seq-sim: Simulate sequences.") >>= logS
-  args <- ask
-  logS "Read tree."
-  let treeFile = argsTreeFile args
-  tree <- lift $ parseFileWith newick treeFile
-  logLBS $ summarize tree
+  h <- liftIO $ programHeader "seq-sim: Simulate sequences."
+  $(logInfoSH) h
+  Arguments g c <- lift ask
+  $(logInfo) "Read tree."
+  let treeFile = inFile g
+  tree <- liftIO $ parseFileOrIOWith newick treeFile
+  $(logInfoSH) $ summarize tree
 
-  let edmFile = argsEDMFile args
+  let edmFile = argsEDMFile c
   edmCs <- case edmFile of
     Nothing   -> return Nothing
     Just edmF -> do
-      logS "Read EDM file."
-      lift $ Just <$> parseFileWith phylobayes edmF
-  maybe (return ()) (logLBS . summarizeEDMComponents) edmCs
+      $(logInfo) "Read EDM file."
+      liftIO $ Just <$> parseFileWith phylobayes edmF
+  maybe (return ()) ($(logInfoSH) . summarizeEDMComponents) edmCs
 
-  logS "Read model string."
-  let ms = argsSubstitutionModelString args
-      mm = argsMixtureModelString args
-      mws = argsMixtureWeights args
+  $(logInfo) "Read model string."
+  let ms = argsSubstitutionModelString c
+      mm = argsMixtureModelString c
+      mws = argsMixtureWeights c
       eitherPhyloModel' = getPhyloModel ms mm mws edmCs
   phyloModel' <- case eitherPhyloModel' of
     Left err -> lift $ error err
     Right pm -> return pm
 
-  let maybeGammaParams = argsGammaParams args
+  let maybeGammaParams = argsGammaParams c
   phyloModel <- case maybeGammaParams of
     Nothing         -> do
-      logLBS $ LC.unlines $ P.summarize phyloModel'
+      $(logInfoSH) $ LC.unlines $ P.summarize phyloModel'
       return phyloModel'
     Just (n, alpha) -> do
-      logLBS $ LC.unlines $ P.summarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
+      $(logInfoSH) $ LC.unlines $ P.summarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
       return $ expand n alpha phyloModel'
   reportModel phyloModel
 
-  logS "Simulate alignment."
-  let alignmentLength = argsLength args
-  logS $ "Length: " ++ show alignmentLength ++ "."
-  let maybeSeed = argsMaybeSeed args
+  $(logInfo) "Simulate alignment."
+  let alignmentLength = argsLength c
+  $(logInfoSH) $ "Length: " <> show alignmentLength <> "."
+  let maybeSeed = argsMaybeSeed c
   gen <- case maybeSeed of
-    Nothing -> logS "Seed: random"
-               >> lift createSystemRandom
-    Just s  -> logS ("Seed: " ++ show s ++ ".")
-               >> lift (initialize (V.fromList s))
-  msa <- lift $ simulateMSA phyloModel tree alignmentLength gen
+    Nothing -> $(logInfo) "Seed: random"
+               >> liftIO createSystemRandom
+    Just s  -> $(logInfoSH) ("Seed: " <> bsShow s <> ".")
+               >> liftIO (initialize (V.fromList s))
+  msa <- liftIO $ simulateMSA phyloModel tree alignmentLength gen
   let output = (sequencesToFasta . toSequenceList) msa
-      outFile = argsOutFileBaseName args ++ ".fasta"
-  lift $ L.writeFile outFile output
-  logS ("Output written to file '" ++ outFile ++ "'.")
+      outFile = (<> ".fasta") <$> outFileBaseName g
+  io "simulated multi sequence alignment" output outFile

@@ -36,61 +36,48 @@ Available options:
 
 
 module Simulate.Options
-  ( Args (..)
-  , Simulation
-  , parseArgs
+  ( CommandArguments (..)
+  , Arguments (..)
+  , parseArguments
   ) where
 
-import           Control.Monad.Trans.Reader
 import           Data.Word
 import           Options.Applicative
-import           System.IO
 
-import           ELynx.Tools.Logger
 import           ELynx.Tools.Options
 
 type GammaRateHeterogeneityParams = (Int, Double)
 
-data Args = Args
-  { argsTreeFile                :: FilePath
-  , argsSubstitutionModelString :: Maybe String
+data CommandArguments = CommandArguments
+  { argsSubstitutionModelString :: Maybe String
   , argsMixtureModelString      :: Maybe String
   , argsEDMFile                 :: Maybe FilePath
   , argsMixtureWeights          :: Maybe [Double]
   , argsGammaParams             :: Maybe GammaRateHeterogeneityParams
   , argsLength                  :: Int
   , argsMaybeSeed               :: Maybe [Word32]
-  , argsVerbosity               :: Verbosity
-  , argsOutFileBaseName         :: FilePath
-  , argsLogHandle               :: Maybe Handle
   }
 
-args :: Parser Args
-args = Args
-  <$> treeFileOpt
-  <*> phyloSubstitutionModelOpt
+commandArguments :: Parser CommandArguments
+commandArguments = CommandArguments
+  <$> phyloSubstitutionModelOpt
   <*> phyloMixtureModelOpt
   <*> maybeEDMFileOpt
   <*> maybeMixtureWeights
   <*> maybeGammaParams
   <*> lengthOpt
   <*> seedOpt
-  <*> verbosityOpt
-  <*> outFileBaseNameOpt
-  <*> pure Nothing
 
-type Simulation = ReaderT Args IO
+-- TODO: Verbosity, inFile, and outFileBaseName are global arguments, and should
+-- be handled in this way.
+data Arguments = Arguments
+  { globalArgs  :: GlobalArguments
+  , commandArgs :: CommandArguments }
 
-instance Logger Args where
-  verbosity = argsVerbosity
-  mHandle   = argsLogHandle
-
-treeFileOpt :: Parser FilePath
-treeFileOpt = strOption
-  ( long "tree-file"
-    <> short 't'
-    <> metavar "NAME"
-    <> help "Specify tree file NAME" )
+arguments :: Parser Arguments
+arguments = Arguments
+  <$> globalArguments
+  <*> commandArguments
 
 phyloSubstitutionModelOpt :: Parser (Maybe String)
 phyloSubstitutionModelOpt = optional $ strOption
@@ -135,8 +122,8 @@ lengthOpt = option auto
     <> help "Set alignment length to NUMBER" )
 
 -- | Read the arguments and prints out help if needed.
-parseArgs :: IO Args
-parseArgs = parseArgsWith desc ftr args
+parseArguments :: IO Arguments
+parseArguments = parseArgumentsWith desc ftr arguments
 
 desc :: [String]
 desc = [ "Simulate multi sequence alignments." ]

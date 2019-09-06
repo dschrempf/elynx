@@ -1,3 +1,6 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
+
 {- |
 Module      :  ELynx.Tools.InputOutput
 Copyright   :  (c) Dominik Schrempf 2019
@@ -28,14 +31,12 @@ module ELynx.Tools.InputOutput
   ) where
 
 import           Codec.Compression.GZip     (compress, decompress)
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader
+import           Control.Monad.IO.Class
+import           Control.Monad.Logger
 import qualified Data.ByteString.Lazy.Char8 as L
 import           Data.List                  (isSuffixOf)
 import           Data.Maybe
 import           Text.Megaparsec
-
-import           ELynx.Tools.Logger
 
 -- | Read file. If file path ends with ".gz", assume gzipped file and decompress
 -- before read.
@@ -90,13 +91,13 @@ parseByteStringWith s p l = case parse p s l of
                             Left  err -> error $ errorBundlePretty err
                             Right val -> val
 
--- | Write result to file or standard output.
-io :: Logger l => L.ByteString -> Maybe FilePath -> ReaderT l IO ()
-io res mfp =
+-- | Write a result with a given name to file or standard output.
+io :: (MonadLogger m, MonadIO m) => String -> L.ByteString -> Maybe FilePath -> m ()
+io name res mfp =
   case mfp of
     Nothing -> do
-      logS "Write results to standard output."
-      lift $ L.putStr res
+      $(logInfoSH) $ "Write " <> name <> " to standard output."
+      liftIO $ L.putStr res
     Just fp -> do
-      logS $ "Write results to file '" ++ fp ++ "'."
-      lift $ writeGZFile fp res
+      $(logInfoSH) $ "Write " <> name <> " to file '" <> fp <> "'."
+      liftIO $ writeGZFile fp res

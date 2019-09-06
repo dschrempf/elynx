@@ -39,6 +39,7 @@ dependencies:
   - math-functions
   # - matrices
   - megaparsec
+  - monad-logger
   - mwc-random
   - optparse-applicative
   - parallel

@@ -13,9 +13,10 @@ Creation date: Fri May  3 11:51:07 2019.
 -}
 
 module OptionsTreeSim
-  ( Args (..)
-  , reportArgs
-  , parseArgs
+  ( CommandArguments (..)
+  , reportCommandArguments
+  , Arguments (..)
+  , parseArguments
   ) where
 
 import           Data.List
@@ -24,7 +25,7 @@ import           Options.Applicative
 
 import           ELynx.Tools.Options
 
-data Args = Args
+data CommandArguments = CommandArguments
   { argsNTrees          :: Int            -- ^ Simulated trees.
   , argsNLeaves         :: Int            -- ^ Number of leaves.
   , argsHeight          :: Maybe Double   -- ^ Tree height (time to origin or MRCA).
@@ -35,13 +36,11 @@ data Args = Args
   , argsRho             :: Double         -- ^ Smapling rate.
   , argsSubSample       :: Bool           -- ^ Perform actual sub-sampling.
   , argsSumStat         :: Bool           -- ^ Only print summary statistics?
-  , argsVerbosity       :: Verbosity      -- ^ Verbosity.
-  , argsOutFileBaseName :: Maybe FilePath
   , argsSeed            :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
   }
 
-reportArgs :: Args -> String
-reportArgs a =
+reportCommandArguments :: CommandArguments -> String
+reportCommandArguments a =
   intercalate "\n" [ "Number of simulated trees: " ++ show (argsNTrees a)
                    , "Number of leaves per tree: " ++ show (argsNLeaves a)
                    , "Height of trees: " ++ hStr
@@ -50,19 +49,22 @@ reportArgs a =
                    , "Sampling probability: " ++ show (argsRho a)
                    , "Perform sub-sampling: " ++ show (argsSubSample a)
                    , "Summary statistics only: " ++ show (argsSumStat a)
-                   , "Verbosity: " ++ show (argsVerbosity a)
-                   , "Output file base name: " ++ fStr
+                   -- TODO.
+                   -- , "Verbosity: " ++ show (argsVerbosity a)
+                   -- TODO.
+                   -- , "Output file base name: " ++ fStr
                    , "Seed: " ++ sStr ]
   where hStr = case argsHeight a of Nothing -> "Random height of origin"
                                     Just h  -> show h ++ ", conditioned on "
                                       ++ if argsConditionMRCA a then "MRCA" else "origin"
-        fStr = case argsOutFileBaseName a of Nothing -> "None"
-                                             Just f  -> show f
+        -- TODO.
+        -- fStr = case argsOutFileBaseName a of Nothing -> "None"
+        --                                      Just f  -> show f
         sStr = case argsSeed a of Nothing -> "Random"
                                   Just i  -> show i
 
-argsParser :: Parser Args
-argsParser = Args
+commandArguments :: Parser CommandArguments
+commandArguments = CommandArguments
   <$> nTreeOpt
   <*> nLeavesOpt
   <*> treeHeightOpt
@@ -72,9 +74,15 @@ argsParser = Args
   <*> rhoOpt
   <*> subSampleOpt
   <*> sumStatOpt
-  <*> verbosityOpt
-  <*> optional outFileBaseNameOpt
   <*> seedOpt
+
+data Arguments = Arguments { globalArgs :: GlobalArguments
+                           , commandArgs :: CommandArguments }
+
+arguments :: Parser Arguments
+arguments = Arguments
+  <$> globalArguments
+  <*> commandArguments
 
 nTreeOpt :: Parser Int
 nTreeOpt = option auto $
@@ -159,5 +167,5 @@ ftr = [ "Height of Trees: if no tree height is given, the heights will be random
 
 -- | The impure IO action that reads the arguments and prints out help if
 -- needed.
-parseArgs :: IO Args
-parseArgs = parseArgsWith hdr ftr argsParser
+parseArguments :: IO Arguments
+parseArguments = parseArgumentsWith hdr ftr arguments

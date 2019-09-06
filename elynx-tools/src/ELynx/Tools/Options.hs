@@ -18,13 +18,12 @@ module ELynx.Tools.Options
   (
     -- * Header
     programHeader
-    -- * Options parser
-  , parseArgsWith
-    -- * Reusable options
+    -- * Options
+  , parseArgumentsWith
   , Verbosity (..)
-  , verbosityOpt
+  , GlobalArguments (..)
+  , globalArguments
   , seedOpt
-  , outFileBaseNameOpt
     -- * Options meta
   , megaReadM
     -- * Formatting
@@ -32,7 +31,6 @@ module ELynx.Tools.Options
   ) where
 
 import           Data.List                       hiding (group)
--- import           Data.Maybe
 import           Data.Time
 import           Data.Version                    (showVersion)
 import           Data.Void
@@ -45,7 +43,7 @@ import           Text.Megaparsec                 (Parsec, errorBundlePretty,
                                                   runParser)
 
 import           ELynx.Tools.Misc
-import           Paths_elynx_tools              (version)
+import           Paths_elynx_tools               (version)
 
 -- Be careful; it is necessary to synchronize the evomod-xxx libraries, so that
 -- the version number of elynx-tools matches the others.
@@ -104,8 +102,8 @@ evoModSuiteFooter =
 -- | Read arguments with globally provided description, header, footer, and so
 -- on. Custom additional description (first argument) and footer (second
 -- argument) can be provided. print help if needed.
-parseArgsWith :: [String] -> [String] -> Parser a -> IO a
-parseArgsWith desc ftr p = execParser $
+parseArgumentsWith :: [String] -> [String] -> Parser a -> IO a
+parseArgumentsWith desc ftr p = execParser $
   info (helper <*> versionOpt <*> p)
   (fullDesc
     <> header hdr
@@ -116,8 +114,19 @@ parseArgsWith desc ftr p = execParser $
     ftr' = vsep $ map pretty ftr ++ evoModSuiteFooter
 
 -- | Verbosity levels.
-data Verbosity = Quiet | Info | Debug
+data Verbosity = Quiet | Warning | Info | Debug
   deriving (Show, Read, Eq, Enum, Bounded, Ord)
+
+data GlobalArguments = GlobalArguments
+  { verbosity       :: Verbosity
+  , inFile          :: Maybe FilePath
+  , outFileBaseName :: Maybe FilePath }
+
+globalArguments :: Parser GlobalArguments
+globalArguments = GlobalArguments
+  <$> verbosityOpt
+  <*> optional inFileOpt
+  <*> optional outFileBaseNameOpt
 
 -- | Boolean option; be verbose; default NO.
 verbosityOpt :: Parser Verbosity
@@ -131,14 +140,12 @@ verbosityOpt = option auto
   where
     vs = allValues :: [Verbosity]
 
--- | Seed option for MWC. Defaults to RANDOM.
-seedOpt :: Parser (Maybe [Word32])
-seedOpt = optional $ option auto
-  ( long "seed"
-    <> short 'S'
-    <> metavar "[INT]"
-    <> help ("Seed for random number generator; "
-             ++ "list of 32 bit integers with up to 256 elements (default: random)" ) )
+inFileOpt :: Parser FilePath
+inFileOpt = strOption
+  ( long "in-file"
+    <> short 'i'
+    <> metavar "FILENAME"
+    <> help "Input file name" )
 
 -- | Output filename.
 outFileBaseNameOpt :: Parser FilePath
@@ -147,6 +154,15 @@ outFileBaseNameOpt = strOption
     <> short 'o'
     <> metavar "NAME"
     <> help "Specify base name of output file")
+
+-- | Seed option for MWC. Defaults to RANDOM.
+seedOpt :: Parser (Maybe [Word32])
+seedOpt = optional $ option auto
+  ( long "seed"
+    <> short 'S'
+    <> metavar "[INT]"
+    <> help ("Seed for random number generator; "
+             ++ "list of 32 bit integers with up to 256 elements (default: random)" ) )
 
 -- | See 'eitherReader', but for Megaparsec.
 megaReadM :: Parsec Void String a -> ReadM a
@@ -161,3 +177,4 @@ megaReadM p = eitherReader $ \input ->
 -- descriptions, headers and footers.
 fillParagraph :: String -> Doc
 fillParagraph = fillSep . map text . words
+
