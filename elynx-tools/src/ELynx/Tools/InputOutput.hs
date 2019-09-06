@@ -25,6 +25,7 @@ module ELynx.Tools.InputOutput
     -- * Parsing.
   , runParserOnFile
   , parseFileWith
+  , parseIOWith
   , parseFileOrIOWith
   , parseStringWith
   , parseByteStringWith
@@ -61,6 +62,12 @@ parseFileWith :: (ShowErrorComponent e)
                   -> FilePath
                   -> IO a
 parseFileWith p f = parseFileOrIOWith p (Just f)
+
+-- | Parse standard input.
+parseIOWith :: (ShowErrorComponent e)
+                  => Parsec e L.ByteString a -- ^ The parser.
+                  -> IO a
+parseIOWith p = parseByteStringWith "Standard input" p <$> L.getContents
 
 -- | Parse a possibly gzipped file, or standard input, and extract the result.
 parseFileOrIOWith :: (ShowErrorComponent e)

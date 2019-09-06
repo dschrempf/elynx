@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 {- |
 Description :  Compute distances between trees
@@ -56,42 +57,47 @@ showTriplet n args (i, j, d) = i' <> j' <> d'
 
 type Dist = LoggingT (ReaderT Arguments IO)
 
-worker :: Dist ()
-worker = do
-  lift (L.pack <$> programHeader "tree-dist: Calculate distances between trees.") >>= logInfo
-  a <- arguments <$> ask
+work :: Dist ()
+work = do
+  h <- liftIO $ programHeader "tree-dist: Calculate distances between trees."
+  $(logInfoSH) h
+  Arguments g c <- lift ask
   -- Determine output handle (stdout or file).
-  let outFilePath = (++ ".out") <$> argsOutFileBaseName args
-  outH <- lift $ maybe (pure stdout) (`openFile` WriteMode) outFilePath
-  let tfps = argsInFilePaths args
-  (trees, names) <- if length tfps == 1
+  let outFilePath = (++ ".out") <$> outFileBaseName g
+  outH <- liftIO $ maybe (pure stdout) (`openFile` WriteMode) outFilePath
+  let tfps = argsInFiles c
+  (trees, names) <-
+    if length tfps <= 1
     then
-    do let f = head tfps
-       logInfo $ "Read trees from file: " <> L.pack f <> "."
-       ts <- lift $ parseFileWith manyNewick f
-       let n = length ts
-       when (n <= 1) (error "Not enough trees found in file.")
-       lift $ hPutStrLn outH "Compute pairwise distances between trees in the same file."
-       lift $ hPutStrLn outH $ "Trees are numbered from 0 to " ++ show (n-1) ++ "."
-       return (ts, take n (map show [0 :: Int ..]))
+      do ts <- if null tfps
+              then do $(logInfo) "Read trees from standard input."
+                      liftIO $ parseIOWith manyNewick
+              else do let f = head tfps
+                      $(logInfoSH) $ "Read trees from file: " <> f <> "."
+                      liftIO $ parseFileWith manyNewick f
+         let n = length ts
+         when (n <= 1) (error "Not enough trees found in file.")
+         liftIO $ hPutStrLn outH "Compute pairwise distances between trees in the same file."
+         liftIO $ hPutStrLn outH $ "Trees are numbered from 0 to " ++ show (n-1) ++ "."
+         return (ts, take n (map show [0 :: Int ..]))
     else
-    do logInfo "Read trees from files."
-       ts <- lift $ mapM (parseFileWith newick) tfps
-       when (length ts <= 1) (error "Not enough trees found in files.")
-       lift $ hPutStrLn outH "Compute pairwise distances between trees from different files."
-       lift $ hPutStrLn outH "Trees are named according to their file names."
-       return (ts, tfps)
+      do $(logInfo) "Read trees from files."
+         ts <- liftIO $ mapM (parseFileWith newick) tfps
+         when (length ts <= 1) (error "Not enough trees found in files.")
+         liftIO $ hPutStrLn outH "Compute pairwise distances between trees from different files."
+         liftIO $ hPutStrLn outH "Trees are named according to their file names."
+         return (ts, tfps)
   case outFilePath of
     Nothing -> logNewSection "Write results to standard output."
-    Just f  -> logNewSection $ "Write results to file " <> L.pack f <> "."
+    Just f  -> logNewSection $ "Write results to file " <> f <> "."
   let n        = maximum $ map length names
       tsN      = map normalize trees
-      distance = argsDistance args
+      distance = argsDistance c
   case distance of
-    Symmetric -> lift $ hPutStrLn outH "Use symmetric (Robinson-Foulds) distance."
+    Symmetric -> liftIO $ hPutStrLn outH "Use symmetric (Robinson-Foulds) distance."
     IncompatibleSplit val -> do
-      lift $ hPutStrLn outH "Use incompatible split distance."
-      lift $ hPutStrLn outH $ "Collapse nodes with support less than " ++ show val ++ "."
+      liftIO $ hPutStrLn outH "Use incompatible split distance."
+      liftIO $ hPutStrLn outH $ "Collapse nodes with support less than " ++ show val ++ "."
   let distanceMeasure :: Tree PhyloByteStringLabel -> Tree PhyloByteStringLabel -> Int
       distanceMeasure = case distance of
         Symmetric           -> symmetricDistanceWith getName
@@ -102,23 +108,25 @@ worker = do
   let dsTriplets = computePairwiseDistances distanceMeasure treesCollapsed
       ds = map (\(_, _, x) -> fromIntegral x) dsTriplets :: [Double]
       dsVec = V.fromList ds
-  lift $ hPutStrLn outH "Summary statistics of distance:"
-  lift $ hPutStrLn outH $ "Mean: " ++ show (mean dsVec)
-  lift $ hPutStrLn outH $ "Variance: " ++ show (variance dsVec)
+  liftIO $ hPutStrLn outH "Summary statistics of distance:"
+  liftIO $ hPutStrLn outH $ "Mean: " ++ show (mean dsVec)
+  liftIO $ hPutStrLn outH $ "Variance: " ++ show (variance dsVec)
   -- L.putStrLn $ L.unlines $ map toNewick ts
   -- L.putStrLn $ L.unlines $ map toNewick tsN
   -- L.putStrLn $ L.unlines $ map toNewick tsC
-  unless (argsSummaryStatistics args) (
+  lift $ unless (argsSummaryStatistics c) (
     do
       lift $ hPutStrLn outH ""
       lift $ L.hPutStrLn outH $ header n
       lift $ L.hPutStr outH $ L.unlines (map (showTriplet n names) dsTriplets)
     )
-  lift $ hClose outH
+  liftIO $ hClose outH
 
 main :: IO ()
 main = do
-  args <- parseArguments
-  logger <- setupLogger (argsOutFileBaseName args)
-  runReaderT worker (Params args logger)
-  hClose logger
+  a <- parseArguments
+  let f = outFileBaseName $ globalArgs a
+      l = case f of
+        Nothing -> runStderrLoggingT work
+        Just fn -> runFileLoggingT fn work
+  runReaderT l a

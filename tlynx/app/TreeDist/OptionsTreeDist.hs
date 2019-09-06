@@ -33,12 +33,14 @@ data Distance = Symmetric | IncompatibleSplit Double
 data CommandArguments = CommandArguments
   { argsDistance          :: Distance
   , argsSummaryStatistics :: Bool
+  , argsInFiles           :: [FilePath]
   }
 
 commandArguments :: Parser CommandArguments
 commandArguments = CommandArguments <$>
   distanceOpt
   <*> summaryStatisticsSwitch
+  <*> many inFilesArg
 
 data Arguments = Arguments
   { globalArgs  :: GlobalArguments
@@ -49,15 +51,13 @@ arguments = Arguments
   <$> globalArguments
   <*> commandArguments
 
--- XXX: For the moment, only one input file is take (consistency with other commands).
+-- TODO: Make the input file part of the CommandArguments for OTHER executables.
+-- This would also be in line with the input file having different formats.
 
--- TODO: Make the input file part of the CommandArguments. This would also with
--- with the input file having different formats.
-
--- filePathArg :: Parser FilePath
--- filePathArg = strArgument $
---   metavar "INPUT-FILES" <>
---   help "Read tree(s) from INPUT-FILES; if more files are given, one tree is expected per file"
+inFilesArg :: Parser FilePath
+inFilesArg = strArgument $
+  metavar "INPUT-FILES" <>
+  help "Read tree(s) from INPUT-FILES; if more files are given, one tree is expected per file"
 
 symmetric :: Parsec Void String Distance
 symmetric = do
