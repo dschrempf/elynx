@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 {- |
 Module      :  ELynx.Tools.Logger
 Description :  Log messages
@@ -20,17 +22,11 @@ module ELynx.Tools.Logger
   (
     -- * Logging
     Logger (..)
-  , logSWith
-  , logS
-  , logSDebug
-  , logLBSWith
-  , logLBS
-  , logLBSDebug
+  , logQuiet
+  , logWarning
+  , logInfo
+  , logDebug
   , setupLogger
-  , closeLogger
-  -- * Warnings
-  , warnS
-  , warnLBS
   -- * Helper functions
   , logNewSection
   , reportCapability
@@ -40,10 +36,12 @@ import           Control.Concurrent         (myThreadId, threadCapability)
 import           Control.Monad
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
-import qualified Data.ByteString.Lazy.Char8 as LC
+import qualified Data.ByteString.Lazy.Char8 as L
+import           Data.Time
 import           System.IO
 
-import           ELynx.Tools.Options       (Verbosity (..))
+import           ELynx.Tools.ByteString
+import           ELynx.Tools.Options        (Verbosity (..))
 
 -- | A logger knows if it has to be quiet and where it deposits more and less
 -- useful messages. It also comes with some convenience logging functions in the
@@ -57,73 +55,59 @@ import           ELynx.Tools.Options       (Verbosity (..))
 -- @
 
 class Logger l where
-  verbosity :: l -> Verbosity
-  mHandle   :: l -> Maybe Handle
+  getVerbosity :: l -> Verbosity
+  getHandle   :: l -> Handle
 
 instance Logger (IO a) where
-  verbosity _ = Info
-  mHandle _ = Nothing
+  getVerbosity _ = Info
+  getHandle _   = stderr
 
-logHandle :: Maybe Handle -> String -> IO ()
-logHandle Nothing  _   = return ()
-logHandle (Just h) msg = hPutStrLn h msg
+toLogStr :: Verbosity -> UTCTime -> L.ByteString -> L.ByteString
+toLogStr l t s = "[" <> L.pack t' <> "]" <> alignLeft 8 ("[" <> L.pack l' <> "]") <> s
+  where
+    l' = show l
+    t' = formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z." t
 
--- | For a given 'Verbosity' level, log 'String'.
-logSWith :: Logger l => Verbosity -> String -> ReaderT l IO ()
-logSWith lvl msg = do
-  v  <- verbosity <$> ask
-  when (lvl <= v) (lift $ hPutStrLn stderr msg)
-  mh <- mHandle <$> ask
-  lift $ logHandle mh msg
+-- | For a given 'Verbosity' level, log 'LC.ByteString'.
+logWith :: Logger l => Verbosity -> L.ByteString -> ReaderT l IO ()
+logWith l s = do
+  v <- getVerbosity <$> ask
+  h <- getHandle <$> ask
+  t <- lift getCurrentTime
+  let s' = toLogStr l t s
+  when (l <= v) (lift $ L.hPutStrLn h s')
 
--- | Always print 'String' to screen; even when verbosity level is 'Quiet'.
-warnS :: Logger l => String -> ReaderT l IO ()
-warnS = logSWith Quiet
+-- | Always print 'LC.ByteString' to screen; even when verbosity level is 'Quiet'.
+logQuiet :: Logger l => L.ByteString -> ReaderT l IO ()
+logQuiet = logWith Quiet
 
--- | If not quiet, print 'String' to screen.
-logS :: Logger l => String -> ReaderT l IO ()
-logS = logSWith Info
+-- | Print a warning, if verbosity is 'Warning' or higher.
+logWarning :: Logger l => L.ByteString -> ReaderT l IO ()
+logWarning = logWith Warning
 
--- | Only print 'String' to screen if verbosity level is 'Debug'.
-logSDebug :: Logger l => String -> ReaderT l IO ()
-logSDebug = logSWith Debug
+-- | Print informational log message if verbosity is 'Info' or higher.
+logInfo :: Logger l => L.ByteString -> ReaderT l IO ()
+logInfo = logWith Info
 
--- | See 'logSWith'; but for lazy byte strings.
-logLBSWith :: Logger l => Verbosity -> LC.ByteString -> ReaderT l IO ()
-logLBSWith lvl = logSWith lvl . LC.unpack
-
--- | See 'warnS'; but for lazy byte strings.
-warnLBS :: Logger l => LC.ByteString -> ReaderT l IO ()
-warnLBS = warnS . LC.unpack
-
--- | See 'logS'; but for lazy byte strings.
-logLBS :: Logger l => LC.ByteString -> ReaderT l IO ()
-logLBS = logS . LC.unpack
-
--- | See 'logSDebug'; but for lazy byte strings.
-logLBSDebug :: Logger l => LC.ByteString -> ReaderT l IO ()
-logLBSDebug = logSDebug . LC.unpack
+-- | Only print 'LC.ByteString' to screen if verbosity level is 'Debug'.
+logDebug :: Logger l => L.ByteString -> ReaderT l IO ()
+logDebug = logWith Debug
 
 -- | Setup log handle, if not quiet and if filename is given.
 setupLogger :: Maybe FilePath    -- ^ Log file base name.
-            -> IO (Maybe Handle)
-setupLogger Nothing   = return Nothing
-setupLogger (Just fn) = Just <$> openFile (fn ++ ".log") AppendMode
-
--- | Close the logging file handle.
-closeLogger :: Maybe Handle -> IO ()
--- It took me quite a while to find this out.
-closeLogger = mapM_ hClose
+            -> IO Handle
+setupLogger Nothing   = return stderr
+setupLogger (Just fn) = openFile (fn ++ ".log") AppendMode
 
 -- | Convenience function. Create a visibly noticeable log entry.
-logNewSection :: Logger l => String -> ReaderT l IO ()
+logNewSection :: Logger l => L.ByteString -> ReaderT l IO ()
 logNewSection h = do
-  logS ""
-  logS $ "-- " ++ h
+  logInfo ""
+  logInfo $ "-- " <> h
 
 -- | Report the core this thread is running on.
 reportCapability :: Logger l => ReaderT l IO ()
 reportCapability = do
   i <- lift myThreadId
   (c, _) <- lift $ threadCapability i
-  logS $ "Running on core: " ++ show c
+  logInfo $ "Running on core: " <> L.pack (show c)
