@@ -22,13 +22,16 @@ where
 import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Lens
-import           Control.Monad.Logger
 import           Control.Monad.IO.Class
+import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy                            as L
 import qualified Data.ByteString.Lazy.Char8                      as LC
 import qualified Data.Set                                        as Set
+import qualified Data.Text                                       as T
+import qualified Data.Text.Lazy                                  as LT
+import qualified Data.Text.Lazy.Encoding                         as LT
 import           Data.Tree
 import qualified Data.Vector.Unboxed                             as V
 import           Numeric.LinearAlgebra                           hiding ((<>))
@@ -106,13 +109,14 @@ reportModel m = do
 
 simulate :: Simulation ()
 simulate = do
-  h <- liftIO $ programHeader "seq-sim: Simulate sequences."
-  $(logInfoSH) h
+  -- TODO: put logHeader and logFooter into main (for all programs).
+  h <- liftIO $ logHeader "seq-sim: Simulate sequences."
+  $(logInfo) $ T.pack h
   Arguments g c <- lift ask
   $(logInfo) "Read tree."
   let treeFile = inFile g
   tree <- liftIO $ parseFileOrIOWith newick treeFile
-  $(logInfoSH) $ summarize tree
+  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarize tree
 
   let edmFile = argsEDMFile c
   edmCs <- case edmFile of
@@ -120,7 +124,7 @@ simulate = do
     Just edmF -> do
       $(logInfo) "Read EDM file."
       liftIO $ Just <$> parseFileWith phylobayes edmF
-  maybe (return ()) ($(logInfoSH) . summarizeEDMComponents) edmCs
+  maybe (return ()) ($(logInfo) . LT.toStrict . LT.decodeUtf8 . summarizeEDMComponents) edmCs
 
   $(logInfo) "Read model string."
   let ms = argsSubstitutionModelString c
@@ -134,23 +138,27 @@ simulate = do
   let maybeGammaParams = argsGammaParams c
   phyloModel <- case maybeGammaParams of
     Nothing         -> do
-      $(logInfoSH) $ LC.unlines $ P.summarize phyloModel'
+      $(logInfo) $ LT.toStrict $ LT.decodeUtf8
+        $ LC.unlines $ P.summarize phyloModel'
       return phyloModel'
     Just (n, alpha) -> do
-      $(logInfoSH) $ LC.unlines $ P.summarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
+      $(logInfo) $ LT.toStrict $ LT.decodeUtf8
+        $ LC.unlines $ P.summarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
       return $ expand n alpha phyloModel'
   reportModel phyloModel
 
   $(logInfo) "Simulate alignment."
   let alignmentLength = argsLength c
-  $(logInfoSH) $ "Length: " <> show alignmentLength <> "."
+  $(logInfo) $ T.pack $ "Length: " <> show alignmentLength <> "."
   let maybeSeed = argsMaybeSeed c
   gen <- case maybeSeed of
     Nothing -> $(logInfo) "Seed: random"
                >> liftIO createSystemRandom
-    Just s  -> $(logInfoSH) ("Seed: " <> bsShow s <> ".")
+    Just s  -> $(logInfo) (T.pack ("Seed: " <> show s <> "."))
                >> liftIO (initialize (V.fromList s))
   msa <- liftIO $ simulateMSA phyloModel tree alignmentLength gen
   let output = (sequencesToFasta . toSequenceList) msa
       outFile = (<> ".fasta") <$> outFileBaseName g
   io "simulated multi sequence alignment" output outFile
+  f <- liftIO logFooter
+  $(logInfo) $ T.pack f

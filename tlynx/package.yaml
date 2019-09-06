@@ -47,6 +47,7 @@ dependencies:
   - QuickCheck
   - quickcheck-instances
   - statistics
+  - text
   - transformers
   - vector
   # - word8

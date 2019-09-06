@@ -19,6 +19,7 @@ import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8     as L
+import qualified Data.Text                      as T
 import           Data.Tree
 
 import           OptionsTreeAna
@@ -36,26 +37,29 @@ readTrees :: Maybe FilePath -> Ana [Tree PhyloByteStringLabel]
 readTrees mfp = do
   case mfp of
     Nothing -> $(logInfo) "Read tree(s) from standard input."
-    Just fp -> $(logInfoSH) $ "Read tree(s) from file " <> fp <> "."
+    Just fp -> $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
   liftIO $ parseFileOrIOWith manyNewick mfp
 
 work :: Ana ()
 work = do
-  h <- liftIO $ programHeader "tree-ana: Analyze trees."
-  $(logInfoSH) h
+  h <- liftIO $ logHeader "tree-ana: Analyze trees."
+  $(logInfo) $ T.pack h
   a <- lift ask
   trs <- readTrees (inFile a)
   let lsStrs = map summarize trs
   let outFilePath = (++ ".out") <$> outFileBaseName a
   logNewSection "Results."
   io "results of tree analysis" (L.intercalate (L.pack "\n") lsStrs) outFilePath
+  f <- liftIO logFooter
+  $(logInfo) $ T.pack f
+
 
 main :: IO ()
 main = do
   a <- parseArguments
   let f = outFileBaseName a
       l = case f of
-        Nothing -> runStderrLoggingT work
-        Just fn -> runFileLoggingT fn work
+        Nothing -> runELynxStderrLoggingT work
+        Just fn -> runELynxFileLoggingT fn work
   runReaderT l a
 

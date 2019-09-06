@@ -25,7 +25,7 @@ import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Builder           as L
 import qualified Data.ByteString.Lazy.Char8        as L
--- import           Data.List
+import qualified Data.Text                         as T
 import           Data.Tree
 import qualified Data.Vector.Unboxed               as V
 import           Statistics.Sample
@@ -38,7 +38,6 @@ import           ELynx.Data.Tree.Distance
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Import.Tree.Newick
--- import           ELynx.Export.Tree.Newick
 import           ELynx.Tools.ByteString            (alignLeft, alignRight)
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
@@ -59,8 +58,8 @@ type Dist = LoggingT (ReaderT Arguments IO)
 
 work :: Dist ()
 work = do
-  h <- liftIO $ programHeader "tree-dist: Calculate distances between trees."
-  $(logInfoSH) h
+  h <- liftIO $ logHeader "tree-dist: Calculate distances between trees."
+  $(logInfo) $ T.pack h
   Arguments g c <- lift ask
   -- Determine output handle (stdout or file).
   let outFilePath = (++ ".out") <$> outFileBaseName g
@@ -73,7 +72,7 @@ work = do
               then do $(logInfo) "Read trees from standard input."
                       liftIO $ parseIOWith manyNewick
               else do let f = head tfps
-                      $(logInfoSH) $ "Read trees from file: " <> f <> "."
+                      $(logInfo) $ T.pack $ "Read trees from file: " <> f <> "."
                       liftIO $ parseFileWith manyNewick f
          let n = length ts
          when (n <= 1) (error "Not enough trees found in file.")
@@ -89,7 +88,7 @@ work = do
          return (ts, tfps)
   case outFilePath of
     Nothing -> logNewSection "Write results to standard output."
-    Just f  -> logNewSection $ "Write results to file " <> f <> "."
+    Just f  -> logNewSection $ T.pack $ "Write results to file " <> f <> "."
   let n        = maximum $ map length names
       tsN      = map normalize trees
       distance = argsDistance c
@@ -121,12 +120,14 @@ work = do
       lift $ L.hPutStr outH $ L.unlines (map (showTriplet n names) dsTriplets)
     )
   liftIO $ hClose outH
+  f <- liftIO logFooter
+  $(logInfo) $ T.pack f
 
 main :: IO ()
 main = do
   a <- parseArguments
   let f = outFileBaseName $ globalArgs a
       l = case f of
-        Nothing -> runStderrLoggingT work
-        Just fn -> runFileLoggingT fn work
+        Nothing -> runELynxStderrLoggingT work
+        Just fn -> runELynxFileLoggingT fn work
   runReaderT l a

@@ -43,6 +43,7 @@ dependencies:
   - parallel
   - primitive
   - statistics
+  - text
   - transformers
   - vector
   - vector-th-unbox

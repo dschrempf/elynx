@@ -16,8 +16,9 @@ Creation date: Fri May  3 18:20:11 2019.
 
 module ELynx.Tools.Options
   (
-    -- * Header
-    programHeader
+    -- * Log file
+    logHeader
+  , logFooter
     -- * Options
   , parseArgumentsWith
   , Verbosity (..)
@@ -67,18 +68,27 @@ hdr = intercalate "\n" [ versionString
                        , compilationString
                        ]
 
--- | Short, globally usable program header with obligatory description.
-programHeader :: String -> IO String
-programHeader desc = do
-  t  <- formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z." `fmap` Data.Time.getCurrentTime
+time :: IO String
+time = formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z." `fmap` Data.Time.getCurrentTime
+
+-- | Short, globally usable string preceding all logs with obligatory description.
+logHeader :: String -> IO String
+logHeader desc = do
+  t  <- time
   p  <- getProgName
   as <- getArgs
   return $ intercalate "\n"
     [ "----------------------------------------------------------------------"
-    , desc
+    , "-- " <> desc
     , hdr
     , "Time: " ++ t
     , "Command line: " ++ p ++ " " ++ unwords as ]
+
+-- | See 'logHeader' but at the end.
+logFooter :: IO String
+logFooter = do
+  t <- time
+  return $ "Time: " ++ t
 
 versionOpt :: Parser (a -> a)
 versionOpt = infoOption hdr

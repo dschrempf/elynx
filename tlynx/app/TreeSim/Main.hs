@@ -36,6 +36,9 @@ import           Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8           as L
 import           Data.Maybe
 import qualified Data.Sequence                        as Seq
+import qualified Data.Text                            as T
+import qualified Data.Text.Lazy                       as LT
+import qualified Data.Text.Lazy.Encoding              as LT
 import           Data.Tree
 
 import           OptionsTreeSim
@@ -57,23 +60,23 @@ main = do
   a <- parseArguments
   let f = outFileBaseName $ globalArgs a
       l = case f of
-        Nothing -> runStderrLoggingT simulate
-        Just fn -> runFileLoggingT fn simulate
+        Nothing -> runELynxStderrLoggingT simulate
+        Just fn -> runELynxFileLoggingT fn simulate
   runReaderT l a
 
 simulate :: Simulation ()
 simulate = do
-  h <- liftIO $ programHeader "tree-sim: Simulate trees."
-  $(logInfoSH) h
+  h <- liftIO $ logHeader "tree-sim: Simulate trees."
+  $(logInfo) $ T.pack h
   Arguments g c <- lift ask
   when (isNothing (argsHeight c) && argsConditionMRCA c) $
     error "Cannot condition on MRCA (-M) when height is not given (-H)."
   let s = argsSumStat c
   nCap <- liftIO getNumCapabilities
   logNewSection "Arguments"
-  $(logInfoSH) $ reportCommandArguments c
+  $(logInfo) $ T.pack $ reportCommandArguments c
   logNewSection "Simulation"
-  $(logInfoSH) $ "Number of used cores: " <> show nCap
+  $(logInfo) $ T.pack $ "Number of used cores: " <> show nCap
   trs <- if argsSubSample c
          then simulateAndSubSampleNTreesConcurrently nCap
          else simulateNTreesConcurrently nCap
@@ -87,7 +90,9 @@ simulate = do
     Just fn -> do
       let fn' = fn ++ ".tree"
       liftIO $ L.writeFile fn' $ L.unlines ls
-      $(logInfoSH) $ "Results written to file '" <> fn' <> "'."
+      $(logInfo) $ T.pack $ "Results written to file '" <> fn' <> "'."
+  f <- liftIO logFooter
+  $(logInfo) $ T.pack f
 
 simulateNTreesConcurrently :: Int -> Simulation [Tree PhyloIntLabel]
 simulateNTreesConcurrently c = do
@@ -110,10 +115,10 @@ simulateAndSubSampleNTreesConcurrently c = do
   let chunks = getChunks c nT
       timeSpec = fmap (, cM) h
   tr <- liftIO $ simulateReconstructedTree nLeavesBigTree timeSpec l m (head gs)
-  logNewSection $ "Simulate one big tree with " <> show nLeavesBigTree <> " leaves."
+  logNewSection $ T.pack $ "Simulate one big tree with " <> show nLeavesBigTree <> " leaves."
   -- TODO: Output is logged?
-  $(logInfoSH) $ toNewick tr
-  logNewSection $ "Sub sample " <> show nT <> " trees with " <> show nL <> " leaves."
+  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick tr
+  logNewSection $ T.pack $ "Sub sample " <> show nT <> " trees with " <> show nL <> " leaves."
   let lvs = Seq.fromList $ leaves tr
   trss <- liftIO $ mapConcurrently
           (\(nSamples, g) -> nSubSamples nSamples lvs nL tr g)

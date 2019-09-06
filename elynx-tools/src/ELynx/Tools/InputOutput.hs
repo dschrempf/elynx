@@ -37,6 +37,7 @@ import           Control.Monad.Logger
 import qualified Data.ByteString.Lazy.Char8 as L
 import           Data.List                  (isSuffixOf)
 import           Data.Maybe
+import qualified Data.Text                  as T
 import           Text.Megaparsec
 
 -- | Read file. If file path ends with ".gz", assume gzipped file and decompress
@@ -103,8 +104,8 @@ io :: (MonadLogger m, MonadIO m) => String -> L.ByteString -> Maybe FilePath -> 
 io name res mfp =
   case mfp of
     Nothing -> do
-      $(logInfoSH) $ "Write " <> name <> " to standard output."
+      $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
       liftIO $ L.putStr res
     Just fp -> do
-      $(logInfoSH) $ "Write " <> name <> " to file '" <> fp <> "'."
+      $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
       liftIO $ writeGZFile fp res

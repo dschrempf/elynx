@@ -31,21 +31,26 @@ dependencies:
   - bytestring
   - containers
   # - data-memocombinators
+  - fast-logger
   - hmatrix
+  - lifted-base
   # - integration
   # - lens
   # - math-functions
   - matrices
   - megaparsec
   - monad-logger
+  - monad-control
   - mwc-random
   - optparse-applicative
   - parallel
   - primitive
   # - statistics
   - template-haskell
+  - text
   - time
   - transformers
+  - transformers-base
   - vector
   # - word8
   - zlib

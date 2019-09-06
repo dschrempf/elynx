@@ -25,6 +25,7 @@ import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8                 as L
 import           Data.Maybe                                 (fromMaybe)
+import qualified Data.Text                                  as T
 import qualified Data.Vector                                as V
 import           Data.Word
 import           System.Random.MWC
@@ -40,6 +41,7 @@ import           ELynx.Export.Sequence.Fasta
 import           ELynx.Import.Sequence.Fasta
 import           ELynx.Tools.ByteString
 import           ELynx.Tools.InputOutput
+import           ELynx.Tools.Logger
 import           ELynx.Tools.Misc
 import           ELynx.Tools.Options
 
@@ -149,9 +151,9 @@ filterRowsCmd :: Maybe Int -> Maybe Int -> Maybe FilePath -> Seq ()
 filterRowsCmd long short fp = do
   $(logInfo) "Command: Filter sequences of a list of sequences."
   maybe (return ())
-    (\val -> $(logInfoSH) $ "  Keep sequences longer than " <> L.pack (show val) <> ".") long
+    (\val -> $(logInfo) $ T.pack $ "  Keep sequences longer than " <> show val <> ".") long
   maybe (return ())
-    (\val -> $(logInfoSH) $ "  Keep sequences shorter than " <> L.pack (show val) <> ".") short
+    (\val -> $(logInfo) $ T.pack $ "  Keep sequences shorter than " <> show val <> ".") short
   ss <- readSeqs fp
   let result = filterRows long short ss
   outFilePath <- getOutFilePath "fasta"
@@ -174,8 +176,8 @@ filterColumnsCmd standard fp = do
 subSampleCmd :: Int -> Int -> Maybe [Word32] -> Maybe FilePath -> Seq ()
 subSampleCmd nSites nAlignments seed fp = do
   $(logInfo) "Command: Sub sample from a multi sequence alignment."
-  $(logInfoSH) $ "  Sample " <> show nSites <> " sites."
-  $(logInfoSH) $ "  Sample " <> show nAlignments <> " multi sequence alignments."
+  $(logInfo) $ T.pack $ "  Sample " <> show nSites <> " sites."
+  $(logInfo) $ T.pack $ "  Sample " <> show nAlignments <> " multi sequence alignments."
   ss <- readSeqs fp
   g <- liftIO $ maybe createSystemRandom (initialize . V.fromList) seed
   let msa = either error id (fromSequenceList ss)
@@ -190,8 +192,8 @@ translateSeqs rf uc = map (translateSeq uc rf)
 translateCmd :: Int -> UniversalCode -> Maybe FilePath -> Seq ()
 translateCmd rf uc fp = do
   $(logInfo) "Command: Translate sequences to amino acids."
-  $(logInfoSH) $ "  Universal code: " <> show uc <> "."
-  $(logInfoSH) $ "  Reading frame: " <> show rf <> "."
+  $(logInfo) $ T.pack $ "  Universal code: " <> show uc <> "."
+  $(logInfo) $ T.pack $ "  Reading frame: " <> show rf <> "."
   $(logInfo) ""
   ss <- readSeqs fp
   let result = sequencesToFasta $ translateSeqs rf uc ss
@@ -202,10 +204,10 @@ readSeqs :: Maybe FilePath -> Seq [Sequence]
 readSeqs mfp = do
   a <- alphabetArg <$> lift ask
   case mfp of
-    Nothing -> $(logInfoSH)
+    Nothing -> $(logInfo) $ T.pack
                $ "Read sequences from standard input; alphabet "
                <> show a <> "."
-    Just fp -> $(logInfoSH)
+    Just fp -> $(logInfo) $ T.pack
                $ "Read sequences from file "
                <> fp <> "; alphabet" <> show a <> "."
   liftIO $ parseFileOrIOWith (fasta a) mfp
@@ -213,8 +215,8 @@ readSeqs mfp = do
 work :: Seq ()
 work = do
   c <- commandArgs <$> lift ask
-  h <- liftIO $ programHeader "seq-ana: Analyze sequences."
-  $(logInfoSH) h
+  h <- liftIO $ logHeader "seq-ana: Analyze sequences."
+  $(logInfo) $ T.pack h
   case c of
     Examine ps fp        -> examineCmd ps fp
     Concatenate fps      -> concatenateCmd fps
@@ -228,6 +230,6 @@ main = do
   a <- parseArguments
   let f = outFileBaseName $ globalArgs a
       l = case f of
-        Nothing -> runStderrLoggingT work
-        Just fn -> runFileLoggingT fn work
+        Nothing -> runELynxStderrLoggingT work
+        Just fn -> runELynxFileLoggingT fn work
   runReaderT l a
