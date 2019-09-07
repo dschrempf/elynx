@@ -150,6 +150,7 @@ verbosityOpt = option auto
   where
     vs = allValues :: [Verbosity]
 
+-- TODO: Remove this option! Move into sub commands.
 inFileOpt :: Parser FilePath
 inFileOpt = strOption
   ( long "in-file"
