@@ -15,7 +15,7 @@ Creation date: Sun Oct  7 17:29:45 2018.
 module Examine.Options
   ( ExamineArguments (..)
   , Examine
-  , examineCommand
+  , examineArguments
   ) where
 
 import           Control.Applicative
@@ -34,13 +34,11 @@ data ExamineArguments = ExamineArguments
 
 type Examine = LoggingT (ReaderT ExamineArguments IO)
 
-examineCommand :: Mod CommandFields ExamineArguments
-examineCommand = command "examine" $
-  info ( ExamineArguments
-         <$> alphabetOpt
-         <*> optional filePathArg
-         <*> examinePerSiteOpt ) $
-  progDesc "Examine sequences. if data is a multi sequence alignment, additionally analyze columns."
+examineArguments :: Parser ExamineArguments
+examineArguments = ExamineArguments
+           <$> alphabetOpt
+           <*> optional filePathArg
+           <*> examinePerSiteOpt
 
 examinePerSiteOpt :: Parser Bool
 examinePerSiteOpt = switch $

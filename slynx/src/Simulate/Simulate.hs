@@ -16,7 +16,7 @@ Creation date: Mon Jan 28 14:12:52 2019.
 -}
 
 module Simulate.Simulate
-  ( simulate )
+  ( simulateCmd )
 where
 
 import           Control.Concurrent
@@ -61,8 +61,6 @@ import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Misc
 import           ELynx.Tools.Options
 
-type Simulation = LoggingT (ReaderT Arguments IO)
-
 -- Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
 simulateMSA :: (Measurable a, Named a)
@@ -100,25 +98,23 @@ summarizeEDMComponents cs = LC.pack
                             $ "Empiricial distribution mixture model with "
                             ++ show (length cs) ++ " components."
 
-reportModel :: P.PhyloModel -> Simulation ()
-reportModel m = do
-  g <- globalArgs <$> lift ask
-  let modelFn = (<> ".model") <$> outFileBaseName g
+reportModel :: Maybe FilePath -> P.PhyloModel -> Simulate ()
+reportModel outFn m = do
+  let modelFn = (<> ".model") <$> outFn
   -- TODO. Provide human readable model file.
   io "model definition (machine readable)" (bsShow m) modelFn
 
-simulate :: Simulation ()
-simulate = do
-  -- TODO: put logHeader and logFooter into main (for all programs).
+simulateCmd :: Maybe FilePath -> Simulate ()
+simulateCmd outFn = do
   h <- liftIO $ logHeader "seq-sim: Simulate sequences."
   $(logInfo) $ T.pack h
-  Arguments g c <- lift ask
+  a <- lift ask
   $(logInfo) "Read tree."
-  let treeFile = argsTreeFile c
+  let treeFile = argsTreeFile a
   tree <- liftIO $ parseFileWith newick treeFile
   $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarize tree
 
-  let edmFile = argsEDMFile c
+  let edmFile = argsEDMFile a
   edmCs <- case edmFile of
     Nothing   -> return Nothing
     Just edmF -> do
@@ -127,15 +123,15 @@ simulate = do
   maybe (return ()) ($(logInfo) . LT.toStrict . LT.decodeUtf8 . summarizeEDMComponents) edmCs
 
   $(logInfo) "Read model string."
-  let ms = argsSubstitutionModelString c
-      mm = argsMixtureModelString c
-      mws = argsMixtureWeights c
+  let ms = argsSubstitutionModelString a
+      mm = argsMixtureModelString a
+      mws = argsMixtureWeights a
       eitherPhyloModel' = getPhyloModel ms mm mws edmCs
   phyloModel' <- case eitherPhyloModel' of
     Left err -> lift $ error err
     Right pm -> return pm
 
-  let maybeGammaParams = argsGammaParams c
+  let maybeGammaParams = argsGammaParams a
   phyloModel <- case maybeGammaParams of
     Nothing         -> do
       $(logInfo) $ LT.toStrict $ LT.decodeUtf8
@@ -145,12 +141,12 @@ simulate = do
       $(logInfo) $ LT.toStrict $ LT.decodeUtf8
         $ LC.unlines $ P.summarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
       return $ expand n alpha phyloModel'
-  reportModel phyloModel
+  reportModel outFn phyloModel
 
   $(logInfo) "Simulate alignment."
-  let alignmentLength = argsLength c
+  let alignmentLength = argsLength a
   $(logInfo) $ T.pack $ "Length: " <> show alignmentLength <> "."
-  let maybeSeed = argsMaybeSeed c
+  let maybeSeed = argsMaybeSeed a
   gen <- case maybeSeed of
     Nothing -> $(logInfo) "Seed: random"
                >> liftIO createSystemRandom
@@ -158,7 +154,7 @@ simulate = do
                >> liftIO (initialize (V.fromList s))
   msa <- liftIO $ simulateMSA phyloModel tree alignmentLength gen
   let output = (sequencesToFasta . toSequenceList) msa
-      outFile = (<> ".fasta") <$> outFileBaseName g
+      outFile = (<> ".fasta") <$> outFn
   io "simulated multi sequence alignment" output outFile
   f <- liftIO logFooter
   $(logInfo) $ T.pack f

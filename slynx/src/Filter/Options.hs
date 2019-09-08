@@ -17,8 +17,8 @@ module Filter.Options
   , FilterColumnsArguments (..)
   , FilterRows
   , FilterColumns
-  , filterRowsCommand
-  , filterColumnsCommand
+  , filterRowsArguments
+  , filterColumnsArguments
   ) where
 
 import           Control.Applicative
@@ -45,14 +45,12 @@ type FilterRows = LoggingT (ReaderT FilterRowsArguments IO)
 
 type FilterColumns = LoggingT (ReaderT FilterColumnsArguments IO)
 
-filterRowsCommand :: Mod CommandFields FilterRowsArguments
-filterRowsCommand = command "filter-rows" $
-  info ( FilterRowsArguments
-         <$> alphabetOpt
-         <*> optional inFileArg
-         <*> filterLongerThanOpt
-         <*> filterShorterThanOpt ) $
-  progDesc "Filter rows (or sequences) found in input files."
+filterRowsArguments :: Parser FilterRowsArguments
+filterRowsArguments = FilterRowsArguments
+              <$> alphabetOpt
+              <*> optional inFileArg
+              <*> filterLongerThanOpt
+              <*> filterShorterThanOpt
 
 filterLongerThanOpt :: Parser (Maybe Int)
 filterLongerThanOpt = optional $ option auto $
@@ -66,13 +64,11 @@ filterShorterThanOpt = optional $ option auto $
   metavar "LENGTH" <>
   help "Only keep sequences shorter than LENGTH"
 
-filterColumnsCommand :: Mod CommandFields FilterColumnsArguments
-filterColumnsCommand = command "filter-columns" $
-  info ( FilterColumnsArguments
-         <$> alphabetOpt
-         <*> optional inFileArg
-         <*> filterStandardOpt ) $
-  progDesc "Filter columns of multi-sequence alignments."
+filterColumnsArguments :: Parser FilterColumnsArguments
+filterColumnsArguments = FilterColumnsArguments
+                 <$> alphabetOpt
+                 <*> optional inFileArg
+                 <*> filterStandardOpt
 
 filterStandardOpt :: Parser (Maybe Double)
 filterStandardOpt = optional $ option auto $

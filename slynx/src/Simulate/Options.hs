@@ -36,11 +36,14 @@ Available options:
 
 
 module Simulate.Options
-  ( CommandArguments (..)
-  , Arguments (..)
-  , parseArguments
+  ( SimulateArguments (..)
+  , Simulate
+  , simulateArguments
+  , simulateFooter
   ) where
 
+import           Control.Monad.Logger
+import           Control.Monad.Trans.Reader
 import           Data.Word
 import           Options.Applicative
 
@@ -48,7 +51,7 @@ import           ELynx.Tools.Options
 
 type GammaRateHeterogeneityParams = (Int, Double)
 
-data CommandArguments = CommandArguments
+data SimulateArguments = SimulateArguments
   { argsTreeFile                :: FilePath
   , argsSubstitutionModelString :: Maybe String
   , argsMixtureModelString      :: Maybe String
@@ -59,8 +62,10 @@ data CommandArguments = CommandArguments
   , argsMaybeSeed               :: Maybe [Word32]
   }
 
-commandArguments :: Parser CommandArguments
-commandArguments = CommandArguments
+type Simulate = LoggingT (ReaderT SimulateArguments IO)
+
+simulateArguments :: Parser SimulateArguments
+simulateArguments = SimulateArguments
   <$> treeFileOpt
   <*> phyloSubstitutionModelOpt
   <*> phyloMixtureModelOpt
@@ -69,15 +74,6 @@ commandArguments = CommandArguments
   <*> maybeGammaParams
   <*> lengthOpt
   <*> seedOpt
-
-data Arguments = Arguments
-  { globalArgs  :: GlobalArguments
-  , commandArgs :: CommandArguments }
-
-arguments :: Parser Arguments
-arguments = Arguments
-  <$> globalArguments
-  <*> commandArguments
 
 treeFileOpt :: Parser FilePath
 treeFileOpt = strOption $
@@ -128,15 +124,8 @@ lengthOpt = option auto
     <> metavar "NUMBER"
     <> help "Set alignment length to NUMBER" )
 
--- | Read the arguments and prints out help if needed.
-parseArguments :: IO Arguments
-parseArguments = parseArgumentsWith desc ftr arguments
-
-desc :: [String]
-desc = [ "Simulate multi sequence alignments." ]
-
-ftr :: [String]
-ftr = sms ++ mms
+simulateFooter :: String
+simulateFooter = unlines $ sms ++ mms
   where
     sms =
       [ "Substitution models:"

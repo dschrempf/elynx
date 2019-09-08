@@ -59,9 +59,7 @@ main :: IO ()
 main = do
   a <- parseArguments
   let f = outFileBaseName $ globalArgs a
-      l = case f of
-        Nothing -> runELynxStderrLoggingT simulate
-        Just fn -> runELynxFileLoggingT fn simulate
+      l = runELynxLoggingT f simulate
   runReaderT l a
 
 simulate :: Simulation ()

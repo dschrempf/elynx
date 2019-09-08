@@ -18,8 +18,7 @@ Creation date: Fri Sep  6 14:43:19 2019.
 
 module ELynx.Tools.Logger
   ( logNewSection
-  , runELynxFileLoggingT
-  , runELynxStderrLoggingT
+  , runELynxLoggingT
   ) where
 
 import           Control.Exception.Lifted
@@ -37,6 +36,11 @@ logNewSection :: MonadLogger m => Text -> m ()
 logNewSection s = do
   $(logInfo) ""
   $(logInfo) $ "-- " <> s
+
+runELynxLoggingT :: (MonadBaseControl IO m, MonadIO m) => Maybe FilePath -> LoggingT m a -> m a
+runELynxLoggingT f = case f of
+  Nothing -> runELynxStderrLoggingT
+  Just fn -> runELynxFileLoggingT fn
 
 runELynxFileLoggingT :: MonadBaseControl IO m => FilePath -> LoggingT m a -> m a
 runELynxFileLoggingT fp logger = bracket

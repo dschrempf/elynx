@@ -15,7 +15,7 @@ Creation date: Sun Oct  7 17:29:45 2018.
 module Translate.Options
   ( TranslateArguments (..)
   , Translate
-  , translateCommand
+  , translateArguments
   ) where
 
 import           Control.Applicative
@@ -38,14 +38,12 @@ data TranslateArguments = TranslateArguments
 
 type Translate = LoggingT (ReaderT TranslateArguments IO)
 
-translateCommand :: Mod CommandFields TranslateArguments
-translateCommand = command "translate" $
-  info ( TranslateArguments <$>
-         alphabetOpt <*>
-         optional inFileArg <*>
-         readingFrameOpt <*>
-         universalCodeOpt ) $
-  progDesc "Translate from DNA to Protein or DNAX to ProteinX."
+translateArguments :: Parser TranslateArguments
+translateArguments = TranslateArguments <$>
+                     alphabetOpt <*>
+                     optional inFileArg <*>
+                     readingFrameOpt <*>
+                     universalCodeOpt
 
 readingFrameOpt :: Parser Int
 readingFrameOpt = option auto $

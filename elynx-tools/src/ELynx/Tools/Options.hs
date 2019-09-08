@@ -77,8 +77,9 @@ logHeader desc = do
   t  <- time
   p  <- getProgName
   as <- getArgs
+  let l = length desc
   return $ intercalate "\n"
-    [ "----------------------------------------------------------------------"
+    [ replicate (l+3) '-'
     , "-- " <> desc
     , hdr
     , "Time: " ++ t

@@ -73,4 +73,5 @@ executables:
     source-dirs:         app
     dependencies:
       - elynx-tools
+      - elynx-seq
       - slynx

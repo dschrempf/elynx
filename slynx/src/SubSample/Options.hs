@@ -15,7 +15,7 @@ Creation date: Sun Oct  7 17:29:45 2018.
 module SubSample.Options
   ( SubSampleArguments (..)
   , SubSample
-  , subSampleCommand
+  , subSampleArguments
   ) where
 
 import           Control.Applicative
@@ -38,15 +38,13 @@ data SubSampleArguments = SubSampleArguments
 
 type SubSample = LoggingT (ReaderT SubSampleArguments IO)
 
-subSampleCommand :: Mod CommandFields SubSampleArguments
-subSampleCommand = command "subsample" $
-  info ( SubSampleArguments
-         <$> alphabetOpt
-         <*> optional filePathArg
-         <*> subSampleNSitesOpt
-         <*> subSampleNAlignmentsOpt
-         <*> seedOpt ) $
-  progDesc "Sub-sample columns from multi sequence alignments. Create a given number of multi sequence alignments, each of which containing a given number of random sites drawn from the original multi sequence alignment."
+subSampleArguments :: Parser SubSampleArguments
+subSampleArguments = SubSampleArguments
+                     <$> alphabetOpt
+                     <*> optional filePathArg
+                     <*> subSampleNSitesOpt
+                     <*> subSampleNAlignmentsOpt
+                     <*> seedOpt
 
 subSampleNSitesOpt :: Parser Int
 subSampleNSitesOpt = option auto $

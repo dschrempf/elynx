@@ -15,7 +15,7 @@ Creation date: Sun Oct  7 17:29:45 2018.
 module Concatenate.Options
   ( ConcatenateArguments (..)
   , Concatenate
-  , concatenateCommand
+  , concatenateArguments
   ) where
 
 import           Control.Applicative
@@ -33,12 +33,10 @@ data ConcatenateArguments = ConcatenateArguments
 
 type Concatenate = LoggingT (ReaderT ConcatenateArguments IO)
 
-concatenateCommand :: Mod CommandFields ConcatenateArguments
-concatenateCommand = command "concatenate" $
-  info ( ConcatenateArguments <$>
-         alphabetOpt <*>
-         some inFileArg ) $
-  progDesc "Concatenate sequences found in input files."
+concatenateArguments :: Parser ConcatenateArguments
+concatenateArguments = ConcatenateArguments
+               <$> alphabetOpt
+               <*> some inFileArg
 
 inFileArg :: Parser FilePath
 inFileArg = strArgument $

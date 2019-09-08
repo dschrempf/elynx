@@ -16,30 +16,29 @@ module Main where
 
 import           Control.Monad.Trans.Reader
 
-import           Simulate.Options
+import           Options
+
+import           Concatenate.Concatenate
+import           Examine.Examine
+import           Filter.Filter
 import           Simulate.Simulate
+import           SubSample.SubSample
+import           Translate.Translate
 
-import           ELynx.Tools.Options
 import           ELynx.Tools.Logger
+import           ELynx.Tools.Options
 
+-- TODO: put logHeader and logFooter into main (for all programs).
 main :: IO ()
 main = do
-  a <- parseArguments
-  let f = outFileBaseName $ globalArgs a
-      l = case f of
-        Nothing -> runELynxStderrLoggingT simulate
-        Just fn -> runELynxFileLoggingT (fn ++ ".log") simulate
-  runReaderT l a
-
--- work :: Seq ()
--- work = do
---   c <- commandArgs <$> lift ask
---   h <- liftIO $ logHeader "seq-ana: Analyze sequences."
---   $(logInfo) $ T.pack h
---   case c of
---     Examine ps fp        -> examineCmd ps fp
---     Concatenate fps      -> concatenateCmd fps
---     FilterRows lo sh fp  -> filterRowsCmd lo sh fp
---     FilterColumns st fp  -> filterColumnsCmd st fp
---     SubSample ns na s fp -> subSampleCmd ns na s fp
---     Translate fr cd fp   -> translateCmd fr cd fp
+  Arguments g c <- parseArguments
+  let fn = outFileBaseName g
+  let lf = (++ ".log") <$> fn
+  case c of
+    Concatenate a -> runReaderT (runELynxLoggingT lf $ concatenateCmd fn) a
+    Examine a -> runReaderT (runELynxLoggingT lf $ examineCmd fn) a
+    FilterRows a -> runReaderT (runELynxLoggingT lf $ filterRowsCmd fn) a
+    FilterColumns a -> runReaderT (runELynxLoggingT lf $ filterColumnsCmd fn) a
+    Simulate a -> runReaderT (runELynxLoggingT lf $ simulateCmd fn) a
+    SubSample a -> runReaderT (runELynxLoggingT lf $ subSampleCmd fn) a
+    Translate a -> runReaderT (runELynxLoggingT lf $ translateCmd fn) a
