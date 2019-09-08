@@ -53,36 +53,24 @@ dependencies:
   # - word8
   # - zlib
 
-# Defaults for executables.
-_defaults: &defaults
-  ghc-options:
-    # Deactivate eventlog for production.
-    - -eventlog
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+library:
+  source-dirs: src
+  dependencies:
+    - elynx-seq
+    - elynx-tools
+    - elynx-tree
 
 executables:
-  tree-ana:
-    <<: *defaults
+  tlynx:
     main:                Main.hs
-    source-dirs:         app/TreeAna
+    source-dirs:         app
+    ghc-options:
+      # Deactivate eventlog for production.
+      - -eventlog
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
       - elynx-tools
       - elynx-tree
-
-  tree-dist:
-    <<: *defaults
-    main:                Main.hs
-    source-dirs:         app/TreeDist
-    dependencies:
-      - elynx-tools
-      - elynx-tree
-
-  tree-sim:
-    <<: *defaults
-    main:                Main.hs
-    source-dirs:         app/TreeSim
-    dependencies:
-      - elynx-tools
-      - elynx-tree
+      - tlynx

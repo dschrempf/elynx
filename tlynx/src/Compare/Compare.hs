@@ -17,6 +17,10 @@ Creation date: Wed May 29 18:09:39 2019.
 
 -}
 
+module Compare.Compare
+  (
+  )
+where
 
 import           Control.Monad
 import           Control.Monad.IO.Class
@@ -31,7 +35,7 @@ import qualified Data.Vector.Unboxed               as V
 import           Statistics.Sample
 import           System.IO
 
-import           OptionsTreeDist
+import           Compare.Options
 
 import           ELynx.Data.Tree.BranchSupportTree
 import           ELynx.Data.Tree.Distance

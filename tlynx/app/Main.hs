@@ -1,6 +1,6 @@
 {- |
 Module      :  Main
-Description :  Work with molecular sequence data
+Description :  Work with phylogenetic trees
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -18,12 +18,9 @@ import           Control.Monad.Trans.Reader
 
 import           Options
 
-import           Concatenate.Concatenate
+import           Compare.Compare
 import           Examine.Examine
-import           Filter.Filter
 import           Simulate.Simulate
-import           SubSample.SubSample
-import           Translate.Translate
 
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Options

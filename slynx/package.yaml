@@ -57,20 +57,16 @@ library:
     - elynx-tools
     - elynx-tree
 
-# Defaults for executables.
-_defaults: &defaults
-  ghc-options:
-    # Deactivate eventlog for production.
-    - -eventlog
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-
 executables:
   slynx:
-    <<: *defaults
     main:                Main.hs
     source-dirs:         app
+    ghc-options:
+      # Deactivate eventlog for production.
+      - -eventlog
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
       - elynx-tools
       - elynx-seq

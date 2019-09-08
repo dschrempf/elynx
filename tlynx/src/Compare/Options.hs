@@ -1,5 +1,5 @@
 {- |
-Module      :  OptionsTreeDist
+Module      :  Compare.Options
 Description :  Options of tree-dist
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -12,8 +12,8 @@ Creation date: Thu Aug 29 13:02:22 2019.
 
 -}
 
-module OptionsTreeDist
-  ( CommandArguments (..)
+module Compare.Options
+  ( CompareArguments (..)
   , Arguments (..)
   , Distance (..)
   , parseArguments
@@ -30,29 +30,17 @@ import           ELynx.Tools.Options
 data Distance = Symmetric | IncompatibleSplit Double
   deriving (Show, Read)
 
-data CommandArguments = CommandArguments
+data CompareArguments = CommandArguments
   { argsDistance          :: Distance
   , argsSummaryStatistics :: Bool
   , argsInFiles           :: [FilePath]
   }
 
-commandArguments :: Parser CommandArguments
+commandArguments :: Parser CompareArguments
 commandArguments = CommandArguments <$>
   distanceOpt
   <*> summaryStatisticsSwitch
   <*> many inFilesArg
-
-data Arguments = Arguments
-  { globalArgs  :: GlobalArguments
-  , commandArgs :: CommandArguments }
-
-arguments :: Parser Arguments
-arguments = Arguments
-  <$> globalArguments
-  <*> commandArguments
-
--- TODO: Make the input file part of the CommandArguments for OTHER executables.
--- This would also be in line with the input file having different formats.
 
 inFilesArg :: Parser FilePath
 inFilesArg = strArgument $
@@ -90,6 +78,7 @@ summaryStatisticsSwitch = switch $
   short 's' <>
   help "Report summary statistics only"
 
+-- TODO: Move this to TLynx.Options; also for the Examine.
 desc :: [String]
 desc = [ "Compute distances between phylogenetic trees." ]
 
