@@ -114,8 +114,8 @@ simulate = do
   $(logInfo) $ T.pack h
   Arguments g c <- lift ask
   $(logInfo) "Read tree."
-  let treeFile = inFile g
-  tree <- liftIO $ parseFileOrIOWith newick treeFile
+  let treeFile = argsTreeFile c
+  tree <- liftIO $ parseFileWith newick treeFile
   $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarize tree
 
   let edmFile = argsEDMFile c

@@ -24,18 +24,17 @@ import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Reader
 import qualified Data.Text                                  as T
 import qualified Data.Text.Lazy                             as LT
 import qualified Data.Text.Lazy.Builder                     as LT
 import qualified Data.Text.Lazy.Builder.Int                 as LT
 import qualified Data.Vector                                as V
-import           Data.Word
 import           System.Random.MWC
 
 import           SubSample.Options
 import           Tools
 
-import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.Sequence.MultiSequenceAlignment
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
@@ -51,16 +50,10 @@ getOutFilePaths file n suffix = [ file ++ "." ++ digitStr i ++ "." ++ suffix
   where nDigits    = ceiling $ logBase (10 :: Double) (fromIntegral n)
         digitStr i = T.unpack $ T.justifyRight nDigits '0' (LT.toStrict $ LT.toLazyText $ LT.decimal i)
 
--- TODO: Actually use the reader. Think about removing alphabet. Everything but
--- infile and outfile should be in the reader.
-subSampleCmd :: Alphabet
-             -> Int
-             -> Int
-             -> Maybe [Word32]  -- ^ Seed
-             -> Maybe FilePath  -- ^ Input file name
-             -> Maybe FilePath  -- ^ Output file base name
-             -> Seq ()
-subSampleCmd al nSites nAlignments seed inFile outFileBaseName = do
+subSampleCmd :: Maybe FilePath  -- ^ Output file base name
+             -> SubSample ()
+subSampleCmd outFileBaseName = do
+  SubSampleArguments al inFile nSites nAlignments seed <- lift ask
   $(logInfo) "Command: Sub sample from a multi sequence alignment."
   $(logInfo) $ T.pack $ "  Sample " <> show nSites <> " sites."
   $(logInfo) $ T.pack $ "  Sample " <> show nAlignments <> " multi sequence alignments."

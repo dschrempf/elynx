@@ -129,13 +129,11 @@ data Verbosity = Quiet | Warning | Info | Debug
 
 data GlobalArguments = GlobalArguments
   { verbosity       :: Verbosity
-  , inFile          :: Maybe FilePath
   , outFileBaseName :: Maybe FilePath }
 
 globalArguments :: Parser GlobalArguments
 globalArguments = GlobalArguments
   <$> verbosityOpt
-  <*> optional inFileOpt
   <*> optional outFileBaseNameOpt
 
 -- | Boolean option; be verbose; default NO.
@@ -149,14 +147,6 @@ verbosityOpt = option auto
     <> help ("Be verbose; one of: " ++ unwords (map show vs) ))
   where
     vs = allValues :: [Verbosity]
-
--- TODO: Remove this option! Move into sub commands.
-inFileOpt :: Parser FilePath
-inFileOpt = strOption
-  ( long "in-file"
-    <> short 'i'
-    <> metavar "FILENAME"
-    <> help "Input file name" )
 
 -- | Output filename.
 outFileBaseNameOpt :: Parser FilePath

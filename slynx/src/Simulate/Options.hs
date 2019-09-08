@@ -49,7 +49,8 @@ import           ELynx.Tools.Options
 type GammaRateHeterogeneityParams = (Int, Double)
 
 data CommandArguments = CommandArguments
-  { argsSubstitutionModelString :: Maybe String
+  { argsTreeFile                :: FilePath
+  , argsSubstitutionModelString :: Maybe String
   , argsMixtureModelString      :: Maybe String
   , argsEDMFile                 :: Maybe FilePath
   , argsMixtureWeights          :: Maybe [Double]
@@ -60,7 +61,8 @@ data CommandArguments = CommandArguments
 
 commandArguments :: Parser CommandArguments
 commandArguments = CommandArguments
-  <$> phyloSubstitutionModelOpt
+  <$> treeFileOpt
+  <*> phyloSubstitutionModelOpt
   <*> phyloMixtureModelOpt
   <*> maybeEDMFileOpt
   <*> maybeMixtureWeights
@@ -68,8 +70,6 @@ commandArguments = CommandArguments
   <*> lengthOpt
   <*> seedOpt
 
--- TODO: Verbosity, inFile, and outFileBaseName are global arguments, and should
--- be handled in this way.
 data Arguments = Arguments
   { globalArgs  :: GlobalArguments
   , commandArgs :: CommandArguments }
@@ -79,12 +79,19 @@ arguments = Arguments
   <$> globalArguments
   <*> commandArguments
 
+treeFileOpt :: Parser FilePath
+treeFileOpt = strOption $
+  long "tree-file"
+  <> short 't'
+  <> metavar "Name"
+  <> help "Read trees from file NAME"
+
 phyloSubstitutionModelOpt :: Parser (Maybe String)
-phyloSubstitutionModelOpt = optional $ strOption
-  ( long "substitution-model"
-    <> short 's'
-    <> metavar "MODEL"
-    <> help "Set the phylogenetic substitution model; available models are shown below (mutually exclusive with -m option)" )
+phyloSubstitutionModelOpt = optional $ strOption $
+  long "substitution-model"
+  <> short 's'
+  <> metavar "MODEL"
+  <> help "Set the phylogenetic substitution model; available models are shown below (mutually exclusive with -m option)"
 
 phyloMixtureModelOpt :: Parser (Maybe String)
 phyloMixtureModelOpt = optional $ strOption

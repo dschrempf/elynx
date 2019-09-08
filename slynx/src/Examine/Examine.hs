@@ -2,6 +2,7 @@
 {-# LANGUAGE TemplateHaskell   #-}
 
 {- |
+
 Module      :  Analyze.Analyze
 Description :  Parse sequence file formats and analyze them
 Copyright   :  (c) Dominik Schrempf 2018
@@ -15,55 +16,23 @@ Creation date: Fri Oct  5 08:41:05 2018.
 
 -}
 
-module Analyze.Analyze where
+module Examine.Examine
+  ( examineCmd
+  )
+  where
 
-import           Control.Monad
-import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8                 as L
-import           Data.Maybe                                 (fromMaybe)
-import qualified Data.Text                                  as T
-import qualified Data.Vector                                as V
-import           Data.Word
-import           System.Random.MWC
 import           Text.Printf
 
-import           Analyze.Options
+import           Examine.Options
+import           Tools
 
-import           ELynx.Data.Character.Codon
 import           ELynx.Data.Sequence.MultiSequenceAlignment
 import           ELynx.Data.Sequence.Sequence
-import           ELynx.Data.Sequence.Translate
-import           ELynx.Export.Sequence.Fasta
-import           ELynx.Import.Sequence.Fasta
-import           ELynx.Tools.ByteString
 import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Logger
-import           ELynx.Tools.Misc
-import           ELynx.Tools.Options
-
--- | Get output file name with provided suffix.
-getOutFilePath :: String -> Seq (Maybe FilePath)
-getOutFilePath suffix = do
-  f <- outFileBaseName . globalArgs <$> lift ask
-  return $ (++ "." ++ suffix) <$> f
-
--- | Get a given number of output file names with provided suffix.
---
--- > getOutFilePaths 11 "fasta"
---
--- Will result in @BasePath.00.fasta@ up to @BasePath.10.fasta@.
-getOutFilePaths :: Int -> String -> Seq [Maybe FilePath]
-getOutFilePaths n suffix = do
-  f <- outFileBaseName . globalArgs <$> lift ask
-  case f of
-    Nothing -> return $ replicate n Nothing
-    Just fn -> return [ Just $ fn ++ "." ++ digitStr i ++ "." ++ suffix
-                      | i <- [0 .. n-1] ]
-  where nDigits    = ceiling $ logBase (10 :: Double) (fromIntegral n)
-        digitStr i = L.unpack $ alignRightWith '0' nDigits (L.pack $ show i)
 
 examineMSA :: Bool -> MultiSequenceAlignment -> L.ByteString
 examineMSA perSiteFlag msa =
@@ -126,109 +95,11 @@ examine perSiteFlag ss = summarizeSequenceList ss <>
     Left _    -> L.empty
     Right msa -> L.pack "\n" <> examineMSA perSiteFlag msa
 
-examineCmd :: Bool -> Maybe FilePath -> Seq ()
-examineCmd perSiteFlag fp = do
+examineCmd :: Maybe FilePath -> Examine ()
+examineCmd outFileBaseName = do
   $(logInfo) "Command: Examine sequences."
-  ss <- readSeqs fp
+  ExamineArguments al inFile perSiteFlag <- lift ask
+  ss <- readSeqs al inFile
   let result = examine perSiteFlag ss
-  outFilePath <- getOutFilePath "out"
+  let outFilePath = (++ ".out") <$> outFileBaseName
   io "result of examination" result outFilePath
-
-concatenateCmd :: [FilePath] -> Seq ()
-concatenateCmd fps = do
-  $(logInfo) "Command: Concatenate sequences."
-  sss <- mapM (readSeqs . Just) fps
-  let result = sequencesToFasta $ concatenateSeqs sss
-  outFilePath <- getOutFilePath "fasta"
-  io "concatenated multi sequence alignment " result outFilePath
-
-filterRows :: Maybe Int -> Maybe Int -> [Sequence] -> L.ByteString
-filterRows ml ms ss = sequencesToFasta $ compose filters ss
-  where filters = map (fromMaybe id) [filterLongerThan <$> ml, filterShorterThan <$> ms]
-
-filterRowsCmd :: Maybe Int -> Maybe Int -> Maybe FilePath -> Seq ()
-filterRowsCmd long short fp = do
-  $(logInfo) "Command: Filter sequences of a list of sequences."
-  maybe (return ())
-    (\val -> $(logInfo) $ T.pack $ "  Keep sequences longer than " <> show val <> ".") long
-  maybe (return ())
-    (\val -> $(logInfo) $ T.pack $ "  Keep sequences shorter than " <> show val <> ".") short
-  ss <- readSeqs fp
-  let result = filterRows long short ss
-  outFilePath <- getOutFilePath "fasta"
-  io "filtered sequences" result outFilePath
-
-filterColumns :: Maybe Double -> [Sequence] -> L.ByteString
-filterColumns ms ss = sequencesToFasta . toSequenceList $ compose filters msa
-  where msa = either error id (fromSequenceList ss)
-        filters = map (fromMaybe id) [ filterColumnsStd <$> ms ]
-
-filterColumnsCmd :: Maybe Double -> Maybe FilePath -> Seq ()
-filterColumnsCmd standard fp = do
-  $(logInfo) "Command: Filter columns of a multi sequence alignment."
-  $(logInfo) "  Keep columns only having standard characters."
-  ss <- readSeqs fp
-  let result = filterColumns standard ss
-  outFilePath <- getOutFilePath "fasta"
-  io "filtered sequences" result outFilePath
-
-subSampleCmd :: Int -> Int -> Maybe [Word32] -> Maybe FilePath -> Seq ()
-subSampleCmd nSites nAlignments seed fp = do
-  $(logInfo) "Command: Sub sample from a multi sequence alignment."
-  $(logInfo) $ T.pack $ "  Sample " <> show nSites <> " sites."
-  $(logInfo) $ T.pack $ "  Sample " <> show nAlignments <> " multi sequence alignments."
-  ss <- readSeqs fp
-  g <- liftIO $ maybe createSystemRandom (initialize . V.fromList) seed
-  let msa = either error id (fromSequenceList ss)
-  samples <- lift $ replicateM nAlignments $ randomSubSample nSites msa g
-  let results = map (sequencesToFasta . toSequenceList) samples
-  outFilePaths <- getOutFilePaths nAlignments "fasta"
-  zipWithM_ (io "sub sampled multi sequence alignments") results outFilePaths
-
-translateSeqs :: Int -> UniversalCode -> [Sequence] -> [Sequence]
-translateSeqs rf uc = map (translateSeq uc rf)
-
-translateCmd :: Int -> UniversalCode -> Maybe FilePath -> Seq ()
-translateCmd rf uc fp = do
-  $(logInfo) "Command: Translate sequences to amino acids."
-  $(logInfo) $ T.pack $ "  Universal code: " <> show uc <> "."
-  $(logInfo) $ T.pack $ "  Reading frame: " <> show rf <> "."
-  $(logInfo) ""
-  ss <- readSeqs fp
-  let result = sequencesToFasta $ translateSeqs rf uc ss
-  outFilePath <- getOutFilePath "fasta"
-  io "translated sequences" result outFilePath
-
-readSeqs :: Maybe FilePath -> Seq [Sequence]
-readSeqs mfp = do
-  a <- alphabetArg <$> lift ask
-  case mfp of
-    Nothing -> $(logInfo) $ T.pack
-               $ "Read sequences from standard input; alphabet "
-               <> show a <> "."
-    Just fp -> $(logInfo) $ T.pack
-               $ "Read sequences from file "
-               <> fp <> "; alphabet" <> show a <> "."
-  liftIO $ parseFileOrIOWith (fasta a) mfp
-
-work :: Seq ()
-work = do
-  c <- commandArgs <$> lift ask
-  h <- liftIO $ logHeader "seq-ana: Analyze sequences."
-  $(logInfo) $ T.pack h
-  case c of
-    Examine ps fp        -> examineCmd ps fp
-    Concatenate fps      -> concatenateCmd fps
-    FilterRows lo sh fp  -> filterRowsCmd lo sh fp
-    FilterColumns st fp  -> filterColumnsCmd st fp
-    SubSample ns na s fp -> subSampleCmd ns na s fp
-    Translate fr cd fp   -> translateCmd fr cd fp
-
-main :: IO ()
-main = do
-  a <- parseArguments
-  let f = outFileBaseName $ globalArgs a
-      l = case f of
-        Nothing -> runELynxStderrLoggingT work
-        Just fn -> runELynxFileLoggingT fn work
-  runReaderT l a

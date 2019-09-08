@@ -31,7 +31,7 @@ import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Options
 
-type Ana = LoggingT (ReaderT GlobalArguments IO)
+type Ana = LoggingT (ReaderT Arguments IO)
 
 readTrees :: Maybe FilePath -> Ana [Tree PhyloByteStringLabel]
 readTrees mfp = do
@@ -44,8 +44,8 @@ work :: Ana ()
 work = do
   h <- liftIO $ logHeader "tree-ana: Analyze trees."
   $(logInfo) $ T.pack h
-  a <- lift ask
-  trs <- readTrees (inFile a)
+  Arguments inFn a <- lift ask
+  trs <- readTrees inFn
   let lsStrs = map summarize trs
   let outFilePath = (++ ".out") <$> outFileBaseName a
   logNewSection "Results."
@@ -57,7 +57,7 @@ work = do
 main :: IO ()
 main = do
   a <- parseArguments
-  let f = outFileBaseName a
+  let f = outFileBaseName $ globalArgs a
       l = case f of
         Nothing -> runELynxStderrLoggingT work
         Just fn -> runELynxFileLoggingT fn work

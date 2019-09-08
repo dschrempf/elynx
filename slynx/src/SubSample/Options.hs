@@ -14,8 +14,8 @@ Creation date: Sun Oct  7 17:29:45 2018.
 
 module SubSample.Options
   ( SubSampleArguments (..)
+  , SubSample
   , subSampleCommand
-  , Seq
   ) where
 
 import           Control.Applicative
@@ -24,23 +24,28 @@ import           Control.Monad.Trans.Reader
 import           Data.Word
 import           Options.Applicative
 
+import           Tools
+
+import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Tools.Options
 
 data SubSampleArguments = SubSampleArguments
-    { ssNSites      :: Int
+    { ssAlphabet    :: Alphabet
+    , ssInFile        :: Maybe FilePath
+    , ssNSites      :: Int
     , ssNAlignments :: Int
-    , ssMbSeed      :: Maybe [Word32]
-    , ssMbFp        :: Maybe FilePath }
+    , ssMbSeed      :: Maybe [Word32] }
 
-type Seq = LoggingT (ReaderT SubSampleArguments IO)
+type SubSample = LoggingT (ReaderT SubSampleArguments IO)
 
 subSampleCommand :: Mod CommandFields SubSampleArguments
 subSampleCommand = command "subsample" $
-  info ( SubSampleArguments <$>
-         subSampleNSitesOpt <*>
-         subSampleNAlignmentsOpt <*>
-         seedOpt <*>
-         optional filePathArg ) $
+  info ( SubSampleArguments
+         <$> alphabetOpt
+         <*> optional filePathArg
+         <*> subSampleNSitesOpt
+         <*> subSampleNAlignmentsOpt
+         <*> seedOpt ) $
   progDesc "Sub-sample columns from multi sequence alignments. Create a given number of multi sequence alignments, each of which containing a given number of random sites drawn from the original multi sequence alignment."
 
 subSampleNSitesOpt :: Parser Int

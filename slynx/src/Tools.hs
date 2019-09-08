@@ -16,12 +16,16 @@ Creation date: Sat Sep  7 06:24:22 2019.
 -}
 
 module Tools
-  ( readSeqs
+  ( -- * Tools
+    readSeqs
+    -- * Options
+  , alphabetOpt
   ) where
 
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import qualified Data.Text                    as T
+import           Options.Applicative
 
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.Sequence.Sequence
@@ -38,3 +42,10 @@ readSeqs a mfp = do
                $ "Read sequences from file "
                <> fp <> "; alphabet" <> show a <> "."
   liftIO $ parseFileOrIOWith (fasta a) mfp
+
+alphabetOpt :: Parser Alphabet
+alphabetOpt = option auto $
+  long "alphabet" <>
+  short 'a' <>
+  metavar "NAME" <>
+  help "Specify alphabet type NAME"
