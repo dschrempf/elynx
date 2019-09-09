@@ -103,7 +103,7 @@ evoModSuiteFooter :: [Doc]
 evoModSuiteFooter =
   [ empty
   , bold $ text "The ELynx Suite."
-  , fillParagraph "A Haskell library and a tool set for computational biology. The goal of the ELynx Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without exact specification of all options, and without assuming anything about the data (e.g., the type of code). The command line with all arguments is consistently, and automatically logged. The work overhead in the beginning usually pays off in the end."
+  , fillParagraph "A Haskell library and a tool set for computational biology. The goal of the ELynx Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated. Exact specification of all options is necessary, and nothing is assumed about the data (e.g., the type of code). The command line with all arguments is consistently, and automatically logged. The work overhead in the beginning usually pays off in the end."
   , fill 9 (bold $ text "slynx") <+> text "Analyze, modify, and simulate evolutionary sequences."
   , fill 9 (bold $ text "tlynx") <+> text "Analyze, modify, and simulate phylogenetic trees." ]
 

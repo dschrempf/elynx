@@ -46,4 +46,7 @@ echo "$version_new" > "${project_root}/version"
 fd '.*package.yaml' "${project_root}" -x \
    sed -i -r '/^version:\s+/s/[0-9]+\.[0-9]+\.[0-9]+/'"${version_new}"'/'
 
+fd 'README.org' "${project_root}" -x \
+   sed -i -r '/^Version:\s+/s/[0-9]+\.[0-9]+\.[0-9]+/'"${version_new}"'/'
+
 echo "Done."

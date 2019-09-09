@@ -1,15 +1,1 @@
-* Handle evolutionary sequences
-** TODO Analysis
-Analyze sequence with =slynx analyze=.
-
-#+BEGIN_SRC sh :exports both :results output verbatim
-slynx analyze --help
-#+end_src
-
-** TODO Simulation
-Simulate sequences with =slynx simulate=.
-
-#+BEGIN_SRC sh :exports both :results output verbatim
-slynx simulate --help
-#+END_SRC
-
+/home/dominik/Evolutionary-Biology/Code/elynx/README.org
