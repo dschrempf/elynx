@@ -18,24 +18,36 @@ Creation date: Fri Sep  6 14:43:19 2019.
 
 module ELynx.Tools.Logger
   ( logNewSection
-  , runELynxLoggingT
+  , eLynxWrapper
   ) where
 
 import           Control.Exception.Lifted
 import           Control.Monad.Base
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
-import           Data.Text
 import           Control.Monad.Trans.Control
 import qualified Data.ByteString.Char8       as B
+import           Data.Text
 -- import qualified Data.Text                   as T
 import           System.IO
 import           System.Log.FastLogger
+
+import           ELynx.Tools.Options
 
 logNewSection :: MonadLogger m => Text -> m ()
 logNewSection s = do
   $(logInfo) ""
   $(logInfo) $ "-- " <> s
+
+eLynxWrapper :: (MonadBaseControl IO m, MonadIO m)
+             => Maybe FilePath -> String -> LoggingT m () -> m ()
+eLynxWrapper logFile headerMsg worker = runELynxLoggingT logFile $
+  do
+    h <- liftIO $ logHeader headerMsg
+    $(logInfo) $ pack h
+    worker
+    f <- liftIO logFooter
+    $(logInfo) $ pack f
 
 runELynxLoggingT :: (MonadBaseControl IO m, MonadIO m) => Maybe FilePath -> LoggingT m a -> m a
 runELynxLoggingT f = case f of

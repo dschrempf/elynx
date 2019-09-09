@@ -34,7 +34,6 @@ import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
-import           ELynx.Tools.Options
 
 readTrees :: Maybe FilePath -> Examine [Tree PhyloByteStringLabel]
 readTrees mfp = do
@@ -45,13 +44,9 @@ readTrees mfp = do
 
 examine :: Maybe FilePath -> Examine ()
 examine outFn = do
-  h <- liftIO $ logHeader "tree-ana: Analyze trees."
-  $(logInfo) $ T.pack h
   ExamineArguments inFn <- lift ask
   trs <- readTrees inFn
   let lsStrs = map summarize trs
   let outFilePath = (++ ".out") <$> outFn
   logNewSection "Results."
   io "results of tree analysis" (L.intercalate (L.pack "\n") lsStrs) outFilePath
-  f <- liftIO logFooter
-  $(logInfo) $ T.pack f

@@ -57,12 +57,9 @@ import           ELynx.Simulate.PointProcess          (simulateNReconstructedTre
 import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
-import           ELynx.Tools.Options
 
 simulate :: Maybe FilePath -> Simulate ()
 simulate outFile = do
-  h <- liftIO $ logHeader "tree-sim: Simulate trees."
-  $(logInfo) $ T.pack h
   a <- lift ask
   when (isNothing (argsHeight a) && argsConditionMRCA a) $
     error "Cannot condition on MRCA (-M) when height is not given (-H)."
@@ -81,8 +78,6 @@ simulate outFile = do
   let outFile' = (++ ".tree") <$> outFile
   let res = L.unlines ls
   io "simulated trees" res outFile'
-  f <- liftIO logFooter
-  $(logInfo) $ T.pack f
 
 simulateNTreesConcurrently :: Int -> Simulate [Tree PhyloIntLabel]
 simulateNTreesConcurrently c = do

@@ -45,7 +45,6 @@ import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.ByteString            (alignLeft, alignRight)
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
-import           ELynx.Tools.Options
 
 header :: Int -> L.ByteString
 header n = alignLeft (n+2) "Tree 1"
@@ -60,8 +59,6 @@ showTriplet n args (i, j, d) = i' <> j' <> d'
 
 compareTrees :: Maybe FilePath -> Compare ()
 compareTrees outFileBN = do
-  h <- liftIO $ logHeader "tree-dist: Calculate distances between trees."
-  $(logInfo) $ T.pack h
   a <- lift ask
   -- Determine output handle (stdout or file).
   let outFile = (++ ".out") <$> outFileBN
@@ -123,5 +120,3 @@ compareTrees outFileBN = do
       lift $ L.hPutStr outH $ L.unlines (map (showTriplet n names) dsTriplets)
     )
   liftIO $ hClose outH
-  f <- liftIO logFooter
-  $(logInfo) $ T.pack f

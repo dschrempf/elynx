@@ -16,6 +16,9 @@ module Options
   ( Arguments (..)
   , CommandArguments (..)
   , parseArguments
+  , compareHeader
+  , examineHeader
+  , simulateHeader
   ) where
 
 import           Options.Applicative
@@ -32,23 +35,28 @@ data CommandArguments =
   | Examine ExamineArguments
   | Simulate SimulateArguments
 
+compareHeader, examineHeader, simulateHeader :: String
+compareHeader  =  "Compute distances between phylogenetic trees."
+examineHeader  =  "Compute summary statistics of phylogenetic trees."
+simulateHeader =  "Simulate phylogenetic trees using birth and death processes."
+
 compareCommand :: Mod CommandFields CommandArguments
 compareCommand = command "compare" $
                      info (Compare <$> compareArguments)
                      ( fullDesc
-                       <> header "Compute distances between phylogenetic trees."
+                       <> header compareHeader
                        <> footerDoc (Just $ pretty compareFooter) )
 
 examineCommand :: Mod CommandFields CommandArguments
 examineCommand = command "examine" $
                      info (Examine <$> examineArguments)
-                     $ header "Compute summary statistics of phylogenetic trees."
+                     $ header examineHeader
 
 simulateCommand :: Mod CommandFields CommandArguments
 simulateCommand = command "simulate" $
                    info (Simulate <$> simulateArguments)
                      ( fullDesc
-                       <> header "Simulate phylogenetic trees using birth and death processes."
+                       <> header simulateHeader
                        <> progDesc simulateDesc
                        <> footerDoc (Just $ pretty simulateFooter) )
 

@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 {- |
 Module      :  Main
 Description :  Work with phylogenetic trees
@@ -25,14 +27,12 @@ import           Simulate.Simulate
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Options
 
--- TODO: put logHeader and logFooter into main (for all programs).
--- Put it into Tools.Logger (runELynxLoggingT)!
 main :: IO ()
 main = do
   Arguments g c <- parseArguments
   let fn = outFileBaseName g
   let lf = (++ ".log") <$> fn
   case c of
-    Compare a -> runReaderT (runELynxLoggingT lf $ compareTrees fn) a
-    Examine a -> runReaderT (runELynxLoggingT lf $ examine fn) a
-    Simulate a -> runReaderT (runELynxLoggingT lf $ simulate fn) a
+    Compare a  -> runReaderT (eLynxWrapper lf compareHeader  $ compareTrees fn) a
+    Examine a  -> runReaderT (eLynxWrapper lf examineHeader  $ examine fn) a
+    Simulate a -> runReaderT (eLynxWrapper lf simulateHeader $ simulate fn) a

@@ -59,7 +59,6 @@ import           ELynx.Tools.ByteString
 import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Misc
-import           ELynx.Tools.Options
 
 -- Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
@@ -106,8 +105,6 @@ reportModel outFn m = do
 
 simulateCmd :: Maybe FilePath -> Simulate ()
 simulateCmd outFn = do
-  h <- liftIO $ logHeader "seq-sim: Simulate sequences."
-  $(logInfo) $ T.pack h
   a <- lift ask
   $(logInfo) "Read tree."
   let treeFile = argsTreeFile a
@@ -156,5 +153,3 @@ simulateCmd outFn = do
   let output = (sequencesToFasta . toSequenceList) msa
       outFile = (<> ".fasta") <$> outFn
   io "simulated multi sequence alignment" output outFile
-  f <- liftIO logFooter
-  $(logInfo) $ T.pack f

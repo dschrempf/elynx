@@ -16,6 +16,13 @@ module Options
   ( Arguments (..)
   , CommandArguments (..)
   , parseArguments
+  , concatenateHeader
+  , examineHeader
+  , filterRowsHeader
+  , filterColumnsHeader
+  , simulateHeader
+  , subSampleHeader
+  , translateHeader
   ) where
 
 import           Options.Applicative
@@ -40,46 +47,55 @@ data CommandArguments =
   | SubSample SubSampleArguments
   | Translate TranslateArguments
 
+concatenateHeader, examineHeader, filterRowsHeader, filterColumnsHeader, simulateHeader, subSampleHeader, translateHeader :: String
+concatenateHeader   = "Concatenate sequences found in input files."
+examineHeader       = "Examine sequences."
+filterRowsHeader    =  "Filter rows (or sequences) found in input files."
+filterColumnsHeader = "Filter columns of multi-sequence alignments."
+simulateHeader      = "Simulate multi sequence alignments."
+subSampleHeader     =  "Sub-sample columns from multi sequence alignments."
+translateHeader     =  "Translate from DNA to Protein or DNAX to ProteinX."
+
 concatenateCommand :: Mod CommandFields CommandArguments
 concatenateCommand = command "concatenate" $
                      info (Concatenate <$> concatenateArguments)
-                     $ header "Concatenate sequences found in input files."
+                     $ header concatenateHeader
 
 examineCommand :: Mod CommandFields CommandArguments
 examineCommand = command "examine" $
                      info (Examine <$> examineArguments)
                      ( fullDesc
-                       <> header "Examine sequences."
+                       <> header examineHeader
                        <> progDesc "If data is a multi sequence alignment, additionally analyze columns." )
 
 filterRowsCommand :: Mod CommandFields CommandArguments
 filterRowsCommand = command "filter-rows" $
                      info (FilterRows <$> filterRowsArguments)
-                     $ header "Filter rows (or sequences) found in input files."
+                     $ header filterRowsHeader
 
 filterColumnsCommand :: Mod CommandFields CommandArguments
 filterColumnsCommand = command "filter-columns" $
                      info (FilterColumns <$> filterColumnsArguments)
-                     $ header "Filter columns of multi-sequence alignments."
+                     $ header filterColumnsHeader
 
 simulateCommand :: Mod CommandFields CommandArguments
 simulateCommand = command "simulate" $
                   info (Simulate <$> simulateArguments)
                   (fullDesc
-                   <> header "Simulate multi sequence alignments."
+                   <> header simulateHeader
                    <> footerDoc (Just $ pretty simulateFooter) )
 
 subSampleCommand :: Mod CommandFields CommandArguments
 subSampleCommand = command "sub-sample" $
                    info (SubSample <$> subSampleArguments)
                    ( fullDesc
-                     <> progDesc "Sub-sample columns from multi sequence alignments."
+                     <> header subSampleHeader
                      <> progDesc "Create a given number of multi sequence alignments, each of which containing a given number of random sites drawn from the original multi sequence alignment." )
 
 translateCommand :: Mod CommandFields CommandArguments
 translateCommand = command "translate" $
                    info (Translate <$> translateArguments)
-                   $ header "Translate from DNA to Protein or DNAX to ProteinX."
+                   $ header translateHeader
 
 commandArguments :: Parser CommandArguments
 commandArguments = hsubparser $
