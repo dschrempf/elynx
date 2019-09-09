@@ -103,12 +103,9 @@ evoModSuiteFooter :: [Doc]
 evoModSuiteFooter =
   [ empty
   , bold $ text "The ELynx Suite."
-  , fillParagraph "A Haskell library and a tool set for computational biology. The goal of the ELynx Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without assuming anything about the data (e.g., the type of code), and without default values. The exact command with all arguments has to be stated by the user and is logged automatically. This leads to some work overhead in the beginning, but usually pays off in the end."
-  , fill 9 (bold $ text "seq-ana")   <+> text "View, examine, and modify evolutionary sequences."
-  , fill 9 (bold $ text "seq-sim")   <+> text "Simulate evolutionary sequences."
-  , fill 9 (bold $ text "tree-ana")  <+> text "Analyze phylogenetic trees."
-  , fill 9 (bold $ text "tree-dist") <+> text "Compute distances between phylogenetic trees."
-  , fill 9 (bold $ text "tree-sim")  <+> text "Simulate phylogenetic trees." ]
+  , fillParagraph "A Haskell library and a tool set for computational biology. The goal of the ELynx Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated without exact specification of all options, and without assuming anything about the data (e.g., the type of code). The command line with all arguments is consistently, and automatically logged. The work overhead in the beginning usually pays off in the end."
+  , fill 9 (bold $ text "slynx") <+> text "Analyze, modify, and simulate evolutionary sequences."
+  , fill 9 (bold $ text "tlynx") <+> text "Analyze, modify, and simulate phylogenetic trees." ]
 
 -- | Read arguments with globally provided description, header, footer, and so
 -- on. Custom additional description (first argument) and footer (second

@@ -18,7 +18,7 @@ Creation date: Wed May 29 18:09:39 2019.
 -}
 
 module Compare.Compare
-  (
+  ( compareTrees
   )
 where
 
@@ -58,17 +58,15 @@ showTriplet n args (i, j, d) = i' <> j' <> d'
         j' = alignLeft  (n+2) $ L.pack (args !! j)
         d' = alignRight 20    $ L.toLazyByteString (L.intDec d)
 
-type Dist = LoggingT (ReaderT Arguments IO)
-
-work :: Dist ()
-work = do
+compareTrees :: Maybe FilePath -> Compare ()
+compareTrees outFileBN = do
   h <- liftIO $ logHeader "tree-dist: Calculate distances between trees."
   $(logInfo) $ T.pack h
-  Arguments g c <- lift ask
+  a <- lift ask
   -- Determine output handle (stdout or file).
-  let outFilePath = (++ ".out") <$> outFileBaseName g
-  outH <- liftIO $ maybe (pure stdout) (`openFile` WriteMode) outFilePath
-  let tfps = argsInFiles c
+  let outFile = (++ ".out") <$> outFileBN
+  outH <- liftIO $ maybe (pure stdout) (`openFile` WriteMode) outFile
+  let tfps = argsInFiles a
   (trees, names) <-
     if length tfps <= 1
     then
@@ -90,12 +88,13 @@ work = do
          liftIO $ hPutStrLn outH "Compute pairwise distances between trees from different files."
          liftIO $ hPutStrLn outH "Trees are named according to their file names."
          return (ts, tfps)
-  case outFilePath of
+  -- XXX: It may be good to use the common 'io' function also here.
+  case outFile of
     Nothing -> logNewSection "Write results to standard output."
     Just f  -> logNewSection $ T.pack $ "Write results to file " <> f <> "."
   let n        = maximum $ map length names
       tsN      = map normalize trees
-      distance = argsDistance c
+      distance = argsDistance a
   case distance of
     Symmetric -> liftIO $ hPutStrLn outH "Use symmetric (Robinson-Foulds) distance."
     IncompatibleSplit val -> do
@@ -117,7 +116,7 @@ work = do
   -- L.putStrLn $ L.unlines $ map toNewick ts
   -- L.putStrLn $ L.unlines $ map toNewick tsN
   -- L.putStrLn $ L.unlines $ map toNewick tsC
-  lift $ unless (argsSummaryStatistics c) (
+  lift $ unless (argsSummaryStatistics a) (
     do
       lift $ hPutStrLn outH ""
       lift $ L.hPutStrLn outH $ header n
@@ -126,10 +125,3 @@ work = do
   liftIO $ hClose outH
   f <- liftIO logFooter
   $(logInfo) $ T.pack f
-
-main :: IO ()
-main = do
-  a <- parseArguments
-  let f = outFileBaseName $ globalArgs a
-      l = runELynxLoggingT f work
-  runReaderT l a

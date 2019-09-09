@@ -44,6 +44,7 @@ module Simulate.Options
 
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Reader
+import           Data.List
 import           Data.Word
 import           Options.Applicative
 
@@ -125,7 +126,7 @@ lengthOpt = option auto
     <> help "Set alignment length to NUMBER" )
 
 simulateFooter :: String
-simulateFooter = unlines $ sms ++ mms
+simulateFooter = intercalate "\n" $ sms ++ mms
   where
     sms =
       [ "Substitution models:"

@@ -14,11 +14,15 @@ Creation date: Thu Aug 29 13:02:22 2019.
 
 module Compare.Options
   ( CompareArguments (..)
-  , Arguments (..)
+  , Compare
   , Distance (..)
-  , parseArguments
+  , compareArguments
+  , compareFooter
   ) where
 
+import           Control.Monad.Logger
+import           Control.Monad.Trans.Reader
+import           Data.List
 import           Data.Void
 import           Options.Applicative
 import           Text.Megaparsec            (Parsec, try)
@@ -30,14 +34,16 @@ import           ELynx.Tools.Options
 data Distance = Symmetric | IncompatibleSplit Double
   deriving (Show, Read)
 
-data CompareArguments = CommandArguments
+data CompareArguments = CompareArguments
   { argsDistance          :: Distance
   , argsSummaryStatistics :: Bool
   , argsInFiles           :: [FilePath]
   }
 
-commandArguments :: Parser CompareArguments
-commandArguments = CommandArguments <$>
+type Compare = LoggingT (ReaderT CompareArguments IO)
+
+compareArguments :: Parser CompareArguments
+compareArguments = CompareArguments <$>
   distanceOpt
   <*> summaryStatisticsSwitch
   <*> many inFilesArg
@@ -78,16 +84,10 @@ summaryStatisticsSwitch = switch $
   short 's' <>
   help "Report summary statistics only"
 
--- TODO: Move this to TLynx.Options; also for the Examine.
-desc :: [String]
-desc = [ "Compute distances between phylogenetic trees." ]
-
-ftr :: [String]
-ftr = [ "Available distance measures:"
-      , "  Symmetric distance: -d symmetric"
-      , "  Incompatible split distance: -d incompatible-split[VAL]"
-      , "    Collapse branches with support less than VAL before distance calculation;"
-      , "    in this way, only well supported difference contribute to the distance measure." ]
-
-parseArguments :: IO Arguments
-parseArguments = parseArgumentsWith desc ftr arguments
+compareFooter :: String
+compareFooter = intercalate "\n"
+  [ "Available distance measures:"
+  , "  Symmetric distance: -d symmetric"
+  , "  Incompatible split distance: -d incompatible-split[VAL]"
+  , "    Collapse branches with support less than VAL before distance calculation;"
+  , "    in this way, only well supported difference contribute to the distance measure." ]

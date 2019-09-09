@@ -43,39 +43,43 @@ data CommandArguments =
 concatenateCommand :: Mod CommandFields CommandArguments
 concatenateCommand = command "concatenate" $
                      info (Concatenate <$> concatenateArguments)
-                     $ progDesc "Concatenate sequences found in input files."
+                     $ header "Concatenate sequences found in input files."
 
 examineCommand :: Mod CommandFields CommandArguments
 examineCommand = command "examine" $
                      info (Examine <$> examineArguments)
-                     $ progDesc "Examine sequences. if data is a multi sequence alignment, additionally analyze columns."
+                     ( fullDesc
+                       <> header "Examine sequences."
+                       <> progDesc "If data is a multi sequence alignment, additionally analyze columns." )
 
 filterRowsCommand :: Mod CommandFields CommandArguments
 filterRowsCommand = command "filter-rows" $
                      info (FilterRows <$> filterRowsArguments)
-                     $ progDesc "Filter rows (or sequences) found in input files."
+                     $ header "Filter rows (or sequences) found in input files."
 
 filterColumnsCommand :: Mod CommandFields CommandArguments
 filterColumnsCommand = command "filter-columns" $
                      info (FilterColumns <$> filterColumnsArguments)
-                     $ progDesc "Filter columns of multi-sequence alignments."
+                     $ header "Filter columns of multi-sequence alignments."
 
 simulateCommand :: Mod CommandFields CommandArguments
 simulateCommand = command "simulate" $
                   info (Simulate <$> simulateArguments)
                   (fullDesc
-                   <> progDesc "Simulate multi sequence alignments." -- (With ftr)
+                   <> header "Simulate multi sequence alignments."
                    <> footerDoc (Just $ pretty simulateFooter) )
 
 subSampleCommand :: Mod CommandFields CommandArguments
 subSampleCommand = command "sub-sample" $
                    info (SubSample <$> subSampleArguments)
-                   $ progDesc "Sub-sample columns from multi sequence alignments. Create a given number of multi sequence alignments, each of which containing a given number of random sites drawn from the original multi sequence alignment."
+                   ( fullDesc
+                     <> progDesc "Sub-sample columns from multi sequence alignments."
+                     <> progDesc "Create a given number of multi sequence alignments, each of which containing a given number of random sites drawn from the original multi sequence alignment." )
 
 translateCommand :: Mod CommandFields CommandArguments
 translateCommand = command "translate" $
                    info (Translate <$> translateArguments)
-                   $ progDesc "Translate from DNA to Protein or DNAX to ProteinX."
+                   $ header "Translate from DNA to Protein or DNAX to ProteinX."
 
 commandArguments :: Parser CommandArguments
 commandArguments = hsubparser $
@@ -98,7 +102,7 @@ parseArguments = parseArgumentsWith desc ftr $
                  <*> commandArguments
 
 desc :: [String]
-desc = [ "Analyze multi sequence alignments." ]
+desc = [ "Analyze, and simulate multi sequence alignments." ]
 
 ftr :: [String]
 ftr = [ "File formats:" ] ++ fs ++

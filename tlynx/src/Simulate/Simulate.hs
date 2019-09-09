@@ -23,7 +23,10 @@ Elsevier BV, 2009, 261, 58-66
 
 -}
 
-module Main where
+module Simulate.Simulate
+  ( simulate
+  )
+where
 
 import           Control.Concurrent                   (getNumCapabilities)
 import           Control.Concurrent.Async.Lifted.Safe (mapConcurrently)
@@ -41,7 +44,7 @@ import qualified Data.Text.Lazy                       as LT
 import qualified Data.Text.Lazy.Encoding              as LT
 import           Data.Tree
 
-import           OptionsTreeSim
+import           Simulate.Options
 
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.PhyloTree            (PhyloIntLabel)
@@ -52,49 +55,38 @@ import           ELynx.Export.Tree.Newick             (toNewick)
 import           ELynx.Simulate.PointProcess          (simulateNReconstructedTrees,
                                                        simulateReconstructedTree)
 import           ELynx.Tools.Concurrent
+import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Options
 
-main :: IO ()
-main = do
-  a <- parseArguments
-  let f = outFileBaseName $ globalArgs a
-      l = runELynxLoggingT f simulate
-  runReaderT l a
-
-simulate :: Simulation ()
-simulate = do
+simulate :: Maybe FilePath -> Simulate ()
+simulate outFile = do
   h <- liftIO $ logHeader "tree-sim: Simulate trees."
   $(logInfo) $ T.pack h
-  Arguments g c <- lift ask
-  when (isNothing (argsHeight c) && argsConditionMRCA c) $
+  a <- lift ask
+  when (isNothing (argsHeight a) && argsConditionMRCA a) $
     error "Cannot condition on MRCA (-M) when height is not given (-H)."
-  let s = argsSumStat c
+  let s = argsSumStat a
   nCap <- liftIO getNumCapabilities
   logNewSection "Arguments"
-  $(logInfo) $ T.pack $ reportCommandArguments c
+  $(logInfo) $ T.pack $ reportSimulateArguments a
   logNewSection "Simulation"
   $(logInfo) $ T.pack $ "Number of used cores: " <> show nCap
-  trs <- if argsSubSample c
+  trs <- if argsSubSample a
          then simulateAndSubSampleNTreesConcurrently nCap
          else simulateNTreesConcurrently nCap
   let ls = if s
            then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
            else parMap rpar toNewick trs
-  let mfn = outFileBaseName g
-  case mfn of
-    -- TODO: This should be no warning, what is wrong here?
-    Nothing -> $(logWarnSH) $ L.unlines ls
-    Just fn -> do
-      let fn' = fn ++ ".tree"
-      liftIO $ L.writeFile fn' $ L.unlines ls
-      $(logInfo) $ T.pack $ "Results written to file '" <> fn' <> "'."
+  let outFile' = (++ ".tree") <$> outFile
+  let res = L.unlines ls
+  io "simulated trees" res outFile'
   f <- liftIO logFooter
   $(logInfo) $ T.pack f
 
-simulateNTreesConcurrently :: Int -> Simulation [Tree PhyloIntLabel]
+simulateNTreesConcurrently :: Int -> Simulate [Tree PhyloIntLabel]
 simulateNTreesConcurrently c = do
-  (CommandArguments nT nL h cM l m r _ _ s) <- commandArgs <$> lift ask
+  (SimulateArguments nT nL h cM l m r _ _ s) <- lift ask
   let l' = l * r
       m' = m - l * (1.0 - r)
   gs <- liftIO $ getNGen c s
@@ -105,9 +97,9 @@ simulateNTreesConcurrently c = do
           (zip chunks gs)
   return $ concat trss
 
-simulateAndSubSampleNTreesConcurrently :: Int -> Simulation [Tree PhyloIntLabel]
+simulateAndSubSampleNTreesConcurrently :: Int -> Simulate [Tree PhyloIntLabel]
 simulateAndSubSampleNTreesConcurrently c = do
-  (CommandArguments nT nL h cM l m r _ _ s) <- commandArgs <$> lift ask
+  (SimulateArguments nT nL h cM l m r _ _ s) <- lift ask
   let nLeavesBigTree = (round $ fromIntegral nL / r) :: Int
   gs <- liftIO $ getNGen c s
   let chunks = getChunks c nT
@@ -123,6 +115,3 @@ simulateAndSubSampleNTreesConcurrently c = do
           (zip chunks gs)
   let trs = catMaybes $ concat trss
   return $ map prune trs
-
-
-type Simulation = LoggingT (ReaderT Arguments IO)

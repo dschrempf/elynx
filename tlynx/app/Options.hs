@@ -25,28 +25,37 @@ import           Compare.Options
 import           Examine.Options
 import           Simulate.Options
 
-import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Tools.Options
 
 data CommandArguments =
-  Compate CompareArguments
+  Compare CompareArguments
   | Examine ExamineArguments
   | Simulate SimulateArguments
+
+compareCommand :: Mod CommandFields CommandArguments
+compareCommand = command "compare" $
+                     info (Compare <$> compareArguments)
+                     ( fullDesc
+                       <> header "Compute distances between phylogenetic trees."
+                       <> footerDoc (Just $ pretty compareFooter) )
 
 examineCommand :: Mod CommandFields CommandArguments
 examineCommand = command "examine" $
                      info (Examine <$> examineArguments)
-                     $ progDesc "Examine sequences. if data is a multi sequence alignment, additionally analyze columns."
+                     $ header "Compute summary statistics of phylogenetic trees."
 
-subSampleCommand :: Mod CommandFields CommandArguments
-subSampleCommand = command "sub-sample" $
-                   info (SubSample <$> subSampleArguments)
-                   $ progDesc "Sub-sample columns from multi sequence alignments. Create a given number of multi sequence alignments, each of which containing a given number of random sites drawn from the original multi sequence alignment."
+simulateCommand :: Mod CommandFields CommandArguments
+simulateCommand = command "simulate" $
+                   info (Simulate <$> simulateArguments)
+                     ( fullDesc
+                       <> header "Simulate phylogenetic trees using birth and death processes."
+                       <> progDesc simulateDesc
+                       <> footerDoc (Just $ pretty simulateFooter) )
 
 commandArguments :: Parser CommandArguments
 commandArguments = hsubparser $
-                   examineCommand
-                   <> compareCommand
+                   compareCommand
+                   <> examineCommand
                    <> simulateCommand
 
 data Arguments = Arguments
@@ -60,10 +69,10 @@ parseArguments = parseArgumentsWith desc ftr $
                  <*> commandArguments
 
 desc :: [String]
-desc = [ "Analyze phylogenetic trees." ]
+desc = [ "Compare, examine, and simulate phylogenetic trees." ]
 
 ftr :: [String]
-ftr = [ "File formats:" ] ++ fs
+ftr = "File formats:" : fs
   where
     toListItem = ("  - " ++)
     fs = map toListItem ["Newick"]

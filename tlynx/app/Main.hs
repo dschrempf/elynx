@@ -33,10 +33,6 @@ main = do
   let fn = outFileBaseName g
   let lf = (++ ".log") <$> fn
   case c of
-    Concatenate a -> runReaderT (runELynxLoggingT lf $ concatenateCmd fn) a
-    Examine a -> runReaderT (runELynxLoggingT lf $ examineCmd fn) a
-    FilterRows a -> runReaderT (runELynxLoggingT lf $ filterRowsCmd fn) a
-    FilterColumns a -> runReaderT (runELynxLoggingT lf $ filterColumnsCmd fn) a
-    Simulate a -> runReaderT (runELynxLoggingT lf $ simulateCmd fn) a
-    SubSample a -> runReaderT (runELynxLoggingT lf $ subSampleCmd fn) a
-    Translate a -> runReaderT (runELynxLoggingT lf $ translateCmd fn) a
+    Compare a -> runReaderT (runELynxLoggingT lf $ compareTrees fn) a
+    Examine a -> runReaderT (runELynxLoggingT lf $ examine fn) a
+    Simulate a -> runReaderT (runELynxLoggingT lf $ simulate fn) a

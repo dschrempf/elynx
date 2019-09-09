@@ -1,5 +1,5 @@
 {- |
-Module      :  OptionsTreeSim
+Module      :  Simulate.Options
 Description :  Argument parser for seq-ana
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -12,35 +12,41 @@ Creation date: Fri May  3 11:51:07 2019.
 
 -}
 
-module OptionsTreeSim
-  ( CommandArguments (..)
-  , reportCommandArguments
-  , Arguments (..)
-  , parseArguments
+module Simulate.Options
+  ( SimulateArguments (..)
+  , Simulate
+  , simulateArguments
+  , reportSimulateArguments
+  , simulateDesc
+  , simulateFooter
   ) where
 
+import           Control.Monad.Logger
+import           Control.Monad.Trans.Reader
 import           Data.List
 import           Data.Word
 import           Options.Applicative
 
 import           ELynx.Tools.Options
 
-data CommandArguments = CommandArguments
-  { argsNTrees          :: Int            -- ^ Simulated trees.
-  , argsNLeaves         :: Int            -- ^ Number of leaves.
-  , argsHeight          :: Maybe Double   -- ^ Tree height (time to origin or MRCA).
-  , argsConditionMRCA   :: Bool           -- ^ False: condition on origin; True:
+data SimulateArguments = SimulateArguments
+  { argsNTrees        :: Int            -- ^ Simulated trees.
+  , argsNLeaves       :: Int            -- ^ Number of leaves.
+  , argsHeight        :: Maybe Double   -- ^ Tree height (time to origin or MRCA).
+  , argsConditionMRCA :: Bool           -- ^ False: condition on origin; True:
                                           --   condition on MRCA.
-  , argsLambda          :: Double         -- ^ Birth rate.
-  , argsMu              :: Double         -- ^ Death rate.
-  , argsRho             :: Double         -- ^ Smapling rate.
-  , argsSubSample       :: Bool           -- ^ Perform actual sub-sampling.
-  , argsSumStat         :: Bool           -- ^ Only print summary statistics?
-  , argsSeed            :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
+  , argsLambda        :: Double         -- ^ Birth rate.
+  , argsMu            :: Double         -- ^ Death rate.
+  , argsRho           :: Double         -- ^ Smapling rate.
+  , argsSubSample     :: Bool           -- ^ Perform actual sub-sampling.
+  , argsSumStat       :: Bool           -- ^ Only print summary statistics?
+  , argsSeed          :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
   }
 
-reportCommandArguments :: CommandArguments -> String
-reportCommandArguments a =
+type Simulate = LoggingT (ReaderT SimulateArguments IO)
+
+reportSimulateArguments :: SimulateArguments -> String
+reportSimulateArguments a =
   intercalate "\n" [ "Number of simulated trees: " ++ show (argsNTrees a)
                    , "Number of leaves per tree: " ++ show (argsNLeaves a)
                    , "Height of trees: " ++ hStr
@@ -63,8 +69,8 @@ reportCommandArguments a =
         sStr = case argsSeed a of Nothing -> "Random"
                                   Just i  -> show i
 
-commandArguments :: Parser CommandArguments
-commandArguments = CommandArguments
+simulateArguments :: Parser SimulateArguments
+simulateArguments = SimulateArguments
   <$> nTreeOpt
   <*> nLeavesOpt
   <*> treeHeightOpt
@@ -75,14 +81,6 @@ commandArguments = CommandArguments
   <*> subSampleOpt
   <*> sumStatOpt
   <*> seedOpt
-
-data Arguments = Arguments { globalArgs :: GlobalArguments
-                           , commandArgs :: CommandArguments }
-
-arguments :: Parser Arguments
-arguments = Arguments
-  <$> globalArguments
-  <*> commandArguments
 
 nTreeOpt :: Parser Int
 nTreeOpt = option auto $
@@ -156,16 +154,12 @@ sumStatOpt = switch $
   <> showDefault
   <> help "Only output number of children for each branch"
 
-hdr :: [String]
-hdr = ["Simulate reconstructed trees using the point process. See Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005"]
+simulateDesc :: String
+simulateDesc = "Simulate reconstructed trees using the point process. See Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005"
 
-ftr :: [String]
-ftr = [ "Height of Trees: if no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate."
-      , "Summary statistics only: only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character."
-      , "Sub-sampling: simulate one big tree with n'=round(n/rho), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with rho=1.0, the same tree is reported over and over again."
+simulateFooter :: String
+simulateFooter = intercalate "\n"
+  [ "Height of Trees: if no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate."
+  , "Summary statistics only: only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character."
+  , "Sub-sampling: simulate one big tree with n'=round(n/rho), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with rho=1.0, the same tree is reported over and over again."
       ]
-
--- | The impure IO action that reads the arguments and prints out help if
--- needed.
-parseArguments :: IO Arguments
-parseArguments = parseArgumentsWith hdr ftr arguments
