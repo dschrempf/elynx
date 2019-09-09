@@ -27,13 +27,14 @@ import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
-import qualified Data.ByteString.Builder           as L
 import qualified Data.ByteString.Lazy.Char8        as L
 import qualified Data.Text                         as T
+import qualified Data.Text.IO                      as T
 import           Data.Tree
 import qualified Data.Vector.Unboxed               as V
 import           Statistics.Sample
 import           System.IO
+import           Text.Printf
 
 import           Compare.Options
 
@@ -46,16 +47,19 @@ import           ELynx.Tools.ByteString            (alignLeft, alignRight)
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
 
-header :: Int -> L.ByteString
-header n = alignLeft (n+2) "Tree 1"
-           <> alignLeft (n+2) "Tree 2"
-           <> alignRight 20 "Symmetric Distance"
+pf :: String
+pf = "%.3f"
 
-showTriplet :: Int -> [String] -> (Int, Int, Int) -> L.ByteString
+header :: Int -> Distance -> L.ByteString
+header n d = alignLeft (n+2) "Tree 1"
+           <> alignLeft (n+2) "Tree 2"
+           <> alignRight 20 (L.pack $ show d)
+
+showTriplet :: (PrintfArg a) => Int -> [String] -> (Int, Int, a) -> L.ByteString
 showTriplet n args (i, j, d) = i' <> j' <> d'
   where i' = alignLeft  (n+2) $ L.pack (args !! i)
         j' = alignLeft  (n+2) $ L.pack (args !! j)
-        d' = alignRight 20    $ L.toLazyByteString (L.intDec d)
+        d' = alignRight 20    $ L.pack (printf pf d)
 
 compareTrees :: Maybe FilePath -> Compare ()
 compareTrees outFileBN = do
@@ -75,48 +79,50 @@ compareTrees outFileBN = do
                       liftIO $ parseFileWith manyNewick f
          let n = length ts
          when (n <= 1) (error "Not enough trees found in file.")
-         liftIO $ hPutStrLn outH "Compute pairwise distances between trees in the same file."
-         liftIO $ hPutStrLn outH $ "Trees are numbered from 0 to " ++ show (n-1) ++ "."
+         $(logInfo) "Compute pairwise distances between trees in the same file."
+         $(logInfo) $ T.pack $ "Trees are numbered from 0 to " ++ show (n-1) ++ "."
          return (ts, take n (map show [0 :: Int ..]))
     else
       do $(logInfo) "Read trees from files."
          ts <- liftIO $ mapM (parseFileWith newick) tfps
          when (length ts <= 1) (error "Not enough trees found in files.")
-         liftIO $ hPutStrLn outH "Compute pairwise distances between trees from different files."
-         liftIO $ hPutStrLn outH "Trees are named according to their file names."
+         $(logInfo) "Compute pairwise distances between trees from different files."
+         $(logInfo) "Trees are named according to their file names."
          return (ts, tfps)
-  -- XXX: It may be good to use the common 'io' function also here.
   case outFile of
     Nothing -> logNewSection "Write results to standard output."
     Just f  -> logNewSection $ T.pack $ "Write results to file " <> f <> "."
-  let n        = maximum $ map length names
+  let n        = maximum $ 6 : map length names
       tsN      = map normalize trees
       distance = argsDistance a
   case distance of
-    Symmetric -> liftIO $ hPutStrLn outH "Use symmetric (Robinson-Foulds) distance."
+    Symmetric -> $(logInfo) "Use symmetric (Robinson-Foulds) distance."
     IncompatibleSplit val -> do
-      liftIO $ hPutStrLn outH "Use incompatible split distance."
-      liftIO $ hPutStrLn outH $ "Collapse nodes with support less than " ++ show val ++ "."
-  let distanceMeasure :: Tree PhyloByteStringLabel -> Tree PhyloByteStringLabel -> Int
+      $(logInfo) "Use incompatible split distance."
+      $(logInfo) $ T.pack $ "Collapse nodes with support less than " ++ show val ++ "."
+    BranchScore -> $(logInfo) "Use branch score distance."
+  let distanceMeasure :: Tree PhyloByteStringLabel -> Tree PhyloByteStringLabel -> Double
       distanceMeasure = case distance of
-        Symmetric           -> symmetricDistanceWith getName
-        IncompatibleSplit _ -> incompatibleSplitsDistanceWith getName
-  let treesCollapsed = case distance of
-        Symmetric             -> trees
+        Symmetric           -> \t1 t2 -> fromIntegral $ symmetricDistanceWith getName t1 t2
+        IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplitsDistanceWith getName t1 t2
+        BranchScore         -> branchScoreDistance
+      treesCollapsed = case distance of
         IncompatibleSplit val -> map (collapse val) tsN
-  let dsTriplets = computePairwiseDistances distanceMeasure treesCollapsed
-      ds = map (\(_, _, x) -> fromIntegral x) dsTriplets :: [Double]
+        _                     -> trees
+      dsTriplets = computePairwiseDistances distanceMeasure treesCollapsed
+      ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds
-  liftIO $ hPutStrLn outH "Summary statistics of distance:"
-  liftIO $ hPutStrLn outH $ "Mean: " ++ show (mean dsVec)
-  liftIO $ hPutStrLn outH $ "Variance: " ++ show (variance dsVec)
+  -- XXX: It may be good to use the common 'io' function also here.
+  liftIO $ hPutStrLn outH $ "Summary statistics of " ++ show distance ++ " Distance:"
+  liftIO $ T.hPutStrLn outH $ T.justifyLeft 10 ' ' "Mean: " <> T.pack (printf pf (mean dsVec))
+  liftIO $ T.hPutStrLn outH $ T.justifyLeft 10 ' ' "Variance: " <> T.pack (printf pf (variance dsVec))
   -- L.putStrLn $ L.unlines $ map toNewick ts
   -- L.putStrLn $ L.unlines $ map toNewick tsN
   -- L.putStrLn $ L.unlines $ map toNewick tsC
   lift $ unless (argsSummaryStatistics a) (
     do
       lift $ hPutStrLn outH ""
-      lift $ L.hPutStrLn outH $ header n
+      lift $ L.hPutStrLn outH $ header n distance
       lift $ L.hPutStr outH $ L.unlines (map (showTriplet n names) dsTriplets)
     )
   liftIO $ hClose outH

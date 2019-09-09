@@ -106,9 +106,9 @@ branchScoreDistance = branchScoreDistanceWith getName getLen
 -- | Compute pairwise distances of a list of input trees. Use given distance
 -- measure function. Returns a triple, the first two elements are the indices of
 -- the compared trees, the third is the distance.
-computePairwiseDistances :: (Tree a -> Tree a -> Int) -- ^ Distance function
-                         -> [Tree a]                  -- ^ Input trees
-                         -> [(Int, Int, Int)]         -- ^ (index i, index j, distance i j)
+computePairwiseDistances :: (a -> a -> b)   -- ^ Distance function
+                         -> [a]             -- ^ Input trees
+                         -> [(Int, Int, b)] -- ^ (index i, index j, distance i j)
 computePairwiseDistances dist trs = [ (i, j, dist x y)
                                     | (i:is, x:xs) <- zip (tails [0..]) (tails trs)
                                     , (j, y) <- zip is xs ]

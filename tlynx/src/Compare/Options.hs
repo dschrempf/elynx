@@ -28,11 +28,16 @@ import           Options.Applicative
 import           Text.Megaparsec            (Parsec, try)
 import           Text.Megaparsec.Char       (char, string)
 import           Text.Megaparsec.Char.Lexer (float)
+import           Text.Printf
 
 import           ELynx.Tools.Options
 
-data Distance = Symmetric | IncompatibleSplit Double
-  deriving (Show, Read)
+data Distance = Symmetric | IncompatibleSplit Double | BranchScore
+
+instance Show Distance where
+  show Symmetric             = "Symmetric"
+  show (IncompatibleSplit c) = "Incompatible Split (" ++ printf "%.1f" c ++ ")"
+  show BranchScore           = "Branch Score"
 
 data CompareArguments = CompareArguments
   { argsDistance          :: Distance
@@ -68,8 +73,13 @@ incompatibleSplit = do
     then pure $ IncompatibleSplit f
     else error "Branch support has to be between 0 and 1."
 
+branchScore :: Parsec Void String Distance
+branchScore = do
+  _ <- string "branch-score"
+  pure BranchScore
+
 distanceParser :: Parsec Void String Distance
-distanceParser = try symmetric <|> incompatibleSplit
+distanceParser = try symmetric <|> incompatibleSplit <|> branchScore
 
 distanceOpt :: Parser Distance
 distanceOpt = option (megaReadM distanceParser) $
@@ -90,4 +100,5 @@ compareFooter = intercalate "\n"
   , "  Symmetric distance: -d symmetric"
   , "  Incompatible split distance: -d incompatible-split[VAL]"
   , "    Collapse branches with support less than VAL before distance calculation;"
-  , "    in this way, only well supported difference contribute to the distance measure." ]
+  , "    in this way, only well supported difference contribute to the distance measure."
+  , "  Branch score distance : -d branch-score" ]
