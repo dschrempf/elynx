@@ -10,13 +10,17 @@ specification of all options is necessary, and nothing is assumed about the data
 and automatically logged. The work overhead in the beginning usually pays off in
 the end.
 
-The Elynx Suite consists of three library packages:
+The Elynx Suite consists of three library packages and two executables providing
+a range of sub commands.
+
+The library packages are:
 - elynx-seq :: Handle evolutionary sequences and multi sequence alignments;
 - elynx-tree :: Handle phylogenetic trees;
 - elynx-tools :: Tools for the provided executables;
-and two executables providing a range of sub commands:
-- slynx :: Analyze, modify, and simulate evolutionary sequences (FASTA format);
-- tlynx :: Analyze, modify, and simulate phylogenetic trees (Newick format).
+
+The executables are:
+- [[id:7b3a6f5b-d8ae-4835-a649-c4ed3c9a7e4e][SLynx]] :: Analyze, modify, and simulate evolutionary sequences (FASTA format);
+- [[id:0b75e857-a5bc-4eab-a6b7-99d8f99d9eca][TLynx]] :: Analyze, modify, and simulate phylogenetic trees (Newick format).
 
 ELynx is still under development. We happily receive comments, ideas, or feature
 requests!
@@ -60,6 +64,9 @@ ELynx is written in [[https://www.haskell.org/][Haskell]] and can be installed w
    Then, they can be used directly.
 
 * SLynx 
+:PROPERTIES:
+:ID:       7b3a6f5b-d8ae-4835-a649-c4ed3c9a7e4e
+:END:
 Handle evolutionary sequences.
 
 #+BEGIN_SRC sh :exports both :results verbatim output 
@@ -313,6 +320,9 @@ Available options:
   -h,--help                Show this help text
 #+end_example
 * TLynx
+:PROPERTIES:
+:ID:       0b75e857-a5bc-4eab-a6b7-99d8f99d9eca
+:END:
 Handle phylogenetic trees in Newick format.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
