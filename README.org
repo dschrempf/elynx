@@ -76,7 +76,7 @@ slynx --help
 #+RESULTS:
 #+begin_example
 ELynx Suite version 0.5.1. Developed by Dominik Schrempf. Compiled on September
-9, 2019, at 10:23 am, UTC.
+9, 2019, at 10:48 am, UTC.
 
 Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] COMMAND
   Analyze, and simulate multi sequence alignments.
@@ -114,15 +114,15 @@ Alphabet types:
   - ProteinS (amino acids; including gaps, and translation stops)
   - ProteinI (amino acids; including gaps, translation stops, and IUPAC codes)
 
-[1mThe ELynx Suite.[0m
+The ELynx Suite.
 A Haskell library and a tool set for computational biology. The goal of the
 ELynx Suite is reproducible research. Evolutionary sequences and phylogenetic
 trees can be read, viewed, modified and simulated. Exact specification of all
 options is necessary, and nothing is assumed about the data (e.g., the type of
 code). The command line with all arguments is consistently, and automatically
 logged. The work overhead in the beginning usually pays off in the end.
-[1mslynx[0m     Analyze, modify, and simulate evolutionary sequences.
-[1mtlynx[0m     Analyze, modify, and simulate phylogenetic trees.
+slynx     Analyze, modify, and simulate evolutionary sequences.
+tlynx     Analyze, modify, and simulate phylogenetic trees.
 #+end_example
 
 ** Concatenate
@@ -319,6 +319,7 @@ Available options:
                            VertebrateMitochondrial.
   -h,--help                Show this help text
 #+end_example
+
 * TLynx
 :PROPERTIES:
 :ID:       0b75e857-a5bc-4eab-a6b7-99d8f99d9eca
@@ -332,7 +333,7 @@ tlynx --help
 #+RESULTS:
 #+begin_example
 ELynx Suite version 0.5.1. Developed by Dominik Schrempf. Compiled on September
-9, 2019, at 10:23 am, UTC.
+9, 2019, at 10:48 am, UTC.
 
 Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] COMMAND
   Compare, examine, and simulate phylogenetic trees.
@@ -357,15 +358,15 @@ Available commands:
 File formats:
   - Newick
 
-[1mThe ELynx Suite.[0m
+The ELynx Suite.
 A Haskell library and a tool set for computational biology. The goal of the
 ELynx Suite is reproducible research. Evolutionary sequences and phylogenetic
 trees can be read, viewed, modified and simulated. Exact specification of all
 options is necessary, and nothing is assumed about the data (e.g., the type of
 code). The command line with all arguments is consistently, and automatically
 logged. The work overhead in the beginning usually pays off in the end.
-[1mslynx[0m     Analyze, modify, and simulate evolutionary sequences.
-[1mtlynx[0m     Analyze, modify, and simulate phylogenetic trees.
+slynx     Analyze, modify, and simulate evolutionary sequences.
+tlynx     Analyze, modify, and simulate phylogenetic trees.
 #+end_example
 
 ** Compare
@@ -451,6 +452,7 @@ Height of Trees: if no tree height is given, the heights will be randomly drawn 
 Summary statistics only: only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character.
 Sub-sampling: simulate one big tree with n'=round(n/rho), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with rho=1.0, the same tree is reported over and over again.
 #+end_example
+
 * ELynx
 Documentation of the library can be found on Hackage.
 
