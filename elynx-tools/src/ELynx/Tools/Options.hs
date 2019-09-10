@@ -31,6 +31,7 @@ module ELynx.Tools.Options
   , fillParagraph
   ) where
 
+import           Control.Monad.Logger            (LogLevel (..))
 import           Data.List                       hiding (group)
 import           Data.Time
 import           Data.Version                    (showVersion)
@@ -128,14 +129,20 @@ parseArgumentsWith desc ftr p = execParser $
 data Verbosity = Quiet | Warning | Info | Debug
   deriving (Show, Read, Eq, Enum, Bounded, Ord)
 
+toLogLevel :: Verbosity -> LogLevel
+toLogLevel Quiet   = LevelError
+toLogLevel Warning = LevelWarn
+toLogLevel Info    = LevelInfo
+toLogLevel Debug   = LevelDebug
+
 data GlobalArguments = GlobalArguments
-  { verbosity       :: Verbosity
+  { verbosity       :: LogLevel
   , outFileBaseName :: Maybe FilePath }
 
 -- TODO: Provide global --redo, -r option. Only overwrite files if this option is specified.
 globalArguments :: Parser GlobalArguments
 globalArguments = GlobalArguments
-  <$> verbosityOpt
+  <$> (toLogLevel <$> verbosityOpt)
   <*> optional outFileBaseNameOpt
 
 -- | Boolean option; be verbose; default NO.

@@ -30,9 +30,10 @@ import           ELynx.Tools.Options
 main :: IO ()
 main = do
   Arguments g c <- parseArguments
-  let fn = outFileBaseName g
-  let lf = (++ ".log") <$> fn
+  let fn  = outFileBaseName g
+      lvl = verbosity g
+      lf  = (++ ".log") <$> fn
   case c of
-    Compare a  -> runReaderT (eLynxWrapper lf compareHeader  $ compareTrees fn) a
-    Examine a  -> runReaderT (eLynxWrapper lf examineHeader  $ examine fn) a
-    Simulate a -> runReaderT (eLynxWrapper lf simulateHeader $ simulate fn) a
+    Compare a  -> runReaderT (eLynxWrapper lvl lf compareHeader  $ compareTrees fn) a
+    Examine a  -> runReaderT (eLynxWrapper lvl lf examineHeader  $ examine fn) a
+    Simulate a -> runReaderT (eLynxWrapper lvl lf simulateHeader $ simulate fn) a

@@ -76,12 +76,12 @@ symmetricDistance = symmetricDistanceWith id
 -- merges multifurcations.
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
-incompatibleSplitsDistanceWith :: (Ord b) => (a -> b) -> Tree a -> Tree a -> Int
+incompatibleSplitsDistanceWith :: (Ord b, Show b) => (a -> b) -> Tree a -> Tree a -> Int
 incompatibleSplitsDistanceWith f t1 t2 = length $ symmetricDifferenceS (ms t1) (ms t2)
   where ms t = bipartitionsCombined $ fmap f t
 
 -- | See 'incompatibleSplitsDistanceWith', use 'id' for comparisons.
-incompatibleSplitsDistance :: (Ord a) => Tree a -> Tree a -> Int
+incompatibleSplitsDistance :: (Ord a, Show a) => Tree a -> Tree a -> Int
 incompatibleSplitsDistance = incompatibleSplitsDistanceWith id
 
 -- | Compute branch score distance between two trees. Before comparing the leaf

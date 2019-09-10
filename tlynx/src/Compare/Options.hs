@@ -32,12 +32,13 @@ import           Text.Printf
 
 import           ELynx.Tools.Options
 
-data Distance = Symmetric | IncompatibleSplit Double | BranchScore
+data Distance = Symmetric | IncompatibleSplit Double | BranchScore Bool
 
 instance Show Distance where
   show Symmetric             = "Symmetric"
   show (IncompatibleSplit c) = "Incompatible Split (" ++ printf "%.1f" c ++ ")"
-  show BranchScore           = "Branch Score"
+  show (BranchScore False)   = "Branch Score"
+  show (BranchScore True )   = "Branch Score (normalized)"
 
 data CompareArguments = CompareArguments
   { argsDistance          :: Distance
@@ -76,10 +77,20 @@ incompatibleSplit = do
 branchScore :: Parsec Void String Distance
 branchScore = do
   _ <- string "branch-score"
-  pure BranchScore
+  pure (BranchScore False)
+
+branchScoreNormalized :: Parsec Void String Distance
+branchScoreNormalized = do
+  _ <- string "branch-score-normalized"
+  pure (BranchScore True)
 
 distanceParser :: Parsec Void String Distance
-distanceParser = try symmetric <|> incompatibleSplit <|> branchScore
+distanceParser = try symmetric
+                 <|> try incompatibleSplit
+                 -- Try first the normalized one, since the normal branch score
+                 -- parser also succeeds in this case.
+                 <|> try branchScoreNormalized
+                 <|> try branchScore
 
 distanceOpt :: Parser Distance
 distanceOpt = option (megaReadM distanceParser) $

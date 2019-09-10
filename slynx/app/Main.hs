@@ -31,13 +31,14 @@ import           ELynx.Tools.Options
 main :: IO ()
 main = do
   Arguments g c <- parseArguments
-  let fn = outFileBaseName g
-  let lf = (++ ".log") <$> fn
+  let fn  = outFileBaseName g
+      lvl = verbosity g
+      lf  = (++ ".log") <$> fn
   case c of
-    Concatenate a -> runReaderT   (eLynxWrapper lf concatenateHeader   $ concatenateCmd fn) a
-    Examine a -> runReaderT       (eLynxWrapper lf examineHeader       $ examineCmd fn) a
-    FilterRows a -> runReaderT    (eLynxWrapper lf filterRowsHeader    $ filterRowsCmd fn) a
-    FilterColumns a -> runReaderT (eLynxWrapper lf filterColumnsHeader $ filterColumnsCmd fn) a
-    Simulate a -> runReaderT      (eLynxWrapper lf simulateHeader      $ simulateCmd fn) a
-    SubSample a -> runReaderT     (eLynxWrapper lf subSampleHeader     $ subSampleCmd fn) a
-    Translate a -> runReaderT     (eLynxWrapper lf translateHeader     $ translateCmd fn) a
+    Concatenate a -> runReaderT   (eLynxWrapper lvl lf concatenateHeader   $ concatenateCmd fn) a
+    Examine a -> runReaderT       (eLynxWrapper lvl lf examineHeader       $ examineCmd fn) a
+    FilterRows a -> runReaderT    (eLynxWrapper lvl lf filterRowsHeader    $ filterRowsCmd fn) a
+    FilterColumns a -> runReaderT (eLynxWrapper lvl lf filterColumnsHeader $ filterColumnsCmd fn) a
+    Simulate a -> runReaderT      (eLynxWrapper lvl lf simulateHeader      $ simulateCmd fn) a
+    SubSample a -> runReaderT     (eLynxWrapper lvl lf subSampleHeader     $ subSampleCmd fn) a
+    Translate a -> runReaderT     (eLynxWrapper lvl lf translateHeader     $ translateCmd fn) a

@@ -30,6 +30,8 @@ import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8        as L
 import qualified Data.Text                         as T
 import qualified Data.Text.IO                      as T
+import qualified Data.Text.Lazy                    as LT
+import qualified Data.Text.Lazy.Encoding           as LT
 import           Data.Tree
 import qualified Data.Vector.Unboxed               as V
 import           Statistics.Sample
@@ -42,6 +44,7 @@ import           ELynx.Data.Tree.BranchSupportTree
 import           ELynx.Data.Tree.Distance
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Export.Tree.Newick
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.ByteString            (alignLeft, alignRight)
 import           ELynx.Tools.InputOutput
@@ -89,27 +92,35 @@ compareTrees outFileBN = do
          $(logInfo) "Compute pairwise distances between trees from different files."
          $(logInfo) "Trees are named according to their file names."
          return (ts, tfps)
+  $(logDebug) "The trees are:"
+  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees
   case outFile of
     Nothing -> logNewSection "Write results to standard output."
     Just f  -> logNewSection $ T.pack $ "Write results to file " <> f <> "."
   let n        = maximum $ 6 : map length names
-      tsN      = map normalize trees
       distance = argsDistance a
   case distance of
     Symmetric -> $(logInfo) "Use symmetric (Robinson-Foulds) distance."
     IncompatibleSplit val -> do
       $(logInfo) "Use incompatible split distance."
       $(logInfo) $ T.pack $ "Collapse nodes with support less than " ++ show val ++ "."
-    BranchScore -> $(logInfo) "Use branch score distance."
+    BranchScore False -> $(logInfo) "Use branch score distance without normalization."
+    BranchScore True -> $(logInfo) "Use branch score distance with normalization."
   let distanceMeasure :: Tree PhyloByteStringLabel -> Tree PhyloByteStringLabel -> Double
       distanceMeasure = case distance of
         Symmetric           -> \t1 t2 -> fromIntegral $ symmetricDistanceWith getName t1 t2
         IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplitsDistanceWith getName t1 t2
-        BranchScore         -> branchScoreDistance
-      treesCollapsed = case distance of
-        IncompatibleSplit val -> map (collapse val) tsN
-        _                     -> trees
-      dsTriplets = computePairwiseDistances distanceMeasure treesCollapsed
+        BranchScore _       -> branchScoreDistance
+      normalizeF = case distance of
+        BranchScore True -> normalize
+        _                -> id
+      collapseF = case distance of
+        IncompatibleSplit val -> collapse val
+        _                     -> id
+      trees' = map (collapseF . normalizeF) trees
+  $(logDebug) "The prepared trees are:"
+  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees'
+  let dsTriplets = computePairwiseDistances distanceMeasure trees'
       ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds
   -- XXX: It may be good to use the common 'io' function also here.

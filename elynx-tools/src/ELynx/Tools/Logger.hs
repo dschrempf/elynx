@@ -40,8 +40,8 @@ logNewSection s = do
   $(logInfo) $ "-- " <> s
 
 eLynxWrapper :: (MonadBaseControl IO m, MonadIO m)
-             => Maybe FilePath -> String -> LoggingT m () -> m ()
-eLynxWrapper logFile headerMsg worker = runELynxLoggingT logFile $
+             => LogLevel -> Maybe FilePath -> String -> LoggingT m () -> m ()
+eLynxWrapper lvl logFile headerMsg worker = runELynxLoggingT lvl logFile $
   do
     h <- liftIO $ logHeader headerMsg
     $(logInfo) $ pack h
@@ -49,9 +49,10 @@ eLynxWrapper logFile headerMsg worker = runELynxLoggingT logFile $
     f <- liftIO logFooter
     $(logInfo) $ pack f
 
-runELynxLoggingT :: (MonadBaseControl IO m, MonadIO m) => Maybe FilePath -> LoggingT m a -> m a
-runELynxLoggingT f = case f of
-  Nothing -> runELynxStderrLoggingT
+runELynxLoggingT :: (MonadBaseControl IO m, MonadIO m)
+                 => LogLevel -> Maybe FilePath -> LoggingT m a -> m a
+runELynxLoggingT lvl f = case f of
+  Nothing -> runELynxStderrLoggingT . filterLogger (\_ l -> l >= lvl)
   Just fn -> runELynxFileLoggingT fn
 
 runELynxFileLoggingT :: MonadBaseControl IO m => FilePath -> LoggingT m a -> m a

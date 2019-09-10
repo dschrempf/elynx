@@ -36,10 +36,12 @@ module ELynx.Data.Tree.Bipartition
   ) where
 
 -- import           Data.List
-import qualified Data.Map              as M
+import qualified Data.Map             as M
 import           Data.Maybe
-import qualified Data.Set              as S
+import qualified Data.Set             as S
 import           Data.Tree
+
+import           Debug.Trace          as D
 
 import           ELynx.Data.Tree.Tree
 
@@ -200,31 +202,32 @@ bipartitionToBranch' lvsStem br f g t@(Node l xs )
     lvsThisNode = snd l
     lvsOthers   = subForestGetLeafSets lvsStem $ fmap snd t
 
--- | Get all bipartitions, but combine leaves from multi-furcations. This is
+-- | Get all bipartitions, but combine leaves from multifurcations. This is
 -- useful to find incompatible splits. See
 -- 'ELynx.Data.Tree.Distance.incompatibleSplitsDistance'. Assume that a root
 -- node with three children is actually not a multifurcation (because then we
 -- would have no induced bypartitions), but rather corresponds to an unrooted
 -- tree.
-bipartitionsCombined :: Ord a => Tree a -> S.Set (Bipartition a)
+bipartitionsCombined :: (Ord a, Show a) => Tree a -> S.Set (Bipartition a)
 bipartitionsCombined t@(Node _ xs)
   | null xs        = S.empty
   | length xs == 1 = bipartitionsCombined (head xs)
   -- One big multifurcation does not induce any bipartitions.
   | length xs >  3 = S.empty
-  | otherwise      = S.unions [ bipartitionsCombined' lvs x
-                              | (lvs, x) <- zip lvsOthers (subForest lvsTree) ]
+  | otherwise      = D.trace (show res) res
   where
+    res = S.unions [ bipartitionsCombined' lvs x
+                   | (lvs, x) <- zip lvsOthers (subForest lvsTree) ]
     lvsTree = leavesTree t
     lvsOthers = subForestGetLeafSets S.empty lvsTree
 
 bipartitionsCombined' :: Ord a => S.Set a -> Tree (S.Set a) -> S.Set (Bipartition a)
-bipartitionsCombined' lvsStem t@(Node l xs)
+bipartitionsCombined' lvsStem t@(Node lvs xs)
   | S.null lvsStem = error "bipartitionsCombined': no complementing leaf set."
-  | null xs        = S.singleton $ bp lvsStem l
+  | null xs        = S.singleton $ bp lvsStem lvs
   | length xs == 1 = bipartitionsCombined' lvsStem (head xs)
-  | length xs == 2 = S.unions [ bipartitionsCombined' lvs x
-                              | (lvs, x) <- zip lvsOthers xs ]
-  | otherwise      = S.singleton $ bp lvsStem l
+  | length xs == 2 = S.unions $
+                     S.singleton (bp lvsStem lvs) : zipWith bipartitionsCombined' lvsOthers xs
+  | otherwise      = S.singleton $ bp lvsStem lvs
   where
     lvsOthers = subForestGetLeafSets lvsStem t
