@@ -95,17 +95,23 @@ subForestGetLeafSets lvsS t = lvsOthers
                        | i <- [0 .. (nChildren - 1)] ]
     lvsOthers        = map (S.union lvsS) lvsOtherChildren
 
--- | Get all bipartitions.
 
--- TODO: Check uniqueness of leaves.
+-- | Get all bipartitions.
 bipartitions :: Ord a => Tree a -> S.Set (Bipartition a)
-bipartitions (Node _ [] ) = S.empty
+bipartitions t = if S.size (S.fromList lvs) == length lvs
+                 then bipartitionsUnsafe t
+                 else error "bipartitions: The tree contains duplicate leaves."
+  where lvs = leaves t
+
+-- | See 'bipartitions', but do not check if leaves are unique.
+bipartitionsUnsafe :: Ord a => Tree a -> S.Set (Bipartition a)
+bipartitionsUnsafe (Node _ [] ) = S.empty
 -- If the root stem is split by degree two nodes, just go on since the root stem
 -- does not induce any bipartitions.
-bipartitions (Node _ [x]) = bipartitions x
+bipartitionsUnsafe (Node _ [x]) = bipartitionsUnsafe x
 -- We have rose trees, so we need to through the list of children and combine
 -- each of them with the rest.
-bipartitions t =
+bipartitionsUnsafe t =
   S.unions [ bipartitions' lvs x
            | (lvs, x) <- zip lvsOthers (subForest lvsTree) ]
   where
@@ -131,22 +137,31 @@ bipartitions' lvsStem t@(Node lvs xs)
 -- respective 'Bipartition'. The information about the branch is extracted from
 -- the nodes with a given function. If the tree has degree two nodes, the branch
 -- values are combined; a unity element is required, and so we need the 'Monoid'
--- type class constraint.
-
--- TODO: Check uniqueness of leaves.
+-- type class constraint. Checks if leaves are unique.
 bipartitionToBranch :: (Ord a, Ord b, Monoid c)
                     => (a -> b)      -- ^ Value to compare on
                     -> (a -> c)      -- ^ Convert node to branch length
                     -> Tree a        -- ^ Tree to dissect
                     -> M.Map (Bipartition b) c
-bipartitionToBranch _ _ (Node _ [] ) = M.empty
+bipartitionToBranch f g t = if S.size (S.fromList lvs) == length lvs
+                 then bipartitionToBranchUnsafe f g t
+                 else error "bipartitionToBranch: The tree contains duplicate leaves."
+  where lvs = leaves t
+
+-- | See 'bipartitionToBranch', but does not check if leaves are unique.
+bipartitionToBranchUnsafe :: (Ord a, Ord b, Monoid c)
+                    => (a -> b)      -- ^ Value to compare on
+                    -> (a -> c)      -- ^ Convert node to branch length
+                    -> Tree a        -- ^ Tree to dissect
+                    -> M.Map (Bipartition b) c
+bipartitionToBranchUnsafe _ _ (Node _ [] ) = M.empty
 -- If the root stem is split by degree two nodes, just go on and ignore the
 -- branch information, because the stem does not induce any bipartition
 -- anyways..
-bipartitionToBranch f g (Node _ [x]) = bipartitionToBranch f g x
+bipartitionToBranchUnsafe f g (Node _ [x]) = bipartitionToBranchUnsafe f g x
 -- We have rose trees, so we need to through the list of children and combine
 -- each of them with the rest.
-bipartitionToBranch f g t =
+bipartitionToBranchUnsafe f g t =
   M.unionsWith (<>) [ bipartitionToBranch' lvs mempty f g x
                     | (lvs, x) <- zip lvsOthers (subForest nodeAndLeavesTrees) ]
   where

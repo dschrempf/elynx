@@ -20,11 +20,6 @@ For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/p
 
 
 module ELynx.Import.Sequence.Fasta
-  -- TODO: Do we need to export the Parser here?
-  -- ( Parser
-  -- , fastaSequence
-  -- , fasta
-  -- ) where
   ( fastaSequence
   , fasta
   ) where

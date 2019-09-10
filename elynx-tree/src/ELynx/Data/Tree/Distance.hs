@@ -10,8 +10,8 @@ Portability :  portable
 
 Creation date: Thu Jun 13 17:15:54 2019.
 
-TODO: All trees are assumed to be UNROOTED. State this in the function
-documentations and the help text of the binaries.
+Various distance functions for phylogenetic trees (and binary trees in general).
+All trees are assumed to be UNROOTED.
 
 -}
 
@@ -58,9 +58,10 @@ symmetricDifferenceS xs ys = S.difference xs ys `S.union` S.difference ys xs
 -- symmetricDifferenceM :: Ord k => M.Map k a -> M.Map k a -> M.Map k a
 -- symmetricDifferenceM x y = M.difference x y `M.union` M.difference y x
 
--- | Symmetric (Robinson-Foulds) distance between two trees. Assumes that the
--- leaves have unique names! Before comparing the leaf labels, apply a function
--- . This is useful to compare the labels of 'Named' trees on their names only.
+-- | Symmetric (Robinson-Foulds) distance between two trees. Before comparing
+-- the leaf labels, apply a given function. This is useful, for example, to
+-- compare the labels of 'Named' trees on their names only. The tree is assumed
+-- to be UNROOTED!
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
 symmetricDistanceWith :: (Ord b) => (a -> b) -> Tree a -> Tree a -> Int
@@ -71,9 +72,8 @@ symmetricDistanceWith f t1 t2 = length $ symmetricDifferenceS (bs t1) (bs t2)
 symmetricDistance :: Ord a => Tree a -> Tree a -> Int
 symmetricDistance = symmetricDistanceWith id
 
--- | Number of incompatible splits. Similar to 'symmetricDistance' but merges
--- multifurcations. Before comparing the leaf labels, apply a function . This is
--- useful to compare the labels of 'Named' trees on their names only.
+-- | Number of incompatible splits. Similar to 'symmetricDistanceWith' but
+-- merges multifurcations.
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
 incompatibleSplitsDistanceWith :: (Ord b) => (a -> b) -> Tree a -> Tree a -> Int
@@ -85,8 +85,10 @@ incompatibleSplitsDistance :: (Ord a) => Tree a -> Tree a -> Int
 incompatibleSplitsDistance = incompatibleSplitsDistanceWith id
 
 -- | Compute branch score distance between two trees. Before comparing the leaf
--- labels, apply a function. This is useful to compare the labels of 'Named'
--- trees on their names only.
+-- labels, apply a function. This is useful, for example, to compare the labels
+-- of 'Named' trees on their names only. The branch information which is
+-- compared to compute the distance is extracted from the nodes with a given
+-- function. Assumes that the trees are UNROOTED.
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
 branchScoreDistanceWith :: (Ord a, Ord b, Floating c)
@@ -104,8 +106,8 @@ branchScoreDistance :: (Ord a, Measurable a, Named a) => Tree a -> Tree a -> Dou
 branchScoreDistance = branchScoreDistanceWith getName getLen
 
 -- | Compute pairwise distances of a list of input trees. Use given distance
--- measure function. Returns a triple, the first two elements are the indices of
--- the compared trees, the third is the distance.
+-- measure. Returns a triple, the first two elements are the indices of the
+-- compared trees, the third is the distance.
 computePairwiseDistances :: (a -> a -> b)   -- ^ Distance function
                          -> [a]             -- ^ Input trees
                          -> [(Int, Int, b)] -- ^ (index i, index j, distance i j)
@@ -114,9 +116,9 @@ computePairwiseDistances dist trs = [ (i, j, dist x y)
                                     , (j, y) <- zip is xs ]
 
 -- | Compute distances between adjacent pairs of a list of input trees. Use
--- given distance measure function.
+-- given distance measure.
 computeAdjacentDistances :: (Tree a -> Tree a -> b) -- ^ Distance function
-                         -> [Tree a]                  -- ^ Input trees
+                         -> [Tree a]                -- ^ Input trees
                          -> [b]
 computeAdjacentDistances dist trs = [ dist x y | (x, y) <- zip trs (tail trs) ]
 

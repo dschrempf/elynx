@@ -101,7 +101,7 @@ simulateAndSubSampleNTreesConcurrently c = do
       timeSpec = fmap (, cM) h
   tr <- liftIO $ simulateReconstructedTree nLeavesBigTree timeSpec l m (head gs)
   logNewSection $ T.pack $ "Simulate one big tree with " <> show nLeavesBigTree <> " leaves."
-  -- TODO: Output is logged?
+  -- Log the base tree.
   $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick tr
   logNewSection $ T.pack $ "Sub sample " <> show nT <> " trees with " <> show nL <> " leaves."
   let lvs = Seq.fromList $ leaves tr

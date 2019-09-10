@@ -132,6 +132,7 @@ data GlobalArguments = GlobalArguments
   { verbosity       :: Verbosity
   , outFileBaseName :: Maybe FilePath }
 
+-- TODO: Provide global --redo, -r option. Only overwrite files if this option is specified.
 globalArguments :: Parser GlobalArguments
 globalArguments = GlobalArguments
   <$> verbosityOpt

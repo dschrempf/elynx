@@ -55,17 +55,10 @@ reportSimulateArguments a =
                    , "Sampling probability: " ++ show (argsRho a)
                    , "Perform sub-sampling: " ++ show (argsSubSample a)
                    , "Summary statistics only: " ++ show (argsSumStat a)
-                   -- TODO.
-                   -- , "Verbosity: " ++ show (argsVerbosity a)
-                   -- TODO.
-                   -- , "Output file base name: " ++ fStr
                    , "Seed: " ++ sStr ]
   where hStr = case argsHeight a of Nothing -> "Random height of origin"
                                     Just h  -> show h ++ ", conditioned on "
                                       ++ if argsConditionMRCA a then "MRCA" else "origin"
-        -- TODO.
-        -- fStr = case argsOutFileBaseName a of Nothing -> "None"
-        --                                      Just f  -> show f
         sStr = case argsSeed a of Nothing -> "Random"
                                   Just i  -> show i
 

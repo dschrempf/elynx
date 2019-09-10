@@ -97,11 +97,13 @@ summarizeEDMComponents cs = LC.pack
                             $ "Empiricial distribution mixture model with "
                             ++ show (length cs) ++ " components."
 
+-- XXX. Maybe provide human readable model file. But then, why is this
+-- necessary. A human readable summary is reported anyways, and for Protein
+-- models the exchangeabilities are too many.
 reportModel :: Maybe FilePath -> P.PhyloModel -> Simulate ()
 reportModel outFn m = do
   let modelFn = (<> ".model") <$> outFn
-  -- TODO. Provide human readable model file.
-  io "model definition (machine readable)" (bsShow m) modelFn
+  io "model definition (machine readable)" (bsShow m <> "\n") modelFn
 
 simulateCmd :: Maybe FilePath -> Simulate ()
 simulateCmd outFn = do

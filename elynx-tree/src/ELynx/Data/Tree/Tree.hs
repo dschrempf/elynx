@@ -96,7 +96,8 @@ subTree p (Node lbl chs) = if null subTrees
                            else Just $ Node lbl subTrees
   where subTrees = mapMaybe (subTree p) chs
 
--- TODO: Probably move the sampling functions into their own module.
+-- XXX: If module gets too big, move the sampling functions into their own
+-- module.
 -- | Extract a random sub tree with N leaves of a tree with M leaves, where M>N
 -- (otherwise error). The complete list of leaves (names are assumed to be
 -- unique) has to be provided as a 'Seq.Seq', and a 'Seq.Set', so that we have
