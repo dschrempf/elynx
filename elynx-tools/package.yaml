@@ -5,7 +5,7 @@ license:             GPL-3
 license-file:        LICENSE
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
-copyright:           "Dominik Schrempf (2018)"
+copyright:           "Dominik Schrempf (2019)"
 
 ghc-options:
   - -Wall
@@ -14,8 +14,8 @@ ghc-options:
   # - -fllvm
 
 extra-source-files:
-- README.org
-- ChangeLog.org
+- README.md
+- ChangeLog.md
 
 # Metadata used when publishing your package
 synopsis:            Tools for ELynx.
@@ -23,7 +23,7 @@ category:            Bioinformatics
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.org file.
+# common to point users to the README.md file.
 description:         Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
 
 dependencies:

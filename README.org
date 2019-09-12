@@ -1,3 +1,19 @@
+#+options: ':nil *:t -:t ::t <:t H:3 \n:nil ^:nil arch:headline author:t
+#+options: broken-links:nil c:nil creator:nil d:(not "LOGBOOK") date:t e:t
+#+options: email:nil f:t inline:t num:t p:nil pri:nil prop:nil stat:t tags:t
+#+options: tasks:t tex:t timestamp:t title:t toc:nil todo:t |:t
+#+title: README
+#+date: <2019-09-12 Thu>
+#+author: Dominik Schrempf
+#+email: dominik.schrempf@gmail.com
+#+language: en
+#+select_tags: export
+#+exclude_tags: noexport
+#+creator: Emacs 26.3 (Org mode 9.2.6)
+
+# MAKE SURE THAT THERE ARE NO LINKS AND PROPERTY DRAWSERS IN THIS FILE, THEY
+# SHOW UP UGLY ON HACKAGE.
+
 * The ELynx Suite
 Version: 0.0.1.
 Reproducible evolution made easy.
@@ -19,11 +35,11 @@ The library packages are:
 - elynx-tools :: Tools for the provided executables;
 
 The executables are:
-- [[id:7b3a6f5b-d8ae-4835-a649-c4ed3c9a7e4e][SLynx]] :: Analyze, modify, and simulate evolutionary sequences (FASTA format);
-- [[id:0b75e857-a5bc-4eab-a6b7-99d8f99d9eca][TLynx]] :: Analyze, modify, and simulate phylogenetic trees (Newick format).
+- SLynx :: Analyze, modify, and simulate evolutionary sequences (FASTA format);
+- TLynx :: Analyze, modify, and simulate phylogenetic trees (Newick format).
 
-*ELynx is still under development. We happily receive comments, ideas, or
-feature requests (or pull requests ☺)!*
+ELynx is still under development. We happily receive comments, ideas, or feature
+requests!
 
 * Installation 
 ELynx is written in [[https://www.haskell.org/][Haskell]] and can be installed with [[https://docs.haskellstack.org/en/stable/README/][Stack]].
@@ -64,9 +80,6 @@ ELynx is written in [[https://www.haskell.org/][Haskell]] and can be installed w
    Then, they can be used directly.
 
 * SLynx 
-:PROPERTIES:
-:ID:       7b3a6f5b-d8ae-4835-a649-c4ed3c9a7e4e
-:END:
 Handle evolutionary sequences.
 
 #+BEGIN_SRC sh :exports both :results verbatim output 
@@ -321,9 +334,6 @@ Available options:
 #+end_example
 
 * TLynx
-:PROPERTIES:
-:ID:       0b75e857-a5bc-4eab-a6b7-99d8f99d9eca
-:END:
 Handle phylogenetic trees in Newick format.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
