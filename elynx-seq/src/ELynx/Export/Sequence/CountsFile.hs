@@ -60,8 +60,8 @@ module ELynx.Export.Sequence.CountsFile
   , toCountsFile
   ) where
 
-import qualified Data.ByteString.Lazy.Char8             as L
-import           Data.Maybe                             (fromMaybe)
+import qualified Data.ByteString.Lazy.Char8            as L
+import           Data.Maybe                            (fromMaybe)
 
 import           ELynx.Data.Character.BoundaryMutation
 import           ELynx.Tools.ByteString                (alignLeft, alignRight)

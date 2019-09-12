@@ -15,7 +15,7 @@ module ELynx.Data.Alphabet.DistributionDiversitySpec
   (spec
   ) where
 
-import qualified Data.Vector.Unboxed                        as V
+import qualified Data.Vector.Unboxed                       as V
 import           Test.Hspec
 
 import           ELynx.Data.Alphabet.DistributionDiversity

@@ -32,7 +32,7 @@ import           ELynx.Tools.Options
 -- | Data structure holding the Command line arguments.
 data SubSampleArguments = SubSampleArguments
     { ssAlphabet    :: Alphabet
-    , ssInFile        :: Maybe FilePath
+    , ssInFile      :: Maybe FilePath
     , ssNSites      :: Int
     , ssNAlignments :: Int
     , ssMbSeed      :: Maybe [Word32] }

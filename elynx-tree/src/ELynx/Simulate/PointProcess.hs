@@ -31,9 +31,9 @@ module ELynx.Simulate.PointProcess
 
 import           Control.Monad
 import           Control.Monad.Primitive
-import           Data.List                                    (mapAccumL)
+import           Data.List                                   (mapAccumL)
 import           Data.Tree
-import qualified Statistics.Distribution                      as D (genContVar)
+import qualified Statistics.Distribution                     as D (genContVar)
 import           System.Random.MWC
 
 import           ELynx.Data.Tree.MeasurableTree

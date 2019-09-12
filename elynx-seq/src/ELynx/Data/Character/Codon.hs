@@ -28,8 +28,8 @@ module ELynx.Data.Character.Codon
   ) where
 
 import           Data.List
-import qualified Data.Map                          as M
-import qualified Data.Vector.Generic               as V
+import qualified Data.Map                         as M
+import qualified Data.Vector.Generic              as V
 
 import qualified ELynx.Data.Character.AminoAcidI  as AI
 import           ELynx.Data.Character.AminoAcidS

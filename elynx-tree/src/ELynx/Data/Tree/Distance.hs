@@ -27,9 +27,9 @@ module ELynx.Data.Tree.Distance
   ) where
 
 import           Data.List
-import qualified Data.Map                        as M
+import qualified Data.Map                       as M
 import           Data.Monoid
-import qualified Data.Set                        as S
+import qualified Data.Set                       as S
 import           Data.Tree
 
 import           ELynx.Data.Tree.Bipartition

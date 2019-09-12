@@ -29,8 +29,8 @@ module ELynx.Data.MarkovProcess.RateMatrix
   , getStationaryDistribution
   ) where
 
-import           Numeric.LinearAlgebra      hiding (normalize)
-import           Prelude                    hiding ((<>))
+import           Numeric.LinearAlgebra     hiding (normalize)
+import           Prelude                   hiding ((<>))
 
 import           ELynx.Tools.Equality
 import           ELynx.Tools.LinearAlgebra

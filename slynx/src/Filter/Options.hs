@@ -33,14 +33,14 @@ import           ELynx.Data.Alphabet.Alphabet
 -- | Arguments needed for filtering sequences.
 data FilterRowsArguments = FilterRowsArguments
   { frAlphabet :: Alphabet
-  , frInFile     :: Maybe FilePath
+  , frInFile   :: Maybe FilePath
   , frLonger   :: Maybe Int
   , frShorter  :: Maybe Int }
 
 -- | Arguments needed for filtering columns of a multi sequence alignment.
 data FilterColumnsArguments = FilterColumnsArguments
   { fcAlphabet :: Alphabet
-  , fcInFile     :: Maybe FilePath
+  , fcInFile   :: Maybe FilePath
   , fcStandard :: Maybe Double }
 
 -- | Logger and Reader for sequence filtering.

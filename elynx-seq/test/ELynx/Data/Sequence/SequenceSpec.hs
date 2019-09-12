@@ -14,7 +14,7 @@ Creation date: Fri Oct  5 14:25:42 2018.
 module ELynx.Data.Sequence.SequenceSpec
   (spec) where
 
-import qualified Data.ByteString.Lazy.Char8    as L
+import qualified Data.ByteString.Lazy.Char8   as L
 import           Test.Hspec
 
 import           ELynx.Data.Alphabet.Alphabet

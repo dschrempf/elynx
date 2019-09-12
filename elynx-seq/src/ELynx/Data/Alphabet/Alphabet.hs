@@ -42,8 +42,8 @@ module ELynx.Data.Alphabet.Alphabet
   , isMember
   ) where
 
-import qualified Data.Set                       as S
-import           Prelude                        hiding (all)
+import qualified Data.Set                      as S
+import           Prelude                       hiding (all)
 
 import           ELynx.Data.Alphabet.Character
 

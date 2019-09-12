@@ -23,7 +23,7 @@ module Translate.Translate
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
-import qualified Data.Text                                  as T
+import qualified Data.Text                     as T
 
 import           Tools
 import           Translate.Options

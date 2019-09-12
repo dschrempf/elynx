@@ -32,8 +32,8 @@ module ELynx.Data.Tree.PhyloTree
   , removeBrLen
   ) where
 
-import qualified Data.ByteString.Lazy.Builder       as L
-import qualified Data.ByteString.Lazy.Char8         as L
+import qualified Data.ByteString.Lazy.Builder      as L
+import qualified Data.ByteString.Lazy.Char8        as L
 import           Data.Function
 import           Data.Tree
 import           Test.QuickCheck

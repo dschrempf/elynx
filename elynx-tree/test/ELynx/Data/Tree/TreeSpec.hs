@@ -15,7 +15,7 @@ module ELynx.Data.Tree.TreeSpec
   (spec
   ) where
 
-import qualified Data.ByteString.Lazy.Char8      as L
+import qualified Data.ByteString.Lazy.Char8     as L
 import           Data.Maybe
 import           Data.Tree
 import           Test.Hspec

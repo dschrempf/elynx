@@ -16,12 +16,12 @@ module Simulate.PhyloModel
   ( getPhyloModel
   ) where
 
-import qualified Data.ByteString.Lazy.Char8                     as L
+import qualified Data.ByteString.Lazy.Char8                    as L
 import           Data.Maybe
 import           Data.Void
-import           Data.Word                                      (Word8)
-import           Numeric.LinearAlgebra                          (norm_1, size,
-                                                                 vector)
+import           Data.Word                                     (Word8)
+import           Numeric.LinearAlgebra                         (norm_1, size,
+                                                                vector)
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer

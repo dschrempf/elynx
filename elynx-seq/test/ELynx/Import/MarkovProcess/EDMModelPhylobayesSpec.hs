@@ -14,12 +14,12 @@ Creation date: Tue Jan 29 12:26:49 2019.
 module ELynx.Import.MarkovProcess.EDMModelPhylobayesSpec
   (spec) where
 
-import           Numeric.LinearAlgebra                          (fromList)
+import           Numeric.LinearAlgebra                         (fromList)
 import           Test.Hspec
 
 import           ELynx.Import.MarkovProcess.EDMModelPhylobayes
 import           ELynx.Tools.InputOutput                       (parseFileWith)
-import           Files                                          (componentsFilePhylobayes)
+import           Files                                         (componentsFilePhylobayes)
 
 testComponents :: [EDMComponent]
 testComponents =

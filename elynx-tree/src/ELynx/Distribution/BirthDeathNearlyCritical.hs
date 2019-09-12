@@ -31,9 +31,9 @@ module ELynx.Distribution.BirthDeathNearlyCritical
   , quantile
   ) where
 
-import           Data.Data                 (Data, Typeable)
-import           GHC.Generics              (Generic)
-import qualified Statistics.Distribution   as D
+import           Data.Data                (Data, Typeable)
+import           GHC.Generics             (Generic)
+import qualified Statistics.Distribution  as D
 
 import           ELynx.Distribution.Types
 

@@ -30,7 +30,7 @@ import           ELynx.Data.Alphabet.Alphabet
 -- | Arguments needed to examine sequences.
 data ExamineArguments = ExamineArguments
     { exAlphabet :: Alphabet
-    , exInFile     :: Maybe FilePath
+    , exInFile   :: Maybe FilePath
     , exPerSite  :: Bool }
 
 -- | Logger and Reader type.

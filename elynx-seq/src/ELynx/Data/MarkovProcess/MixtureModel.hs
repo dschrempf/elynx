@@ -41,8 +41,8 @@ module ELynx.Data.MarkovProcess.MixtureModel
   ) where
 
 import           Control.Lens
-import qualified Data.ByteString.Builder                     as L
-import qualified Data.ByteString.Lazy.Char8                  as L
+import qualified Data.ByteString.Builder                    as L
+import qualified Data.ByteString.Lazy.Char8                 as L
 
 import           ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S

@@ -25,8 +25,8 @@ module ELynx.Import.Sequence.Fasta
   ) where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8     as L
-import qualified Data.Set                       as S
+import qualified Data.ByteString.Lazy.Char8    as L
+import qualified Data.Set                      as S
 import           Data.Void
 import           Data.Word8
 import           Text.Megaparsec

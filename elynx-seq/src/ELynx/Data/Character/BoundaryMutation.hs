@@ -35,8 +35,8 @@ module ELynx.Data.Character.BoundaryMutation
   ) where
 
 import           Control.Lens
-import qualified Data.ByteString.Lazy.Char8       as L
-import           Numeric.SpecFunctions            (choose)
+import qualified Data.ByteString.Lazy.Char8      as L
+import           Numeric.SpecFunctions           (choose)
 
 import           ELynx.Data.Character.Nucleotide
 import           ELynx.Tools.Misc

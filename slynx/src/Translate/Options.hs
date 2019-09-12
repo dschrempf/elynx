@@ -33,7 +33,7 @@ import           ELynx.Tools.Misc
 -- | Arguments needed to translate sequences.
 data TranslateArguments = TranslateArguments
     { trAlphabet      :: Alphabet
-    , trInFile          :: Maybe FilePath
+    , trInFile        :: Maybe FilePath
     , trReadingFrame  :: Int
     , trUniversalCode :: UniversalCode }
 

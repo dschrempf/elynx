@@ -25,7 +25,7 @@ module ELynx.Data.MarkovProcess.PhyloModel
   ) where
 
 import           Control.Lens
-import qualified Data.ByteString.Lazy.Char8                  as L
+import qualified Data.ByteString.Lazy.Char8                 as L
 
 import           ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.MarkovProcess.MixtureModel      as M

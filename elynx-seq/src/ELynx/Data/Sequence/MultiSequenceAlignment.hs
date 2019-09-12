@@ -48,10 +48,10 @@ module ELynx.Data.Sequence.MultiSequenceAlignment
 import           Control.Lens
 import           Control.Monad
 import           Control.Monad.Primitive
-import qualified Data.ByteString.Lazy.Char8                 as L
+import qualified Data.ByteString.Lazy.Char8                as L
 import           Data.List
-import qualified Data.Matrix.Unboxed                        as M
-import qualified Data.Vector.Unboxed                        as V
+import qualified Data.Matrix.Unboxed                       as M
+import qualified Data.Vector.Unboxed                       as V
 import           System.Random.MWC
 
 import qualified ELynx.Data.Alphabet.Alphabet              as A

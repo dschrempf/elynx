@@ -40,8 +40,8 @@ module ELynx.Data.MarkovProcess.SubstitutionModel
   ) where
 
 import           Control.Lens
-import qualified Data.ByteString.Lazy.Char8           as L
-import qualified Numeric.LinearAlgebra                as LinAlg
+import qualified Data.ByteString.Lazy.Char8          as L
+import qualified Numeric.LinearAlgebra               as LinAlg
 
 import           ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.MarkovProcess.RateMatrix as R

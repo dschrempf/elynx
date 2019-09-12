@@ -22,7 +22,7 @@ module ELynx.Data.MarkovProcess.Nucleotide
   , hky
   ) where
 
-import           Numeric.LinearAlgebra                       hiding (normalize)
+import           Numeric.LinearAlgebra                      hiding (normalize)
 
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.MarkovProcess.RateMatrix

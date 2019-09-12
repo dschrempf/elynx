@@ -25,9 +25,9 @@ module ELynx.Data.MarkovProcess.AminoAcid
   , poissonCustom
   ) where
 
-import           Data.List                                   (elemIndex)
-import           Data.Maybe                                  (fromMaybe)
-import           Data.Word                                   (Word8)
+import           Data.List                                  (elemIndex)
+import           Data.Maybe                                 (fromMaybe)
+import           Data.Word                                  (Word8)
 import           Numeric.LinearAlgebra
 import           Numeric.SpecFunctions
 

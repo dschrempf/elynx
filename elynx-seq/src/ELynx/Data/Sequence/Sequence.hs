@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell     #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 {- |
 Module      :  ELynx.Data.Sequence
@@ -48,11 +48,11 @@ module ELynx.Data.Sequence.Sequence
 
 import           Control.Lens
 import           Control.Parallel.Strategies
-import qualified Data.ByteString.Lazy.Char8     as L
-import           Data.List                      (maximumBy)
-import           Data.Ord                       (comparing)
-import qualified Data.Vector.Unboxed            as V
-import qualified Text.Printf                    as P
+import qualified Data.ByteString.Lazy.Char8    as L
+import           Data.List                     (maximumBy)
+import           Data.Ord                      (comparing)
+import qualified Data.Vector.Unboxed           as V
+import qualified Text.Printf                   as P
 
 import qualified ELynx.Data.Alphabet.Alphabet  as A
 import           ELynx.Data.Alphabet.Character

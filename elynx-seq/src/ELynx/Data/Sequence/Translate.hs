@@ -17,7 +17,7 @@ module ELynx.Data.Sequence.Translate
   )
 where
 
-import qualified Data.Vector.Unboxed            as V
+import qualified Data.Vector.Unboxed           as V
 
 import           ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.Alphabet.Character as C

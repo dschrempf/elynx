@@ -18,7 +18,7 @@ module ELynx.Data.MarkovProcess.EDMModel
   , edmModel
   ) where
 
-import qualified Data.Vector.Storable                        as V
+import qualified Data.Vector.Storable                       as V
 
 import           ELynx.Data.MarkovProcess.MixtureModel
 import           ELynx.Data.MarkovProcess.RateMatrix

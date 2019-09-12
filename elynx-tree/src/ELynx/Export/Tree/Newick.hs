@@ -22,9 +22,9 @@ module ELynx.Export.Tree.Newick
   -- , toNewickPhyloByteStringTree
   ) where
 
-import qualified Data.ByteString.Lazy.Builder       as L
-import qualified Data.ByteString.Lazy.Char8         as L
-import           Data.List                          (intersperse)
+import qualified Data.ByteString.Lazy.Builder      as L
+import qualified Data.ByteString.Lazy.Char8        as L
+import           Data.List                         (intersperse)
 -- import           Data.Maybe
 import           Data.Tree
 

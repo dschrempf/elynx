@@ -29,7 +29,7 @@ module ELynx.Data.Alphabet.Character
   , fromCVec
   ) where
 
-import qualified Data.Vector.Unboxed             as V
+import qualified Data.Vector.Unboxed            as V
 import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 

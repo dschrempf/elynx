@@ -23,7 +23,7 @@ module ELynx.Data.MarkovProcess.GammaRateHeterogeneity
   ) where
 
 import           Control.Lens
-import qualified Data.ByteString.Lazy.Char8                  as L
+import qualified Data.ByteString.Lazy.Char8                 as L
 import           Numeric.Integration.TanhSinh
 import           Statistics.Distribution
 import           Statistics.Distribution.Gamma
