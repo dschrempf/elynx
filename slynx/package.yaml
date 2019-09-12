@@ -9,7 +9,7 @@ copyright:           "Dominik Schrempf (2019)"
 
 extra-source-files:
 - README.md
-- ChangeLog.org
+- ChangeLog.md
 
 # Metadata used when publishing your package
 synopsis:            Examine, modify and simulate molecular sequence data in a reproducible way.
