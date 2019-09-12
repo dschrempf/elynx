@@ -62,56 +62,15 @@ Create source distribution tarballs.
 
 #+NAME: HackageCreateTarballs
 #+BEGIN_SRC sh :exports both :results output verbatim
-stack sdist --pvp-bounds both 2>&1
+stack sdist --pvp-bounds both
 #+END_SRC
 
 #+RESULTS: HackageCreateTarballs
-#+begin_example
-Getting file list for /home/dominik/Evolutionary-Biology/Code/elynx/elynx-seq/
-elynx-seq> List of package sources written to file
-elynx-seq> '/tmp/stack-sdist-e3fbef882cb5efa3/source-files-list'
-Building sdist tarball for /home/dominik/Evolutionary-Biology/Code/elynx/elynx-seq/
-Wrote sdist tarball to
-/home/dominik/Evolutionary-Biology/Code/elynx/elynx-seq/.stack-work/dist/x86_64-linux-tinfo6/Cabal-2.4.0.1/elynx-seq-0.0.1.tar.gz
-Checking package 'elynx-seq' for common mistakes
-Package check reported the following warnings:
-The 'description' field should be longer than the 'synopsis' field. It's useful to provide an informative 'description' to allow Haskell programmers who have never heard about your package to understand the purpose of your package. The 'description' field content is typically shown by tooling (e.g. 'cabal info', Haddock, Hackage) below the 'synopsis' which serves as a headline. Please refer to <https://www.haskell.org/cabal/users-guide/developing-packages.html#package-properties> for more details.
-Getting file list for /home/dominik/Evolutionary-Biology/Code/elynx/elynx-tools/
-elynx-tools> List of package sources written to file
-elynx-tools> '/tmp/stack-sdist-f166f634fd2cc088/source-files-list'
-Building sdist tarball for /home/dominik/Evolutionary-Biology/Code/elynx/elynx-tools/
-Wrote sdist tarball to
-/home/dominik/Evolutionary-Biology/Code/elynx/elynx-tools/.stack-work/dist/x86_64-linux-tinfo6/Cabal-2.4.0.1/elynx-tools-0.0.1.tar.gz
-Checking package 'elynx-tools' for common mistakes
-Getting file list for /home/dominik/Evolutionary-Biology/Code/elynx/elynx-tree/
-elynx-tree> List of package sources written to file
-elynx-tree> '/tmp/stack-sdist-909325c97b54eb8d/source-files-list'
-Building sdist tarball for /home/dominik/Evolutionary-Biology/Code/elynx/elynx-tree/
-Wrote sdist tarball to
-/home/dominik/Evolutionary-Biology/Code/elynx/elynx-tree/.stack-work/dist/x86_64-linux-tinfo6/Cabal-2.4.0.1/elynx-tree-0.0.1.tar.gz
-Checking package 'elynx-tree' for common mistakes
-Getting file list for /home/dominik/Evolutionary-Biology/Code/elynx/slynx/
-slynx> List of package sources written to file
-slynx> '/tmp/stack-sdist-53cc764b8716767c/source-files-list'
-Building sdist tarball for /home/dominik/Evolutionary-Biology/Code/elynx/slynx/
-Wrote sdist tarball to
-/home/dominik/Evolutionary-Biology/Code/elynx/slynx/.stack-work/dist/x86_64-linux-tinfo6/Cabal-2.4.0.1/slynx-0.0.1.tar.gz
-Checking package 'slynx' for common mistakes
-Package check reported the following warnings:
-The 'description' field should be longer than the 'synopsis' field. It's useful to provide an informative 'description' to allow Haskell programmers who have never heard about your package to understand the purpose of your package. The 'description' field content is typically shown by tooling (e.g. 'cabal info', Haddock, Hackage) below the 'synopsis' which serves as a headline. Please refer to <https://www.haskell.org/cabal/users-guide/developing-packages.html#package-properties> for more details.
-Getting file list for /home/dominik/Evolutionary-Biology/Code/elynx/tlynx/
-tlynx> List of package sources written to file
-tlynx> '/tmp/stack-sdist-fcf634c0c51ae2c8/source-files-list'
-Building sdist tarball for /home/dominik/Evolutionary-Biology/Code/elynx/tlynx/
-Wrote sdist tarball to
-/home/dominik/Evolutionary-Biology/Code/elynx/tlynx/.stack-work/dist/x86_64-linux-tinfo6/Cabal-2.4.0.1/tlynx-0.0.1.tar.gz
-Checking package 'tlynx' for common mistakes
-#+end_example
 
 * Hackage
-Upload the source distribution tarballs to Hackage
+Upload the source distribution tarballs to Hackage.
 
 #+NAME: HackageUploadTarballs
 #+BEGIN_SRC sh :exports both :results output verbatim
-stack upload 2>&1
+stack upload
 #+END_SRC
