@@ -5,11 +5,23 @@ set -e
 source include
 
 usage() {
-    echo "Usage: $(basename "$0") [MAJOR|major|minor]"
+    echo "Usage: $(basename "$0") [MAJOR|major|minor|reset Ma ma mi]"
+    echo ""
+    echo "When resetting the version, provide space separated"
+    echo "MAJOR, major, and minor version numbers."
+    echo "For example,"
+    echo "$(basename "$0") reset 0 0 1"
 }
 
 increment() {
     echo "$1" 1 | awk '{printf "%d", $1 + $2}'
+}
+
+assert_integer() {
+    re='^[0-9]+$'
+    if ! [[ $1 =~ $re ]] ; then
+        echo "error: Not a number" >&2; exit 1
+    fi
 }
 
 # Also removes whitespace.
@@ -31,6 +43,20 @@ then
 elif [[ $1 == "minor" ]]
 then
     version_minor=$(increment "$version_minor")
+elif [[ $1 == "reset" ]]
+then
+    if [[ $# != 4 ]]
+    then
+        usage
+        exit 1
+    else
+        assert_integer "$2"
+        assert_integer "$3"
+        assert_integer "$4"
+        version_MAJOR=$2
+        version_major=$3
+        version_minor=$4
+    fi
 else
     usage
     exit 1
