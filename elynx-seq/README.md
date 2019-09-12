@@ -27,8 +27,8 @@ The executables are:
 -   **SLynx:** Analyze, modify, and simulate evolutionary sequences (FASTA format);
 -   **TLynx:** Analyze, modify, and simulate phylogenetic trees (Newick format).
 
-ELynx is still under development. We happily receive comments, ideas, or feature
-requests!
+**ELynx is still under development. We happily receive comments, ideas, feature
+requests, or pull requests!**
 
 
 # Installation
