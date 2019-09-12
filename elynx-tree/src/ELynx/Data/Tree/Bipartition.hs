@@ -41,8 +41,6 @@ import           Data.Maybe
 import qualified Data.Set             as S
 import           Data.Tree
 
-import           Debug.Trace          as D
-
 import           ELynx.Data.Tree.Tree
 
 -- | Bipartitions with 'S.Set's, since order of elements within the leaf sets
@@ -214,7 +212,7 @@ bipartitionsCombined t@(Node _ xs)
   | length xs == 1 = bipartitionsCombined (head xs)
   -- One big multifurcation does not induce any bipartitions.
   | length xs >  3 = S.empty
-  | otherwise      = D.trace (show res) res
+  | otherwise      = res
   where
     res = S.unions [ bipartitionsCombined' lvs x
                    | (lvs, x) <- zip lvsOthers (subForest lvsTree) ]

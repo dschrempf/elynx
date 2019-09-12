@@ -25,7 +25,6 @@ Bump version.
 ./scripts/bump-version minor
 #+END_SRC
 
-
 * README and Change Log
 Export [[file:README.org][README.org]], and [[file:ChangeLog.org][ChangeLog.org]] to Markdown.
 
@@ -42,6 +41,16 @@ done
 #+END_SRC
 
 #+RESULTS: CopyFiles
+
+* Build
+Build project, perform tests, build documentation.
+
+#+NAME: Build
+#+BEGIN_SRC sh :exports both :results output verbatim
+stack build --test --haddock
+#+END_SRC
+
+#+RESULTS: Build
 
 * Git
 Commit all changes.
