@@ -2,6 +2,7 @@ name:                tlynx
 version:             0.0.1
 github:              "dschrempf/elynx"
 license:             GPL-3
+license-file:        LICENSE
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
 copyright:           "Dominik Schrempf (2018)"
@@ -21,7 +22,7 @@ description:         Please see the README on GitHub at <https://github.com/dsch
 
 ghc-options:
   - -Wall
-  - -O2
+  # - -O2
   # # LLVM 6.0 not available for Arch anymore.
   # - -fllvm
 
