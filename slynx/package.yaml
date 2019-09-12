@@ -12,13 +12,15 @@ extra-source-files:
 - ChangeLog.md
 
 # Metadata used when publishing your package
-synopsis:            Examine, modify and simulate molecular sequence data in a reproducible way.
+synopsis:            Handle molecular sequences
 category:            Bioinformatics
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
+description:
+  Examine, modify, and simulate molecular sequences in a reproducible way.
+  Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
 
 ghc-options:
   - -Wall

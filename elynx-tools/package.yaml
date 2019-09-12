@@ -18,7 +18,7 @@ extra-source-files:
 - ChangeLog.md
 
 # Metadata used when publishing your package
-synopsis:            Tools for ELynx.
+synopsis:            Tools for ELynx
 category:            Bioinformatics
 
 # To avoid duplicated efforts in documentation and dealing with the
