@@ -42,6 +42,7 @@ readTrees mfp = do
     Just fp -> $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
   liftIO $ parseFileOrIOWith manyNewick mfp
 
+-- | Examine phylogenetic trees.
 examine :: Maybe FilePath -> Examine ()
 examine outFn = do
   ExamineArguments inFn <- lift ask

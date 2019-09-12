@@ -27,13 +27,16 @@ import           Tools
 
 import           ELynx.Data.Alphabet.Alphabet
 
+-- | Arguments needed to examine sequences.
 data ExamineArguments = ExamineArguments
     { exAlphabet :: Alphabet
     , exInFile     :: Maybe FilePath
     , exPerSite  :: Bool }
 
+-- | Logger and Reader type.
 type Examine = LoggingT (ReaderT ExamineArguments IO)
 
+-- | Command line parser.
 examineArguments :: Parser ExamineArguments
 examineArguments = ExamineArguments
            <$> alphabetOpt

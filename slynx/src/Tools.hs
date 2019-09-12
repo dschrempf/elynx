@@ -32,6 +32,7 @@ import           ELynx.Data.Sequence.Sequence
 import           ELynx.Import.Sequence.Fasta
 import           ELynx.Tools.InputOutput
 
+-- | Read sequences of given alphabet from file or standard input.
 readSeqs :: (MonadIO m, MonadLogger m) => Alphabet -> Maybe FilePath -> m [Sequence]
 readSeqs a mfp = do
   case mfp of
@@ -43,6 +44,7 @@ readSeqs a mfp = do
                <> fp <> "; alphabet" <> show a <> "."
   liftIO $ parseFileOrIOWith (fasta a) mfp
 
+-- | Command line option to specify the alphabet. Used by various commands.
 alphabetOpt :: Parser Alphabet
 alphabetOpt = option auto $
   long "alphabet" <>

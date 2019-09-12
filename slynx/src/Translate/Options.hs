@@ -30,14 +30,17 @@ import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.Character.Codon
 import           ELynx.Tools.Misc
 
+-- | Arguments needed to translate sequences.
 data TranslateArguments = TranslateArguments
     { trAlphabet      :: Alphabet
     , trInFile          :: Maybe FilePath
     , trReadingFrame  :: Int
     , trUniversalCode :: UniversalCode }
 
+-- | Logger and Reader type.
 type Translate = LoggingT (ReaderT TranslateArguments IO)
 
+-- | Command line parser.
 translateArguments :: Parser TranslateArguments
 translateArguments = TranslateArguments <$>
                      alphabetOpt <*>

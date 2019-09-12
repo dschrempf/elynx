@@ -37,6 +37,7 @@ import           ELynx.Tools.InputOutput
 translateSeqs :: Int -> UniversalCode -> [Sequence] -> [Sequence]
 translateSeqs rf uc = map (translateSeq uc rf)
 
+-- | Translate sequences.
 translateCmd :: Maybe FilePath -> Translate ()
 translateCmd outFileBaseName = do
   $(logInfo) "Command: Translate sequences to amino acids."

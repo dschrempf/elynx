@@ -36,7 +36,8 @@ Available options:
 
 
 module Simulate.Options
-  ( SimulateArguments (..)
+  ( GammaRateHeterogeneityParams
+  , SimulateArguments (..)
   , Simulate
   , simulateArguments
   , simulateFooter
@@ -50,8 +51,10 @@ import           Options.Applicative
 
 import           ELynx.Tools.Options
 
+-- | Number of gamma rate categories and alpha parameter.
 type GammaRateHeterogeneityParams = (Int, Double)
 
+-- | Arguments needed to simulate sequences.
 data SimulateArguments = SimulateArguments
   { argsTreeFile                :: FilePath
   , argsSubstitutionModelString :: Maybe String
@@ -63,8 +66,10 @@ data SimulateArguments = SimulateArguments
   , argsMaybeSeed               :: Maybe [Word32]
   }
 
+-- | A simulation can log stuff and read the necessary arguments.
 type Simulate = LoggingT (ReaderT SimulateArguments IO)
 
+-- | Sub command parser.
 simulateArguments :: Parser SimulateArguments
 simulateArguments = SimulateArguments
   <$> treeFileOpt
@@ -125,6 +130,8 @@ lengthOpt = option auto
     <> metavar "NUMBER"
     <> help "Set alignment length to NUMBER" )
 
+-- | The model specification is somewhat complicated, so we need to provide
+-- additional help.
 simulateFooter :: String
 simulateFooter = intercalate "\n" $ sms ++ mms
   where

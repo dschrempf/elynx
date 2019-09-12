@@ -15,9 +15,11 @@ Creation date: Thu Oct  4 18:54:51 2018.
 -}
 
 module ELynx.Data.Sequence.Sequence
-  ( SequenceName
+  ( -- * Types
+    SequenceName
   , SequenceCharacters
   , Sequence (Sequence)
+  -- * Lenses
   , name
   , alphabet
   , characters

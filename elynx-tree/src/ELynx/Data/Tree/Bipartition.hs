@@ -45,7 +45,7 @@ import           Debug.Trace          as D
 
 import           ELynx.Data.Tree.Tree
 
--- | Bipartitions with 'Set.Set's, since order of elements within the leaf sets
+-- | Bipartitions with 'S.Set's, since order of elements within the leaf sets
 -- is not important. Also the order of the two leaf sets of the bipartition is
 -- not important (see 'Eq' instance definition).
 newtype Bipartition a = Bipartition (S.Set a, S.Set a)
@@ -55,13 +55,13 @@ newtype Bipartition a = Bipartition (S.Set a, S.Set a)
 --   show (Bipartition (x, y)) = "(" ++ showSet x ++ "|" ++ showSet y ++  ")"
 --     where showSet s = intercalate "," $ map show $ S.toList s
 
--- | Create a bipartition from two 'Set's.
+-- | Create a bipartition from two 'S.Set's.
 bp :: Ord a => S.Set a -> S.Set a -> Bipartition a
 bp x y = if x >= y
          then Bipartition (x, y)
          else Bipartition (y, x)
 
--- | Create a bipartition from two 'Set's.
+-- | Create a bipartition from two 'S.Set's.
 bpWith :: (Ord a, Ord b) => (a -> b) -> S.Set a -> S.Set a -> Bipartition b
 bpWith f x y = bpmap f $ bp x y
 
@@ -135,7 +135,7 @@ bipartitions' lvsStem t@(Node lvs xs)
     lvsOthers = subForestGetLeafSets lvsStem t
 
 -- | Each branch on a 'Tree' defines a unique 'Bipartition' of leaves. Convert a
--- tree into a 'Map' from each 'Bipartition' to the branch inducing the
+-- tree into a 'M.Map' from each 'Bipartition' to the branch inducing the
 -- respective 'Bipartition'. The information about the branch is extracted from
 -- the nodes with a given function. If the tree has degree two nodes, the branch
 -- values are combined; a unity element is required, and so we need the 'Monoid'

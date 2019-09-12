@@ -22,11 +22,14 @@ import           Control.Monad.Logger
 import           Control.Monad.Trans.Reader
 import           Options.Applicative
 
+-- | Arguments needed to examine phylogenetic trees.
 newtype ExamineArguments = ExamineArguments
   { inFile     :: Maybe FilePath }
 
+-- | Logger and reader data type.
 type Examine = LoggingT (ReaderT ExamineArguments IO)
 
+-- | Command line parser.
 examineArguments :: Parser ExamineArguments
 examineArguments = ExamineArguments <$> optional inFileArg
 

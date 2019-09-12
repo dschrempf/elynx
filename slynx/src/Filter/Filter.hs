@@ -41,6 +41,7 @@ filterRows :: Maybe Int -> Maybe Int -> [Sequence] -> L.ByteString
 filterRows ml ms ss = sequencesToFasta $ compose filters ss
   where filters = map (fromMaybe id) [filterLongerThan <$> ml, filterShorterThan <$> ms]
 
+-- | Filter sequences.
 filterRowsCmd :: Maybe FilePath -> FilterRows ()
 filterRowsCmd outFileBaseName = do
   $(logInfo) "Command: Filter sequences of a list of sequences."
@@ -59,6 +60,7 @@ filterColumns ms ss = sequencesToFasta . toSequenceList $ compose filters msa
   where msa = either error id (fromSequenceList ss)
         filters = map (fromMaybe id) [ filterColumnsStd <$> ms ]
 
+-- | Filter columns.
 filterColumnsCmd :: Maybe FilePath -> FilterColumns ()
 filterColumnsCmd outFileBaseName = do
   $(logInfo) "Command: Filter columns of a multi sequence alignment."

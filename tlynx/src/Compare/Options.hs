@@ -32,7 +32,13 @@ import           Text.Printf
 
 import           ELynx.Tools.Options
 
-data Distance = Symmetric | IncompatibleSplit Double | BranchScore Bool
+-- | Supported distance measures.
+data Distance =
+  Symmetric                     -- ^ Symmetric distance.
+  | IncompatibleSplit Double    -- ^ Incompatible split distance; collapse nodes
+                                -- with branch support below given value.
+  | BranchScore Bool            -- ^ Branch score distance. If given, normalize
+                                -- the trees before comparison.
 
 instance Show Distance where
   show Symmetric             = "Symmetric"
@@ -40,14 +46,17 @@ instance Show Distance where
   show (BranchScore False)   = "Branch Score"
   show (BranchScore True )   = "Branch Score (normalized)"
 
+-- | Arguments needed to compute distance measures.
 data CompareArguments = CompareArguments
   { argsDistance          :: Distance
   , argsSummaryStatistics :: Bool
   , argsInFiles           :: [FilePath]
   }
 
+-- | Lgger and reader data type.
 type Compare = LoggingT (ReaderT CompareArguments IO)
 
+-- | COmmand line parser.
 compareArguments :: Parser CompareArguments
 compareArguments = CompareArguments <$>
   distanceOpt
@@ -105,6 +114,7 @@ summaryStatisticsSwitch = switch $
   short 's' <>
   help "Report summary statistics only"
 
+-- | Information about provided distance types.
 compareFooter :: String
 compareFooter = intercalate "\n"
   [ "Available distance measures:"
@@ -112,4 +122,5 @@ compareFooter = intercalate "\n"
   , "  Incompatible split distance: -d incompatible-split[VAL]"
   , "    Collapse branches with support less than VAL before distance calculation;"
   , "    in this way, only well supported difference contribute to the distance measure."
-  , "  Branch score distance : -d branch-score" ]
+  , "  Branch score distance : -d branch-score"
+  , "                          -d branch-score-normalized (normalize trees before comparison)" ]

@@ -31,6 +31,7 @@ import           ELynx.Data.Sequence.Sequence
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
 
+-- | Concatenate sequences.
 concatenateCmd :: Maybe FilePath -> Concatenate ()
 concatenateCmd outFileBaseName = do
   $(logInfo) "Command: Concatenate sequences."

@@ -22,6 +22,7 @@ module ELynx.Data.Tree.MeasurableTree
   , shortenRoot
   , summarize
   , totalBranchLength
+  , normalize
   , prune
   ) where
 
@@ -84,6 +85,11 @@ summarize t = L.unlines $ map L.pack
 -- | Total branch length of a tree.
 totalBranchLength :: (Measurable a) => Tree a -> Double
 totalBranchLength = foldl' (\acc n -> acc + getLen n) 0
+
+-- | Normalize tree so that sum of branch lengths is 1.0.
+normalize :: (Measurable a) => Tree a -> Tree a
+normalize t = fmap (\n -> setLen (getLen n / s) n) t
+  where s = totalBranchLength t
 
 -- | Prune degree 2 nodes. Add branch lengths but forget pruned node label. See
 -- 'pruneWith'.

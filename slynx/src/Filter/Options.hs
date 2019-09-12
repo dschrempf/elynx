@@ -30,21 +30,26 @@ import           Tools
 
 import           ELynx.Data.Alphabet.Alphabet
 
+-- | Arguments needed for filtering sequences.
 data FilterRowsArguments = FilterRowsArguments
   { frAlphabet :: Alphabet
   , frInFile     :: Maybe FilePath
   , frLonger   :: Maybe Int
   , frShorter  :: Maybe Int }
 
+-- | Arguments needed for filtering columns of a multi sequence alignment.
 data FilterColumnsArguments = FilterColumnsArguments
   { fcAlphabet :: Alphabet
   , fcInFile     :: Maybe FilePath
   , fcStandard :: Maybe Double }
 
+-- | Logger and Reader for sequence filtering.
 type FilterRows = LoggingT (ReaderT FilterRowsArguments IO)
 
+-- | Logger and Reader for column filtering.
 type FilterColumns = LoggingT (ReaderT FilterColumnsArguments IO)
 
+-- | Command line parser.
 filterRowsArguments :: Parser FilterRowsArguments
 filterRowsArguments = FilterRowsArguments
               <$> alphabetOpt
@@ -64,6 +69,7 @@ filterShorterThanOpt = optional $ option auto $
   metavar "LENGTH" <>
   help "Only keep sequences shorter than LENGTH"
 
+-- | Command line parser.
 filterColumnsArguments :: Parser FilterColumnsArguments
 filterColumnsArguments = FilterColumnsArguments
                  <$> alphabetOpt

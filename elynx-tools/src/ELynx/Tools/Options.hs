@@ -86,7 +86,7 @@ logHeader desc = do
     , "Time: " ++ t
     , "Command line: " ++ p ++ " " ++ unwords as ]
 
--- | See 'logHeader' but at the end.
+-- | See 'logHeader' but footer.
 logFooter :: IO String
 logFooter = do
   t <- time
@@ -111,9 +111,9 @@ evoModSuiteFooter =
   , fill 9 (text "slynx") <+> text "Analyze, modify, and simulate evolutionary sequences."
   , fill 9 (text "tlynx") <+> text "Analyze, modify, and simulate phylogenetic trees." ]
 
--- | Read arguments with globally provided description, header, footer, and so
--- on. Custom additional description (first argument) and footer (second
--- argument) can be provided. print help if needed.
+-- | Parse arguments. Provide a global description, header, footer, and so on.
+-- Custom additional description (first argument) and footer (second argument)
+-- can be provided. print help if needed.
 parseArgumentsWith :: [String] -> [String] -> Parser a -> IO a
 parseArgumentsWith desc ftr p = execParser $
   info (helper <*> versionOpt <*> p)
@@ -135,11 +135,17 @@ toLogLevel Warning = LevelWarn
 toLogLevel Info    = LevelInfo
 toLogLevel Debug   = LevelDebug
 
+-- | A set of global arguments used by all programs. The idea is to provide a
+-- common framework for shared arguments.
+--
 data GlobalArguments = GlobalArguments
   { verbosity       :: LogLevel
   , outFileBaseName :: Maybe FilePath }
 
--- TODO: Provide global --redo, -r option. Only overwrite files if this option is specified.
+-- | See 'GlobalArguments', parser function.
+--
+-- TODO: Provide global --redo, -r option. Only overwrite files if this option
+-- is specified.
 globalArguments :: Parser GlobalArguments
 globalArguments = GlobalArguments
   <$> (toLogLevel <$> verbosityOpt)
@@ -187,4 +193,3 @@ megaReadM p = eitherReader $ \input ->
 -- descriptions, headers and footers.
 fillParagraph :: String -> Doc
 fillParagraph = fillSep . map text . words
-

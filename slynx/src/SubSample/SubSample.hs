@@ -50,6 +50,7 @@ getOutFilePaths file n suffix = [ file ++ "." ++ digitStr i ++ "." ++ suffix
   where nDigits    = ceiling $ logBase (10 :: Double) (fromIntegral n)
         digitStr i = T.unpack $ T.justifyRight nDigits '0' (LT.toStrict $ LT.toLazyText $ LT.decimal i)
 
+-- | Sub sample sequences.
 subSampleCmd :: Maybe FilePath  -- ^ Output file base name
              -> SubSample ()
 subSampleCmd outFileBaseName = do

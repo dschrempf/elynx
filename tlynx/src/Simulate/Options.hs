@@ -29,6 +29,7 @@ import           Options.Applicative
 
 import           ELynx.Tools.Options
 
+-- | Arguments need to simulate phylogenetic trees.
 data SimulateArguments = SimulateArguments
   { argsNTrees        :: Int            -- ^ Simulated trees.
   , argsNLeaves       :: Int            -- ^ Number of leaves.
@@ -43,8 +44,10 @@ data SimulateArguments = SimulateArguments
   , argsSeed          :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
   }
 
+-- | Logger and reader data type.
 type Simulate = LoggingT (ReaderT SimulateArguments IO)
 
+-- | Print useful information about the provided arguments.
 reportSimulateArguments :: SimulateArguments -> String
 reportSimulateArguments a =
   intercalate "\n" [ "Number of simulated trees: " ++ show (argsNTrees a)
@@ -62,6 +65,7 @@ reportSimulateArguments a =
         sStr = case argsSeed a of Nothing -> "Random"
                                   Just i  -> show i
 
+-- | Command line parser.
 simulateArguments :: Parser SimulateArguments
 simulateArguments = SimulateArguments
   <$> nTreeOpt
@@ -147,9 +151,11 @@ sumStatOpt = switch $
   <> showDefault
   <> help "Only output number of children for each branch"
 
+-- | Simulation is a little more involved, so we provide a description.
 simulateDesc :: String
 simulateDesc = "Simulate reconstructed trees using the point process. See Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005"
 
+-- | And a footer.
 simulateFooter :: String
 simulateFooter = intercalate "\n"
   [ "Height of Trees: if no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate."

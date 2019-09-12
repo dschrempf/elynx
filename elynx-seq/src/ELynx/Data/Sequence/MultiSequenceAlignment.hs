@@ -97,7 +97,7 @@ fromSequenceList ss
     bss  = map (view S.characters) ss
     d    = M.fromRows bss
 
--- | Conversion to list of 'Sequence's.
+-- | Conversion to list of 'S.Sequence's.
 toSequenceList :: MultiSequenceAlignment -> [S.Sequence]
 toSequenceList (MultiSequenceAlignment ns a d) = zipWith (\n r -> S.Sequence n a r) ns rows
   where
@@ -107,13 +107,13 @@ msaHeader :: L.ByteString
 msaHeader = L.unwords [ alignLeft defSequenceNameWidth (L.pack "Name")
                       , L.pack "Sequence" ]
 
--- | Show a 'Sequence', untrimmed.
+-- | Show a 'S.Sequence', untrimmed.
 showSequence :: MultiSequenceAlignment -> Int -> L.ByteString
 showSequence m i =
   L.unwords [ alignLeft defSequenceNameWidth $ (m ^. names) !! i
             , S.fromCharacters $ M.takeRow (m ^. matrix) i ]
 
--- | Show a 'Sequence', untrimmed.
+-- | Show a 'S.Sequence', untrimmed.
 summarizeSequence :: MultiSequenceAlignment -> Int -> L.ByteString
 summarizeSequence m i =
   L.unwords [ alignLeft defSequenceNameWidth $ (m ^. names) !! i

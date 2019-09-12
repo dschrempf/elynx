@@ -105,6 +105,7 @@ reportModel outFn m = do
   let modelFn = (<> ".model") <$> outFn
   io "model definition (machine readable)" (bsShow m <> "\n") modelFn
 
+-- | Simulate sequences.
 simulateCmd :: Maybe FilePath -> Simulate ()
 simulateCmd outFn = do
   a <- lift ask

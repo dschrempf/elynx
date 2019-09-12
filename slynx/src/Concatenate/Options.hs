@@ -27,12 +27,15 @@ import           Tools
 
 import           ELynx.Data.Alphabet.Alphabet
 
+-- | Arguments needed to concatenate multi sequence alignments.
 data ConcatenateArguments = ConcatenateArguments
     { ccAlphabet :: Alphabet
     , ccInFiles  :: [FilePath] }
 
+-- | Logger and Reader type.
 type Concatenate = LoggingT (ReaderT ConcatenateArguments IO)
 
+-- | Command line parser.
 concatenateArguments :: Parser ConcatenateArguments
 concatenateArguments = ConcatenateArguments
                <$> alphabetOpt

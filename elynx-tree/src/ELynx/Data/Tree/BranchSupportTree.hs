@@ -13,7 +13,8 @@ Creation date: Thu Jun 13 14:06:45 2019.
 -}
 
 module ELynx.Data.Tree.BranchSupportTree
-  ( BranchSupportLabel (..)
+  ( BranchSupport
+  , BranchSupportLabel (..)
   , normalize
   , collapse
   ) where
@@ -29,6 +30,8 @@ import           Data.Tree
 --   | BSDouble Double
 --   deriving (Num)
 
+-- | At the moment, just use 'Double'. It would be preferable to use a wrapper
+-- data type that can handle 'Int' or 'Double'.
 type BranchSupport = Maybe Double
 
 -- | A label that supports branch support values.
@@ -49,8 +52,8 @@ normalize t = if isNothing m then t else fmap (apply (/ fromJust m)) t
   where m = maximum $ fmap getBranchSupport t
 
 accept :: Double -> Maybe Double -> Bool
-accept _       Nothing  = True
-accept thresh (Just s)  = s > thresh
+accept _       Nothing = True
+accept thresh (Just s) = s > thresh
 
 -- | Collapse branches with support lower than given value. Note, branch length
 -- is ignored at the moment.

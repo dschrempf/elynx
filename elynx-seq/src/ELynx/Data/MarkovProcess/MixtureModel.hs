@@ -17,21 +17,27 @@ To be imported qualified.
 -}
 
 module ELynx.Data.MarkovProcess.MixtureModel
-  ( Weight
+  ( -- * Types
+    Weight
   , Component (Component)
-  , summarizeComponent
   , MixtureModel (MixtureModel)
+    -- * Lenses and other accessors
   , name
-  , fromSubstitutionModels
-  , concatenate
-  , summarize
-  , isValid
   , getAlphabet
   , getWeights
   , getSubstitutionModels
+    -- * Building mixture models
+  , fromSubstitutionModels
+    -- * Transformations
+  , concatenate
   , scale
   , normalize
   , appendName
+  -- * Tests
+  , isValid
+  -- * Output
+  , summarizeComponent
+  , summarize
   ) where
 
 import           Control.Lens
@@ -54,12 +60,6 @@ data Component = Component
 
 makeLenses ''Component
 
--- | Summarize a mixture model component; lines to be printed to screen or log.
-summarizeComponent :: Component -> [L.ByteString]
-summarizeComponent mmc =
-  L.pack "Weight: " <> (L.toLazyByteString . L.doubleDec $ mmc ^. weight)
-  : S.summarize (mmc ^. substModel)
-
 -- | A mixture model with its components.
 data MixtureModel = MixtureModel
   { _name       :: S.Name
@@ -68,33 +68,6 @@ data MixtureModel = MixtureModel
   deriving (Show, Read)
 
 makeLenses ''MixtureModel
-
--- | Create a mixture model from a list of substitution models.
-fromSubstitutionModels :: S.Name -> [Weight] -> [S.SubstitutionModel] -> MixtureModel
-fromSubstitutionModels n ws sms = MixtureModel n comps
-  where comps = zipWith Component ws sms
-
--- | Concatenate mixture models.
-concatenate :: S.Name -> [MixtureModel] -> MixtureModel
-concatenate n mms = MixtureModel n $ concatMap (view components) mms
-
--- | Summarize a mixture model; lines to be printed to screen or log.
-summarize :: MixtureModel -> [L.ByteString]
-summarize mm =
-  L.pack ("Mixture model: " ++ mm ^. name ++ ".")
-  : concat [ L.pack ("Component " ++ show i ++ ":") : summarizeComponent c
-            | (i, c) <- zip [1 :: Int ..] (mm ^. components) ]
-
--- | Checks if a mixture model is valid.
---
--- XXX: For the future, a proper way of creating mixture models might be of
--- interest. For example, not exporting the constructor nor the record fields
--- and providing an algebraic way of creating mixture models (empty and
--- addComponent which performs necessary checks).
-isValid :: MixtureModel -> Bool
-isValid mm = not (null $ mm ^. components)
-                         && allEqual alphabets
-  where alphabets = mm ^.. components . traverse . substModel . S.alphabet
 
 -- | Get alphabet used with mixture model. Throws error if components use different
 -- 'Alphabet's.
@@ -112,6 +85,16 @@ getWeights m = m ^.. components . traverse . weight
 getSubstitutionModels :: MixtureModel -> [S.SubstitutionModel]
 getSubstitutionModels m = m ^.. components . traverse . substModel
 
+
+-- | Create a mixture model from a list of substitution models.
+fromSubstitutionModels :: S.Name -> [Weight] -> [S.SubstitutionModel] -> MixtureModel
+fromSubstitutionModels n ws sms = MixtureModel n comps
+  where comps = zipWith Component ws sms
+
+-- | Concatenate mixture models.
+concatenate :: S.Name -> [MixtureModel] -> MixtureModel
+concatenate n mms = MixtureModel n $ concatMap (view components) mms
+
 -- | Scale all substitution models of the mixture model.
 scale :: Double -> MixtureModel -> MixtureModel
 scale s = over (components . traverse . substModel) (S.scale s)
@@ -127,3 +110,27 @@ normalize mm = scale (1/c) mm
 -- | Append byte string to all substitution models of mixture model.
 appendName :: S.Name -> MixtureModel -> MixtureModel
 appendName n = over (components . traverse . substModel) (S.appendName n)
+
+-- | Checks if a mixture model is valid.
+--
+-- XXX: For the future, a proper way of creating mixture models might be of
+-- interest. For example, not exporting the constructor nor the record fields
+-- and providing an algebraic way of creating mixture models (empty and
+-- addComponent which performs necessary checks).
+isValid :: MixtureModel -> Bool
+isValid mm = not (null $ mm ^. components)
+                         && allEqual alphabets
+  where alphabets = mm ^.. components . traverse . substModel . S.alphabet
+
+-- | Summarize a mixture model component; lines to be printed to screen or log.
+summarizeComponent :: Component -> [L.ByteString]
+summarizeComponent mmc =
+  L.pack "Weight: " <> (L.toLazyByteString . L.doubleDec $ mmc ^. weight)
+  : S.summarize (mmc ^. substModel)
+
+-- | Summarize a mixture model; lines to be printed to screen or log.
+summarize :: MixtureModel -> [L.ByteString]
+summarize mm =
+  L.pack ("Mixture model: " ++ mm ^. name ++ ".")
+  : concat [ L.pack ("Component " ++ show i ++ ":") : summarizeComponent c
+            | (i, c) <- zip [1 :: Int ..] (mm ^. components) ]

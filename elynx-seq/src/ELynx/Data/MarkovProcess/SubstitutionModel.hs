@@ -17,21 +17,26 @@ To be imported qualified.
 -}
 
 module ELynx.Data.MarkovProcess.SubstitutionModel
-  ( Name
+  ( -- * Types
+    Name
   , Params
   , SubstitutionModel
+  -- * Lenses and other accessors
   , alphabet
   , name
-  , substitutionModel
-  , unnormalized
   , stationaryDistribution
   , exchangeabilityMatrix
-  , scale
+  , getRateMatrix
   , totalRate
+  -- * Building substitution models
+  , substitutionModel
+  , unnormalized
+  -- * Transformations
+  , scale
   , normalize
   , appendName
+  -- * Output
   , summarize
-  , getRateMatrix
   ) where
 
 import           Control.Lens
@@ -63,6 +68,14 @@ data SubstitutionModel = SubstitutionModel
 
 makeLenses ''SubstitutionModel
 
+-- | Calculate rate matrix from substitution model.
+getRateMatrix :: SubstitutionModel -> R.RateMatrix
+getRateMatrix sm = R.fromExchangeabilityMatrix (sm^.exchangeabilityMatrix) (sm^.stationaryDistribution)
+
+-- | Get scale of substitution model.
+totalRate :: SubstitutionModel -> Double
+totalRate sm = R.totalRate (sm^.stationaryDistribution) (getRateMatrix sm)
+
 -- | Create normalized 'SubstitutionModel'. See 'normalize'.
 substitutionModel :: Alphabet -> Name -> Params
                   -> R.StationaryDistribution -> R.ExchangeabilityMatrix
@@ -79,16 +92,11 @@ unnormalized = SubstitutionModel
 scale :: Double -> SubstitutionModel -> SubstitutionModel
 scale r = over exchangeabilityMatrix (LinAlg.scale r)
 
--- | Get scale of substitution model.
-totalRate :: SubstitutionModel -> Double
-totalRate sm = R.totalRate (sm^.stationaryDistribution) (getRateMatrix sm)
-
 -- | Normalize a substitution model, so that, on average, one substitution
 -- happens per unit time.
 normalize :: SubstitutionModel -> SubstitutionModel
 normalize sm = scale (1.0/r) sm
-  where m = getRateMatrix sm
-        r = R.totalRate (sm^.stationaryDistribution) m
+  where r = totalRate sm
 
 -- | Abbend to name.
 appendName :: Name -> SubstitutionModel -> SubstitutionModel
@@ -109,6 +117,3 @@ summarize sm = map L.pack $
                ]
     _ -> error "Extended character sets are not supported with substitution models."
 
--- | Calculate rate matrix from substitution model.
-getRateMatrix :: SubstitutionModel -> R.RateMatrix
-getRateMatrix sm = R.fromExchangeabilityMatrix (sm^.exchangeabilityMatrix) (sm^.stationaryDistribution)

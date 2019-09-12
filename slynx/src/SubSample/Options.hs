@@ -29,6 +29,7 @@ import           Tools
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Tools.Options
 
+-- | Data structure holding the Command line arguments.
 data SubSampleArguments = SubSampleArguments
     { ssAlphabet    :: Alphabet
     , ssInFile        :: Maybe FilePath
@@ -36,8 +37,10 @@ data SubSampleArguments = SubSampleArguments
     , ssNAlignments :: Int
     , ssMbSeed      :: Maybe [Word32] }
 
+-- | The sub sample command can log stuff and read necessary arguments.
 type SubSample = LoggingT (ReaderT SubSampleArguments IO)
 
+-- | Sub command parser.
 subSampleArguments :: Parser SubSampleArguments
 subSampleArguments = SubSampleArguments
                      <$> alphabetOpt

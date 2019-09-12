@@ -77,6 +77,7 @@ class CharacterX a => CharacterI a where
   iupac      :: [a]
   toStandard :: a -> [a]
 
+-- | Check if a IUPAC 'CharacterI' is unknown (e.g., N for nucleotides).
 isUnknown :: CharacterI a => a -> Bool
 isUnknown c = c == unknown
 

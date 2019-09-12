@@ -34,11 +34,15 @@ import           System.Log.FastLogger
 
 import           ELynx.Tools.Options
 
+-- | Unified way of creating a new section in the log.
 logNewSection :: MonadLogger m => Text -> m ()
 logNewSection s = do
   $(logInfo) ""
   $(logInfo) $ "-- " <> s
 
+-- | The 'LoggingT' wrapper for ELynx. Prints a header and a footer, logs to
+-- 'stderr' if no file is provided. If a log file is provided, log to the file
+-- and to 'stderr'.
 eLynxWrapper :: (MonadBaseControl IO m, MonadIO m)
              => LogLevel -> Maybe FilePath -> String -> LoggingT m () -> m ()
 eLynxWrapper lvl logFile headerMsg worker = runELynxLoggingT lvl logFile $
@@ -53,7 +57,7 @@ runELynxLoggingT :: (MonadBaseControl IO m, MonadIO m)
                  => LogLevel -> Maybe FilePath -> LoggingT m a -> m a
 runELynxLoggingT lvl f = case f of
   Nothing -> runELynxStderrLoggingT . filterLogger (\_ l -> l >= lvl)
-  Just fn -> runELynxFileLoggingT fn
+  Just fn -> runELynxFileLoggingT fn . filterLogger (\_ l -> l >= lvl)
 
 runELynxFileLoggingT :: MonadBaseControl IO m => FilePath -> LoggingT m a -> m a
 runELynxFileLoggingT fp logger = bracket

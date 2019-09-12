@@ -95,6 +95,7 @@ examine perSiteFlag ss = summarizeSequenceList ss <>
     Left _    -> L.empty
     Right msa -> L.pack "\n" <> examineMSA perSiteFlag msa
 
+-- | Examine sequences.
 examineCmd :: Maybe FilePath -> Examine ()
 examineCmd outFileBaseName = do
   $(logInfo) "Command: Examine sequences."

@@ -40,8 +40,9 @@ import           Text.Printf
 
 import           Compare.Options
 
-import           ELynx.Data.Tree.BranchSupportTree
+import           ELynx.Data.Tree.BranchSupportTree as B
 import           ELynx.Data.Tree.Distance
+import           ELynx.Data.Tree.MeasurableTree    as M
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Export.Tree.Newick
@@ -64,6 +65,7 @@ showTriplet n args (i, j, d) = i' <> j' <> d'
         j' = alignLeft  (n+2) $ L.pack (args !! j)
         d' = alignRight 20    $ L.pack (printf pf d)
 
+-- | Compute distance functions between phylogenetic trees.
 compareTrees :: Maybe FilePath -> Compare ()
 compareTrees outFileBN = do
   a <- lift ask
@@ -112,10 +114,13 @@ compareTrees outFileBN = do
         IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplitsDistanceWith getName t1 t2
         BranchScore _       -> branchScoreDistance
       normalizeF = case distance of
-        BranchScore True -> normalize
+        BranchScore True -> M.normalize
         _                -> id
       collapseF = case distance of
-        IncompatibleSplit val -> collapse val
+        -- For the incompatible split distance we have to collapse branches with
+        -- support lower than the given value. Before doing so, we normalize the
+        -- branch support values.
+        IncompatibleSplit val -> collapse val . B.normalize
         _                     -> id
       trees' = map (collapseF . normalizeF) trees
   $(logDebug) "The prepared trees are:"

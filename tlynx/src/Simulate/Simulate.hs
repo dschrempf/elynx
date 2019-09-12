@@ -58,6 +58,7 @@ import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
 
+-- | Simulate phylogenetic trees.
 simulate :: Maybe FilePath -> Simulate ()
 simulate outFile = do
   a <- lift ask
