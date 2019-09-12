@@ -70,7 +70,14 @@ stack sdist --pvp-bounds both
 * Hackage
 Upload the source distribution tarballs to Hackage.
 
+Somehow this doesn't work on a project basis, so we have to do it separately for
+each package.
+
 #+NAME: HackageUploadTarballs
 #+BEGIN_SRC sh :exports both :results output verbatim
-stack upload
+for p in elynx-seq elynx-tools elynx-tree slynx tlynx
+do
+    (cd "$p" || exit 1
+    stack upload --pvp-bounds both .)
+done
 #+END_SRC
