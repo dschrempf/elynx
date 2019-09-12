@@ -4,7 +4,7 @@ set -e
 
 source include
 
-programs=("seq-ana" "seq-sim" "tree-ana" "tree-dist" "tree-sim")
+programs=("slynx" "tlynx")
 
 for p in "${programs[@]}"
 do

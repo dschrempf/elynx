@@ -5,4 +5,4 @@ source include
 file_benchmark="${project_root}/slynx/data/BenchmarkEnsemblMouse.fa.gz"
 
 msg "Seq-Ana benchmark."
-stack --work-dir "$prod_dir" exec seq-ana -- -a DNAI examine "$file_benchmark"  +RTS -s || exit 1
+stack --work-dir "$prod_dir" exec slynx -- examine -a DNAI "$file_benchmark"  +RTS -s || exit 1

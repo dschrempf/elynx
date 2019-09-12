@@ -16,27 +16,45 @@ set -e
 
 source include
 
-seq-ana() {
-    msg "Seq-Ana profiling run."
-    file_profile="${project_root}/slynx/data/Profile.fa.gz"
-    stack exec --work-dir $prof_dir --profile seq-ana -- \
-          -a ProteinI examine "$file_profile" \
-          +RTS -p -l -s || exit 1
+# Files created during profiling have the name of the executable. This function
+# renames them appropriately and adds the name of the given sub command.
+move-profiles() {
+    if [[ $# != 2 ]]
+    then
+        echo "Error in move-profiles."
+        exit 1
+    fi
+    pat=$1
+    sub=$2
+    for f in "${pat}".*
+    do
+        bn=${f%.*}
+        sf=${f##*.}
+        mv "$f" "${bn}-${sub}.${sf}"
+    done
 }
 
-seq-sim() {
-    msg "Seq-Sim profiling run."
-    file_tree="${project_root}/elynx-tree/data/Newick.tree"
-    file_edm="${project_root}/elynx-seq/data/EDMDistsPhylobayes.txt"
-    stack  exec --work-dir $prof_dir --profile seq-sim  -- \
-          -t "$file_tree" -o seq-sim.out -e "$file_edm" -m "EDM(LG-Custom)" -l 5000 -S [0] \
+slynx-examine() {
+    msg "Slynx examine profile run."
+    file_profile="${project_root}/slynx/data/Profile.fa.gz"
+    stack exec --work-dir $prof_dir --profile slynx -- -o slynx-examine \
+          examine -a ProteinI "$file_profile" \
           +RTS -p -hc -l -s || exit 1
 }
 
-tree-sim() {
-    msg "Tree-Sim profiling run."
-    stack exec --work-dir $prof_dir --profile tree-sim -- \
-          -t 10 -n 3000 -r 0.5 -u -o tree-sim.out -S [0] \
+slynx-simulate() {
+    msg "SLynx simulate profile run."
+    file_tree="${project_root}/elynx-tree/data/Newick.tree"
+    file_edm="${project_root}/elynx-seq/data/EDMDistsPhylobayes.txt"
+    stack exec --work-dir $prof_dir --profile slynx -- -o slynx-simulate \
+          simulate -t "$file_tree" -e "$file_edm" -m "EDM(LG-Custom)" -l 5000 -S [0] \
+          +RTS -p -hc -l -s || exit 1
+}
+
+tlynx-simulate() {
+    msg "TLynx simulate profile run."
+    stack exec --work-dir $prof_dir --profile tlynx -- -o tlynx-simulate \
+          simulate -t 10 -n 3000 -r 0.5 -u -S [0] \
           +RTS -p -hc -l -s || exit 1
 }
 
@@ -48,17 +66,20 @@ graph() {
     done
 }
 
-if [[ $1 == "seq-ana" ]]
+if [[ $1 == "slynx-examine" ]]
 then
-    seq-ana
-elif [[ $1 == "seq-sim" ]]
+    slynx-examine
+    move-profiles slynx examine
+elif [[ $1 == "slynx-simulate" ]]
 then
-    seq-sim
-elif [[ $1 == "tree-sim" ]]
+    slynx-simulate
+    move-profiles slynx simulate
+elif [[ $1 == "tlynx-simulate" ]]
 then
-    tree-sim
+    tlynx-simulate
+    move-profiles tlynx simulate
 else
-    echo "Usage: $(basename "$0") (seqana|seqsim|treesim)"
+    echo "Usage: $(basename "$0") (slynx-examine|slynx-simulate|tlynx-simulate)"
     exit 1
 fi
 

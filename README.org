@@ -22,8 +22,8 @@ The executables are:
 - [[id:7b3a6f5b-d8ae-4835-a649-c4ed3c9a7e4e][SLynx]] :: Analyze, modify, and simulate evolutionary sequences (FASTA format);
 - [[id:0b75e857-a5bc-4eab-a6b7-99d8f99d9eca][TLynx]] :: Analyze, modify, and simulate phylogenetic trees (Newick format).
 
-ELynx is still under development. We happily receive comments, ideas, or feature
-requests!
+*ELynx is still under development. We happily receive comments, ideas, or
+feature requests (or pull requests ☺)!*
 
 * Installation 
 ELynx is written in [[https://www.haskell.org/][Haskell]] and can be installed with [[https://docs.haskellstack.org/en/stable/README/][Stack]].

@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -e
+
+source include
+
+file_DNA="${project_root}/elynx-seq/data/Nucleotide.fasta"
+file_AA="${project_root}/elynx-seq/data/AminoAcid.fasta"
+file_tree="${project_root}/elynx-tree/data/Newick.tree"
+file_edm="${project_root}/elynx-seq/data/EDMDistsPhylobayes.txt"
+
+msg "SLynx; examine DNA."
+stack exec slynx -- examine -a DNA "$file_DNA"
+
+msg "SLynx; examine protein data."
+stack exec slynx -- examine -a Protein "$file_AA"
+
+msg "SLynx; concatenate DNA."
+stack exec slynx -- concatenate -a DNA "$file_DNA" "$file_DNA"
+
+msg "SLynx; examine; test if quiet."
+stack exec slynx -- -v Quiet examine -a DNA "$file_DNA"
+
+msg "SLynx; simulate; substitution model."
+stack exec slynx -- simulate -t "$file_tree" -s "HKY[6.0]{0.2,0.3,0.3,0.2}" -l 10000 -S [0]
+
+msg "SLynx; simulate; empirical distribution mixture model."
+stack exec slynx -- simulate -t "$file_tree" -e "$file_edm" -m "EDM(LG-Custom)" -l 1000 -S [0]
+
+msg "SLynx; empirical distribution mixture model with custom weights."
+stack exec slynx -- simulate -t "$file_tree" -e "$file_edm" -m "EDM(LG-Custom)" -w "[0.9,0.05,0.03,0.02]" -l 1000 -S [0]
+
+msg "SLynx; CXX distribution mixture model."
+stack exec slynx -- simulate -t "$file_tree" -m "C20" -l 1000 -S [0]
+
+msg "SLynx; gamma rate heterogeneity."
+stack exec slynx -- simulate -t "$file_tree" -g "(4,0.2)" -s "HKY[6.0]{0.2,0.3,0.3,0.2}" -l 10000 -S [0]
+
+msg "SLynx; CXX distribution mixture model with gamma rate heterogeneity."
+stack exec slynx -- simulate -t "$file_tree" -m "C10" -g "(4,0.2)" -l 1000 -S [0]
+
+msg "SLynx; standard mixture model."
+stack exec slynx -- simulate -t "$file_tree" -m "MIXTURE(JC,HKY[6.0]{0.25,0.25,0.25,0.25})" -w "[0.4,0.6]" -l 20000 -S [0]
