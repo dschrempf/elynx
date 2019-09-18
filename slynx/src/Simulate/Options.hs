@@ -46,8 +46,12 @@ module Simulate.Options
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Reader
 import           Data.List
+import           Data.String                (words)
+-- import           Data.Void
 import           Data.Word
 import           Options.Applicative
+-- import           Text.Megaparsec            (Parsec, takeWhile1P)
+-- import           Text.Megaparsec.Char       (space)
 
 import           ELynx.Tools.Options
 
@@ -60,6 +64,7 @@ data SimulateArguments = SimulateArguments
   , argsSubstitutionModelString :: Maybe String
   , argsMixtureModelString      :: Maybe String
   , argsEDMFile                 :: Maybe FilePath
+  , argsSiteprofilesFiles       :: Maybe [FilePath]
   , argsMixtureWeights          :: Maybe [Double]
   , argsGammaParams             :: Maybe GammaRateHeterogeneityParams
   , argsLength                  :: Int
@@ -76,6 +81,7 @@ simulateArguments = SimulateArguments
   <*> phyloSubstitutionModelOpt
   <*> phyloMixtureModelOpt
   <*> maybeEDMFileOpt
+  <*> maybeSiteprofilesFilesOpt
   <*> maybeMixtureWeights
   <*> maybeGammaParams
   <*> lengthOpt
@@ -108,6 +114,20 @@ maybeEDMFileOpt = optional $ strOption
     <> short 'e'
     <> metavar "NAME"
     <> help "Empirical distribution model file NAME in Phylobayes format" )
+
+-- fn :: Parsec Void String FilePath
+-- fn = space *> takeWhile1P () <* space
+
+-- fns :: Parsec Void String [FilePath]
+-- fns = do
+--   many string
+
+maybeSiteprofilesFilesOpt :: Parser (Maybe [FilePath])
+maybeSiteprofilesFilesOpt = optional $ words <$> strOption
+  ( long "siteprofile-files"
+    <> short 'p'
+    <> metavar "NAMES"
+    <> help "File names of site profiles in Phylobayes format" )
 
 maybeMixtureWeights :: Parser (Maybe [Double])
 maybeMixtureWeights = optional $ option auto

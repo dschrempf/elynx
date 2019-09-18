@@ -19,40 +19,46 @@ module Simulate.Simulate
   ( simulateCmd )
 where
 
+import           Control.Applicative                               ((<|>))
 import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Lens
+import           Control.Monad                                     (when)
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
-import qualified Data.ByteString.Lazy                            as L
-import qualified Data.ByteString.Lazy.Char8                      as LC
-import qualified Data.Set                                        as Set
-import qualified Data.Text                                       as T
-import qualified Data.Text.Lazy                                  as LT
-import qualified Data.Text.Lazy.Encoding                         as LT
+import qualified Data.ByteString.Lazy                              as L
+import qualified Data.ByteString.Lazy.Char8                        as LC
+import           Data.Maybe
+import qualified Data.Set                                          as Set
+import qualified Data.Text                                         as T
+import qualified Data.Text.Lazy                                    as LT
+import qualified Data.Text.Lazy.Encoding                           as LT
 import           Data.Tree
-import qualified Data.Vector.Unboxed                             as V
-import           Numeric.LinearAlgebra                           hiding ((<>))
+import qualified Data.Vector.Unboxed                               as V
+import           Numeric.LinearAlgebra                             hiding ((<>))
 import           System.Random.MWC
 
 import           Simulate.Options
 import           Simulate.PhyloModel
 
-import           ELynx.Data.Alphabet.Alphabet                    as A
+import           ELynx.Data.Alphabet.Alphabet                      as A
 import           ELynx.Data.MarkovProcess.GammaRateHeterogeneity
-import qualified ELynx.Data.MarkovProcess.MixtureModel           as M
-import qualified ELynx.Data.MarkovProcess.PhyloModel             as P
-import qualified ELynx.Data.MarkovProcess.SubstitutionModel      as S
+import qualified ELynx.Data.MarkovProcess.MixtureModel             as M
+import qualified ELynx.Data.MarkovProcess.PhyloModel               as P
+import qualified ELynx.Data.MarkovProcess.SubstitutionModel        as S
 import           ELynx.Data.Sequence.MultiSequenceAlignment
-import           ELynx.Data.Sequence.Sequence                    hiding (name)
+import           ELynx.Data.Sequence.Sequence                      hiding (name)
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.Tree
 import           ELynx.Export.Sequence.Fasta
-import           ELynx.Import.MarkovProcess.EDMModelPhylobayes   hiding (Parser)
-import           ELynx.Import.Tree.Newick                        hiding (name)
+import           ELynx.Import.MarkovProcess.EDMModelPhylobayes     hiding
+                                                                    (Parser)
+import           ELynx.Import.MarkovProcess.SiteprofilesPhylobayes hiding
+                                                                    (Parser)
+import           ELynx.Import.Tree.Newick                          hiding (name)
 import           ELynx.Simulate.MarkovProcessAlongTree
 
 import           ELynx.Tools.ByteString
@@ -70,12 +76,16 @@ simulateMSA pm t n g = do
   gs <- splitGen c g
   let chunks = getChunks c n
   leafStatesS <- case pm of
+    -- TODO: This parallelization is not very intelligent, because the matrices
+    -- exponentiation is done in all threads. So ten threads will exponentiate
+    -- the same matrix ten times.
     P.SubstitutionModel sm -> mapConcurrently
       (\(num, gen) -> simulateAndFlattenNSitesAlongTree num d e t gen) (zip chunks gs)
       where d = sm ^. S.stationaryDistribution
             e = sm ^. S.exchangeabilityMatrix
-    P.MixtureModel mm      -> mapConcurrently
-      (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws ds es t gen) (zip chunks gs)
+    -- P.MixtureModel mm      -> mapConcurrently
+    --   (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws ds es t gen) (zip chunks gs)
+    P.MixtureModel mm      -> simulateAndFlattenNSitesAlongTreeMixtureModelPar n ws ds es t g
       where
         ws = vector $ M.getWeights mm
         ds = map (view S.stationaryDistribution) $ M.getSubstitutionModels mm
@@ -101,32 +111,48 @@ summarizeEDMComponents cs = LC.pack
 -- necessary. A human readable summary is reported anyways, and for Protein
 -- models the exchangeabilities are too many.
 reportModel :: Maybe FilePath -> P.PhyloModel -> Simulate ()
-reportModel outFn m = do
-  let modelFn = (<> ".model") <$> outFn
-  io "model definition (machine readable)" (bsShow m <> "\n") modelFn
+reportModel Nothing      _ = $(logInfo) "No output file provided; omit detailed report of phylogenetic model."
+reportModel (Just outFn) m = do
+  let modelFn = outFn <> ".model"
+  io "model definition (machine readable)" (bsShow m <> "\n") (Just modelFn)
 
 -- | Simulate sequences.
 simulateCmd :: Maybe FilePath -> Simulate ()
 simulateCmd outFn = do
   a <- lift ask
-  $(logInfo) "Read tree."
   let treeFile = argsTreeFile a
+
+  $(logInfo) ""
+  $(logInfo) $ T.pack $ "Read tree from file '" ++ treeFile ++ "'."
   tree <- liftIO $ parseFileWith newick treeFile
   $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarize tree
 
   let edmFile = argsEDMFile a
+  let sProfileFiles = argsSiteprofilesFiles a
+  $(logInfo) ""
+  $(logDebug) "Read EDM file or siteprofile files."
+  when (isJust edmFile && isJust sProfileFiles) $ error "Got both: --edm-file and --siteprofile-files."
   edmCs <- case edmFile of
     Nothing   -> return Nothing
     Just edmF -> do
       $(logInfo) "Read EDM file."
       liftIO $ Just <$> parseFileWith phylobayes edmF
   maybe (return ()) ($(logInfo) . LT.toStrict . LT.decodeUtf8 . summarizeEDMComponents) edmCs
+  sProfiles <- case sProfileFiles of
+    Nothing   -> return Nothing
+    Just fns -> do
+      $(logInfo) $ T.pack $ "Read siteprofiles from " ++ show (length fns) ++ " file(s)."
+      $(logDebug) $ T.pack $ "The file names are:" ++ show fns
+      xs <- liftIO $ mapM (parseFileWith siteprofiles) fns
+      return $ Just $ concat xs
+  maybe (return ()) ($(logInfo) . LT.toStrict . LT.decodeUtf8 . summarizeEDMComponents) sProfiles
+  let edmCsOrSiteprofiles = edmCs <|> sProfiles
 
   $(logInfo) "Read model string."
   let ms = argsSubstitutionModelString a
       mm = argsMixtureModelString a
       mws = argsMixtureWeights a
-      eitherPhyloModel' = getPhyloModel ms mm mws edmCs
+      eitherPhyloModel' = getPhyloModel ms mm mws edmCsOrSiteprofiles
   phyloModel' <- case eitherPhyloModel' of
     Left err -> lift $ error err
     Right pm -> return pm
@@ -139,10 +165,11 @@ simulateCmd outFn = do
       return phyloModel'
     Just (n, alpha) -> do
       $(logInfo) $ LT.toStrict $ LT.decodeUtf8
-        $ LC.unlines $ P.summarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
+        $ LC.intercalate "\n" $ P.summarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
       return $ expand n alpha phyloModel'
   reportModel outFn phyloModel
 
+  $(logInfo) ""
   $(logInfo) "Simulate alignment."
   let alignmentLength = argsLength a
   $(logInfo) $ T.pack $ "Length: " <> show alignmentLength <> "."
@@ -155,4 +182,5 @@ simulateCmd outFn = do
   msa <- liftIO $ simulateMSA phyloModel tree alignmentLength gen
   let output = (sequencesToFasta . toSequenceList) msa
       outFile = (<> ".fasta") <$> outFn
+  $(logInfo) ""
   io "simulated multi sequence alignment" output outFile

@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {- |
 Module      :  ELynx.Tools.Concurrent
 Description :  Tools for concurrent random calculations
@@ -18,15 +19,22 @@ module ELynx.Tools.Concurrent
     getNGen
   , splitGen
    -- * Parallel stuff
+  , parComp
   , getChunks
   , parMapChunk
   ) where
 
+import           Control.Concurrent
+import           Control.Concurrent.Async
 import           Control.Monad
+-- import qualified Control.Monad.Parallel      as P
+import           Control.Monad.Primitive
 import           Control.Parallel.Strategies
 import qualified Data.Vector                 as V
 import           Data.Word
 import           System.Random.MWC
+
+-- import           ELynx.Tools.Definitions
 
 -- | Get a number of generators, possibly with a fixed seed.
 getNGen :: Int -> Maybe [Word32] -> IO [GenIO]
@@ -35,12 +43,30 @@ getNGen n ms = do
   splitGen n g
 
 -- | Split a generator.
-splitGen :: Int -> GenIO -> IO [GenIO]
+splitGen :: PrimMonad m => Int -> Gen (PrimState m) -> m [Gen (PrimState m)]
 splitGen n gen
   | n <= 0    = return []
-  | otherwise =
-  fmap (gen:) . replicateM (n-1) $
-  initialize =<< (uniformVector gen 256 :: IO (V.Vector Word32))
+  | otherwise = do
+      seeds :: [V.Vector Word32] <- replicateM n $ uniformVector gen 256
+      mapM initialize seeds
+
+-- -- TODO: This just doesn't work... The only thing I found:
+-- -- https://stackoverflow.com/a/16250010.
+-- parComp :: (PrimMonad m, Monoid b) => Int -> (Int -> Gen (PrimState m) -> m b)
+--         -> Gen (PrimState m) -> m b
+-- parComp num fun gen = do
+--   let ncap   = ceiling (fromIntegral num / fromIntegral chunksize :: Double)
+--       chunks = getChunks ncap num
+--   gs <- splitGen ncap gen
+--   mconcat <$> P.mapM (\(n', g') -> fun n' g') (zip chunks gs)
+
+-- | Perform random calculation in parallel. Does only work with 'IO' and the moment.
+parComp :: Int -> (Int -> GenIO -> IO b) -> GenIO -> IO [b]
+parComp num fun gen = do
+  ncap   <- getNumCapabilities
+  let chunks = getChunks ncap num
+  gs <- splitGen ncap gen
+  mapConcurrently (uncurry fun) (zip chunks gs)
 
 -- | For a given number of capabilities and number of calculations, get chunk
 -- sizes. The chunk sizes will be as evenly distributed as possible and sum up

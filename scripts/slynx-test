@@ -8,6 +8,7 @@ file_DNA="${project_root}/elynx-seq/data/Nucleotide.fasta"
 file_AA="${project_root}/elynx-seq/data/AminoAcid.fasta"
 file_tree="${project_root}/elynx-tree/data/Newick.tree"
 file_edm="${project_root}/elynx-seq/data/EDMDistsPhylobayes.txt"
+file_siteprofiles="${project_root}/elynx-seq/data/HSSPMany.siteprofiles"
 
 msg "SLynx; examine DNA."
 stack exec slynx -- examine -a DNA "$file_DNA"
@@ -41,3 +42,6 @@ stack exec slynx -- simulate -t "$file_tree" -m "C10" -g "(4,0.2)" -l 1000 -S [0
 
 msg "SLynx; standard mixture model."
 stack exec slynx -- simulate -t "$file_tree" -m "MIXTURE(JC,HKY[6.0]{0.25,0.25,0.25,0.25})" -w "[0.4,0.6]" -l 20000 -S [0]
+
+msg "SLynx; site profile EDM model."
+stack exec slynx -- simulate -t "$file_tree" -m "EDM(Poisson-Custom)" -p "$file_siteprofiles" -l 1000 -S [0]

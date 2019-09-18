@@ -83,14 +83,19 @@ logHeader desc = do
     [ replicate (l+3) '-'
     , "-- " <> desc
     , hdr
-    , "Time: " ++ t
+    , "Start time: " ++ t
     , "Command line: " ++ p ++ " " ++ unwords as ]
 
 -- | See 'logHeader' but footer.
 logFooter :: IO String
 logFooter = do
   t <- time
-  return $ "Time: " ++ t
+  let timeStr = "-- End time: " ++ t
+      l       = length timeStr
+  return $ intercalate "\n"
+    [ ""
+    , timeStr
+    , replicate l '-' ]
 
 versionOpt :: Parser (a -> a)
 versionOpt = infoOption hdr

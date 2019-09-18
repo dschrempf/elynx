@@ -131,6 +131,12 @@ summarizeComponent mmc =
 -- | Summarize a mixture model; lines to be printed to screen or log.
 summarize :: MixtureModel -> [L.ByteString]
 summarize mm =
-  L.pack ("Mixture model: " ++ mm ^. name ++ ".")
-  : concat [ L.pack ("Component " ++ show i ++ ":") : summarizeComponent c
-            | (i, c) <- zip [1 :: Int ..] (mm ^. components) ]
+      [ L.pack $ "Mixture model: " ++ mm ^. name ++ "."
+      , L.pack $ "Number of components: " ++ show n ++ "." ]
+      ++ detail
+      where
+        n = length $ mm^.components
+        detail = if n <= 100
+          then concat [ L.pack ("Component " ++ show i ++ ":") : summarizeComponent c
+                      | (i, c) <- zip [1 :: Int ..] (mm ^. components) ]
+          else []

@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 {- |
 Module      :  ELynx.Data.Tree.MeasurableTree
 Description :  Functions on trees with branch lengths
@@ -72,7 +74,7 @@ shortenRoot dl = lengthenRoot (-dl)
 
 -- | Summarize a tree with measureable branch lengths.
 summarize :: (Measurable a) => Tree a -> L.ByteString
-summarize t = L.unlines $ map L.pack
+summarize t = L.intercalate "\n" $ map L.pack
   [ "Leaves: " ++ show n ++ "."
   , "Height: " ++ show h ++ "."
   , "Average distance root to leaves: " ++ show h' ++ "."

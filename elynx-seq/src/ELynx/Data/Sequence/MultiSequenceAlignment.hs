@@ -61,6 +61,7 @@ import           ELynx.Data.Sequence.Defaults
 import qualified ELynx.Data.Sequence.Sequence              as S
 import           ELynx.Tools.ByteString
 import           ELynx.Tools.Concurrent
+import           ELynx.Tools.Definitions
 import           ELynx.Tools.Equality
 import           ELynx.Tools.Matrix
 
@@ -218,11 +219,11 @@ toFrequencyData msa = fMapColParChunk 100 (D.frequencyCharacters spec) (msa^.mat
 
 -- | Diversity analysis. See 'kEffEntropy'.
 kEffEntropy :: FrequencyData -> [Double]
-kEffEntropy fd = parMapChunk 500 D.kEffEntropy (M.toColumns fd)
+kEffEntropy fd = parMapChunk chunksize D.kEffEntropy (M.toColumns fd)
 
 -- | Diversity analysis. See 'kEffEntropy'.
 kEffHomoplasy :: FrequencyData -> [Double]
-kEffHomoplasy fd = parMapChunk 500 D.kEffHomoplasy (M.toColumns fd)
+kEffHomoplasy fd = parMapChunk chunksize D.kEffHomoplasy (M.toColumns fd)
 
 -- | Count the number of standard (i.e., not extended IUPAC) characters in the
 -- alignment.

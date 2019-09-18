@@ -22,11 +22,13 @@ module ELynx.Simulate.MarkovProcessAlongTree
     -- * Mixture models.
   , simulateNSitesAlongTreeMixtureModel
   , simulateAndFlattenNSitesAlongTreeMixtureModel
+  , simulateAndFlattenNSitesAlongTreeMixtureModelPar
   )
   where
 
 import           Control.Monad
 import           Control.Monad.Primitive
+-- import           Control.Parallel.Strategies
 import           Data.Tree
 import           Numeric.LinearAlgebra
 import           System.Random.MWC
@@ -35,9 +37,10 @@ import           System.Random.MWC.Distributions
 import           ELynx.Data.MarkovProcess.RateMatrix
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Simulate.MarkovProcess
+import           ELynx.Tools.Concurrent
 
-measureableTreeToProbTree :: (Measurable a) => RateMatrix -> Tree a -> Tree ProbMatrix
-measureableTreeToProbTree q = fmap (probMatrix q . getLen)
+measurableTreeToProbTree :: (Measurable a) => RateMatrix -> Tree a -> Tree ProbMatrix
+measurableTreeToProbTree q = fmap (probMatrix q . getLen)
 
 getRootStates :: PrimMonad m
   => Int -> StationaryDistribution -> Gen (PrimState m) -> m [State]
@@ -50,7 +53,7 @@ simulateAndFlattenNSitesAlongTree :: (PrimMonad m, Measurable a)
   => Int -> StationaryDistribution -> ExchangeabilityMatrix -> Tree a -> Gen (PrimState m) -> m [[State]]
 simulateAndFlattenNSitesAlongTree n d e t g = do
   let q = fromExchangeabilityMatrix e d
-      pt = measureableTreeToProbTree q t
+      pt = measurableTreeToProbTree q t
   is <- getRootStates n d g
   simulateAndFlattenAlongProbTree is pt g
 
@@ -71,7 +74,7 @@ simulateNSitesAlongTree :: (PrimMonad m, Measurable a)
   => Int -> StationaryDistribution -> ExchangeabilityMatrix -> Tree a -> Gen (PrimState m) -> m (Tree [State])
 simulateNSitesAlongTree n d e t g = do
   let q = fromExchangeabilityMatrix e d
-      pt = measureableTreeToProbTree q t
+      pt = measurableTreeToProbTree q t
   is <- getRootStates n d g
   simulateAlongProbTree is pt g
 
@@ -84,9 +87,11 @@ simulateAlongProbTree is (Node p f) g = do
   f' <- sequence [simulateAlongProbTree is' t g | t <- f]
   return $ Node is' f'
 
-measureableTreeToProbTreeMixtureModel :: (Measurable a)
+measurableTreeToProbTreeMixtureModel :: (Measurable a)
   => [RateMatrix] -> Tree a -> Tree [ProbMatrix]
-measureableTreeToProbTreeMixtureModel qs =
+measurableTreeToProbTreeMixtureModel qs =
+  -- TODO: This doesn't work at all! Repair this.
+  -- fmap (\a -> [probMatrix q . getLen $ a | q <- qs] `using` parListChunk 500 rseq)
   fmap (\a -> [probMatrix q . getLen $ a | q <- qs])
 
 getComponentsAndRootStates :: PrimMonad m
@@ -104,7 +109,7 @@ simulateAndFlattenNSitesAlongTreeMixtureModel :: (PrimMonad m, Measurable a)
   -> Gen (PrimState m) -> m [[State]]
 simulateAndFlattenNSitesAlongTreeMixtureModel n ws ds es t g = do
   let qs = zipWith fromExchangeabilityMatrix es ds
-      pt = measureableTreeToProbTreeMixtureModel qs t
+      pt = measurableTreeToProbTreeMixtureModel qs t
   (cs, is) <- getComponentsAndRootStates n ws ds g
   simulateAndFlattenAlongProbTreeMixtureModel is cs pt g
 
@@ -116,6 +121,18 @@ simulateAndFlattenAlongProbTreeMixtureModel is cs (Node ps f) g
          then return [is']
          else concat <$> sequence [ simulateAndFlattenAlongProbTreeMixtureModel is' cs t g | t <- f ]
 
+-- | See 'simulateAndFlattenNSitesAlongTreeMixtureModel', but parallel.
+simulateAndFlattenNSitesAlongTreeMixtureModelPar
+  :: Measurable a
+  => Int -> Vector R -> [StationaryDistribution] -> [ExchangeabilityMatrix] -> Tree a
+  -> GenIO -> IO [[[State]]]
+simulateAndFlattenNSitesAlongTreeMixtureModelPar n ws ds es t g = do
+  let qs = zipWith fromExchangeabilityMatrix es ds
+      pt = measurableTreeToProbTreeMixtureModel qs t
+  parComp n (\n' g' -> do
+                (cs, is) <- getComponentsAndRootStates n' ws ds g'
+                simulateAndFlattenAlongProbTreeMixtureModel is cs pt g') g
+
 -- | Simulate a number of sites for a given set of substitution models with
 -- corresponding weights. Keep states at internal nodes. See also
 -- 'simulateNSitesAlongTree'.
@@ -124,7 +141,7 @@ simulateNSitesAlongTreeMixtureModel :: (PrimMonad m, Measurable a)
   -> Gen (PrimState m) -> m (Tree [State])
 simulateNSitesAlongTreeMixtureModel n ws ds es t g = do
   let qs = zipWith fromExchangeabilityMatrix es ds
-      pt = measureableTreeToProbTreeMixtureModel qs t
+      pt = measurableTreeToProbTreeMixtureModel qs t
   (cs, is) <- getComponentsAndRootStates n ws ds g
   simulateAlongProbTreeMixtureModel is cs pt g
 

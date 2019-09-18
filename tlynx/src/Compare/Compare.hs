@@ -102,20 +102,20 @@ compareTrees outFileBN = do
   let n        = maximum $ 6 : map length names
       distance = argsDistance a
   case distance of
-    Symmetric -> $(logInfo) "Use symmetric (Robinson-Foulds) distance."
+    Symmetric             -> $(logInfo) "Use symmetric (Robinson-Foulds) distance."
     IncompatibleSplit val -> do
       $(logInfo) "Use incompatible split distance."
       $(logInfo) $ T.pack $ "Collapse nodes with support less than " ++ show val ++ "."
-    BranchScore False -> $(logInfo) "Use branch score distance without normalization."
-    BranchScore True -> $(logInfo) "Use branch score distance with normalization."
+    BranchScore           -> $(logInfo) "Use branch score distance."
+    BranchWise -> error "TODO: Not implemented."
+  when (argsNormalize a) $ $(logInfo) "Normalize trees before calculation of distances."
   let distanceMeasure :: Tree PhyloByteStringLabel -> Tree PhyloByteStringLabel -> Double
       distanceMeasure = case distance of
         Symmetric           -> \t1 t2 -> fromIntegral $ symmetricDistanceWith getName t1 t2
         IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplitsDistanceWith getName t1 t2
-        BranchScore _       -> branchScoreDistance
-      normalizeF = case distance of
-        BranchScore True -> M.normalize
-        _                -> id
+        BranchScore         -> branchScoreDistance
+        BranchWise -> error "TODO: Not implemented."
+      normalizeF = if argsNormalize a then M.normalize else id
       collapseF = case distance of
         -- For the incompatible split distance we have to collapse branches with
         -- support lower than the given value. Before doing so, we normalize the

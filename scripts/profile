@@ -51,6 +51,15 @@ slynx-simulate() {
           +RTS -p -hc -l -s || exit 1
 }
 
+slynx-simulate-siteprofiles() {
+    msg "SLynx simulate with siteprofiles profile run."
+    file_tree="${project_root}/elynx-tree/data/Newick.tree"
+    file_sp="${project_root}/elynx-seq/data/HSSPMany.siteprofiles"
+    stack exec --work-dir $prof_dir --profile slynx -- -o slynx-simulate \
+          simulate -t "$file_tree" -m "EDM(Poisson-Custom)" -p "$file_sp" -l 5000 -S [0] \
+          +RTS -p -hc -l -s || exit 1
+}
+
 tlynx-simulate() {
     msg "TLynx simulate profile run."
     stack exec --work-dir $prof_dir --profile tlynx -- -o tlynx-simulate \
@@ -73,6 +82,10 @@ then
 elif [[ $1 == "slynx-simulate" ]]
 then
     slynx-simulate
+    move-profiles slynx simulate
+elif [[ $1 == "slynx-simulate-siteprofiles" ]]
+then
+    slynx-simulate-siteprofiles
     move-profiles slynx simulate
 elif [[ $1 == "tlynx-simulate" ]]
 then

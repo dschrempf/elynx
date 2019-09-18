@@ -32,19 +32,32 @@ module ELynx.Tools.InputOutput
   ) where
 
 import           Codec.Compression.GZip     (compress, decompress)
+import           Control.DeepSeq            (force)
+import           Control.Exception          (bracket, evaluate)
+import           Control.Monad              ((<=<))
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import qualified Data.ByteString.Lazy.Char8 as L
 import           Data.List                  (isSuffixOf)
 import           Data.Maybe
 import qualified Data.Text                  as T
+import           System.IO
 import           Text.Megaparsec
+
+-- XXX: For now, all files are read strictly (see help of
+-- Control.DeepSeq.force).
+readFile' :: FilePath -> IO L.ByteString
+-- -- Doesn't work.
+-- readFile' fn = withFile fn ReadMode $ (evaluate . force) <=< L.hGetContents
+-- This works!
+readFile' fn = bracket (openFile fn ReadMode) hClose $
+  (evaluate . force) <=< L.hGetContents
 
 -- | Read file. If file path ends with ".gz", assume gzipped file and decompress
 -- before read.
 readGZFile :: FilePath -> IO L.ByteString
-readGZFile f | ".gz" `isSuffixOf` f = decompress <$> L.readFile f
-             | otherwise            = L.readFile f
+readGZFile f | ".gz" `isSuffixOf` f = decompress <$> readFile' f
+             | otherwise            = readFile' f
 
 -- | Write file. If file path ends with ".gz", assume gzipped file and compress
 -- before write.
