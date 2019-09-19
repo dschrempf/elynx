@@ -28,7 +28,7 @@ module ELynx.Simulate.MarkovProcessAlongTree
 
 import           Control.Monad
 import           Control.Monad.Primitive
--- import           Control.Parallel.Strategies
+import           Control.Parallel.Strategies
 import           Data.Tree
 import           Numeric.LinearAlgebra
 import           System.Random.MWC
@@ -91,8 +91,8 @@ measurableTreeToProbTreeMixtureModel :: (Measurable a)
   => [RateMatrix] -> Tree a -> Tree [ProbMatrix]
 measurableTreeToProbTreeMixtureModel qs =
   -- TODO: This doesn't work at all! Repair this.
-  -- fmap (\a -> [probMatrix q . getLen $ a | q <- qs] `using` parListChunk 500 rseq)
-  fmap (\a -> [probMatrix q . getLen $ a | q <- qs])
+  fmap (\a -> [probMatrix q . getLen $ a | q <- qs] `using` parList rpar)
+  -- fmap (\a -> [probMatrix q . getLen $ a | q <- qs])
 
 getComponentsAndRootStates :: PrimMonad m
   => Int -> Vector R -> [StationaryDistribution] -> Gen (PrimState m) -> m ([Int], [State])
@@ -121,7 +121,8 @@ simulateAndFlattenAlongProbTreeMixtureModel is cs (Node ps f) g
          then return [is']
          else concat <$> sequence [ simulateAndFlattenAlongProbTreeMixtureModel is' cs t g | t <- f ]
 
--- | See 'simulateAndFlattenNSitesAlongTreeMixtureModel', but parallel.
+-- | See 'simulateAndFlattenNSitesAlongTreeMixtureModel', parallel version;
+-- needs to be run in IO monad.
 simulateAndFlattenNSitesAlongTreeMixtureModelPar
   :: Measurable a
   => Int -> Vector R -> [StationaryDistribution] -> [ExchangeabilityMatrix] -> Tree a

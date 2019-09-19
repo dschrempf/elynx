@@ -1,5 +1,5 @@
 {- |
-Module      :  Compare.Options
+Module      :  Distance.Options
 Description :  Options of tree-dist
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
@@ -12,12 +12,12 @@ Creation date: Thu Aug 29 13:02:22 2019.
 
 -}
 
-module Compare.Options
-  ( CompareArguments (..)
-  , Compare
-  , Distance (..)
-  , compareArguments
-  , compareFooter
+module Distance.Options
+  ( DistanceArguments (..)
+  , DistanceMeasure (..)
+  , Distance
+  , distanceArguments
+  , distanceFooter
   ) where
 
 import           Control.Monad.Logger
@@ -33,38 +33,31 @@ import           Text.Printf
 import           ELynx.Tools.Options
 
 -- | Supported distance measures.
-data Distance =
+data DistanceMeasure =
   Symmetric                  -- ^ Symmetric distance.
   | IncompatibleSplit Double -- ^ Incompatible split distance; collapse nodes
                              -- with branch support below given value.
   | BranchScore              -- ^ Branch score distance.
-  | BranchWise               -- ^ TODO: Compare the lengths of each branch.
-                             -- Only works if the compared trees have the
-                             -- same topology and node names. This comparison
-                             -- is technically not a distance, and should
-                             -- probably be moved to its own data type (and
-                             -- command line option).
 
-instance Show Distance where
+instance Show DistanceMeasure where
   show Symmetric             = "Symmetric"
   show (IncompatibleSplit c) = "Incompatible Split (" ++ printf "%.1f" c ++ ")"
   show BranchScore           = "Branch Score"
-  show BranchWise            = "Branch Wise"
 
 -- | Arguments needed to compute distance measures.
-data CompareArguments = CompareArguments
-  { argsDistance          :: Distance
+data DistanceArguments = DistanceArguments
+  { argsDistance          :: DistanceMeasure
   , argsNormalize         :: Bool
   , argsSummaryStatistics :: Bool
   , argsInFiles           :: [FilePath]
   }
 
 -- | Lgger and reader data type.
-type Compare = LoggingT (ReaderT CompareArguments IO)
+type Distance = LoggingT (ReaderT DistanceArguments IO)
 
 -- | COmmand line parser.
-compareArguments :: Parser CompareArguments
-compareArguments = CompareArguments <$>
+distanceArguments :: Parser DistanceArguments
+distanceArguments = DistanceArguments <$>
   distanceOpt
   <*> normalizeSwitch
   <*> summaryStatisticsSwitch
@@ -75,13 +68,13 @@ inFilesArg = strArgument $
   metavar "INPUT-FILES" <>
   help "Read tree(s) from INPUT-FILES; if more files are given, one tree is expected per file"
 
-symmetric :: Parsec Void String Distance
+symmetric :: Parsec Void String DistanceMeasure
 symmetric = do
   _ <- string "symmetric"
   _ <- eof
   pure Symmetric
 
-incompatibleSplit :: Parsec Void String Distance
+incompatibleSplit :: Parsec Void String DistanceMeasure
 incompatibleSplit = do
   _ <- string "incompatible-split"
   _ <- char '['
@@ -92,27 +85,20 @@ incompatibleSplit = do
     then pure $ IncompatibleSplit f
     else error "Branch support has to be between 0 and 1."
 
-branchScore :: Parsec Void String Distance
+branchScore :: Parsec Void String DistanceMeasure
 branchScore = do
   _ <- string "branch-score"
   _ <- eof
   pure BranchScore
 
-branchWise :: Parsec Void String Distance
-branchWise = do
-  _ <- string "branch-wise"
-  _ <- eof
-  pure BranchWise
-
-distanceParser :: Parsec Void String Distance
+distanceParser :: Parsec Void String DistanceMeasure
 distanceParser = try symmetric
                  <|> try incompatibleSplit
                  -- Try first the normalized one, since the normal branch score
                  -- parser also succeeds in this case.
-                 <|> try branchScore
-                 <|> branchWise
+                 <|> branchScore
 
-distanceOpt :: Parser Distance
+distanceOpt :: Parser DistanceMeasure
 distanceOpt = option (megaReadM distanceParser) $
   long "distance" <>
   short 'd' <>
@@ -132,8 +118,8 @@ normalizeSwitch = switch $
   help "Normalize trees before distance calculation; only affect distances depending on branch lengths"
 
 -- | Information about provided distance types.
-compareFooter :: String
-compareFooter = intercalate "\n"
+distanceFooter :: String
+distanceFooter = intercalate "\n"
   [ "Available distance measures:"
   , "  Symmetric distance: -d symmetric"
   , "  Incompatible split distance: -d incompatible-split[VAL]"

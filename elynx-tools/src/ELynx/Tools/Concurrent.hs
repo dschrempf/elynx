@@ -77,6 +77,7 @@ getChunks c n = ns
         r = n `mod` c
         ns = replicate r (n'+1) ++ replicate (c - r) n'
 
+-- XXX: This should actually be in a module called Parallel, not Concurrent.
 -- | Parallel map with given chunk size.
 parMapChunk :: Int -> (a -> b) -> [a] -> [b]
 parMapChunk n f as = map f as `using` parListChunk n rseq

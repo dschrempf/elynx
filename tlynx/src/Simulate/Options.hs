@@ -17,7 +17,6 @@ module Simulate.Options
   , Simulate
   , simulateArguments
   , reportSimulateArguments
-  , simulateDesc
   , simulateFooter
   ) where
 
@@ -151,9 +150,8 @@ sumStatOpt = switch $
   <> showDefault
   <> help "Only output number of children for each branch"
 
--- | Simulation is a little more involved, so we provide a description.
-simulateDesc :: String
-simulateDesc = "Simulate reconstructed trees using the point process. See Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005"
+citation :: String
+citation = "Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005"
 
 -- | And a footer.
 simulateFooter :: String
@@ -161,4 +159,4 @@ simulateFooter = intercalate "\n"
   [ "Height of Trees: if no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate."
   , "Summary statistics only: only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character."
   , "Sub-sampling: simulate one big tree with n'=round(n/rho), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with rho=1.0, the same tree is reported over and over again."
-      ]
+  , citation ]

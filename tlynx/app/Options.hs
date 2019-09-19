@@ -16,53 +16,52 @@ module Options
   ( Arguments (..)
   , CommandArguments (..)
   , parseArguments
-  , compareHeader
-  , examineHeader
-  , simulateHeader
+  , distanceDescription
+  , examineDescription
+  , simulateDescription
   ) where
 
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
 
-import           Compare.Options
+import           Distance.Options
 import           Examine.Options
 import           Simulate.Options
 
 import           ELynx.Tools.Options
 
 data CommandArguments =
-  Compare CompareArguments
+  Distance DistanceArguments
   | Examine ExamineArguments
   | Simulate SimulateArguments
 
-compareHeader, examineHeader, simulateHeader :: String
-compareHeader  =  "Compute distances between phylogenetic trees."
-examineHeader  =  "Compute summary statistics of phylogenetic trees."
-simulateHeader =  "Simulate phylogenetic trees using birth and death processes."
+distanceDescription, examineDescription, simulateDescription :: String
+distanceDescription =  "Compute distances between many phylogenetic trees."
+examineDescription  =  "Compute summary statistics of phylogenetic trees."
+simulateDescription =  "Simulate phylogenetic trees using birth and death processes."
 
-compareCommand :: Mod CommandFields CommandArguments
-compareCommand = command "compare" $
-                     info (Compare <$> compareArguments)
+distanceCommand :: Mod CommandFields CommandArguments
+distanceCommand = command "distance" $
+                     info (Distance <$> distanceArguments)
                      ( fullDesc
-                       <> header compareHeader
-                       <> footerDoc (Just $ pretty compareFooter) )
+                       <> progDesc distanceDescription
+                       <> footerDoc (Just $ pretty distanceFooter) )
 
 examineCommand :: Mod CommandFields CommandArguments
 examineCommand = command "examine" $
                      info (Examine <$> examineArguments)
-                     $ header examineHeader
+                     $ progDesc examineDescription
 
 simulateCommand :: Mod CommandFields CommandArguments
 simulateCommand = command "simulate" $
                    info (Simulate <$> simulateArguments)
                      ( fullDesc
-                       <> header simulateHeader
-                       <> progDesc simulateDesc
+                       <> progDesc simulateDescription
                        <> footerDoc (Just $ pretty simulateFooter) )
 
 commandArguments :: Parser CommandArguments
 commandArguments = hsubparser $
-                   compareCommand
+                   distanceCommand
                    <> examineCommand
                    <> simulateCommand
 

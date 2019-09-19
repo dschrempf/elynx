@@ -20,7 +20,7 @@ import           Control.Monad.Trans.Reader
 
 import           Options
 
-import           Compare.Compare
+import           Distance.Distance
 import           Examine.Examine
 import           Simulate.Simulate
 
@@ -34,6 +34,6 @@ main = do
       lvl = verbosity g
       lf  = (++ ".log") <$> fn
   case c of
-    Compare a  -> runReaderT (eLynxWrapper lvl lf compareHeader  $ compareTrees fn) a
-    Examine a  -> runReaderT (eLynxWrapper lvl lf examineHeader  $ examine fn) a
-    Simulate a -> runReaderT (eLynxWrapper lvl lf simulateHeader $ simulate fn) a
+    Distance a  -> runReaderT (eLynxWrapper lvl lf distanceDescription  $ distance fn) a
+    Examine a  -> runReaderT (eLynxWrapper lvl lf examineDescription  $ examine fn) a
+    Simulate a -> runReaderT (eLynxWrapper lvl lf simulateDescription $ simulate fn) a

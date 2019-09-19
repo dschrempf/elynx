@@ -17,8 +17,8 @@ Creation date: Wed May 29 18:09:39 2019.
 
 -}
 
-module Compare.Compare
-  ( compareTrees
+module Distance.Distance
+  ( distance
   )
 where
 
@@ -38,7 +38,7 @@ import           Statistics.Sample
 import           System.IO
 import           Text.Printf
 
-import           Compare.Options
+import           Distance.Options
 
 import           ELynx.Data.Tree.BranchSupportTree as B
 import           ELynx.Data.Tree.Distance
@@ -54,7 +54,7 @@ import           ELynx.Tools.Logger
 pf :: String
 pf = "%.3f"
 
-header :: Int -> Distance -> L.ByteString
+header :: Int -> DistanceMeasure -> L.ByteString
 header n d = alignLeft (n+2) "Tree 1"
            <> alignLeft (n+2) "Tree 2"
            <> alignRight 20 (L.pack $ show d)
@@ -66,8 +66,8 @@ showTriplet n args (i, j, d) = i' <> j' <> d'
         d' = alignRight 20    $ L.pack (printf pf d)
 
 -- | Compute distance functions between phylogenetic trees.
-compareTrees :: Maybe FilePath -> Compare ()
-compareTrees outFileBN = do
+distance :: Maybe FilePath -> Distance ()
+distance outFileBN = do
   a <- lift ask
   -- Determine output handle (stdout or file).
   let outFile = (++ ".out") <$> outFileBN
@@ -100,23 +100,21 @@ compareTrees outFileBN = do
     Nothing -> logNewSection "Write results to standard output."
     Just f  -> logNewSection $ T.pack $ "Write results to file " <> f <> "."
   let n        = maximum $ 6 : map length names
-      distance = argsDistance a
-  case distance of
+      dist = argsDistance a
+  case dist of
     Symmetric             -> $(logInfo) "Use symmetric (Robinson-Foulds) distance."
     IncompatibleSplit val -> do
       $(logInfo) "Use incompatible split distance."
       $(logInfo) $ T.pack $ "Collapse nodes with support less than " ++ show val ++ "."
     BranchScore           -> $(logInfo) "Use branch score distance."
-    BranchWise -> error "TODO: Not implemented."
   when (argsNormalize a) $ $(logInfo) "Normalize trees before calculation of distances."
   let distanceMeasure :: Tree PhyloByteStringLabel -> Tree PhyloByteStringLabel -> Double
-      distanceMeasure = case distance of
+      distanceMeasure = case dist of
         Symmetric           -> \t1 t2 -> fromIntegral $ symmetricDistanceWith getName t1 t2
         IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplitsDistanceWith getName t1 t2
         BranchScore         -> branchScoreDistance
-        BranchWise -> error "TODO: Not implemented."
       normalizeF = if argsNormalize a then M.normalize else id
-      collapseF = case distance of
+      collapseF = case dist of
         -- For the incompatible split distance we have to collapse branches with
         -- support lower than the given value. Before doing so, we normalize the
         -- branch support values.
@@ -129,7 +127,7 @@ compareTrees outFileBN = do
       ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds
   -- XXX: It may be good to use the common 'io' function also here.
-  liftIO $ hPutStrLn outH $ "Summary statistics of " ++ show distance ++ " Distance:"
+  liftIO $ hPutStrLn outH $ "Summary statistics of " ++ show dist ++ " Distance:"
   liftIO $ T.hPutStrLn outH $ T.justifyLeft 10 ' ' "Mean: " <> T.pack (printf pf (mean dsVec))
   liftIO $ T.hPutStrLn outH $ T.justifyLeft 10 ' ' "Variance: " <> T.pack (printf pf (variance dsVec))
   -- L.putStrLn $ L.unlines $ map toNewick ts
@@ -138,7 +136,7 @@ compareTrees outFileBN = do
   lift $ unless (argsSummaryStatistics a) (
     do
       lift $ hPutStrLn outH ""
-      lift $ L.hPutStrLn outH $ header n distance
+      lift $ L.hPutStrLn outH $ header n dist
       lift $ L.hPutStr outH $ L.unlines (map (showTriplet n names) dsTriplets)
     )
   liftIO $ hClose outH
