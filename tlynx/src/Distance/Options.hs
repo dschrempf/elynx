@@ -52,7 +52,7 @@ data DistanceArguments = DistanceArguments
   , argsInFiles           :: [FilePath]
   }
 
--- | Lgger and reader data type.
+-- | Logger and reader data type.
 type Distance = LoggingT (ReaderT DistanceArguments IO)
 
 -- | COmmand line parser.
