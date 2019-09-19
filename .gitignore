@@ -31,6 +31,7 @@
 /scripts/module-dependencies-*
 /slynx/data/BenchmarkEnsemblMouse.fa
 /slynx/data/Profile.fa
+/tests/**
 
 # IQ-TREE files.
 *.bionj
@@ -47,7 +48,7 @@
 /**/GTAGS
 
 # Emacs related files.
-dist/
-dist-newstyle/
+/**/dist/
+/**/dist-newstyle/
 /.dir-locals.el
 /stack.yaml.lock
