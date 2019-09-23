@@ -84,6 +84,9 @@ saveDivision value divisor =
   else fromIntegral value / fromIntegral divisor
 
 -- | For a given code vector of characters, calculate frequency of characters.
+-- The input vector has arbitrary length (most often the number of sequences in
+-- an alignment), the length of the output vector is the number of characters in
+-- the alphabet.
 frequencyCharacters :: AlphabetSpec -> V.Vector Character -> V.Vector Double
 frequencyCharacters alph d = V.map (`saveDivision` s) counts
   where

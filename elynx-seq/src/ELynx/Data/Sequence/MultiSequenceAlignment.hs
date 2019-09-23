@@ -18,6 +18,7 @@ Creation date: Thu Oct  4 18:40:18 2018.
 
 module ELynx.Data.Sequence.MultiSequenceAlignment
   ( MultiSequenceAlignment (MultiSequenceAlignment)
+  , msaAlphabet
   , msaLength
   , msaNSequences
   -- | * Input, output
@@ -34,6 +35,7 @@ module ELynx.Data.Sequence.MultiSequenceAlignment
   , filterColumnsNoGaps
   -- | * Analysis
   , FrequencyData
+  , distribution
   , toFrequencyData
   , kEffEntropy
   , kEffHomoplasy
@@ -74,6 +76,10 @@ data MultiSequenceAlignment = MultiSequenceAlignment
   deriving (Read, Show, Eq)
 
 makeLenses ''MultiSequenceAlignment
+
+-- | Alphabet.
+msaAlphabet :: MultiSequenceAlignment -> A.Alphabet
+msaAlphabet = view alphabet
 
 -- | Number of sites.
 msaLength :: MultiSequenceAlignment -> Int
@@ -208,14 +214,21 @@ filterColumnsStd prop msa = filterColumnsWith
 filterColumnsNoGaps :: MultiSequenceAlignment -> MultiSequenceAlignment
 filterColumnsNoGaps msa = filterColumnsWith (V.all $ not . A.isGap (msa^.alphabet)) msa
 
--- | Frequency data; do not store the actual characters, but only their
--- frequencies.
+-- | Frequency data; do not store the actual characters, but their frequencies.
+-- The matrix is of size @N x K@, where @N@ is the number of sites, and @K@ is
+-- the number of characters.
 type FrequencyData = M.Matrix Double
 
--- | Calculcate frequency of characters in multi sequence alignment.
+-- | Calculcate frequency of characters at each site of a multi sequence alignment.
 toFrequencyData :: MultiSequenceAlignment -> FrequencyData
 toFrequencyData msa = fMapColParChunk 100 (D.frequencyCharacters spec) (msa^.matrix)
   where spec = A.alphabetSpec (msa^.alphabet)
+
+-- | Calculate the distribution of characters.
+distribution :: FrequencyData -> [Double]
+distribution fd = map (/ fromIntegral nSites) $ V.toList $
+  foldl1 (V.zipWith (+)) (M.toColumns fd)
+  where nSites = M.cols fd
 
 -- | Diversity analysis. See 'kEffEntropy'.
 kEffEntropy :: FrequencyData -> [Double]

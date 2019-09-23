@@ -25,18 +25,22 @@ import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8                 as L
+import qualified Data.Set                                   as S
 import           Text.Printf
 
 import           Examine.Options
 import           Tools
 
+import qualified ELynx.Data.Alphabet.Alphabet               as A
+import qualified ELynx.Data.Alphabet.Character              as C
 import           ELynx.Data.Sequence.MultiSequenceAlignment
 import           ELynx.Data.Sequence.Sequence
 import           ELynx.Tools.InputOutput
 
 examineMSA :: Bool -> MultiSequenceAlignment -> L.ByteString
 examineMSA perSiteFlag msa =
-  L.unlines [ L.pack $ "Total number of columns in alignment: "
+  L.unlines [ L.pack "Sequences have equal length (multi sequence alignment, or single sequence)."
+            , L.pack $ "Total number of columns in alignment: "
               ++ show (msaLength msa)
             , L.pack $ "Number of columns without gaps: "
               ++ show (msaLength msaNoGaps)
@@ -58,6 +62,12 @@ examineMSA perSiteFlag msa =
             , L.pack $ "Percentage of unknowns: "
               ++ printf "%.3f" percentageUnknowns
             , L.empty
+            , L.pack "Distribution of characters:"
+              -- Holy crap.
+            , L.pack $ concatMap ((: "     ") . C.toChar) $ S.toList $
+              A.all $ A.alphabetSpec $ msaAlphabet msa
+            , L.pack $ unwords $ map (printf "%.3f") charFreqs
+            , L.empty
             , L.pack "Mean effective number of states (measured using entropy):"
             , L.pack "Across whole alignment: "
               <> L.pack (printf "%.3f" kEffMean)
@@ -77,7 +87,9 @@ examineMSA perSiteFlag msa =
     percentageUnknowns  = fromIntegral nUnknowns / fromIntegral nTot :: Double
     msaNoGaps           = filterColumnsNoGaps msa
     msaOnlyStd          = filterColumnsOnlyStd msaNoGaps
-    kEffs               = kEffEntropy . toFrequencyData $ msa
+    charFreqsPerSite    = toFrequencyData msa
+    charFreqs           = distribution charFreqsPerSite
+    kEffs               = kEffEntropy charFreqsPerSite
     kEffsNoGaps         = kEffEntropy . toFrequencyData $ msaNoGaps
     kEffsOnlyStd        = kEffEntropy . toFrequencyData $ msaOnlyStd
     kEffMean            = sum kEffs / fromIntegral (length kEffs)

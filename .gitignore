@@ -31,7 +31,7 @@
 /scripts/module-dependencies-*
 /slynx/data/BenchmarkEnsemblMouse.fa
 /slynx/data/Profile.fa
-/tests/**
+/misc/**
 
 # IQ-TREE files.
 *.bionj

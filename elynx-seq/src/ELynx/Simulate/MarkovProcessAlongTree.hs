@@ -90,9 +90,7 @@ simulateAlongProbTree is (Node p f) g = do
 measurableTreeToProbTreeMixtureModel :: (Measurable a)
   => [RateMatrix] -> Tree a -> Tree [ProbMatrix]
 measurableTreeToProbTreeMixtureModel qs =
-  -- TODO: This doesn't work at all! Repair this.
   fmap (\a -> [probMatrix q . getLen $ a | q <- qs] `using` parList rpar)
-  -- fmap (\a -> [probMatrix q . getLen $ a | q <- qs])
 
 getComponentsAndRootStates :: PrimMonad m
   => Int -> Vector R -> [StationaryDistribution] -> Gen (PrimState m) -> m ([Int], [State])
