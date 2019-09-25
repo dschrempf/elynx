@@ -69,9 +69,8 @@ dataLine = do
   -- Ignore site number.
   _ <- decimal :: Parser Integer
   _ <- horizontalSpace
-  vals <- float `sepBy` horizontalSpace
   -- Also ignore additional white space on line.
-  _ <- many horizontalSpace
+  vals <- float `sepEndBy1` horizontalSpace
   _ <- many newline
     <?> "dataLine"
   -- Set the weight to 1.0 for all sites.

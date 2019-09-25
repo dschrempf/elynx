@@ -23,7 +23,7 @@ import           Control.Applicative                               ((<|>))
 import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Lens
-import           Control.Monad                                     (when)
+import           Control.Monad                                     (when, unless)
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
@@ -167,9 +167,14 @@ simulateCmd outFn = do
       $(logInfo) $ LT.toStrict $ LT.decodeUtf8
         $ LC.intercalate "\n" $ P.summarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
       return $ expand n alpha phyloModel'
-  reportModel outFn phyloModel
 
-  $(logInfo) ""
+  -- -- XXX: Do not report possibly huge empirical distribution mixture models
+  -- -- for now, because it takes too long and uses too much disk space :).
+  unless (isJust sProfiles) (
+    do reportModel outFn phyloModel
+       $(logInfo) ""
+    )
+
   $(logInfo) "Simulate alignment."
   let alignmentLength = argsLength a
   $(logInfo) $ T.pack $ "Length: " <> show alignmentLength <> "."
