@@ -20,8 +20,8 @@ module ELynx.Data.Tree.MeasurableTree
   , distancesRootLeaves
   , averageDistanceRootLeaves
   , height
-  , lengthenRoot
-  , shortenRoot
+  , lengthenStem
+  , shortenStem
   , summarize
   , totalBranchLength
   , normalize
@@ -65,12 +65,12 @@ height :: (Measurable a) => Tree a -> Double
 height = maximum . distancesRootLeaves
 
 -- | Lengthen the distance between root and origin.
-lengthenRoot :: (Measurable a) => Double -> Tree a -> Tree a
-lengthenRoot dl (Node lbl chs) = Node (lengthen dl lbl) chs
+lengthenStem :: (Measurable a) => Double -> Tree a -> Tree a
+lengthenStem dl (Node lbl chs) = Node (lengthen dl lbl) chs
 
 -- | Lengthen the distance between root and origin.
-shortenRoot :: (Measurable a) => Double -> Tree a -> Tree a
-shortenRoot dl = lengthenRoot (-dl)
+shortenStem :: (Measurable a) => Double -> Tree a -> Tree a
+shortenStem dl = lengthenStem (-dl)
 
 -- | Summarize a tree with measureable branch lengths.
 summarize :: (Measurable a) => Tree a -> L.ByteString

@@ -43,14 +43,14 @@ getManyTrees = parseFileWith manyNewick treeFileMany
 
 -- I used treedist from Phylip to get the correct results.
 -- See http://evolution.genetics.washington.edu/phylip/doc/treedist.html.
-symmetricDistanceAnswers :: [Int]
-symmetricDistanceAnswers =
+symmetricAnswers :: [Int]
+symmetricAnswers =
   [ 6, 8, 0, 0, 12, 20, 18, 20, 10, 2, 10, 4, 4, 4, 4, 4, 10, 16, 8, 2, 4, 0, 0,
     0, 10, 4, 0, 0, 2, 2, 0, 0, 4, 0, 2, 0, 8, 6, 2, 6, 4, 4, 8, 0, 0, 4, 2, 0,
     10, 0, 0, 10 ]
 
-branchScoreDistanceAnswers :: [Double]
-branchScoreDistanceAnswers =
+branchScoreAnswers :: [Double]
+branchScoreAnswers =
   [ 8.567916e-02, 9.570577e-02, 1.704571e-02, 7.603990e-03, 6.149761e-01,
     3.557070e-01, 2.329811e-01, 3.820208e-01, 1.895421e-02, 6.302364e-03,
     2.083286e-02, 1.023777e-03, 2.138244e-02, 1.444380e-02, 1.958628e-02,
@@ -77,24 +77,24 @@ each n = map head . takeWhile (not . null) . iterate (drop n)
 
 spec :: Spec
 spec = do
-  describe "symmetricDistance" $
+  describe "symmetric" $
     it "calculates correct distances for sample trees" $ do
       simpleTrees <- getSimpleTrees
-      symmetricDistance (head simpleTrees) (simpleTrees !! 1) `shouldBe` 2
+      symmetric (head simpleTrees) (simpleTrees !! 1) `shouldBe` 2
       manyTrees <- getManyTrees
       -- Since treedist computes the distance between adjacent pairs, in the
       -- following manner: [tr0, tr1, tr2, tr3] -> [dist tr0 tr1, dist tr2 tr3],
       -- we have to skip some distances.
-      each 2 (computeAdjacentDistances (symmetricDistanceWith getName) manyTrees)
-        `shouldBe` symmetricDistanceAnswers
+      each 2 (adjacent (symmetricWith getName) manyTrees)
+        `shouldBe` symmetricAnswers
 
-  describe "incompatibleSplitDistance" $
+  describe "incompatibleSplit" $
     it "calculates correct distances for completely collapsed trees" $
     property $ prop_dist_same_tree
-    (incompatibleSplitsDistance :: Tree (PhyloLabel Int) -> Tree (PhyloLabel Int) -> Int)
-  describe "branchScoreDistance" $
+    (incompatibleSplits :: Tree (PhyloLabel Int) -> Tree (PhyloLabel Int) -> Int)
+  describe "branchScore" $
     it "calculates correct distances for sample trees" $ do
       manyTrees <- getManyTrees
-      print branchScoreDistanceAnswers
-      each 2 (computeAdjacentDistances branchScoreDistance manyTrees)
-        `shouldSatisfy` nearlyEqListWith 1e-5 branchScoreDistanceAnswers
+      print branchScoreAnswers
+      each 2 (adjacent branchScore manyTrees)
+        `shouldSatisfy` nearlyEqListWith 1e-5 branchScoreAnswers

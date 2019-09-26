@@ -204,7 +204,7 @@ toReconstructedTree pp@(PointProcess ps vs o)
         !heights    = replicate (length ps) 0
         !treeRoot   = toReconstructedTree' isSorted vsSorted lvs heights
         !h          = last vsSorted
-        !treeOrigin = lengthenRoot (o-h) treeRoot
+        !treeOrigin = lengthenStem (o-h) treeRoot
 
 -- Move up the tree, connect nodes when they join according to the point process.
 toReconstructedTree' :: [Int]                -- Sorted indices, see 'sort'.
@@ -225,8 +225,8 @@ toReconstructedTree' is vs trs hs = toReconstructedTree' is' vs' trs'' hs'
         !hr    = hs !! (i+1)
         !dvl   = v - hl
         !dvr   = v - hr
-        !tl    = lengthenRoot dvl $ trs !! i
-        !tr    = lengthenRoot dvr $ trs !! (i+1)
+        !tl    = lengthenStem dvl $ trs !! i
+        !tr    = lengthenStem dvr $ trs !! (i+1)
         !h'    = hl + dvl       -- Should be the same as 'hr + dvr'.
         !tm    = Node (PhyloLabel 0 Nothing 0) [tl, tr]
         !trs'' = take i trs ++ [tm] ++ drop (i+2) trs

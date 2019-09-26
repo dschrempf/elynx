@@ -110,9 +110,9 @@ distance outFileBN = do
   when (argsNormalize a) $ $(logInfo) "Normalize trees before calculation of distances."
   let distanceMeasure :: Tree (PhyloLabel L.ByteString) -> Tree (PhyloLabel L.ByteString) -> Double
       distanceMeasure = case dist of
-        Symmetric           -> \t1 t2 -> fromIntegral $ symmetricDistanceWith getName t1 t2
-        IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplitsDistanceWith getName t1 t2
-        BranchScore         -> branchScoreDistance
+        Symmetric           -> \t1 t2 -> fromIntegral $ symmetricWith getName t1 t2
+        IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplitsWith getName t1 t2
+        BranchScore         -> branchScore
       normalizeF = if argsNormalize a then M.normalize else id
       collapseF = case dist of
         -- For the incompatible split distance we have to collapse branches with
@@ -123,7 +123,7 @@ distance outFileBN = do
       trees' = map (collapseF . normalizeF) trees
   $(logDebug) "The prepared trees are:"
   $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees'
-  let dsTriplets = computePairwiseDistances distanceMeasure trees'
+  let dsTriplets = pairwise distanceMeasure trees'
       ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds
   -- XXX: It may be good to use the common 'io' function also here.

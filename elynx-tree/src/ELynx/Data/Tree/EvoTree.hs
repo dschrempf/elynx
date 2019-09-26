@@ -28,6 +28,7 @@ class EvoLabel n where
 
   internal        :: n -> Bool
   internal n = not $ extant n || extinct n
+
   external        :: n -> Bool
   external   = not . internal
 
