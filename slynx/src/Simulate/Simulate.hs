@@ -23,7 +23,8 @@ import           Control.Applicative                               ((<|>))
 import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Lens
-import           Control.Monad                                     (when, unless)
+import           Control.Monad                                     (unless,
+                                                                    when)
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
@@ -47,9 +48,10 @@ import           ELynx.Data.Alphabet.Alphabet                      as A
 import           ELynx.Data.MarkovProcess.GammaRateHeterogeneity
 import qualified ELynx.Data.MarkovProcess.MixtureModel             as M
 import qualified ELynx.Data.MarkovProcess.PhyloModel               as P
-import qualified ELynx.Data.MarkovProcess.SubstitutionModel        as S
-import           ELynx.Data.Sequence.MultiSequenceAlignment
-import           ELynx.Data.Sequence.Sequence                      hiding (name)
+import qualified ELynx.Data.MarkovProcess.SubstitutionModel        as SM
+import qualified ELynx.Data.Sequence.MultiSequenceAlignment        as MSA
+import qualified ELynx.Data.Sequence.Sequence                      as Seq hiding
+                                                                           (name)
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.Tree
@@ -70,7 +72,7 @@ import           ELynx.Tools.Misc
 -- phylogenetic tree, and alignment length.
 simulateMSA :: (Measurable a, Named a)
             => P.PhyloModel -> Tree a -> Int -> GenIO
-            -> IO MultiSequenceAlignment
+            -> IO MSA.MultiSequenceAlignment
 simulateMSA pm t n g = do
   c  <- getNumCapabilities
   gs <- splitGen c g
@@ -80,16 +82,16 @@ simulateMSA pm t n g = do
     -- exponentiation is done in all threads. So ten threads will exponentiate
     -- the same matrix ten times.
     P.SubstitutionModel sm -> mapConcurrently
-      (\(num, gen) -> simulateAndFlattenNSitesAlongTree num d e t gen) (zip chunks gs)
-      where d = sm ^. S.stationaryDistribution
-            e = sm ^. S.exchangeabilityMatrix
+      (\(num, gen) -> simulateAndFlatten num d e t gen) (zip chunks gs)
+      where d = sm ^. SM.stationaryDistribution
+            e = sm ^. SM.exchangeabilityMatrix
     -- P.MixtureModel mm      -> mapConcurrently
     --   (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws ds es t gen) (zip chunks gs)
-    P.MixtureModel mm      -> simulateAndFlattenNSitesAlongTreeMixtureModelPar n ws ds es t g
+    P.MixtureModel mm      -> simulateAndFlattenMixtureModelPar n ws ds es t g
       where
         ws = vector $ M.getWeights mm
-        ds = map (view S.stationaryDistribution) $ M.getSubstitutionModels mm
-        es = map (view S.exchangeabilityMatrix) $ M.getSubstitutionModels mm
+        ds = map (view SM.stationaryDistribution) $ M.getSubstitutionModels mm
+        es = map (view SM.exchangeabilityMatrix) $ M.getSubstitutionModels mm
   -- XXX: The horizontal concatenation might be slow. If so, 'concatenateSeqs'
   -- or 'concatenateMSAs' can be used, which directly appends vectors.
   let leafStates = horizontalConcat leafStatesS
@@ -97,9 +99,9 @@ simulateMSA pm t n g = do
       code       = P.getAlphabet pm
       -- XXX: Probably use type safe stuff here?
       alph       = A.all $ alphabetSpec code
-      sequences  = [ Sequence sName code (V.fromList $ map (`Set.elemAt` alph) ss) |
+      sequences  = [ Seq.Sequence sName code (V.fromList $ map (`Set.elemAt` alph) ss) |
                     (sName, ss) <- zip leafNames leafStates ]
-  return $ either error id $ fromSequenceList sequences
+  return $ either error id $ MSA.fromSequences sequences
 
 -- Summarize EDM components; line to be printed to screen or log.
 summarizeEDMComponents :: [EDMComponent] -> L.ByteString
@@ -185,7 +187,7 @@ simulateCmd outFn = do
     Just s  -> $(logInfo) (T.pack ("Seed: " <> show s <> "."))
                >> liftIO (initialize (V.fromList s))
   msa <- liftIO $ simulateMSA phyloModel tree alignmentLength gen
-  let output = (sequencesToFasta . toSequenceList) msa
+  let output = (sequencesToFasta . MSA.toSequences) msa
       outFile = (<> ".fasta") <$> outFn
   $(logInfo) ""
   io "simulated multi sequence alignment" output outFile

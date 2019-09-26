@@ -17,7 +17,7 @@ Creation date: Fri Oct  5 08:41:05 2018.
 
 module Filter.Filter
   ( filterRowsCmd
-  , filterColumnsCmd
+  , filterColsCmd
   )
   where
 
@@ -31,15 +31,15 @@ import qualified Data.Text                                  as T
 import           Filter.Options
 import           Tools
 
-import           ELynx.Data.Sequence.MultiSequenceAlignment
-import           ELynx.Data.Sequence.Sequence
+import qualified ELynx.Data.Sequence.MultiSequenceAlignment as M
+import qualified ELynx.Data.Sequence.Sequence               as S
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Misc
 
-filterRows :: Maybe Int -> Maybe Int -> [Sequence] -> L.ByteString
+filterRows :: Maybe Int -> Maybe Int -> [S.Sequence] -> L.ByteString
 filterRows ml ms ss = sequencesToFasta $ compose filters ss
-  where filters = map (fromMaybe id) [filterLongerThan <$> ml, filterShorterThan <$> ms]
+  where filters = map (fromMaybe id) [S.filterLongerThan <$> ml, S.filterShorterThan <$> ms]
 
 -- | Filter sequences.
 filterRowsCmd :: Maybe FilePath -> FilterRows ()
@@ -55,22 +55,22 @@ filterRowsCmd outFileBaseName = do
   let outFilePath = (++ ".fasta") <$> outFileBaseName
   io "filtered sequences" result outFilePath
 
-filterColumns :: Maybe Double -> [Sequence] -> L.ByteString
-filterColumns ms ss = sequencesToFasta . toSequenceList $ compose filters msa
-  where msa = either error id (fromSequenceList ss)
-        filters = map (fromMaybe id) [ filterColumnsStd <$> ms ]
+filterCols :: Maybe Double -> [S.Sequence] -> L.ByteString
+filterCols ms ss = sequencesToFasta . M.toSequences $ compose filters msa
+  where msa = either error id (M.fromSequences ss)
+        filters = map (fromMaybe id) [ M.filterColsStd <$> ms ]
 
 -- | Filter columns.
-filterColumnsCmd :: Maybe FilePath -> FilterColumns ()
-filterColumnsCmd outFileBaseName = do
+filterColsCmd :: Maybe FilePath -> FilterCols ()
+filterColsCmd outFileBaseName = do
   $(logInfo) "Command: Filter columns of a multi sequence alignment."
-  FilterColumnsArguments al inFile standard <- lift ask
+  FilterColsArguments al inFile standard <- lift ask
   case standard of
     Nothing -> return ()
     Just p -> $(logInfo) $ T.pack $
         "  Keep columns with a proportion of standard (non-IUPAC) characters larger than "
         ++ show p ++ "."
   ss <- readSeqs al inFile
-  let result      = filterColumns standard ss
+  let result      = filterCols standard ss
   let outFilePath = (++ ".fasta") <$> outFileBaseName
   io "filtered sequences" result outFilePath

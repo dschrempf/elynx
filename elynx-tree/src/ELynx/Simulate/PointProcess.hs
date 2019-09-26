@@ -163,7 +163,7 @@ simulateNReconstructedTrees
   -> Rate       -- ^ Birth rate
   -> Rate       -- ^ Death rate
   -> Gen (PrimState m)   -- ^ Generator (see 'System.Random.MWC')
-  -> m [Tree PhyloIntLabel]
+  -> m [Tree (PhyloLabel Int)]
 simulateNReconstructedTrees nT nP t l m g
   | nT <= 0   = return []
   | otherwise = replicateM nT $ simulateReconstructedTree nP t l m g
@@ -178,7 +178,7 @@ simulateReconstructedTree
   -> Rate       -- ^ Birth rate
   -> Rate       -- ^ Death rate
   -> Gen (PrimState m)   -- ^ Generator (see 'System.Random.MWC')
-  -> m (Tree PhyloIntLabel)
+  -> m (Tree (PhyloLabel Int))
 simulateReconstructedTree n t l m g =  toReconstructedTree <$> simulate n t l m g
 
 -- | Convert a point process to a reconstructed tree. See Lemma 2.2.
@@ -192,7 +192,7 @@ simulateReconstructedTree n t l m g =  toReconstructedTree <$> simulate n t l m 
 -- element, but this fails for classical 'Int's. So, I rather have another
 -- (useless) argument.
 toReconstructedTree :: PointProcess Int Double
-                    -> Tree PhyloIntLabel
+                    -> Tree (PhyloLabel Int)
 toReconstructedTree pp@(PointProcess ps vs o)
   | length ps /= length vs + 1 = error "Too few or too many points."
   | length vs <= 1             = error "Too few values."
@@ -209,9 +209,9 @@ toReconstructedTree pp@(PointProcess ps vs o)
 -- Move up the tree, connect nodes when they join according to the point process.
 toReconstructedTree' :: [Int]                -- Sorted indices, see 'sort'.
                      -> [Double]             -- Sorted merge values.
-                     -> [Tree PhyloIntLabel] -- Leaves with accumulated root branch lengths.
+                     -> [Tree (PhyloLabel Int)] -- Leaves with accumulated root branch lengths.
                      -> [Double]             -- Accumulated heights of the leaves.
-                     -> Tree PhyloIntLabel
+                     -> Tree (PhyloLabel Int)
 toReconstructedTree' [] [] trs  _ = head trs
 toReconstructedTree' is vs trs hs = toReconstructedTree' is' vs' trs'' hs'
   -- For the algorithm, see 'ELynx.Coalescent.simulate', but index starts

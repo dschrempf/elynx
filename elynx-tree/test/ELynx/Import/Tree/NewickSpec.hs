@@ -25,13 +25,13 @@ import           Text.Megaparsec
 sampleLabelByteString :: L.ByteString
 sampleLabelByteString = L.pack "name:0.3"
 
-sampleLabel :: PhyloByteStringLabel
+sampleLabel :: (PhyloLabel L.ByteString)
 sampleLabel = PhyloLabel (L.pack "name") Nothing 0.3
 
 sampleForestByteString :: L.ByteString
 sampleForestByteString = L.pack "(l,l,(a,b))"
 
-sampleForest :: [Tree PhyloByteStringLabel]
+sampleForest :: [Tree (PhyloLabel L.ByteString)]
 sampleForest =
   [ Node { rootLabel = PhyloLabel (L.pack "l") Nothing 0
          , subForest = []
@@ -57,7 +57,7 @@ sampleNewickByteString2 = L.pack "(Caenorhabd:0.0176707431,C0briggsae:0.01428170
 sampleNewickEmptyByteString :: L.ByteString
 sampleNewickEmptyByteString = L.pack "(,(,,),);"
 
-sampleNewickEmpty :: Tree PhyloByteStringLabel
+sampleNewickEmpty :: Tree (PhyloLabel L.ByteString)
 sampleNewickEmpty =
   Node { rootLabel = PhyloLabel (L.pack "") Nothing 0
        , subForest =

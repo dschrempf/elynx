@@ -16,6 +16,7 @@ module ELynx.Data.Tree.DistanceSpec
   (spec
   ) where
 
+import qualified Data.ByteString.Lazy.Char8           as L
 import           Data.Tree
 import           Test.Hspec
 import           Test.QuickCheck
@@ -31,13 +32,13 @@ import           ELynx.Tools.InputOutput
 treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
 
-getSimpleTrees :: IO [Tree PhyloByteStringLabel]
+getSimpleTrees :: IO [Tree (PhyloLabel L.ByteString)]
 getSimpleTrees = parseFileWith manyNewick treeFileSimple
 
 treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"
 
-getManyTrees :: IO [Tree PhyloByteStringLabel]
+getManyTrees :: IO [Tree (PhyloLabel L.ByteString)]
 getManyTrees = parseFileWith manyNewick treeFileMany
 
 -- I used treedist from Phylip to get the correct results.
@@ -66,7 +67,7 @@ prop_dist_same_tree :: (Num b, Eq b) => (Tree a -> Tree a -> b) -> Tree a -> Boo
 prop_dist_same_tree distanceMeasure t = distanceMeasure t t == 0
 
 -- TODO: Microsporidia trees with branch support values.
--- getMicrospoPoissonTree :: IO (Tree PhyloByteStringLabel)
+-- getMicrospoPoissonTree :: IO (Tree (PhyloLabel L.ByteString))
 -- getMicrospoPoissonTree = parseFileWith newick "data/MicrospoPoisson.tree"
 -- getMicrospoUDM32Tree = parseFileWith newick "data/MicrospoEDM32.tree"
 -- getMicrospoUDM64Tree = parseFileWith newick "data/MicrospoEDM64.tree"
@@ -89,8 +90,8 @@ spec = do
 
   describe "incompatibleSplitDistance" $
     it "calculates correct distances for completely collapsed trees" $
-    property $ prop_dist_same_tree (incompatibleSplitsDistance :: Tree PhyloIntLabel -> Tree PhyloIntLabel -> Int)
-
+    property $ prop_dist_same_tree
+    (incompatibleSplitsDistance :: Tree (PhyloLabel Int) -> Tree (PhyloLabel Int) -> Int)
   describe "branchScoreDistance" $
     it "calculates correct distances for sample trees" $ do
       manyTrees <- getManyTrees

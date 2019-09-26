@@ -45,27 +45,27 @@ import           ELynx.Tools.ByteString     (c2w)
 type Parser = Parsec Void L.ByteString
 
 -- | Parse many Newick trees.
-manyNewick :: Parser [Tree PhyloByteStringLabel]
+manyNewick :: Parser [Tree (PhyloLabel L.ByteString)]
 manyNewick = some (newick <* space) <* eof <?> "manyNewick"
 
 -- | Parse a Newick tree.
-newick :: Parser (Tree PhyloByteStringLabel)
+newick :: Parser (Tree (PhyloLabel L.ByteString))
 newick = tree <* char (c2w ';') <?> "newick"
 
-tree :: Parser (Tree PhyloByteStringLabel)
+tree :: Parser (Tree (PhyloLabel L.ByteString))
 tree = space *> (branched <|> leaf) <?> "tree"
 
-branched :: Parser (Tree PhyloByteStringLabel)
+branched :: Parser (Tree (PhyloLabel L.ByteString))
 branched = do
   f <- forest
   s <- branchSupport
   n <- node
     <?> "branched"
-  let n' = n {pBrSup = s}
+  let n' = n {brSup = s}
   return $ Node n' f
 
 -- | A 'forest' is a set of trees separated by @,@ and enclosed by parentheses.
-forest :: Parser [Tree PhyloByteStringLabel]
+forest :: Parser [Tree (PhyloLabel L.ByteString)]
 forest = do
   _ <- char (c2w '(')
   f <- tree `sepBy1` char (c2w ',')
@@ -77,14 +77,14 @@ branchSupport :: Parser (Maybe Double)
 branchSupport = optional $ try float <|> try decimalAsDouble
 
 -- | A 'leaf' is a 'node' without children.
-leaf :: Parser (Tree PhyloByteStringLabel)
+leaf :: Parser (Tree (PhyloLabel L.ByteString))
 leaf = do
   n <- node
     <?> "leaf"
   return $ Node n []
 
 -- | A 'node' has a name and a 'branchLength'.
-node :: Parser PhyloByteStringLabel
+node :: Parser (PhyloLabel L.ByteString)
 node = do
   n <- name
   b <- branchLength

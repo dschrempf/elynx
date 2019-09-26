@@ -14,24 +14,24 @@ Creation date: Fri Oct  5 23:00:17 2018.
 
 
 module ELynx.Data.Sequence.Defaults
-  ( defSequenceNameWidth
-  , defSequenceSummaryLength
-  , defSequenceListSummaryNumber
-  , defFieldWidth
+  ( nameWidth
+  , summaryLength
+  , summaryNSequences
+  , fieldWidth
   ) where
 
 -- | Space reserved for sequence names when printing them.
-defSequenceNameWidth :: Int
-defSequenceNameWidth = 23
+nameWidth :: Int
+nameWidth = 23
 
 -- | The length shown when summarizing sequences.
-defSequenceSummaryLength :: Int
-defSequenceSummaryLength = 60
+summaryLength :: Int
+summaryLength = 60
 
 -- | How many sequences are shown in summary.
-defSequenceListSummaryNumber :: Int
-defSequenceListSummaryNumber = 200
+summaryNSequences :: Int
+summaryNSequences = 200
 
 -- | Field width for tables.
-defFieldWidth :: Int
-defFieldWidth = 13
+fieldWidth :: Int
+fieldWidth = 13

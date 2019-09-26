@@ -32,7 +32,7 @@ import           ELynx.Tools.InputOutput
 treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
 
-getSimpleTrees :: IO [Tree PhyloByteStringLabel]
+getSimpleTrees :: IO [Tree (PhyloLabel L.ByteString)]
 getSimpleTrees = parseFileWith manyNewick treeFileSimple
 
 bipartitionToBranchAnswer :: M.Map (Bipartition L.ByteString) (Sum Double)
@@ -67,7 +67,7 @@ spec :: Spec
 spec = do
   describe "bipartitions" $
     it "calculates correct bipartitions for sample trees" $ do
-      simpleTrees <- map removeBrLen <$> getSimpleTrees
+      simpleTrees <- map removeBrInfo <$> getSimpleTrees
       let t1 = head simpleTrees
           t2 = simpleTrees !! 1
       bipartitions t1 `shouldBe` bipartitionsFirstTree
@@ -75,5 +75,5 @@ spec = do
   describe "bipartitionToBranch" $
     it "creates a map from bipartitions to branch lengths" $ do
       simpleTrees <- getSimpleTrees
-      bipartitionToBranch pLabel (Sum . pBrLen) (simpleTrees !! 2)
+      bipartitionToBranch label (Sum . brLen) (simpleTrees !! 2)
         `shouldBe` bipartitionToBranchAnswer

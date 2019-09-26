@@ -35,7 +35,7 @@ import           System.Random.MWC
 import           SubSample.Options
 import           Tools
 
-import           ELynx.Data.Sequence.MultiSequenceAlignment
+import qualified ELynx.Data.Sequence.MultiSequenceAlignment as M
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
 
@@ -60,9 +60,9 @@ subSampleCmd outFileBaseName = do
   $(logInfo) $ T.pack $ "  Sample " <> show nAlignments <> " multi sequence alignments."
   ss <- readSeqs al inFile
   gen <- liftIO $ maybe createSystemRandom (initialize . V.fromList) seed
-  let msa = either error id (fromSequenceList ss)
-  samples <- lift $ replicateM nAlignments $ randomSubSample nSites msa gen
-  let results = map (sequencesToFasta . toSequenceList) samples
+  let msa = either error id (M.fromSequences ss)
+  samples <- lift $ replicateM nAlignments $ M.randomSubSample nSites msa gen
+  let results = map (sequencesToFasta . M.toSequences) samples
   outFilePaths <- case outFileBaseName of
     Nothing -> return $ repeat Nothing
     Just fn -> return $ Just <$> getOutFilePaths fn nAlignments "fasta"

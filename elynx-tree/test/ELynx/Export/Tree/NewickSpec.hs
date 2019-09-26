@@ -24,7 +24,7 @@ import           ELynx.Export.Tree.Newick
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
 
-samplePhyloByteStringTree :: Tree PhyloByteStringLabel
+samplePhyloByteStringTree :: Tree (PhyloLabel L.ByteString)
 samplePhyloByteStringTree =
   parseByteStringWith "Sample newick byte string" newick sampleNewickByteString1
 

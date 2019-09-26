@@ -34,6 +34,11 @@ import           ELynx.Tools.Vector
 
 -- data PhyloModel = MixtureModel | SubstitutionModel
 
+--
+-- I think it could simply be:
+-- data PhyloModel = [(Weight, SubstitutionModel)]
+--
+
 -- data MixtureModel = [(Weight, SubstitutionModel)]
 
 -- data SubstitutionModel = SMDNA DNASubstitutionModel | SMAA AASubstitutionModel

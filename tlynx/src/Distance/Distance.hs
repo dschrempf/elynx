@@ -108,7 +108,7 @@ distance outFileBN = do
       $(logInfo) $ T.pack $ "Collapse nodes with support less than " ++ show val ++ "."
     BranchScore           -> $(logInfo) "Use branch score distance."
   when (argsNormalize a) $ $(logInfo) "Normalize trees before calculation of distances."
-  let distanceMeasure :: Tree PhyloByteStringLabel -> Tree PhyloByteStringLabel -> Double
+  let distanceMeasure :: Tree (PhyloLabel L.ByteString) -> Tree (PhyloLabel L.ByteString) -> Double
       distanceMeasure = case dist of
         Symmetric           -> \t1 t2 -> fromIntegral $ symmetricDistanceWith getName t1 t2
         IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplitsDistanceWith getName t1 t2

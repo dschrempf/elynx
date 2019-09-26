@@ -21,6 +21,7 @@ module Examine.Examine
   )
   where
 
+import           Control.Lens
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
@@ -33,19 +34,19 @@ import           Tools
 
 import qualified ELynx.Data.Alphabet.Alphabet               as A
 import qualified ELynx.Data.Alphabet.Character              as C
-import           ELynx.Data.Sequence.MultiSequenceAlignment
-import           ELynx.Data.Sequence.Sequence
+import qualified ELynx.Data.Sequence.MultiSequenceAlignment as M
+import qualified ELynx.Data.Sequence.Sequence               as Seq
 import           ELynx.Tools.InputOutput
 
-examineMSA :: Bool -> MultiSequenceAlignment -> L.ByteString
+examineMSA :: Bool -> M.MultiSequenceAlignment -> L.ByteString
 examineMSA perSiteFlag msa =
   L.unlines [ L.pack "Sequences have equal length (multi sequence alignment, or single sequence)."
             , L.pack $ "Total number of columns in alignment: "
-              ++ show (msaLength msa)
+              ++ show (M.length msa)
             , L.pack $ "Number of columns without gaps: "
-              ++ show (msaLength msaNoGaps)
+              ++ show (M.length msaNoGaps)
             , L.pack $ "Number of columns with standard characters only: "
-              ++ show (msaLength msaOnlyStd)
+              ++ show (M.length msaOnlyStd)
             , L.empty
             , L.pack $ "Total number of characters: " ++ show nTot
             , L.pack $ "Standard (i.e., not extended IUPAC) characters: "
@@ -65,7 +66,7 @@ examineMSA perSiteFlag msa =
             , L.pack "Distribution of characters:"
               -- Holy crap.
             , L.pack $ concatMap ((: "     ") . C.toChar) $ S.toList $
-              A.all $ A.alphabetSpec $ msaAlphabet msa
+              A.all $ A.alphabetSpec $ msa^.M.alphabet
             , L.pack $ unwords $ map (printf "%.3f") charFreqs
             , L.empty
             , L.pack "Mean effective number of states (measured using entropy):"
@@ -78,20 +79,20 @@ examineMSA perSiteFlag msa =
             ]
   <> perSiteBS
   where
-    nTot                = msaLength msa * msaNSequences msa
-    nIUPAC              = countIUPACChars msa
-    nGaps               = countGaps msa
-    nUnknowns           = countUnknowns msa
+    nTot                = M.length msa * M.nSequences msa
+    nIUPAC              = M.countIUPACChars msa
+    nGaps               = M.countGaps msa
+    nUnknowns           = M.countUnknowns msa
     percentageIUPAC     = fromIntegral nIUPAC    / fromIntegral nTot :: Double
     percentageGaps      = fromIntegral nGaps     / fromIntegral nTot :: Double
     percentageUnknowns  = fromIntegral nUnknowns / fromIntegral nTot :: Double
-    msaNoGaps           = filterColumnsNoGaps msa
-    msaOnlyStd          = filterColumnsOnlyStd msaNoGaps
-    charFreqsPerSite    = toFrequencyData msa
-    charFreqs           = distribution charFreqsPerSite
-    kEffs               = kEffEntropy charFreqsPerSite
-    kEffsNoGaps         = kEffEntropy . toFrequencyData $ msaNoGaps
-    kEffsOnlyStd        = kEffEntropy . toFrequencyData $ msaOnlyStd
+    msaNoGaps           = M.filterColsNoGaps msa
+    msaOnlyStd          = M.filterColsOnlyStd msaNoGaps
+    charFreqsPerSite    = M.toFrequencyData msa
+    charFreqs           = M.distribution charFreqsPerSite
+    kEffs               = M.kEffEntropy charFreqsPerSite
+    kEffsNoGaps         = M.kEffEntropy . M.toFrequencyData $ msaNoGaps
+    kEffsOnlyStd        = M.kEffEntropy . M.toFrequencyData $ msaOnlyStd
     kEffMean            = sum kEffs / fromIntegral (length kEffs)
     kEffMeanNoGaps      = sum kEffsNoGaps  / fromIntegral (length kEffsNoGaps)
     kEffMeanOnlyStd     = sum kEffsOnlyStd / fromIntegral (length kEffsOnlyStd)
@@ -101,9 +102,9 @@ examineMSA perSiteFlag msa =
                                          ]
                           else L.empty
 
-examine :: Bool -> [Sequence] -> L.ByteString
-examine perSiteFlag ss = summarizeSequenceList ss <>
-  case fromSequenceList ss of
+examine :: Bool -> [Seq.Sequence] -> L.ByteString
+examine perSiteFlag ss = Seq.summarizeSequences ss <>
+  case M.fromSequences ss of
     Left _    -> L.empty
     Right msa -> L.pack "\n" <> examineMSA perSiteFlag msa
 

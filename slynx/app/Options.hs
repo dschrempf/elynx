@@ -42,7 +42,7 @@ data CommandArguments =
   Concatenate ConcatenateArguments
   | Examine ExamineArguments
   | FilterRows FilterRowsArguments
-  | FilterColumns FilterColumnsArguments
+  | FilterCols FilterColsArguments
   | Simulate SimulateArguments
   | SubSample SubSampleArguments
   | Translate TranslateArguments
@@ -74,7 +74,7 @@ filterRowsCommand = command "filter-rows" $
 
 filterColumnsCommand :: Mod CommandFields CommandArguments
 filterColumnsCommand = command "filter-columns" $
-                     info (FilterColumns <$> filterColumnsArguments)
+                     info (FilterCols <$> filterColsArguments)
                      $ progDesc filterColumnsDescription
 
 simulateCommand :: Mod CommandFields CommandArguments
@@ -125,4 +125,4 @@ ftr = [ "File formats:" ] ++ fs ++
   where
     toListItem = ("  - " ++)
     fs = map toListItem ["FASTA"]
-    as = map (toListItem . alphabetNameVerbose) [(minBound :: Alphabet) ..]
+    as = map (toListItem . description) [(minBound :: Alphabet) ..]

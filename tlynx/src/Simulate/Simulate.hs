@@ -47,7 +47,7 @@ import           Data.Tree
 import           Simulate.Options
 
 import           ELynx.Data.Tree.MeasurableTree
-import           ELynx.Data.Tree.PhyloTree            (PhyloIntLabel)
+import           ELynx.Data.Tree.PhyloTree            (PhyloLabel)
 import           ELynx.Data.Tree.SumStat              (formatNChildSumStat,
                                                        toNChildSumStat)
 import           ELynx.Data.Tree.Tree
@@ -80,7 +80,7 @@ simulate outFile = do
   let res = L.unlines ls
   io "simulated trees" res outFile'
 
-simulateNTreesConcurrently :: Int -> Simulate [Tree PhyloIntLabel]
+simulateNTreesConcurrently :: Int -> Simulate [Tree (PhyloLabel Int)]
 simulateNTreesConcurrently c = do
   (SimulateArguments nT nL h cM l m r _ _ s) <- lift ask
   let l' = l * r
@@ -93,7 +93,7 @@ simulateNTreesConcurrently c = do
           (zip chunks gs)
   return $ concat trss
 
-simulateAndSubSampleNTreesConcurrently :: Int -> Simulate [Tree PhyloIntLabel]
+simulateAndSubSampleNTreesConcurrently :: Int -> Simulate [Tree (PhyloLabel Int)]
 simulateAndSubSampleNTreesConcurrently c = do
   (SimulateArguments nT nL h cM l m r _ _ s) <- lift ask
   let nLeavesBigTree = (round $ fromIntegral nL / r) :: Int

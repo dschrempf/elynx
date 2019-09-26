@@ -37,8 +37,8 @@ translateSeq uc rf (Sequence n a cs) = case a of
 -- Translate from DNA to Protein with given reading frame (0, 1, 2).
 translateVecWith :: (V.Unbox a, Ord a, V.Unbox b)
               => (Codon a -> b) -> Int -> V.Vector a -> V.Vector b
-translateVecWith f rf cs | rf > 2    = error "translate: reading frame is larger than 2."
-                         | rf < 0    = error "translate: reading frame is negative."
+translateVecWith f rf cs | rf > 2    = error "translateVecWith: reading frame is larger than 2."
+                         | rf < 0    = error "translateVecWith: reading frame is negative."
                          | otherwise  = aas
   where codons = map unsafeFromVec $ chop 3 $ V.drop rf cs
         aas = V.fromList $ map f codons

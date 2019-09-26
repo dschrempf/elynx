@@ -14,11 +14,11 @@ Creation date: Sun Oct  7 17:29:45 2018.
 
 module Filter.Options
   ( FilterRowsArguments (..)
-  , FilterColumnsArguments (..)
+  , FilterColsArguments (..)
   , FilterRows
-  , FilterColumns
+  , FilterCols
   , filterRowsArguments
-  , filterColumnsArguments
+  , filterColsArguments
   ) where
 
 import           Control.Applicative
@@ -38,7 +38,7 @@ data FilterRowsArguments = FilterRowsArguments
   , frShorter  :: Maybe Int }
 
 -- | Arguments needed for filtering columns of a multi sequence alignment.
-data FilterColumnsArguments = FilterColumnsArguments
+data FilterColsArguments = FilterColsArguments
   { fcAlphabet :: Alphabet
   , fcInFile   :: Maybe FilePath
   , fcStandard :: Maybe Double }
@@ -47,7 +47,7 @@ data FilterColumnsArguments = FilterColumnsArguments
 type FilterRows = LoggingT (ReaderT FilterRowsArguments IO)
 
 -- | Logger and Reader for column filtering.
-type FilterColumns = LoggingT (ReaderT FilterColumnsArguments IO)
+type FilterCols = LoggingT (ReaderT FilterColsArguments IO)
 
 -- | Command line parser.
 filterRowsArguments :: Parser FilterRowsArguments
@@ -70,8 +70,8 @@ filterShorterThanOpt = optional $ option auto $
   help "Only keep sequences shorter than LENGTH"
 
 -- | Command line parser.
-filterColumnsArguments :: Parser FilterColumnsArguments
-filterColumnsArguments = FilterColumnsArguments
+filterColsArguments :: Parser FilterColsArguments
+filterColsArguments = FilterColsArguments
                  <$> alphabetOpt
                  <*> optional inFileArg
                  <*> filterStandardOpt

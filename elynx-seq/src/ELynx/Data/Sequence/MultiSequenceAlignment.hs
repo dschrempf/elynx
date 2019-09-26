@@ -13,26 +13,28 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:40:18 2018.
 
+This module is to be imported qualified.
+
 -}
 
 
 module ELynx.Data.Sequence.MultiSequenceAlignment
   ( MultiSequenceAlignment (MultiSequenceAlignment)
-  , msaAlphabet
-  , msaLength
-  , msaNSequences
+  , alphabet
+  , length
+  , nSequences
   -- | * Input, output
-  , fromSequenceList
-  , toSequenceList
-  , showMSA
-  , summarizeMSA
+  , fromSequences
+  , toSequences
+  , toByteString
+  , summarize
   -- | * Manipulation
-  , msaJoin
-  , msaConcatenate
-  , msasConcatenate
-  , filterColumnsOnlyStd
-  , filterColumnsStd
-  , filterColumnsNoGaps
+  , join
+  , concat
+  , concatMSAs
+  , filterColsOnlyStd
+  , filterColsStd
+  , filterColsNoGaps
   -- | * Analysis
   , FrequencyData
   , distribution
@@ -48,12 +50,15 @@ module ELynx.Data.Sequence.MultiSequenceAlignment
   ) where
 
 import           Control.Lens
-import           Control.Monad
+import           Control.Monad                             hiding (join)
 import           Control.Monad.Primitive
 import qualified Data.ByteString.Lazy.Char8                as L
-import           Data.List
+import           Data.List                                 hiding (concat,
+                                                            length)
 import qualified Data.Matrix.Unboxed                       as M
 import qualified Data.Vector.Unboxed                       as V
+import           Prelude                                   hiding (concat,
+                                                            length)
 import           System.Random.MWC
 
 import qualified ELynx.Data.Alphabet.Alphabet              as A
@@ -69,29 +74,25 @@ import           ELynx.Tools.Matrix
 
 -- | A collection of sequences.
 data MultiSequenceAlignment = MultiSequenceAlignment
-                              { _names    :: [S.SequenceName]
+                              { _names    :: [S.Name]
                               , _alphabet :: A.Alphabet
                               , _matrix   :: M.Matrix Character
                               }
-  deriving (Read, Show, Eq)
+  deriving (Show, Eq)
 
 makeLenses ''MultiSequenceAlignment
 
--- | Alphabet.
-msaAlphabet :: MultiSequenceAlignment -> A.Alphabet
-msaAlphabet = view alphabet
-
 -- | Number of sites.
-msaLength :: MultiSequenceAlignment -> Int
-msaLength = M.cols . view matrix
+length :: MultiSequenceAlignment -> Int
+length = M.cols . view matrix
 
 -- | Number of sequences.
-msaNSequences :: MultiSequenceAlignment -> Int
-msaNSequences = M.rows . view matrix
+nSequences :: MultiSequenceAlignment -> Int
+nSequences = M.rows . view matrix
 
 -- | Create 'MultiSequenceAlignment' from a list of 'S.Sequence's.
-fromSequenceList :: [S.Sequence] -> Either String MultiSequenceAlignment
-fromSequenceList ss
+fromSequences :: [S.Sequence] -> Either String MultiSequenceAlignment
+fromSequences ss
   | S.equalLength ss && allEqual (map (view S.alphabet) ss) =
       Right $ MultiSequenceAlignment ns a d
   | S.equalLength ss =
@@ -105,62 +106,62 @@ fromSequenceList ss
     d    = M.fromRows bss
 
 -- | Conversion to list of 'S.Sequence's.
-toSequenceList :: MultiSequenceAlignment -> [S.Sequence]
-toSequenceList (MultiSequenceAlignment ns a d) = zipWith (\n r -> S.Sequence n a r) ns rows
+toSequences :: MultiSequenceAlignment -> [S.Sequence]
+toSequences (MultiSequenceAlignment ns a d) = zipWith (\n r -> S.Sequence n a r) ns rows
   where
     rows  = M.toRows d
 
-msaHeader :: L.ByteString
-msaHeader = L.unwords [ alignLeft defSequenceNameWidth (L.pack "Name")
-                      , L.pack "Sequence" ]
-
--- | Show a 'S.Sequence', untrimmed.
-showSequence :: MultiSequenceAlignment -> Int -> L.ByteString
-showSequence m i =
-  L.unwords [ alignLeft defSequenceNameWidth $ (m ^. names) !! i
+-- | Show sequence of 'MultiSequenceAlignment' with given index, untrimmed.
+toByteStringSeq :: MultiSequenceAlignment -> Int -> L.ByteString
+toByteStringSeq m i =
+  L.unwords [ alignLeft nameWidth $ (m ^. names) !! i
             , S.fromCharacters $ M.takeRow (m ^. matrix) i ]
 
--- | Show a 'S.Sequence', untrimmed.
-summarizeSequence :: MultiSequenceAlignment -> Int -> L.ByteString
-summarizeSequence m i =
-  L.unwords [ alignLeft defSequenceNameWidth $ (m ^. names) !! i
-            , summarizeByteString defSequenceSummaryLength $
+-- | Show a 'MultiSequenceAlignment', untrimmed.
+summarizeSeq :: MultiSequenceAlignment -> Int -> L.ByteString
+summarizeSeq m i =
+  L.unwords [ alignLeft nameWidth $ (m ^. names) !! i
+            , summarizeByteString summaryLength $
               S.fromCharacters $ M.takeRow (m ^. matrix) i ]
 
--- | Show a 'MultiSequenceAlignment' in text form.
-showMSA :: MultiSequenceAlignment -> L.ByteString
-showMSA msa = L.unlines $ msaHeader :
-  map (showSequence msa) [0 .. (msaNSequences msa - 1)]
+tableHeader :: L.ByteString
+tableHeader = L.unwords [ alignLeft nameWidth (L.pack "Name")
+                      , L.pack "Sequence" ]
 
-summarizeMSAHeader :: MultiSequenceAlignment -> L.ByteString
-summarizeMSAHeader msa = L.unlines $
+-- | Show a 'MultiSequenceAlignment' in text form.
+toByteString :: MultiSequenceAlignment -> L.ByteString
+toByteString msa = L.unlines $ tableHeader :
+  map (toByteStringSeq msa) [0 .. (nSequences msa - 1)]
+
+header :: MultiSequenceAlignment -> L.ByteString
+header msa = L.unlines $
   [ L.pack "Multi sequence alignment."
-  , L.pack $ "Code: " ++ A.alphabetNameVerbose (msa^.alphabet) ++ "."
-  , L.pack $ "Length: " ++ show (msaLength msa) ++ "." ]
+  , L.pack $ "Code: " ++ A.description (msa^.alphabet) ++ "."
+  , L.pack $ "Length: " ++ show (length msa) ++ "." ]
   ++ reportLengthSummary ++ reportNumberSummary
   where reportLengthSummary =
           [ L.pack $ "For each sequence, the "
-            ++ show defSequenceSummaryLength ++ " first bases are shown."
-          | msaLength msa > defSequenceSummaryLength ]
+            ++ show summaryLength ++ " first bases are shown."
+          | length msa > summaryLength ]
         reportNumberSummary =
-          [ L.pack $ show defSequenceListSummaryNumber ++ " out of " ++
-            show (msaNSequences msa) ++ " sequences are shown."
-          | msaNSequences msa > defSequenceListSummaryNumber ]
+          [ L.pack $ show summaryNSequences ++ " out of " ++
+            show (nSequences msa) ++ " sequences are shown."
+          | nSequences msa > summaryNSequences ]
 
 -- | Similar to 'S.summarizeSequenceList' but with different Header.
-summarizeMSA :: MultiSequenceAlignment -> L.ByteString
-summarizeMSA msa = L.unlines $ summarizeMSAHeader msa :
-  map (summarizeSequence msa) [0 .. n - 1]
-  where n = min (msaNSequences msa) defSequenceListSummaryNumber
+summarize :: MultiSequenceAlignment -> L.ByteString
+summarize msa = L.unlines $ header msa :
+  map (summarizeSeq msa) [0 .. n - 1]
+  where n = min (nSequences msa) summaryNSequences
 
 -- | Join two 'MultiSequenceAlignment's vertically. That is, add more sequences
 -- to an alignment. See also 'msaConcatenate'.
-msaJoin :: MultiSequenceAlignment
-        -> MultiSequenceAlignment
-        -> MultiSequenceAlignment
+join :: MultiSequenceAlignment
+     -> MultiSequenceAlignment
+     -> MultiSequenceAlignment
 -- top bottom.
-msaJoin t b
-  | msaLength t == msaLength b
+join t b
+  | length t == length b
     && t^.alphabet == b^.alphabet
   = MultiSequenceAlignment ns a (tD === bD)
   | otherwise  = error "msaJoin: Multi sequence alignments do not have equal length."
@@ -172,12 +173,12 @@ msaJoin t b
 
 -- | Concatenate two 'MultiSequenceAlignment's horizontally. That is, add more
 -- sites to an alignment. See also 'msaJoin'.
-msaConcatenate :: MultiSequenceAlignment
-               -> MultiSequenceAlignment
-               -> MultiSequenceAlignment
+concat :: MultiSequenceAlignment
+       -> MultiSequenceAlignment
+       -> MultiSequenceAlignment
 -- left right.
-msaConcatenate l r
-  | msaNSequences l == msaNSequences r
+concat l r
+  | nSequences l == nSequences r
     && l^.alphabet == r^.alphabet
   = MultiSequenceAlignment (l ^. names) a (lD ||| rD)
   | otherwise = error "msaConcatenate: Multi sequence alignments do not have equal length."
@@ -188,31 +189,31 @@ msaConcatenate l r
 
 -- | Concatenate a list of 'MultiSequenceAlignment's horizontally. See
 -- 'msaConcatenate'.
-msasConcatenate :: [MultiSequenceAlignment] -> MultiSequenceAlignment
-msasConcatenate []    = error "msasConcatenate: Nothing to concatenate."
-msasConcatenate [msa] = msa
-msasConcatenate msas  = foldl' msaConcatenate (head msas) (tail msas)
+concatMSAs :: [MultiSequenceAlignment] -> MultiSequenceAlignment
+concatMSAs []    = error "msasConcatenate: Nothing to concatenate."
+concatMSAs [msa] = msa
+concatMSAs msas  = foldl' concat (head msas) (tail msas)
 
 -- Only keep columns from alignment that satisfy given predicate.
-filterColumnsWith :: (V.Vector Character -> Bool) -> MultiSequenceAlignment -> MultiSequenceAlignment
-filterColumnsWith p = over matrix (M.fromColumns . filter p . M.toColumns)
+filterColsWith :: (V.Vector Character -> Bool) -> MultiSequenceAlignment -> MultiSequenceAlignment
+filterColsWith p = over matrix (M.fromColumns . filter p . M.toColumns)
 
 -- | Only keep columns with standard characters. Alignment columns with IUPAC
 -- characters are removed.
-filterColumnsOnlyStd :: MultiSequenceAlignment -> MultiSequenceAlignment
-filterColumnsOnlyStd msa = filterColumnsWith (V.all $ A.isStd (msa^.alphabet)) msa
+filterColsOnlyStd :: MultiSequenceAlignment -> MultiSequenceAlignment
+filterColsOnlyStd msa = filterColsWith (V.all $ A.isStd (msa^.alphabet)) msa
 
 -- | Filter columns with proportion of standard character larger than given number.
-filterColumnsStd :: Double -> MultiSequenceAlignment -> MultiSequenceAlignment
-filterColumnsStd prop msa = filterColumnsWith
-  (\col -> prop * nSeqs <= fromIntegral (V.length (V.filter (A.isStd a) col)))
+filterColsStd :: Double -> MultiSequenceAlignment -> MultiSequenceAlignment
+filterColsStd prop msa = filterColsWith
+  (\col -> prop * n <= fromIntegral (V.length (V.filter (A.isStd a) col)))
   msa
   where a = msa^.alphabet
-        nSeqs = fromIntegral $ msaNSequences msa
+        n = fromIntegral $ nSequences msa
 
 -- | Only keep columns without gaps or unknown characters.
-filterColumnsNoGaps :: MultiSequenceAlignment -> MultiSequenceAlignment
-filterColumnsNoGaps msa = filterColumnsWith (V.all $ not . A.isGap (msa^.alphabet)) msa
+filterColsNoGaps :: MultiSequenceAlignment -> MultiSequenceAlignment
+filterColsNoGaps msa = filterColsWith (V.all $ not . A.isGap (msa^.alphabet)) msa
 
 -- | Frequency data; do not store the actual characters, but their frequencies.
 -- The matrix is of size @N x K@, where @N@ is the number of sites, and @K@ is
@@ -262,6 +263,6 @@ subSample is = over matrix (subSampleMatrix is)
 randomSubSample :: PrimMonad m
           => Int -> MultiSequenceAlignment  -> Gen (PrimState m) -> m MultiSequenceAlignment
 randomSubSample n msa g = do
-  let l = msaLength msa
+  let l = length msa
   is <- replicateM n $ uniformR (0, l-1) g
   return $ subSample is msa

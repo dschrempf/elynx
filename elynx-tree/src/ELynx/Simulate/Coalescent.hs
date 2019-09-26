@@ -32,16 +32,16 @@ import           ELynx.Distribution.CoalescentContinuous
 simulate :: (PrimMonad m)
          => Int -- ^ Number of leaves.
          -> Gen (PrimState m)
-         -> m (Tree PhyloIntLabel)
+         -> m (Tree (PhyloLabel Int))
 simulate n = simulate' n 0 trs
   where trs = [ singleton (PhyloLabel i Nothing 0.0) | i <- [0..n-1] ]
 
 simulate' :: (PrimMonad m)
           => Int
           -> Int
-          -> [Tree PhyloIntLabel]
+          -> [Tree (PhyloLabel Int)]
           -> Gen (PrimState m)
-          -> m (Tree PhyloIntLabel)
+          -> m (Tree (PhyloLabel Int))
 simulate' n a trs g
   | n <= 0                     = error "Cannot construct trees without leaves."
   | n == 1 && length trs /= 1  = error "Too many trees provided."

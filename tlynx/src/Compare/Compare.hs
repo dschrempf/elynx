@@ -36,6 +36,7 @@ import           ELynx.Tools.InputOutput
 
 compareCmd :: Maybe FilePath -> Compare ()
 compareCmd outFile = do
+  error "TODO!"
   a <- lift ask
 
   -- Read input.

@@ -35,7 +35,7 @@ import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
 
-readTrees :: Maybe FilePath -> Examine [Tree PhyloByteStringLabel]
+readTrees :: Maybe FilePath -> Examine [Tree (PhyloLabel L.ByteString)]
 readTrees mfp = do
   case mfp of
     Nothing -> $(logInfo) "Read tree(s) from standard input."

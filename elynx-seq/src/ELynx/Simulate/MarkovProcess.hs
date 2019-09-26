@@ -37,8 +37,8 @@ type State = Int
 probMatrix :: RateMatrix -> Double -> ProbMatrix
 probMatrix q t | t == 0 = if rows q == cols q
                           then ident (rows q)
-                          else error "Matrix is not square."
-               | t < 0 = error "Time is negative."
+                          else error "probMatrix: Matrix is not square."
+               | t < 0 = error "probMatrix: Time is negative."
                | otherwise = expm $ scale t q
 
 -- | Move from a given state to a new one according to a transition probability
@@ -48,7 +48,6 @@ probMatrix q t | t == 0 = if rows q == cols q
 -- This function is the bottleneck of the simulator and takes up most of the
 -- computation time. However, I was not able to find a faster implementation
 -- than the one from Data.Distribution.
---
 jump :: (PrimMonad m) => State -> ProbMatrix -> Gen (PrimState m) -> m State
 jump i p = categorical (p ! i)
 

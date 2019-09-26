@@ -27,16 +27,12 @@ and that's it. Forget about type classes like Measurable, Named and so on.
 
 module ELynx.Data.Tree.PhyloTree
   ( PhyloLabel (..)
-  , PhyloIntLabel
-  , PhyloByteStringLabel
-  , removeBrLen
+  , removeBrInfo
   ) where
 
-import qualified Data.ByteString.Lazy.Builder      as L
-import qualified Data.ByteString.Lazy.Char8        as L
 import           Data.Function
 import           Data.Tree
-import           Test.QuickCheck
+import           Test.QuickCheck                   hiding (label)
 
 import           ELynx.Data.Tree.BranchSupportTree
 import           ELynx.Data.Tree.MeasurableTree
@@ -44,25 +40,25 @@ import           ELynx.Data.Tree.NamedTree
 
 -- | A primitive label type for phylogenetic trees with a name, possibly a
 -- branch support value, and a 'Double' branch length.
-data PhyloLabel a = PhyloLabel { pLabel :: a
-                               , pBrSup :: Maybe Double
-                               , pBrLen :: Double }
+data PhyloLabel a = PhyloLabel { label :: a
+                               , brSup :: Maybe Double
+                               , brLen :: Double }
                  deriving (Read, Show, Eq)
 
 instance Ord a => Ord (PhyloLabel a) where
-  compare = compare `on` pLabel
+  compare = compare `on` label
 
 instance Measurable (PhyloLabel a) where
-  getLen = pBrLen
+  getLen = brLen
   setLen l (PhyloLabel lbl s _)
     | l >= 0 = PhyloLabel lbl s l
     | otherwise = error "Branch lengths cannot be negative."
 
 instance BranchSupportLabel (PhyloLabel a) where
-  getBranchSupport = pBrSup
-  setBranchSupport Nothing  l = l {pBrSup = Nothing}
+  getBranchSupport = brSup
+  setBranchSupport Nothing  l = l {brSup = Nothing}
   setBranchSupport (Just s) l
-    | s > 0 = l {pBrSup = Just s}
+    | s > 0 = l {brSup = Just s}
     | otherwise = error "Branch support cannot be negative."
 
 instance Arbitrary a => Arbitrary (PhyloLabel a) where
@@ -71,19 +67,9 @@ instance Arbitrary a => Arbitrary (PhyloLabel a) where
     <*> (Just <$> choose (0, 100))
     <*> choose (0, 10)
 
--- | Tree node with 'Int' label.
-type PhyloIntLabel = PhyloLabel Int
-
-instance Named PhyloIntLabel where
-  getName = L.toLazyByteString . L.intDec . pLabel
-
--- | Tree node with 'L.ByteString' label. Important for parsing
--- 'ELynx.Import.Tree.Newick' files.
-type PhyloByteStringLabel = PhyloLabel L.ByteString
-
-instance Named PhyloByteStringLabel where
-  getName = pLabel
+instance Named a => Named (PhyloLabel a) where
+  getName = getName . label
 
 -- | Remove branch lengths from tree.
-removeBrLen :: Tree (PhyloLabel a) -> Tree a
-removeBrLen = fmap pLabel
+removeBrInfo :: Tree (PhyloLabel a) -> Tree a
+removeBrInfo = fmap label
