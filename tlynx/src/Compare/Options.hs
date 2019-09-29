@@ -23,6 +23,7 @@ import           Control.Monad.Trans.Reader
 import           Options.Applicative
 
 
+-- | Arguments of compare command.
 data CompareArguments = CompareArguments
   { argsNormalize  :: Bool
   , argsBranchWise :: Bool
@@ -32,6 +33,7 @@ data CompareArguments = CompareArguments
 -- | Logger and reader data type.
 type Compare = LoggingT (ReaderT CompareArguments IO)
 
+-- | Parse arguments of compare command.
 compareArguments :: Parser CompareArguments
 compareArguments = CompareArguments <$>
   normalize

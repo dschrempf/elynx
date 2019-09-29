@@ -34,6 +34,7 @@ import           ELynx.Data.Tree.Tree
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
 
+-- | More detailed comparison of two trees.
 compareCmd :: Maybe FilePath -> Compare ()
 compareCmd outFile = do
   error "TODO!"

@@ -155,7 +155,7 @@ summarize msa = L.unlines $ header msa :
   where n = min (nSequences msa) summaryNSequences
 
 -- | Join two 'MultiSequenceAlignment's vertically. That is, add more sequences
--- to an alignment. See also 'msaConcatenate'.
+-- to an alignment. See also 'concat'.
 join :: MultiSequenceAlignment
      -> MultiSequenceAlignment
      -> MultiSequenceAlignment
@@ -164,7 +164,7 @@ join t b
   | length t == length b
     && t^.alphabet == b^.alphabet
   = MultiSequenceAlignment ns a (tD === bD)
-  | otherwise  = error "msaJoin: Multi sequence alignments do not have equal length."
+  | otherwise  = error "join: Multi sequence alignments do not have equal length."
   where
     ns = t^.names ++ b^.names
     tD = t^.matrix
@@ -172,7 +172,7 @@ join t b
     a  = t^.alphabet
 
 -- | Concatenate two 'MultiSequenceAlignment's horizontally. That is, add more
--- sites to an alignment. See also 'msaJoin'.
+-- sites to an alignment. See also 'join'.
 concat :: MultiSequenceAlignment
        -> MultiSequenceAlignment
        -> MultiSequenceAlignment
@@ -181,16 +181,16 @@ concat l r
   | nSequences l == nSequences r
     && l^.alphabet == r^.alphabet
   = MultiSequenceAlignment (l ^. names) a (lD ||| rD)
-  | otherwise = error "msaConcatenate: Multi sequence alignments do not have equal length."
+  | otherwise = error "concat: Multi sequence alignments do not have equal length."
   where
     lD = l^.matrix
     rD = r^.matrix
     a  = l^.alphabet
 
 -- | Concatenate a list of 'MultiSequenceAlignment's horizontally. See
--- 'msaConcatenate'.
+-- 'concat'.
 concatMSAs :: [MultiSequenceAlignment] -> MultiSequenceAlignment
-concatMSAs []    = error "msasConcatenate: Nothing to concatenate."
+concatMSAs []    = error "concatMSAs: Nothing to concatenate."
 concatMSAs [msa] = msa
 concatMSAs msas  = foldl' concat (head msas) (tail msas)
 

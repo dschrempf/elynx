@@ -64,7 +64,7 @@ import           ELynx.Data.Sequence.Defaults
 import           ELynx.Tools.ByteString
 import           ELynx.Tools.Equality
 
--- | For now, 'SequenceName's are just 'L.ByteString's.
+-- | For now, 'Name's are just 'L.ByteString's.
 type Name = L.ByteString
 
 -- | The vector of characters of a sequence.
@@ -159,14 +159,14 @@ countGaps s = V.length . V.filter (A.isGap (s^.alphabet)) $ s^.characters
 trim :: Int -> Sequence -> Sequence
 trim n = over characters (V.take $ fromIntegral n)
 
--- | Concatenate two sequences. 'SequenceName's have to match.
+-- | Concatenate two sequences. 'Name's have to match.
 concat :: Sequence -> Sequence -> Sequence
 concat (Sequence i c cs) (Sequence j k ks)
   | i == j && c == k = Sequence i c (cs <> ks)
   | otherwise        = error $ "concatenate: Sequences do not have equal names: "
                        ++ L.unpack i ++ ", " ++ L.unpack j ++ "."
 
--- | Concatenate a list of sequences, see 'concatenate'.
+-- | Concatenate a list of sequences, see 'concat'.
 concatSequences :: [[Sequence]] -> [Sequence]
 concatSequences []   = error "concatenateSequences: Nothing to concatenate."
 concatSequences [ss] = ss

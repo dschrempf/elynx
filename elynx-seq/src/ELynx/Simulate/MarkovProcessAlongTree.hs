@@ -101,7 +101,7 @@ getComponentsAndRootStates n ws ds g = do
 
 -- | Simulate a number of sites for a given set of substitution models with
 -- corresponding weights. Forget states at internal nodes. See also
--- 'simulateAndFlattenNSitesAlongTree'.
+-- 'simulateAndFlatten'.
 simulateAndFlattenMixtureModel :: (PrimMonad m, Measurable a)
   => Int -> Vector R -> [StationaryDistribution] -> [ExchangeabilityMatrix] -> Tree a
   -> Gen (PrimState m) -> m [[State]]
@@ -119,7 +119,7 @@ simulateAndFlattenMixtureModel' is cs (Node ps f) g
          then return [is']
          else concat <$> sequence [ simulateAndFlattenMixtureModel' is' cs t g | t <- f ]
 
--- | See 'simulateAndFlattenNSitesAlongTreeMixtureModel', parallel version;
+-- | See 'simulateAndFlattenMixtureModel', parallel version;
 -- needs to be run in IO monad.
 simulateAndFlattenMixtureModelPar
   :: Measurable a
@@ -134,7 +134,7 @@ simulateAndFlattenMixtureModelPar n ws ds es t g = do
 
 -- | Simulate a number of sites for a given set of substitution models with
 -- corresponding weights. Keep states at internal nodes. See also
--- 'simulateNSitesAlongTree'.
+-- 'simulate'.
 simulateMixtureModel :: (PrimMonad m, Measurable a)
   => Int -> Vector R -> [StationaryDistribution] -> [ExchangeabilityMatrix] -> Tree a
   -> Gen (PrimState m) -> m (Tree [State])

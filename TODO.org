@@ -18,6 +18,8 @@ help.
 
 ** TODO Enable description in FASTA files sequence headers
 
+** TODO Provide a (Args a) type
+
 * Hard
 ** TODO ELynx file
 Provide an internal =OutFileBaseName.elynx= file that stores all input files and
