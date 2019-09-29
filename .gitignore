@@ -10,13 +10,13 @@
 /scripts/slynx-examine.hp
 /scripts/slynx-examine.out
 /scripts/slynx-examine.prof
-/scripts/slynx-examine.ps
+/scripts/slynx-examine.svg
 /scripts/slynx-simulate.aux
 /scripts/slynx-simulate.eventlog
 /scripts/slynx-simulate.fasta
 /scripts/slynx-simulate.hp
 /scripts/slynx-simulate.prof
-/scripts/slynx-simulate.ps
+/scripts/slynx-simulate.svg
 /scripts/slynx-simulate.out
 /scripts/slynx-simulate.fasta
 /scripts/slynx-simulate.model
@@ -26,7 +26,7 @@
 /scripts/tlynx-simulate.out
 /scripts/tlynx-simulate.tree
 /scripts/tlynx-simulate.prof
-/scripts/tlynx-simulate.ps
+/scripts/tlynx-simulate.svg
 /scripts/iqtree-verify.*
 /scripts/module-dependencies-*
 /slynx/data/BenchmarkEnsemblMouse.fa

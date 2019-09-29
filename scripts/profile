@@ -71,7 +71,7 @@ graph() {
     msg "Create graphs of the memory heap profiles."
     for f in *.hp
     do
-        hp2ps -e10in -c "$f"
+        hp2pretty "$f"
     done
 }
 
