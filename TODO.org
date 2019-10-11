@@ -19,6 +19,8 @@ help.
 ** TODO Enable description in FASTA files sequence headers
 
 ** TODO Provide a (Args a) type
+** TODO Abstract data types
+- Do not export value constructors for important central data types.
 
 * Hard
 ** TODO ELynx file

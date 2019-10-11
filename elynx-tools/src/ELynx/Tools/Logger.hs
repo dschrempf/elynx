@@ -28,7 +28,6 @@ import           Control.Monad.Logger
 import           Control.Monad.Trans.Control
 import qualified Data.ByteString.Char8       as B
 import           Data.Text
--- import qualified Data.Text                   as T
 import           System.IO
 import           System.Log.FastLogger
 
@@ -97,24 +96,4 @@ logStrToBS :: Loc
            -> LogLevel
            -> LogStr
            -> B.ByteString
--- logStrToBS loc src lvl msg =
---   fromLogStr $ getLogStr loc src lvl msg
 logStrToBS _ _ _ msg = fromLogStr msg <> "\n"
-
--- getLogStr :: Loc
---           -> LogSource
---           -> LogLevel
---           -> LogStr
---           -> LogStr
--- getLogStr _ src level msg =
---     "[" `mappend` logLevelStr level `mappend`
---     (if T.null src
---         then mempty
---         else "#" `mappend` toLogStr src) `mappend`
---     "] " `mappend`
---     msg `mappend` "\n"
-
--- logLevelStr :: LogLevel -> LogStr
--- logLevelStr level = case level of
---     LevelOther t -> toLogStr t
---     _            -> toLogStr $ B.pack $ drop 5 $ show level

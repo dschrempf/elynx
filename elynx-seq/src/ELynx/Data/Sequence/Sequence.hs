@@ -29,8 +29,8 @@ module ELynx.Data.Sequence.Sequence
   -- * Input
   , toCharacters
   -- * Output
-  , fromCharacters
-  , toByteString
+  -- , fromCharacters
+  -- , toByteString
   , header
   , summarize
   , summarizeSequences
@@ -76,6 +76,8 @@ data Sequence = Sequence { _name       :: Name
                          , _characters :: Characters }
   deriving (Eq)
 
+-- TODO: Towards creating an ADT. Write getters and setters. The only way to
+-- show the Sequence directly should be info like. No Show instance!
 makeLenses ''Sequence
 
 -- | Convert byte string to sequence characters.
@@ -83,30 +85,21 @@ toCharacters :: L.ByteString -> Characters
 toCharacters = V.fromList . map fromChar . L.unpack
 
 -- | Convert sequence characters to byte string.
-fromCharacters :: Characters -> L.ByteString
-fromCharacters = L.pack . map toChar . V.toList
+toByteString :: Sequence -> L.ByteString
+toByteString = L.pack . map toChar . V.toList . _characters
 
-showInfo :: Sequence -> L.ByteString
-showInfo s = L.unwords [ alignLeft nameWidth (s^.name)
-                       , alignRight fieldWidth (L.pack $ show $ s^.alphabet)
-                       , alignRight fieldWidth (L.pack . show $ len)
-                       , alignRight fieldWidth (L.pack $ P.printf "%.3f" pGaps) ]
+getInfo :: Sequence -> L.ByteString
+getInfo s = L.unwords [ alignLeft nameWidth (s^.name)
+                      , alignRight fieldWidth (L.pack $ show $ s^.alphabet)
+                      , alignRight fieldWidth (L.pack . show $ len)
+                      , alignRight fieldWidth (L.pack $ P.printf "%.3f" pGaps) ]
   where len = length s
         nGaps = countGaps s
         pGaps = fromIntegral nGaps / fromIntegral len :: Double
 
-instance Show Sequence where
-  show s = L.unpack $ toByteString s
-
--- | Show a 'Sequence', untrimmed.
-toByteString :: Sequence -> L.ByteString
-toByteString s = L.unwords [showInfo s, fromCharacters $ s^.characters]
-
 -- | Trim and show a 'Sequence'.
 summarize :: Sequence -> L.ByteString
-summarize s = L.unwords [ showInfo s
-                        , summarizeByteString summaryLength
-                          (fromCharacters $ s^.characters) ]
+summarize s = L.unwords [ getInfo s , summarizeByteString summaryLength $ toByteString s ]
 
 -- | Trim and show a list of 'Sequence's.
 summarizeSequences :: [Sequence] -> L.ByteString
