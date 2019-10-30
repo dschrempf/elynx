@@ -41,7 +41,7 @@ readSeqs a mfp = do
                <> show a <> "."
     Just fp -> $(logInfo) $ T.pack
                $ "Read sequences from file "
-               <> fp <> "; alphabet" <> show a <> "."
+               <> fp <> "; alphabet " <> show a <> "."
   liftIO $ parseFileOrIOWith (fasta a) mfp
 
 -- | Command line option to specify the alphabet. Used by various commands.
