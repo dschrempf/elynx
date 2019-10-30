@@ -65,7 +65,7 @@ examineAlignment perSiteFlag a =
             , L.pack "Distribution of characters:"
               -- Holy crap.
             , L.pack $ concatMap ((: "     ") . C.toChar) $ S.toList $
-              A.all $ A.alphabetSpec $ M.alphabet a
+              A.std $ A.alphabetSpec $ M.alphabet a
             , L.pack $ unwords $ map (printf "%.3f") charFreqs
             , L.empty
             , L.pack "Mean effective number of states (measured using entropy):"
