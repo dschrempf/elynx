@@ -34,7 +34,6 @@ module ELynx.Data.Character.BoundaryMutation
   , neighbors
   ) where
 
-import           Control.Lens
 import qualified Data.ByteString.Lazy.Char8      as L
 import           Numeric.SpecFunctions           (choose)
 
@@ -140,12 +139,12 @@ fromIndexWith n i
   | i >= stateSpaceSize n = error $
     "Index " ++ show i ++ "out of bounds when population size is " ++ show n ++ "."
   | i < nAlleles = Bnd n (toEnum i)
-  | otherwise = Ply n (i' - p^._1 + 1) (p^._2) (p^._3)
+  | otherwise = Ply n (i' - j + 1) x k
   where i' = i - nAlleles
         l = [ (enumCombination a b * (n-1), a, b)
             | a <- [minBound .. pred maxBound]
             , b <- [succ a ..]]
-        p = last $ takeWhile (\e -> e^._1 <= i') l
+        (j, x, k) = last $ takeWhile (\(e, _, _) -> e <= i') l
 
 -- | Convert 'State' to a number 'Int' for the given population size 'PopulationSize'.
 -- Back conversion can be done with 'fromIndexWith', with the same population size.

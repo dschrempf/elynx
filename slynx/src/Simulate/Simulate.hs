@@ -22,7 +22,6 @@ where
 import           Control.Applicative                               ((<|>))
 import           Control.Concurrent
 import           Control.Concurrent.Async
-import           Control.Lens
 import           Control.Monad                                     (unless,
                                                                     when)
 import           Control.Monad.IO.Class
@@ -83,15 +82,15 @@ simulateAlignment pm t n g = do
     -- the same matrix ten times.
     P.SubstitutionModel sm -> mapConcurrently
       (\(num, gen) -> simulateAndFlatten num d e t gen) (zip chunks gs)
-      where d = sm ^. SM.stationaryDistribution
-            e = sm ^. SM.exchangeabilityMatrix
+      where d = SM.stationaryDistribution sm
+            e = SM.exchangeabilityMatrix sm
     -- P.MixtureModel mm      -> mapConcurrently
     --   (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws ds es t gen) (zip chunks gs)
     P.MixtureModel mm      -> simulateAndFlattenMixtureModelPar n ws ds es t g
       where
         ws = vector $ M.getWeights mm
-        ds = map (view SM.stationaryDistribution) $ M.getSubstitutionModels mm
-        es = map (view SM.exchangeabilityMatrix) $ M.getSubstitutionModels mm
+        ds = map SM.stationaryDistribution $ M.getSubstitutionModels mm
+        es = map SM.exchangeabilityMatrix  $ M.getSubstitutionModels mm
   -- XXX: The horizontal concatenation might be slow. If so, 'concatenateSeqs'
   -- or 'concatenateAlignments' can be used, which directly appends vectors.
   let leafStates = horizontalConcat leafStatesS

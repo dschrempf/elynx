@@ -22,7 +22,6 @@ module ELynx.Data.MarkovProcess.GammaRateHeterogeneity
   , expand
   ) where
 
-import           Control.Lens
 import qualified Data.ByteString.Lazy.Char8                 as L
 import           Numeric.Integration.TanhSinh
 import           Statistics.Distribution
@@ -65,13 +64,13 @@ splitSubstitutionModel n alpha sm = renamedSMs
 expandSubstitutionModel :: Int -> Double -> S.SubstitutionModel -> M.MixtureModel
 expandSubstitutionModel n alpha sm = M.fromSubstitutionModels name (repeat 1.0) sms
   where
-    name = sm ^. S.name <> getName n alpha
+    name = S.name sm <> getName n alpha
     sms  = splitSubstitutionModel n alpha sm
 
 expandMixtureModel :: Int -> Double -> M.MixtureModel -> M.MixtureModel
 expandMixtureModel n alpha mm = M.concatenate name renamedMMs
   where
-    name = mm ^. M.name <> getName n alpha
+    name = M.name mm <> getName n alpha
     means = getMeans n alpha
     scaledMMs = map (`M.scale` mm) means
     names = map (("; gamma rate category " ++) . show) [1 :: Int ..]
