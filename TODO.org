@@ -15,17 +15,10 @@ help.
 
 * Medium
 ** TODO Improve output of (mixture, gamma) model
-
 ** TODO Enable description in FASTA files sequence headers
-
 ** TODO Provide a (Args a) type
-** TODO Abstract data types
-- Do not export value constructors for important central data types.
 
 * Hard
 ** TODO ELynx file
 Provide an internal =OutFileBaseName.elynx= file that stores all input files and
 commands so that the exact run can be replicated from this elynx file.
-
-* Requires further tought
-** TODO Reduce complexity of tree data types
