@@ -32,5 +32,5 @@ spec :: Spec
 spec =
   describe "getStationaryDistribution" $
   it "extracts the stationary distribution from a rate matrix" $ do
-  let sd = getStationaryDistribution (getRateMatrix hkyModel)
+  let sd = getStationaryDistribution (rateMatrix hkyModel)
   sd `nearlyEqVec` stationaryDist `shouldBe` True

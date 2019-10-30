@@ -14,7 +14,6 @@ Creation date: Thu Jan 24 15:25:49 2019.
 module ELynx.Simulate.MarkovProcessAlongTreeSpec
   (spec) where
 
-import           Control.Lens
 import           Data.Tree
 import           System.Random.MWC
 import           Test.Hspec
@@ -55,6 +54,6 @@ spec =
       gen <- create
       tr <- simulate 10 d e testTree gen
       (length . rootLabel $ tr) `shouldBe` 10
-        where d = jc ^. S.stationaryDistribution
-              e = jc ^. S.exchangeabilityMatrix
+        where d = S.stationaryDistribution jc
+              e = S.exchangeabilityMatrix jc
 

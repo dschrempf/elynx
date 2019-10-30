@@ -14,7 +14,6 @@ Creation date: Tue Jan 29 10:47:40 2019.
 module ELynx.Data.MarkovProcess.AminoAcidSpec
   (spec) where
 
-import           Control.Lens
 import           Numeric.LinearAlgebra
 import           Test.Hspec
 
@@ -117,13 +116,13 @@ statDistUniform :: R.StationaryDistribution
 statDistUniform = vector $ replicate 20 0.05
 
 statDistLG :: R.StationaryDistribution
-statDistLG = lg ^. S.stationaryDistribution
+statDistLG = S.stationaryDistribution lg
 
 exchLG :: R.ExchangeabilityMatrix
-exchLG = lg ^. S.exchangeabilityMatrix
+exchLG = S.exchangeabilityMatrix lg
 
 rmLG :: R.RateMatrix
-rmLG = S.getRateMatrix lg
+rmLG = S.rateMatrix lg
 
 spec :: Spec
 spec = do
@@ -142,14 +141,14 @@ spec = do
 
   describe "lgCustom" $
     it "stationary distribution can be recovered" $ do
-    let f = R.getStationaryDistribution $ S.getRateMatrix $ lgCustom Nothing statDistUniform
+    let f = R.getStationaryDistribution $ S.rateMatrix $ lgCustom Nothing statDistUniform
     f `nearlyEqVec` statDistUniform `shouldBe` True
 
   describe "poisson" $
     it "stationary distribution is uniform 1/20" $
-    R.getStationaryDistribution (S.getRateMatrix poisson) `nearlyEqVec` statDistUniform `shouldBe` True
+    R.getStationaryDistribution (S.rateMatrix poisson) `nearlyEqVec` statDistUniform `shouldBe` True
 
   describe "poissonCustom" $
     it "stationary distribution can be recovered" $ do
-    let f = R.getStationaryDistribution $ S.getRateMatrix $ poissonCustom Nothing statDistLGPython
+    let f = R.getStationaryDistribution $ S.rateMatrix $ poissonCustom Nothing statDistLGPython
     f `nearlyEqVec` statDistLGPython `shouldBe` True
