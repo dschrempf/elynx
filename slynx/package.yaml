@@ -37,7 +37,7 @@ dependencies:
   # - deepseq
   - hmatrix
   - integration
-  - lens
+  # - lens
   - math-functions
   - matrices
   - megaparsec

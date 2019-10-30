@@ -49,7 +49,7 @@ import           ELynx.Data.MarkovProcess.GammaRateHeterogeneity
 import qualified ELynx.Data.MarkovProcess.MixtureModel             as M
 import qualified ELynx.Data.MarkovProcess.PhyloModel               as P
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel        as SM
-import qualified ELynx.Data.Sequence.MultiSequenceAlignment        as MSA
+import qualified ELynx.Data.Sequence.Alignment        as A
 import qualified ELynx.Data.Sequence.Sequence                      as Seq hiding
                                                                            (name)
 import           ELynx.Data.Tree.MeasurableTree
@@ -68,12 +68,12 @@ import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Misc
 
--- Simulate a 'MultiSequenceAlignment' for a given phylogenetic model,
+-- Simulate a 'Alignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
-simulateMSA :: (Measurable a, Named a)
+simulateAlignment :: (Measurable a, Named a)
             => P.PhyloModel -> Tree a -> Int -> GenIO
-            -> IO MSA.MultiSequenceAlignment
-simulateMSA pm t n g = do
+            -> IO A.Alignment
+simulateAlignment pm t n g = do
   c  <- getNumCapabilities
   gs <- splitGen c g
   let chunks = getChunks c n
@@ -93,7 +93,7 @@ simulateMSA pm t n g = do
         ds = map (view SM.stationaryDistribution) $ M.getSubstitutionModels mm
         es = map (view SM.exchangeabilityMatrix) $ M.getSubstitutionModels mm
   -- XXX: The horizontal concatenation might be slow. If so, 'concatenateSeqs'
-  -- or 'concatenateMSAs' can be used, which directly appends vectors.
+  -- or 'concatenateAlignments' can be used, which directly appends vectors.
   let leafStates = horizontalConcat leafStatesS
       leafNames  = map getName $ leaves t
       code       = P.getAlphabet pm
@@ -101,7 +101,7 @@ simulateMSA pm t n g = do
       alph       = A.all $ alphabetSpec code
       sequences  = [ Seq.Sequence sName code (V.fromList $ map (`Set.elemAt` alph) ss) |
                     (sName, ss) <- zip leafNames leafStates ]
-  return $ either error id $ MSA.fromSequences sequences
+  return $ either error id $ A.fromSequences sequences
 
 -- Summarize EDM components; line to be printed to screen or log.
 summarizeEDMComponents :: [EDMComponent] -> L.ByteString
@@ -186,8 +186,8 @@ simulateCmd outFn = do
                >> liftIO createSystemRandom
     Just s  -> $(logInfo) (T.pack ("Seed: " <> show s <> "."))
                >> liftIO (initialize (V.fromList s))
-  msa <- liftIO $ simulateMSA phyloModel tree alignmentLength gen
-  let output = (sequencesToFasta . MSA.toSequences) msa
+  alignment <- liftIO $ simulateAlignment phyloModel tree alignmentLength gen
+  let output = (sequencesToFasta . A.toSequences) alignment
       outFile = (<> ".fasta") <$> outFn
   $(logInfo) ""
   io "simulated multi sequence alignment" output outFile

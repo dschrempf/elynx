@@ -36,7 +36,7 @@ dependencies:
   - data-memocombinators
   - hmatrix
   - integration
-  - lens
+  # - lens
   - math-functions
   - matrices
   - megaparsec

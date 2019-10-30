@@ -21,7 +21,6 @@ module Examine.Examine
   )
   where
 
-import           Control.Lens
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
@@ -34,19 +33,19 @@ import           Tools
 
 import qualified ELynx.Data.Alphabet.Alphabet               as A
 import qualified ELynx.Data.Alphabet.Character              as C
-import qualified ELynx.Data.Sequence.MultiSequenceAlignment as M
+import qualified ELynx.Data.Sequence.Alignment as M
 import qualified ELynx.Data.Sequence.Sequence               as Seq
 import           ELynx.Tools.InputOutput
 
-examineMSA :: Bool -> M.MultiSequenceAlignment -> L.ByteString
-examineMSA perSiteFlag msa =
+examineAlignment :: Bool -> M.Alignment -> L.ByteString
+examineAlignment perSiteFlag a =
   L.unlines [ L.pack "Sequences have equal length (multi sequence alignment, or single sequence)."
             , L.pack $ "Total number of columns in alignment: "
-              ++ show (M.length msa)
+              ++ show (M.length a)
             , L.pack $ "Number of columns without gaps: "
-              ++ show (M.length msaNoGaps)
+              ++ show (M.length aNoGaps)
             , L.pack $ "Number of columns with standard characters only: "
-              ++ show (M.length msaOnlyStd)
+              ++ show (M.length aOnlyStd)
             , L.empty
             , L.pack $ "Total number of characters: " ++ show nTot
             , L.pack $ "Standard (i.e., not extended IUPAC) characters: "
@@ -66,7 +65,7 @@ examineMSA perSiteFlag msa =
             , L.pack "Distribution of characters:"
               -- Holy crap.
             , L.pack $ concatMap ((: "     ") . C.toChar) $ S.toList $
-              A.all $ A.alphabetSpec $ msa^.M.alphabet
+              A.all $ A.alphabetSpec $ M.alphabet a
             , L.pack $ unwords $ map (printf "%.3f") charFreqs
             , L.empty
             , L.pack "Mean effective number of states (measured using entropy):"
@@ -79,20 +78,20 @@ examineMSA perSiteFlag msa =
             ]
   <> perSiteBS
   where
-    nTot                = M.length msa * M.nSequences msa
-    nIUPAC              = M.countIUPACChars msa
-    nGaps               = M.countGaps msa
-    nUnknowns           = M.countUnknowns msa
+    nTot                = M.length a * M.nSequences a
+    nIUPAC              = M.countIUPACChars a
+    nGaps               = M.countGaps a
+    nUnknowns           = M.countUnknowns a
     percentageIUPAC     = fromIntegral nIUPAC    / fromIntegral nTot :: Double
     percentageGaps      = fromIntegral nGaps     / fromIntegral nTot :: Double
     percentageUnknowns  = fromIntegral nUnknowns / fromIntegral nTot :: Double
-    msaNoGaps           = M.filterColsNoGaps msa
-    msaOnlyStd          = M.filterColsOnlyStd msaNoGaps
-    charFreqsPerSite    = M.toFrequencyData msa
+    aNoGaps             = M.filterColsNoGaps a
+    aOnlyStd            = M.filterColsOnlyStd aNoGaps
+    charFreqsPerSite    = M.toFrequencyData a
     charFreqs           = M.distribution charFreqsPerSite
     kEffs               = M.kEffEntropy charFreqsPerSite
-    kEffsNoGaps         = M.kEffEntropy . M.toFrequencyData $ msaNoGaps
-    kEffsOnlyStd        = M.kEffEntropy . M.toFrequencyData $ msaOnlyStd
+    kEffsNoGaps         = M.kEffEntropy . M.toFrequencyData $ aNoGaps
+    kEffsOnlyStd        = M.kEffEntropy . M.toFrequencyData $ aOnlyStd
     kEffMean            = sum kEffs / fromIntegral (length kEffs)
     kEffMeanNoGaps      = sum kEffsNoGaps  / fromIntegral (length kEffsNoGaps)
     kEffMeanOnlyStd     = sum kEffsOnlyStd / fromIntegral (length kEffsOnlyStd)
@@ -105,8 +104,8 @@ examineMSA perSiteFlag msa =
 examine :: Bool -> [Seq.Sequence] -> L.ByteString
 examine perSiteFlag ss = Seq.summarizeSequences ss <>
   case M.fromSequences ss of
-    Left _    -> L.empty
-    Right msa -> L.pack "\n" <> examineMSA perSiteFlag msa
+    Left  _   -> L.empty
+    Right a   -> L.pack "\n" <> examineAlignment perSiteFlag a
 
 -- | Examine sequences.
 examineCmd :: Maybe FilePath -> Examine ()

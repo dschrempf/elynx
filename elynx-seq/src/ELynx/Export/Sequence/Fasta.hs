@@ -21,7 +21,6 @@ module ELynx.Export.Sequence.Fasta
   , sequencesToFasta
   ) where
 
-import           Control.Lens
 import qualified Data.ByteString.Lazy.Char8   as L
 
 import           ELynx.Data.Sequence.Sequence
@@ -31,7 +30,7 @@ fastaHeader i = L.singleton '>' <> i
 
 -- | Convert a 'Sequence' to Fasta format.
 sequenceToFasta :: Sequence -> L.ByteString
-sequenceToFasta s = L.unlines [ fastaHeader $ s^.name , fromCharacters $ s^.characters ]
+sequenceToFasta s = L.unlines [ fastaHeader $ name s, toByteString $ characters s ]
 
 -- | Convert a list 'Sequence's to Fasta format. A newline is added between any
 -- two 'Sequence's.

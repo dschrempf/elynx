@@ -28,8 +28,8 @@ list = [ x1
 
 subsample :: (PrimMonad m)
           => Int                    -- ^ How many samples?
-          -> MultiSequenceAlignment -- ^ The alignment to sample from.
-          -> m MultiSequenceAlignment
+          -> Alignment -- ^ The alignment to sample from.
+          -> m Alignment
 #+end_src
 
 * Design principles

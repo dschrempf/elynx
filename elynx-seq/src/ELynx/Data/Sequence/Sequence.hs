@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 {- |
 Module      :  ELynx.Data.Sequence
@@ -21,16 +20,11 @@ module ELynx.Data.Sequence.Sequence
   ( -- * Types
     Name
   , Characters
-  , Sequence (Sequence)
-  -- * Lenses
-  , name
-  , alphabet
-  , characters
+  , Sequence (..)
   -- * Input
-  , toCharacters
+  , fromByteString
   -- * Output
-  -- , fromCharacters
-  -- , toByteString
+  , toByteString
   , header
   , summarize
   , summarizeSequences
@@ -48,7 +42,6 @@ module ELynx.Data.Sequence.Sequence
   , filterLongerThan
   ) where
 
-import           Control.Lens
 import           Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.List                     (maximumBy)
@@ -70,27 +63,23 @@ type Name = L.ByteString
 -- | The vector of characters of a sequence.
 type Characters = V.Vector Character
 
--- | Sequences have a name, a code and hopefully a lot of data.
-data Sequence = Sequence { _name       :: Name
-                         , _alphabet   :: A.Alphabet
-                         , _characters :: Characters }
-  deriving (Eq)
-
--- TODO: Towards creating an ADT. Write getters and setters. The only way to
--- show the Sequence directly should be info like. No Show instance!
-makeLenses ''Sequence
-
 -- | Convert byte string to sequence characters.
-toCharacters :: L.ByteString -> Characters
-toCharacters = V.fromList . map fromChar . L.unpack
+fromByteString :: L.ByteString -> Characters
+fromByteString = V.fromList . map fromChar . L.unpack
 
 -- | Convert sequence characters to byte string.
-toByteString :: Sequence -> L.ByteString
-toByteString = L.pack . map toChar . V.toList . _characters
+toByteString :: Characters -> L.ByteString
+toByteString = L.pack . map toChar . V.toList
+
+-- | Sequences have a name, a code and hopefully a lot of data.
+data Sequence = Sequence { name       :: Name
+                         , alphabet   :: A.Alphabet
+                         , characters :: Characters }
+  deriving (Show, Eq)
 
 getInfo :: Sequence -> L.ByteString
-getInfo s = L.unwords [ alignLeft nameWidth (s^.name)
-                      , alignRight fieldWidth (L.pack $ show $ s^.alphabet)
+getInfo s = L.unwords [ alignLeft nameWidth (name s)
+                      , alignRight fieldWidth (L.pack $ show $ alphabet s)
                       , alignRight fieldWidth (L.pack . show $ len)
                       , alignRight fieldWidth (L.pack $ P.printf "%.3f" pGaps) ]
   where len = length s
@@ -99,12 +88,11 @@ getInfo s = L.unwords [ alignLeft nameWidth (s^.name)
 
 -- | Trim and show a 'Sequence'.
 summarize :: Sequence -> L.ByteString
-summarize s = L.unwords [ getInfo s , summarizeByteString summaryLength $ toByteString s ]
+summarize s = L.unwords [ getInfo s , summarizeByteString summaryLength $ toByteString (characters s) ]
 
 -- | Trim and show a list of 'Sequence's.
 summarizeSequences :: [Sequence] -> L.ByteString
-summarizeSequences ss = header ss <>
-                 body (take summaryNSequences ss)
+summarizeSequences ss = header ss <> body (take summaryNSequences ss)
 
 -- | Header printed before 'Sequence' list.
 tableHeader :: L.ByteString
@@ -134,7 +122,7 @@ body ss = L.unlines (map summarize ss `using` parListChunk 5 rdeepseq)
 
 -- | Calculate length of 'Sequence'.
 length :: Sequence -> Int
-length s = fromIntegral $ V.length $ s ^. characters
+length = fromIntegral . V.length . characters
 
 -- | Check if all 'Sequence's have equal length.
 equalLength :: [Sequence] -> Bool
@@ -146,11 +134,11 @@ longest = maximumBy (comparing length)
 
 -- | Count number of gaps or unknown characters in sequence.
 countGaps :: Sequence -> Int
-countGaps s = V.length . V.filter (A.isGap (s^.alphabet)) $ s^.characters
+countGaps s = V.length . V.filter (A.isGap $ alphabet s) $ characters s
 
 -- | Trim to given length.
 trim :: Int -> Sequence -> Sequence
-trim n = over characters (V.take $ fromIntegral n)
+trim n (Sequence nm a cs) = Sequence nm a (V.take (fromIntegral n) cs)
 
 -- | Concatenate two sequences. 'Name's have to match.
 concat :: Sequence -> Sequence -> Sequence

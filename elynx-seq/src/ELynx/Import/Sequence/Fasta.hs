@@ -72,7 +72,7 @@ fastaSequence a = do hd <- sequenceHeader
                      let !alph  = S.map toWord (A.all . alphabetSpec $ a)
                      lns <- some (sequenceLine alph)
                      _  <- many eol
-                     return $ Sequence hd a (toCharacters $ L.concat lns)
+                     return $ Sequence hd a (fromByteString $ L.concat lns)
 
 -- | Parse a Fasta file with given 'Alphabet'.
 fasta :: Alphabet -> Parser [Sequence]

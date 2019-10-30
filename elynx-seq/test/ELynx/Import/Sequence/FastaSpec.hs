@@ -16,7 +16,7 @@ module ELynx.Import.Sequence.FastaSpec
 
 import           Data.Either
 import           ELynx.Data.Alphabet.Alphabet
-import qualified ELynx.Data.Sequence.MultiSequenceAlignment as M
+import qualified ELynx.Data.Sequence.Alignment as M
 import           ELynx.Import.Sequence.Fasta
 import           ELynx.Tools.InputOutput
 import           Files
@@ -24,27 +24,27 @@ import           Test.Hspec
 
 spec :: Spec
 spec =
-  describe "fastaFileMSA" $ do
+  describe "fastaFileAlignment" $ do
     it "parses a fasta file with nucleotide sequences with equal length" $ do
-      msa <- either error id . M.fromSequences <$> parseFileWith (fasta DNA) fastaNucleotideFN
-      M.nSequences msa `shouldBe` 3
-      M.length msa `shouldBe` 40
+      a <- either error id . M.fromSequences <$> parseFileWith (fasta DNA) fastaNucleotideFN
+      M.nSequences a `shouldBe` 3
+      M.length a `shouldBe` 40
 
     it "parses a fasta file with nucleotide IUPAC sequences with equal length" $ do
-      msa <- either error id . M.fromSequences <$> parseFileWith (fasta DNAI) fastaNucleotideIUPACFN
-      M.nSequences msa `shouldBe` 3
-      M.length msa `shouldBe` 40
+      a <- either error id . M.fromSequences <$> parseFileWith (fasta DNAI) fastaNucleotideIUPACFN
+      M.nSequences a `shouldBe` 3
+      M.length a `shouldBe` 40
 
     it "should not parse erroneous files" $ do
-      emsa <- runParserOnFile (fasta DNAI) fastaErroneousFN
-      emsa  `shouldSatisfy` isLeft
+      ea <- runParserOnFile (fasta DNAI) fastaErroneousFN
+      ea  `shouldSatisfy` isLeft
 
     it "parses a fasta file with amino acid sequences with equal length" $ do
-      msa <- either error id . M.fromSequences <$> parseFileWith (fasta Protein) fastaAminoAcidFN
-      M.nSequences msa `shouldBe` 2
-      M.length msa `shouldBe` 237
+      a <- either error id . M.fromSequences <$> parseFileWith (fasta Protein) fastaAminoAcidFN
+      M.nSequences a `shouldBe` 2
+      M.length a `shouldBe` 237
 
     it "should not parse erroneous files" $ do
-      msa <- runParserOnFile (fasta ProteinI) fastaErroneousFN
-      msa  `shouldSatisfy` isLeft
+      a <- runParserOnFile (fasta ProteinI) fastaErroneousFN
+      a  `shouldSatisfy` isLeft
 

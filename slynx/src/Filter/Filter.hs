@@ -31,7 +31,7 @@ import qualified Data.Text                                  as T
 import           Filter.Options
 import           Tools
 
-import qualified ELynx.Data.Sequence.MultiSequenceAlignment as M
+import qualified ELynx.Data.Sequence.Alignment as M
 import qualified ELynx.Data.Sequence.Sequence               as S
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
@@ -56,8 +56,8 @@ filterRowsCmd outFileBaseName = do
   io "filtered sequences" result outFilePath
 
 filterCols :: Maybe Double -> [S.Sequence] -> L.ByteString
-filterCols ms ss = sequencesToFasta . M.toSequences $ compose filters msa
-  where msa = either error id (M.fromSequences ss)
+filterCols ms ss = sequencesToFasta . M.toSequences $ compose filters a
+  where a = either error id (M.fromSequences ss)
         filters = map (fromMaybe id) [ M.filterColsStd <$> ms ]
 
 -- | Filter columns.
