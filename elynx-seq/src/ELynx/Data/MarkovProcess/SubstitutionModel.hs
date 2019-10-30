@@ -53,13 +53,16 @@ type Name = String
 type Params = [Double]
 
 -- | Complete definition of a substitution model. Create instances with
--- 'substitutionModel'.
+-- 'substitutionModel'. A substitution model has an alphabet, a name, and a list
+-- of parameters (e.g., the kappa value for the HKY model). Further, the
+-- transition rate matrix is defined by a stationary distribution and a set of
+-- exchangeabilities.
 data SubstitutionModel = SubstitutionModel
-  { alphabet               :: Alphabet
-  , name                   :: Name
-  , params                 :: Params
-  , stationaryDistribution :: R.StationaryDistribution
-  , exchangeabilityMatrix  :: R.ExchangeabilityMatrix
+  { alphabet               :: Alphabet -- ^ Alphabet
+  , name                   :: Name     -- ^ Name
+  , params                 :: Params   -- ^ List of parameters
+  , stationaryDistribution :: R.StationaryDistribution -- ^ Stationary distribution
+  , exchangeabilityMatrix  :: R.ExchangeabilityMatrix  -- ^ Exchangeability matrix
   }
   deriving (Show, Read)
 

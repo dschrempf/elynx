@@ -57,13 +57,13 @@ data Component = Component
 
 -- | A mixture model with its components.
 data MixtureModel = MixtureModel
-  { name       :: S.Name
+  { name       :: S.Name        -- ^ Name
   , components :: [Component]
   }
   deriving (Show, Read)
 
--- | Get alphabet used with mixture model. Throws error if components use different
--- 'Alphabet's.
+-- | Get alphabet used with mixture model. Throws error if components use
+-- different 'Alphabet's.
 getAlphabet :: MixtureModel -> Alphabet
 getAlphabet mm = if isValid mm
             then S.alphabet . substModel $ head (components mm)

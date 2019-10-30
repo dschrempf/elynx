@@ -20,7 +20,8 @@ For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/p
 
 
 module ELynx.Import.Sequence.Fasta
-  ( fastaSequence
+  ( Parser
+  , fastaSequence
   , fasta
   ) where
 

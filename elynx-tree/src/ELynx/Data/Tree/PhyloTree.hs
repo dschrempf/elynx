@@ -12,15 +12,8 @@ Portability :  portable
 
 Creation date: Thu Jan 17 16:08:54 2019.
 
-Phylogenetic nodes have a branch length and a label.
-
-The easiest label type is 'Int': 'PhyloIntLabel'.
-
-Also, the 'L.ByteString' label is needed often: 'PhyloByteStringLabel'.
-
-XXX: This is all too complicated. Maybe I should just define a standard tree object like
-> data PhyloTree a = Tree (PhyloLabel a)
-and that's it. Forget about type classes like Measurable, Named and so on.
+Phylogenetic nodes labels, aka 'PhyloLabel's, have a branch length and an
+arbitrary label type, e.g., of type 'Int'.
 
 -}
 

@@ -102,6 +102,7 @@ tableHeader = L.unwords [ alignLeft  nameWidth "Name"
                         , alignRight fieldWidth        "Gaps [%]"
                         , "Sequence" ]
 
+-- | A short description of the sequence.
 header :: [Sequence] -> L.ByteString
 header ss = L.unlines $
   reportIfSubsetIsShown ++
