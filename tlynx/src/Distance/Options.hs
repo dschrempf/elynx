@@ -49,6 +49,7 @@ data DistanceArguments = DistanceArguments
   { argsDistance          :: DistanceMeasure
   , argsNormalize         :: Bool
   , argsSummaryStatistics :: Bool
+  , argsMasterTreeFile    :: Maybe FilePath
   , argsInFiles           :: [FilePath]
   }
 
@@ -61,7 +62,15 @@ distanceArguments = DistanceArguments <$>
   distanceOpt
   <*> normalizeSwitch
   <*> summaryStatisticsSwitch
+  <*> masterTreeFile
   <*> many inFilesArg
+
+masterTreeFile :: Parser (Maybe FilePath)
+masterTreeFile = optional $ strOption $
+  long "master-tree-file" <>
+  short 'm' <>
+  metavar "MASTER-TREE-File" <>
+  help "Compare all trees to the tree in the master tree file."
 
 inFilesArg :: Parser FilePath
 inFilesArg = strArgument $

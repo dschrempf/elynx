@@ -28,6 +28,7 @@ import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8        as L
+import           Data.Maybe
 import qualified Data.Text                         as T
 import qualified Data.Text.IO                      as T
 import qualified Data.Text.Lazy                    as LT
@@ -72,6 +73,17 @@ distance outFileBN = do
   -- Determine output handle (stdout or file).
   let outFile = (++ ".out") <$> outFileBN
   outH <- liftIO $ maybe (pure stdout) (`openFile` WriteMode) outFile
+  -- Master tree (in case it is given).
+  let mname = argsMasterTreeFile a
+  mtree <- case mname of
+    Nothing -> return Nothing
+    Just f  -> do $(logInfo) $ T.pack $ "Read master tree from file: " <> f <> "."
+                  ts <- liftIO $ parseFileWith manyNewick f
+                  let n = length ts
+                  when (n > 1) (error "More than one tree found in master file.")
+                  $(logInfo) "Compute distances between all trees and master tree."
+                  $(logInfo) $ T.pack $ "Trees are numbered from 0 to " ++ show (n-1) ++ "."
+                  return $ Just (head ts)
   let tfps = argsInFiles a
   (trees, names) <-
     if length tfps <= 1
@@ -83,15 +95,15 @@ distance outFileBN = do
                       $(logInfo) $ T.pack $ "Read trees from file: " <> f <> "."
                       liftIO $ parseFileWith manyNewick f
          let n = length ts
-         when (n <= 1) (error "Not enough trees found in file.")
-         $(logInfo) "Compute pairwise distances between trees in the same file."
+         when (n < 1) (error "Not enough trees found in file.")
+         when (isNothing mtree) $ $(logInfo) "Compute pairwise distances between trees in the same file."
          $(logInfo) $ T.pack $ "Trees are numbered from 0 to " ++ show (n-1) ++ "."
          return (ts, take n (map show [0 :: Int ..]))
     else
       do $(logInfo) "Read trees from files."
          ts <- liftIO $ mapM (parseFileWith newick) tfps
          when (length ts <= 1) (error "Not enough trees found in files.")
-         $(logInfo) "Compute pairwise distances between trees from different files."
+         when (isNothing mtree) $ $(logInfo) "Compute pairwise distances between trees from different files."
          $(logInfo) "Trees are named according to their file names."
          return (ts, tfps)
   $(logDebug) "The trees are:"
@@ -123,7 +135,9 @@ distance outFileBN = do
       trees' = map (collapseF . normalizeF) trees
   $(logDebug) "The prepared trees are:"
   $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees'
-  let dsTriplets = pairwise distanceMeasure trees'
+  let dsTriplets = case mtree of
+        Nothing -> pairwise distanceMeasure trees'
+        Just t  -> [ (0, i, distanceMeasure t t') | ( i, t' ) <- zip [1..] trees' ]
       ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds
   -- XXX: It may be good to use the common 'io' function also here.
@@ -137,6 +151,8 @@ distance outFileBN = do
     do
       lift $ hPutStrLn outH ""
       lift $ L.hPutStrLn outH $ header n dist
-      lift $ L.hPutStr outH $ L.unlines (map (showTriplet n names) dsTriplets)
+      case mname of
+        Nothing -> lift $ L.hPutStr outH $ L.unlines (map (showTriplet n names) dsTriplets)
+        Just mn  -> lift $ L.hPutStr outH $ L.unlines (map (showTriplet n (mn : names)) dsTriplets)
     )
   liftIO $ hClose outH
