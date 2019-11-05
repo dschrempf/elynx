@@ -23,6 +23,7 @@ import           Options
 import           Distance.Distance
 import           Examine.Examine
 import           Simulate.Simulate
+import           Compare.Compare
 
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Options
@@ -34,6 +35,7 @@ main = do
       lvl = verbosity g
       lf  = (++ ".log") <$> fn
   case c of
-    Distance a  -> runReaderT (eLynxWrapper lvl lf distanceDescription  $ distance fn) a
-    Examine a  -> runReaderT (eLynxWrapper lvl lf examineDescription  $ examine fn) a
+    Distance a -> runReaderT (eLynxWrapper lvl lf distanceDescription $ distance fn) a
+    Examine  a -> runReaderT (eLynxWrapper lvl lf examineDescription  $ examine fn) a
     Simulate a -> runReaderT (eLynxWrapper lvl lf simulateDescription $ simulate fn) a
+    Compare  a -> runReaderT (eLynxWrapper lvl lf simulateDescription $ compareCmd fn) a

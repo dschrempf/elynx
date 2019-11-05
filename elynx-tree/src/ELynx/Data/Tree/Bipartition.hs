@@ -29,13 +29,14 @@ module ELynx.Data.Tree.Bipartition
     Bipartition ()
   , bp
   , bpmap
+  , bphuman
     -- * Working with 'Bipartition's.
   , bipartitions
   , bipartitionToBranch
   , bipartitionsCombined
   ) where
 
--- import           Data.List
+import           Data.List
 import qualified Data.Map             as M
 import           Data.Maybe
 import qualified Data.Set             as S
@@ -56,6 +57,11 @@ newtype Bipartition a = Bipartition (S.Set a, S.Set a)
 -- instance Show a => Show (Bipartition a) where
 --   show (Bipartition (x, y)) = "(" ++ showSet x ++ "|" ++ showSet y ++  ")"
 --     where showSet s = intercalate "," $ map show $ S.toList s
+
+-- | Show a bipartition in a human readable form.
+bphuman :: (a -> String) -> Bipartition a -> String
+bphuman f (Bipartition (x, y)) = "(" ++ showSet x ++ "|" ++ showSet y ++  ")"
+  where showSet s = intercalate "," $ map f $ S.toList s
 
 -- | Create a bipartition from two 'S.Set's.
 bp :: Ord a => S.Set a -> S.Set a -> Bipartition a
