@@ -22,11 +22,9 @@ import           Control.Monad.Logger
 import           Control.Monad.Trans.Reader
 import           Options.Applicative
 
-
 -- | Arguments of compare command.
 data CompareArguments = CompareArguments
   { argsNormalize  :: Bool
-  , argsBranchWise :: Bool
   , argsInFiles    :: [FilePath] }
 
 
@@ -37,7 +35,6 @@ type Compare = LoggingT (ReaderT CompareArguments IO)
 compareArguments :: Parser CompareArguments
 compareArguments = CompareArguments <$>
   normalize
-  <*> branchwise
   <*> some file
 
 normalize :: Parser Bool
@@ -45,12 +42,6 @@ normalize = switch $
   long "normalize"
   <> short 'n'
   <> help "Normalize trees before comparison"
-
-branchwise :: Parser Bool
-branchwise = switch $
-  long "branch-wise"
-  <> short 'b'
-  <> help "Report branch wise differences"
 
 file :: Parser FilePath
 file = strArgument $

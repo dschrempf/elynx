@@ -22,6 +22,7 @@ Code partly taken from Biobase.Newick.Import.
 module ELynx.Import.Tree.Newick
   ( Parser
   , newick
+  , oneNewick
   , manyNewick
   , forest
   , leaf
@@ -44,13 +45,17 @@ import           ELynx.Tools.ByteString     (c2w)
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString
 
--- | Parse many Newick trees.
-manyNewick :: Parser [Tree (PhyloLabel L.ByteString)]
-manyNewick = some (newick <* space) <* eof <?> "manyNewick"
-
--- | Parse a Newick tree.
+-- | Parse a single Newick tree. Also succeeds when more trees follow.
 newick :: Parser (Tree (PhyloLabel L.ByteString))
 newick = tree <* char (c2w ';') <?> "newick"
+
+-- | Parse a single Newick tree. Fails when end of file is not reached.
+oneNewick :: Parser (Tree (PhyloLabel L.ByteString))
+oneNewick = newick <* space <* eof <?> "oneNewick"
+
+-- | Parse many Newick trees until end of file.
+manyNewick :: Parser [Tree (PhyloLabel L.ByteString)]
+manyNewick = some (newick <* space) <* eof <?> "manyNewick"
 
 tree :: Parser (Tree (PhyloLabel L.ByteString))
 tree = space *> (branched <|> leaf) <?> "tree"

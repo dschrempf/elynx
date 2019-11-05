@@ -49,6 +49,10 @@ import           ELynx.Data.Tree.Tree
 newtype Bipartition a = Bipartition (S.Set a, S.Set a)
   deriving (Show, Read)
 
+-- XXX: At some point I should provide a readable show instance. In this case, I
+-- need the following identity to hold:
+-- > read . show = id
+--
 -- instance Show a => Show (Bipartition a) where
 --   show (Bipartition (x, y)) = "(" ++ showSet x ++ "|" ++ showSet y ++  ")"
 --     where showSet s = intercalate "," $ map show $ S.toList s

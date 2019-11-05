@@ -27,6 +27,7 @@ import           Options.Applicative.Help.Pretty
 import           Distance.Options
 import           Examine.Options
 import           Simulate.Options
+import           Compare.Options
 
 import           ELynx.Tools.Options
 
@@ -34,11 +35,13 @@ data CommandArguments =
   Distance DistanceArguments
   | Examine ExamineArguments
   | Simulate SimulateArguments
+  | Compare CompareArguments
 
-distanceDescription, examineDescription, simulateDescription :: String
+distanceDescription, examineDescription, simulateDescription, compareDescription :: String
 distanceDescription =  "Compute distances between many phylogenetic trees."
 examineDescription  =  "Compute summary statistics of phylogenetic trees."
 simulateDescription =  "Simulate phylogenetic trees using birth and death processes."
+compareDescription  =  "Compare two phylogenetic trees (compute distances and branch-wise differences)."
 
 distanceCommand :: Mod CommandFields CommandArguments
 distanceCommand = command "distance" $
@@ -59,11 +62,17 @@ simulateCommand = command "simulate" $
                        <> progDesc simulateDescription
                        <> footerDoc (Just $ pretty simulateFooter) )
 
+compareCommand :: Mod CommandFields CommandArguments
+compareCommand = command "compare" $
+                   info (Compare <$> compareArguments)
+                     $ progDesc compareDescription
+
 commandArguments :: Parser CommandArguments
 commandArguments = hsubparser $
                    distanceCommand
                    <> examineCommand
                    <> simulateCommand
+                   <> compareCommand
 
 data Arguments = Arguments
   { globalArgs :: GlobalArguments
