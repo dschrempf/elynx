@@ -130,12 +130,10 @@ normalizeSwitch = switch $
 distanceFooter :: String
 distanceFooter = intercalate "\n"
   [ "Available distance measures:"
-  , "  Symmetric distance: -d symmetric"
-  , "  Incompatible split distance: -d incompatible-split[VAL]"
-  , "    Collapse branches with support less than VAL before distance calculation;"
-  , "    in this way, only well supported difference contribute to the distance measure."
-  , "  Branch score distance: -d branch-score"
-  , "                         -d branch-score-normalized (normalize trees)"
-  , "  Branch wise comparison: -d branch-wise"
-  , "                          -d branch-wise-normalized (normalized trees)"
+  , "  symmetric                Symmetric distance (Robinson-Foulds distance)."
+  , "  incompatible-split[VAL]  Incompatible split distance. Collapse branches"
+  , "                           with support less than VAL before distance calculation;"
+  , "                           in this way, only well supported difference contribute"
+  , "                           to the distance measure."
+  , "  branch-score             Branch score distance."
   ]
