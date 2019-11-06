@@ -24,22 +24,26 @@ import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
-import qualified Data.ByteString.Lazy.Char8  as L
+import qualified Data.ByteString.Lazy.Char8     as L
 import           Data.List
-import qualified Data.Set                    as S
-import qualified Data.Text                   as T
-import qualified Data.Text.IO                as T
+import qualified Data.Map                       as M
+import           Data.Monoid
+import qualified Data.Set                       as S
+import qualified Data.Text                      as T
+import qualified Data.Text.IO                   as T
 import           Data.Tree
 import           System.IO
+import           Text.Printf
 
 import           Compare.Options
 
 import           ELynx.Data.Tree.Bipartition
 import           ELynx.Data.Tree.Distance
+import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree
-import           ELynx.Export.Tree.Newick    (toNewick)
+import           ELynx.Export.Tree.Newick       (toNewick)
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
 
@@ -99,27 +103,28 @@ compareCmd outFile = do
   liftIO $ hPutStrLn outH ""
 
   -- Distances.
-  let formatD str val = T.justifyLeft 14 ' ' str <> val
-  liftIO $ hPutStrLn outH "Distances:"
+  let formatD str val = T.justifyLeft 14 ' ' str <> "  " <> val
+  liftIO $ hPutStrLn outH "Distances."
   liftIO $ T.hPutStrLn outH $ formatD "Symmetric" (T.pack $ show $ symmetric t1 t2)
   liftIO $ T.hPutStrLn outH $ formatD "Branch score" (T.pack $ show $ branchScore t1 t2)
 
   -- Bipartitions.
-  let bp1 = bipartitions t1
-      bp2 = bipartitions t2
+  let bp1 = bipartitions (fmap getName t1)
+      bp2 = bipartitions (fmap getName t2)
       bp1Only = bp1 S.\\ bp2
       bp2Only = bp2 S.\\ bp1
   unless (S.null bp1Only)
     (do
         liftIO $ hPutStrLn outH ""
-        liftIO $ hPutStrLn outH "Bipartitions in Tree 1 that are not in Tree 2:"
-        let bp1Strs = map (bphuman L.unpack . bpmap getName) (S.toList bp1Only)
+        liftIO $ hPutStrLn outH "Bipartitions in Tree 1 that are not in Tree 2."
+        -- let bp1Strs = map (bphuman L.unpack . bpmap getName) (S.toList bp1Only)
+        let bp1Strs = map (bphuman L.unpack) (S.toList bp1Only)
         liftIO $ hPutStrLn outH $ intercalate "\n" bp1Strs)
   unless (S.null bp2Only)
     (do
         liftIO $ hPutStrLn outH ""
-        liftIO $ hPutStrLn outH "Bipartitions in Tree 2 that are not in Tree 1:"
-        let bp2Strs = map (bphuman L.unpack . bpmap getName) (S.toList bp2Only)
+        liftIO $ hPutStrLn outH "Bipartitions in Tree 2 that are not in Tree 1."
+        let bp2Strs = map (bphuman L.unpack) (S.toList bp2Only)
         liftIO $ hPutStrLn outH $ intercalate "\n" bp2Strs)
 
   -- Common bipartitions and their respective differences in branch lengths.
@@ -128,8 +133,20 @@ compareCmd outFile = do
   if S.null bpCommon
     then liftIO $ hPutStrLn outH "There are no common bipartitions."
     else do
-    liftIO $ hPutStrLn outH "Common bipartitions and their respective differences in branch lengths:"
-    -- TODO.
-    let bpCommonStrs = map (bphuman L.unpack . bpmap getName) (S.toList bpCommon)
-        bpCommonDs   = undefined
-    undefined
+    let bpToBrLen1 = bipartitionToBranch getName (Sum . getLen) t1
+        bpToBrLen2 = bipartitionToBranch getName (Sum . getLen) t2
+    liftIO $ hPutStrLn outH "Common bipartitions and their respective differences in branch lengths."
+    liftIO $ hPutStrLn outH "A negative value means the branch in the first tree is shorter."
+    -- TODO: Output more information (l1, l2, dl, relative dl).
+    let bpCommons    = S.toList bpCommon
+        bpCommonStrs = map (bphuman L.unpack) bpCommons
+        bpCommonDs   = map (getSum . getD bpToBrLen1 bpToBrLen2) bpCommons
+        ss = zipWith (\d s ->  printf "% 20f" d <> "  " <> s) bpCommonDs bpCommonStrs
+    liftIO $ hPutStrLn outH $ intercalate "\n" ss
+
+getD :: (Ord a, Num b)
+     => M.Map (Bipartition a) b
+     -> M.Map (Bipartition a) b
+     -> Bipartition a
+     -> b
+getD m1 m2 p = (m1 M.! p) - (m2 M.! p)
