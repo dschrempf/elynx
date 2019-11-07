@@ -24,13 +24,13 @@ import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
-import qualified Data.ByteString.Lazy.Char8     as L
+import qualified Data.ByteString.Lazy.Char8        as L
 import           Data.List
-import qualified Data.Map                       as M
+import qualified Data.Map                          as M
 import           Data.Monoid
-import qualified Data.Set                       as S
-import qualified Data.Text                      as T
-import qualified Data.Text.IO                   as T
+import qualified Data.Set                          as S
+import qualified Data.Text                         as T
+import qualified Data.Text.IO                      as T
 import           Data.Tree
 import           System.IO
 import           Text.Printf
@@ -38,12 +38,13 @@ import           Text.Printf
 import           Compare.Options
 
 import           ELynx.Data.Tree.Bipartition
+import           ELynx.Data.Tree.BranchSupportTree
 import           ELynx.Data.Tree.Distance
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree
-import           ELynx.Export.Tree.Newick       (toNewick)
+import           ELynx.Export.Tree.Newick          (toNewick)
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
 
@@ -103,10 +104,18 @@ compareCmd outFile = do
   liftIO $ hPutStrLn outH ""
 
   -- Distances.
-  let formatD str val = T.justifyLeft 14 ' ' str <> "  " <> val
+  let formatD str val = T.justifyLeft 25 ' ' str <> "  " <> val
   liftIO $ hPutStrLn outH "Distances."
-  liftIO $ T.hPutStrLn outH $ formatD "Symmetric" (T.pack $ show $ symmetric t1 t2)
-  liftIO $ T.hPutStrLn outH $ formatD "Branch score" (T.pack $ show $ branchScore t1 t2)
+  liftIO $ T.hPutStrLn outH $ formatD "Symmetric"
+    (T.pack $ show $ symmetric t1 t2)
+  liftIO $ T.hPutStrLn outH $ formatD "Branch score"
+    (T.pack $ show $ branchScore t1 t2)
+  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.9)"
+    (T.pack $ show $ incompatibleSplits (collapse 0.9 t1) (collapse 0.9 t2))
+  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.5)"
+    (T.pack $ show $ incompatibleSplits (collapse 0.5 t1) (collapse 0.5 t2))
+  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.1)"
+    (T.pack $ show $ incompatibleSplits (collapse 0.1 t1) (collapse 0.1 t2))
 
   -- Bipartitions.
   let bp1 = bipartitions (fmap getName t1)
@@ -139,21 +148,24 @@ compareCmd outFile = do
     -- Header.
     liftIO $ hPutStrLn outH header
     forM_ bpCommon (liftIO . hPutStrLn outH . getCommonBpStr L.unpack bpToBrLen1 bpToBrLen2)
+  liftIO $ hClose outH
+  -- TODO. Plot using haskell-chart.
+  -- See https://github.com/timbod7/haskell-chart/wiki.
 
 header :: String
 header = intercalate "  " $ cols ++ ["Bipartition"]
-  where cols = map (T.unpack . T.justifyRight 20 ' ')
-               [ "Length 1", "Length 2", "Delta", "Relative difference"]
+  where cols = map (T.unpack . T.justifyRight 12 ' ')
+               [ "Length 1", "Length 2", "Delta", "Relative [%]"]
 
 getCommonBpStr :: (Ord a, Fractional b, PrintfArg b)
                => (a -> String)
                -> M.Map (Bipartition a) b -> M.Map (Bipartition a) b
                -> Bipartition a -> String
 getCommonBpStr f m1 m2 p = intercalate "  "
-  [ printf "% 20.7f" l1
-  , printf "% 20.7f" l2
-  , printf "% 20.7f" d
-  , printf "% 20.7f" rd
+  [ printf "% 12.7f" l1
+  , printf "% 12.7f" l2
+  , printf "% 12.7f" d
+  , printf "% 12.7f" rd
   , s ]
   where l1 = m1 M.! p
         l2 = m2 M.! p
