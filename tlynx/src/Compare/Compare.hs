@@ -118,14 +118,14 @@ compareCmd outFile = do
         liftIO $ hPutStrLn outH ""
         liftIO $ hPutStrLn outH "Bipartitions in Tree 1 that are not in Tree 2."
         -- let bp1Strs = map (bphuman L.unpack . bpmap getName) (S.toList bp1Only)
-        let bp1Strs = map (bphuman L.unpack) (S.toList bp1Only)
-        liftIO $ hPutStrLn outH $ intercalate "\n" bp1Strs)
+        forM_ bp1Only (liftIO . hPutStrLn outH . bphuman L.unpack))
+        -- let bp1Strs = map (bphuman L.unpack) (S.toList bp1Only)
+        -- liftIO $ hPutStrLn outH $ intercalate "\n" bp1Strs)
   unless (S.null bp2Only)
     (do
         liftIO $ hPutStrLn outH ""
         liftIO $ hPutStrLn outH "Bipartitions in Tree 2 that are not in Tree 1."
-        let bp2Strs = map (bphuman L.unpack) (S.toList bp2Only)
-        liftIO $ hPutStrLn outH $ intercalate "\n" bp2Strs)
+        forM_ bp2Only (liftIO . hPutStrLn outH . bphuman L.unpack))
 
   -- Common bipartitions and their respective differences in branch lengths.
   liftIO $ hPutStrLn outH ""
@@ -133,20 +133,30 @@ compareCmd outFile = do
   if S.null bpCommon
     then liftIO $ hPutStrLn outH "There are no common bipartitions."
     else do
-    let bpToBrLen1 = bipartitionToBranch getName (Sum . getLen) t1
-        bpToBrLen2 = bipartitionToBranch getName (Sum . getLen) t2
+    let bpToBrLen1 = M.map getSum $ bipartitionToBranch getName (Sum . getLen) t1
+        bpToBrLen2 = M.map getSum $ bipartitionToBranch getName (Sum . getLen) t2
     liftIO $ hPutStrLn outH "Common bipartitions and their respective differences in branch lengths."
-    liftIO $ hPutStrLn outH "A negative value means the branch in the first tree is shorter."
-    -- TODO: Output more information (l1, l2, dl, relative dl).
-    let bpCommons    = S.toList bpCommon
-        bpCommonStrs = map (bphuman L.unpack) bpCommons
-        bpCommonDs   = map (getSum . getD bpToBrLen1 bpToBrLen2) bpCommons
-        ss = zipWith (\d s ->  printf "% 20f" d <> "  " <> s) bpCommonDs bpCommonStrs
-    liftIO $ hPutStrLn outH $ intercalate "\n" ss
+    -- Header.
+    liftIO $ hPutStrLn outH header
+    forM_ bpCommon (liftIO . hPutStrLn outH . getCommonBpStr L.unpack bpToBrLen1 bpToBrLen2)
 
-getD :: (Ord a, Num b)
-     => M.Map (Bipartition a) b
-     -> M.Map (Bipartition a) b
-     -> Bipartition a
-     -> b
-getD m1 m2 p = (m1 M.! p) - (m2 M.! p)
+header :: String
+header = intercalate "  " $ cols ++ ["Bipartition"]
+  where cols = map (T.unpack . T.justifyRight 20 ' ')
+               [ "Length 1", "Length 2", "Delta", "Relative difference"]
+
+getCommonBpStr :: (Ord a, Fractional b, PrintfArg b)
+               => (a -> String)
+               -> M.Map (Bipartition a) b -> M.Map (Bipartition a) b
+               -> Bipartition a -> String
+getCommonBpStr f m1 m2 p = intercalate "  "
+  [ printf "% 20.7f" l1
+  , printf "% 20.7f" l2
+  , printf "% 20.7f" d
+  , printf "% 20.7f" rd
+  , s ]
+  where l1 = m1 M.! p
+        l2 = m2 M.! p
+        d  = l1 - l2
+        rd = 2 * d / (l1 + l2)
+        s  = bphuman f p
