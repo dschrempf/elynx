@@ -74,15 +74,8 @@ commandArguments = hsubparser $
                    <> simulateCommand
                    <> compareCommand
 
-data Arguments = Arguments
-  { globalArgs :: GlobalArguments
-  , cmdArgs    :: CommandArguments }
-
-parseArguments :: IO Arguments
-parseArguments = parseArgumentsWith desc ftr $
-                 Arguments
-                 <$> globalArguments
-                 <*> commandArguments
+parseArguments :: IO (Arguments CommandArguments)
+parseArguments = parseArgumentsWith desc ftr commandArguments
 
 desc :: [String]
 desc = [ "Compare, examine, and simulate phylogenetic trees." ]

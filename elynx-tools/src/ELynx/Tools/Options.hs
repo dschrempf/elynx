@@ -22,6 +22,7 @@ module ELynx.Tools.Options
     -- * Options
   , parseArgumentsWith
   , Verbosity (..)
+  , Arguments (..)
   , GlobalArguments (..)
   , globalArguments
   , seedOpt
@@ -124,14 +125,15 @@ evoModSuiteFooter =
 -- | Parse arguments. Provide a global description, header, footer, and so on.
 -- Custom additional description (first argument) and footer (second argument)
 -- can be provided. print help if needed.
-parseArgumentsWith :: [String] -> [String] -> Parser a -> IO a
+parseArgumentsWith :: [String] -> [String] -> Parser a -> IO (Arguments a)
 parseArgumentsWith desc ftr p = execParser $
-  info (helper <*> versionOpt <*> p)
+  info (helper <*> versionOpt <*> p')
   (fullDesc
     <> header hdr
     <> progDesc dsc'
     <> footerDoc (Just ftr'))
   where
+    p'   = Arguments <$> globalArguments <*> p
     dsc' = unlines desc
     ftr' = vsep $ map pretty ftr ++ evoModSuiteFooter
 
@@ -144,6 +146,11 @@ toLogLevel Quiet   = LevelError
 toLogLevel Warning = LevelWarn
 toLogLevel Info    = LevelInfo
 toLogLevel Debug   = LevelDebug
+
+-- | Argument skeleton to be used with all commands.
+data Arguments a = Arguments { global :: GlobalArguments
+                             , local  :: a
+                             }
 
 -- | A set of global arguments used by all programs. The idea is to provide a
 -- common framework for shared arguments.
