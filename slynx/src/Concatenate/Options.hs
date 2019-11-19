@@ -26,11 +26,16 @@ import           Options.Applicative
 import           Tools
 
 import           ELynx.Data.Alphabet.Alphabet
+import           ELynx.Tools.Reproduction
 
 -- | Arguments needed to concatenate multi sequence alignments.
 data ConcatenateArguments = ConcatenateArguments
     { ccAlphabet :: Alphabet
     , ccInFiles  :: [FilePath] }
+
+instance Reproducible ConcatenateArguments where
+  inFiles  = ccInFiles
+  parser _ = concatenateArguments
 
 -- | Logger and Reader type.
 type Concatenate = LoggingT (ReaderT ConcatenateArguments IO)

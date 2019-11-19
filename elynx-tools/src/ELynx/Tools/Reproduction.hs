@@ -16,7 +16,7 @@ Creation date: Tue Nov 19 15:07:09 2019.
 -}
 
 module ELynx.Tools.Reproduction
-  ( Reproducible
+  ( Reproducible (..)
   , Reproduction (..)
   , readR
   , writeR
@@ -30,15 +30,15 @@ import           Data.Bifunctor        (first)
 import qualified Data.ByteString.Char8 as B
 import           Data.Either           (either)
 import           GHC.Generics          (Generic)
-import           Options.Applicative   (ParserInfo, defaultPrefs,
-                                        execParserPure, getParseResult)
+import           Options.Applicative   (Parser, defaultPrefs, execParserPure,
+                                        getParseResult, info, briefDesc)
 import           System.Environment    (getArgs, getProgName)
 
 -- | Reproducible commands have a set of input files that have to be checked for
 -- consistency.
 class Reproducible a where
   inFiles :: a -> [FilePath]
-  parser  :: a -> ParserInfo a
+  parser  :: a -> Parser a
 
 -- | Necessary information for a reproducible run. Notably, the input files are
 -- checked for consistency!
@@ -59,7 +59,7 @@ checkArgs :: (Eq a, Show a, Reproducible a)
           => [String] -> a -> IO (Either String ())
 checkArgs as c = do
   let p    = parser c
-      pres = execParserPure defaultPrefs p as
+      pres = execParserPure defaultPrefs (info p briefDesc) as
   return $ case getParseResult pres of
     Nothing  ->
       Left $ unlines [ "Could not parse command line string:"

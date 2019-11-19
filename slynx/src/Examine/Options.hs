@@ -18,20 +18,28 @@ module Examine.Options
   , examineArguments
   ) where
 
-import           Control.Applicative
+import           Control.Applicative          (optional)
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Reader
+import           Data.Maybe                   (fromJust)
 import           Options.Applicative
 
 import           Tools
 
 import           ELynx.Data.Alphabet.Alphabet
+import           ELynx.Tools.Reproduction
 
 -- | Arguments needed to examine sequences.
 data ExamineArguments = ExamineArguments
     { exAlphabet :: Alphabet
     , exInFile   :: Maybe FilePath
     , exPerSite  :: Bool }
+
+instance Reproducible ExamineArguments where
+  -- TODO: How do I combine optional input files with reproducibility? This is
+  -- not possible. Remove possibility for pipes?
+  inFiles  = pure . fromJust . exInFile
+  parser _ = examineArguments
 
 -- | Logger and Reader type.
 type Examine = LoggingT (ReaderT ExamineArguments IO)
