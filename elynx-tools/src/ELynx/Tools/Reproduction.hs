@@ -39,6 +39,8 @@ class Reproducible a where
   inFiles :: a -> [FilePath]
   parser  :: a -> ParserInfo a
 
+-- | Necessary information for a reproducible run. Notably, the input files are
+-- checked for consistency!
 data Reproduction a = Reproduction
   { progName  :: String         -- ^ Program name.
   , args      :: [String]       -- ^ Command line arguments without program name.
@@ -51,6 +53,7 @@ instance ToJSON a => ToJSON (Reproduction a) where
 
 instance FromJSON a => FromJSON (Reproduction a)
 
+-- | Does the command line fit the provided command?
 checkArgs :: (Eq a, Show a, Reproducible a)
           => [String] -> a -> IO (Either String ())
 checkArgs as c = do
@@ -67,6 +70,7 @@ checkArgs as c = do
                           , show c ]
       else Right ()
 
+-- | Does the file match the checksum?
 checkFile :: FilePath -> B.ByteString -> IO (Either String ())
 checkFile fp h = do
   h' <- hashFile fp
@@ -76,6 +80,7 @@ checkFile fp h = do
                         , fp ++ " has check sum " ++ B.unpack h'
                         , "Stored sum is " ++ B.unpack h ]
 
+-- | Well, not much to say here. Combined 'checkArgs', and 'checkFile' for now.
 checkReproduction :: (Eq a, Show a, Reproducible a)
                   => Reproduction a -> IO (Either String ())
 checkReproduction (Reproduction _ as fs ss c) = do
@@ -84,7 +89,7 @@ checkReproduction (Reproduction _ as fs ss c) = do
   let ch = sequence_ (chA : chFs)
   return $ first ("Failed validating the reproduction file.\n" ++) ch
 
--- | Read an ELynx reproduction file.
+-- | Read an ELynx reproduction file. Check consistency of arguments and input files.
 readR :: forall a . (Eq a, Show a, Reproducible a, FromJSON a)
       => FilePath -> IO (Reproduction a)
 readR fp = do
@@ -98,10 +103,11 @@ readR fp = do
       ch <- checkReproduction r
       return $ either error (const r) ch
 
+-- | Helper function.
 hashFile :: FilePath -> IO B.ByteString
 hashFile f = hash <$> B.readFile f
 
--- | Write an ELynx reproduction file.
+-- | Write an ELynx reproduction file. Check arguments.
 writeR :: (Eq a, Show a, Reproducible a, ToJSON a) => FilePath -> a -> IO ()
 writeR fp c = do
   p  <- getProgName
@@ -111,5 +117,6 @@ writeR fp c = do
   let
     cs' = map B.unpack cs
     r   = Reproduction p as fs cs' c
+  -- XXX: Actually, it is only necessary to to checkArgs here. But let's just be safe.
   ch <- checkReproduction r
   either error (const $ encodeFile fp r) ch
