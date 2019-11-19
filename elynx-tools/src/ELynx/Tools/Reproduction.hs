@@ -24,14 +24,15 @@ module ELynx.Tools.Reproduction
 
 import           Control.Monad         (zipWithM)
 import           Crypto.Hash.SHA256    (hash)
-import           Data.Aeson
+import           Data.Aeson            (FromJSON, ToJSON,
+                                        eitherDecodeFileStrict', encodeFile)
 import           Data.Bifunctor        (first)
 import qualified Data.ByteString.Char8 as B
 import           Data.Either           (either)
-import           GHC.Generics
+import           GHC.Generics          (Generic)
 import           Options.Applicative   (ParserInfo, defaultPrefs,
                                         execParserPure, getParseResult)
-import           System.Environment
+import           System.Environment    (getArgs, getProgName)
 
 -- | Reproducible commands have a set of input files that have to be checked for
 -- consistency.
