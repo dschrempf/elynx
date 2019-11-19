@@ -27,10 +27,12 @@ ghc-options:
   # - -fllvm
 
 dependencies:
+  - aeson
   - async
   - base
   - bytestring
   - containers
+  - cryptohash-sha256
   # - data-memocombinators
   - deepseq
   - fast-logger
