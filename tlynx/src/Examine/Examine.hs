@@ -19,21 +19,25 @@ module Examine.Examine
   )
 where
 
+import           Control.Monad                  (unless)
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8     as L
+import           Data.List                      (nub, (\\))
 import qualified Data.Text                      as T
 import           Data.Tree
+import           System.IO                      (Handle, hPutStrLn)
 
 import           Examine.Options
 
 import           ELynx.Data.Tree.MeasurableTree
+import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Data.Tree.Tree
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Logger
 
 readTrees :: Maybe FilePath -> Examine [Tree (PhyloLabel L.ByteString)]
 readTrees mfp = do
@@ -42,12 +46,19 @@ readTrees mfp = do
     Just fp -> $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
   liftIO $ parseFileOrIOWith manyNewick mfp
 
+examineTree :: (Measurable a, Named a)
+            => Handle -> Tree a -> IO ()
+examineTree h t = do
+  L.hPutStrLn h $ summarize t
+  unless (null dups) (hPutStrLn h $ "Duplicate leaves: " ++ show dups)
+  where lvs = map getName $ leaves t
+        dups = lvs \\ nub lvs
+
 -- | Examine phylogenetic trees.
 examine :: Maybe FilePath -> Examine ()
 examine outFn = do
   ExamineArguments inFn <- lift ask
   trs <- readTrees inFn
-  let lsStrs = map summarize trs
   let outFilePath = (++ ".out") <$> outFn
-  logNewSection "Results."
-  out "results of tree analysis" (L.intercalate (L.pack "\n") lsStrs) outFilePath
+  outH <- outHandle "results" outFilePath
+  liftIO $ mapM_ (examineTree outH) trs
