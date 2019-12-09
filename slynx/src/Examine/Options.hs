@@ -36,8 +36,9 @@ data ExamineArguments = ExamineArguments
     , exPerSite  :: Bool }
 
 instance Reproducible ExamineArguments where
-  -- TODO: How do I combine optional input files with reproducibility? This is
-  -- not possible. Remove possibility for pipes?
+  -- TODO: How do I combine optional input files with reproducibility? The
+  -- answer is: use checksums! Also other input files have to be checked with
+  -- check sums. StdIO can also be checked in the same way.
   inFiles  = pure . fromJust . exInFile
   parser _ = examineArguments
 

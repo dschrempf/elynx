@@ -21,7 +21,8 @@ module ELynx.Tools.InputOutput
     -- * Input, output.
     readGZFile
   , writeGZFile
-  , io
+  , out
+  , outHandle
     -- * Parsing.
   , runParserOnFile
   , parseFileWith
@@ -33,7 +34,7 @@ module ELynx.Tools.InputOutput
 
 import           Codec.Compression.GZip     (compress, decompress)
 import           Control.DeepSeq            (force)
-import           Control.Exception          (bracket, evaluate)
+import           Control.Exception          (evaluate)
 import           Control.Monad              ((<=<))
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
@@ -50,7 +51,7 @@ readFile' :: FilePath -> IO L.ByteString
 -- -- Doesn't work.
 -- readFile' fn = withFile fn ReadMode $ (evaluate . force) <=< L.hGetContents
 -- This works!
-readFile' fn = bracket (openFile fn ReadMode) hClose $
+readFile' fn = withFile fn ReadMode $
   (evaluate . force) <=< L.hGetContents
 
 -- | Read file. If file path ends with ".gz", assume gzipped file and decompress
@@ -113,8 +114,8 @@ parseByteStringWith s p l = case parse p s l of
                             Right val -> val
 
 -- | Write a result with a given name to file or standard output.
-io :: (MonadLogger m, MonadIO m) => String -> L.ByteString -> Maybe FilePath -> m ()
-io name res mfp =
+out :: (MonadLogger m, MonadIO m) => String -> L.ByteString -> Maybe FilePath -> m ()
+out name res mfp =
   case mfp of
     Nothing -> do
       $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
@@ -122,3 +123,15 @@ io name res mfp =
     Just fp -> do
       $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
       liftIO $ writeGZFile fp res
+
+-- | Get an output handle, does not support compression. The handle has to be
+-- closed after use!
+outHandle :: (MonadLogger m, MonadIO m) => String -> Maybe FilePath -> m Handle
+outHandle name mfp =
+  case mfp of
+    Nothing -> do
+      $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
+      return stdout
+    Just fp -> do
+      $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
+      liftIO $ openFile fp WriteMode

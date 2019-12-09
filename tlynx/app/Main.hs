@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 {- |
 Module      :  Main
 Description :  Work with phylogenetic trees

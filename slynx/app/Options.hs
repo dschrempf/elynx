@@ -37,7 +37,8 @@ import           Translate.Options
 
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Tools.Options
-import           ELynx.Tools.Reproduction
+-- TODO: Removed reproducibility stuff for now, have to work on that.
+-- import           ELynx.Tools.Reproduction
 
 data CommandArguments =
   Concatenate ConcatenateArguments
@@ -48,8 +49,8 @@ data CommandArguments =
   | SubSample SubSampleArguments
   | Translate TranslateArguments
 
-instance Reproducible CommandArguments where
-  inFiles (Concatenate a) = inFiles a
+-- instance Reproducible CommandArguments where
+--   inFiles (Concatenate a) = inFiles a
 
 concatenateDescription, examineDescription, filterRowsDescription, filterColumnsDescription, simulateDescription, subSampleDescription, translateDescription :: String
 concatenateDescription   = "Concatenate sequences found in input files."

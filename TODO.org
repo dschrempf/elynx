@@ -16,11 +16,6 @@ help.
 * Medium
 ** TODO Improve output of (mixture, gamma) model
 ** TODO Enable description in FASTA files sequence headers
-** TODO Provide a (Args a) type
-
-** TODO Output stream
-Provide an output handle for unified output, do not pass around the complete output.
-
 * Hard
 ** TODO ELynx file
 Provide an internal =OutFileBaseName.elynx= file that stores all input files and

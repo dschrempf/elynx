@@ -78,7 +78,7 @@ simulate outFile = do
            else parMap rpar toNewick trs
   let outFile' = (++ ".tree") <$> outFile
   let res = L.unlines ls
-  io "simulated trees" res outFile'
+  out "simulated trees" res outFile'
 
 simulateNTreesConcurrently :: Int -> Simulate [Tree (PhyloLabel Int)]
 simulateNTreesConcurrently c = do

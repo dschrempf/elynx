@@ -53,7 +53,7 @@ filterRowsCmd outFileBaseName = do
   ss <- readSeqs al inFile
   let result      = filterRows long short ss
   let outFilePath = (++ ".fasta") <$> outFileBaseName
-  io "filtered sequences" result outFilePath
+  out "filtered sequences" result outFilePath
 
 filterCols :: Maybe Double -> [S.Sequence] -> L.ByteString
 filterCols ms ss = sequencesToFasta . M.toSequences $ compose filters a
@@ -73,4 +73,4 @@ filterColsCmd outFileBaseName = do
   ss <- readSeqs al inFile
   let result      = filterCols standard ss
   let outFilePath = (++ ".fasta") <$> outFileBaseName
-  io "filtered sequences" result outFilePath
+  out "filtered sequences" result outFilePath

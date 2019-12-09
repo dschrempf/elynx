@@ -66,5 +66,5 @@ subSampleCmd outFileBaseName = do
   outFilePaths <- case outFileBaseName of
     Nothing -> return $ repeat Nothing
     Just fn -> return $ Just <$> getOutFilePaths fn nAlignments "fasta"
-  zipWithM_ (io "sub sampled multi sequence alignments") results outFilePaths
+  zipWithM_ (out "sub sampled multi sequence alignments") results outFilePaths
 

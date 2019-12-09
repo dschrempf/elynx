@@ -39,5 +39,5 @@ concatenateCmd outFileBaseName = do
   sss <- mapM (readSeqs al . Just) fps
   let result      = sequencesToFasta $ S.concatSequences sss
   let outFilePath = (++ ".fasta") <$> outFileBaseName
-  io "concatenated multi sequence alignment " result outFilePath
+  out "concatenated multi sequence alignment " result outFilePath
 

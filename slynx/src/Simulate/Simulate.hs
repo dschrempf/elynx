@@ -115,7 +115,7 @@ reportModel :: Maybe FilePath -> P.PhyloModel -> Simulate ()
 reportModel Nothing      _ = $(logInfo) "No output file provided; omit detailed report of phylogenetic model."
 reportModel (Just outFn) m = do
   let modelFn = outFn <> ".model"
-  io "model definition (machine readable)" (bsShow m <> "\n") (Just modelFn)
+  out "model definition (machine readable)" (bsShow m <> "\n") (Just modelFn)
 
 -- | Simulate sequences.
 simulateCmd :: Maybe FilePath -> Simulate ()
@@ -189,4 +189,4 @@ simulateCmd outFn = do
   let output = (sequencesToFasta . A.toSequences) alignment
       outFile = (<> ".fasta") <$> outFn
   $(logInfo) ""
-  io "simulated multi sequence alignment" output outFile
+  out "simulated multi sequence alignment" output outFile

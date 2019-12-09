@@ -66,14 +66,13 @@ treesTwoFiles tf1 tf2 = do
   t2 <- liftIO $ parseFileWith oneNewick tf2
   return (t1, t2)
 
--- TODO: Some things should actually be part of the log, and not the output.
 -- | More detailed comparison of two trees.
 compareCmd :: Maybe FilePath -> Compare ()
 compareCmd outFile = do
   a <- lift ask
   -- Determine output handle (stdout or file).
   let outFn = (++ ".out") <$> outFile
-  outH <- liftIO $ maybe (pure stdout) (`openFile` WriteMode) outFn
+  outH <- outHandle "results" outFn
   liftIO $ hPutStrLn outH ""
 
   -- Read input.

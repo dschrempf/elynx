@@ -48,4 +48,4 @@ translateCmd outFileBaseName = do
   ss <- readSeqs al inFile
   let result      = sequencesToFasta $ translateSeqs rf uc ss
   let outFilePath = (++ ".fasta") <$> outFileBaseName
-  io "translated sequences" result outFilePath
+  out "translated sequences" result outFilePath

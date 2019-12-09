@@ -115,4 +115,4 @@ examineCmd outFileBaseName = do
   ss <- readSeqs al inFile
   let result = examine perSiteFlag ss
   let outFilePath = (++ ".out") <$> outFileBaseName
-  io "result of examination" result outFilePath
+  out "result of examination" result outFilePath

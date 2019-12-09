@@ -72,7 +72,7 @@ distance outFileBN = do
   a <- lift ask
   -- Determine output handle (stdout or file).
   let outFile = (++ ".out") <$> outFileBN
-  outH <- liftIO $ maybe (pure stdout) (`openFile` WriteMode) outFile
+  outH <- outHandle "results" outFile
   -- Master tree (in case it is given).
   let mname = argsMasterTreeFile a
   mtree <- case mname of

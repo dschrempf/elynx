@@ -66,12 +66,6 @@ branchScoreAnswers =
 prop_dist_same_tree :: (Num b, Eq b) => (Tree a -> Tree a -> b) -> Tree a -> Bool
 prop_dist_same_tree distanceMeasure t = distanceMeasure t t == 0
 
--- TODO: Microsporidia trees with branch support values.
--- getMicrospoPoissonTree :: IO (Tree (PhyloLabel L.ByteString))
--- getMicrospoPoissonTree = parseFileWith newick "data/MicrospoPoisson.tree"
--- getMicrospoUDM32Tree = parseFileWith newick "data/MicrospoEDM32.tree"
--- getMicrospoUDM64Tree = parseFileWith newick "data/MicrospoEDM64.tree"
-
 each :: Int -> [a] -> [a]
 each n = map head . takeWhile (not . null) . iterate (drop n)
 

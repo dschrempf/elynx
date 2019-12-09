@@ -50,4 +50,4 @@ examine outFn = do
   let lsStrs = map summarize trs
   let outFilePath = (++ ".out") <$> outFn
   logNewSection "Results."
-  io "results of tree analysis" (L.intercalate (L.pack "\n") lsStrs) outFilePath
+  out "results of tree analysis" (L.intercalate (L.pack "\n") lsStrs) outFilePath
