@@ -73,7 +73,7 @@ compareCmd outFile = do
   -- Determine output handle (stdout or file).
   let outFn = (++ ".out") <$> outFile
   outH <- outHandle "results" outFn
-  liftIO $ hPutStrLn outH ""
+  -- liftIO $ hPutStrLn outH ""
 
   -- Read input.
   let inFiles = argsInFiles a
@@ -82,7 +82,7 @@ compareCmd outFile = do
     1 -> treesOneFile (head inFiles)
     2 -> treesTwoFiles (head inFiles) (head . tail $ inFiles)
     _ -> error "Need two input files with one tree each or one input file with two trees."
-  liftIO $ hPutStrLn outH ""
+  -- liftIO $ hPutStrLn outH ""
 
   liftIO $ hPutStrLn outH "Tree 1:"
   liftIO $ L.hPutStrLn outH $ toNewick t1

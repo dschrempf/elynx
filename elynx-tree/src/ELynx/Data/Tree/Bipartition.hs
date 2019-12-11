@@ -44,6 +44,10 @@ import           Data.Tree
 
 import           ELynx.Data.Tree.Tree
 
+-- XXX: Maybe use this in the future?
+-- -- | A convenient shortcut.
+-- type S a = S.Set a
+
 -- | Bipartitions with 'S.Set's, since order of elements within the leaf sets
 -- is not important. Also the order of the two leaf sets of the bipartition is
 -- not important (see 'Eq' instance definition).
@@ -128,6 +132,8 @@ bipartitionsUnsafe t =
     lvsTree = leavesTree t
     lvsOthers = subForestGetLeafSets S.empty lvsTree
 
+-- The actual recursive worker function calculating the bipartition. Assume that
+-- the root node has been handled adequately with 'bipartitions'.
 bipartitions' :: Ord a => S.Set a -> Tree (S.Set a) -> S.Set (Bipartition a)
 bipartitions' lvsStem t@(Node lvs xs)
   | S.null lvsStem = error "bipartitions': no complementing leaf set."
@@ -210,11 +216,20 @@ bipartitionToBranch' lvsStem br f g t@(Node l xs )
     lvsThisNode = snd l
     lvsOthers   = subForestGetLeafSets lvsStem $ fmap snd t
 
+-- TODO: Somehow this is wrong when used with multifurcating trees (i.e., the
+-- incompatible split distance). Then, we need to distinguish between
+--
+-- 1. Resolved bipartitions that have to match with the other tree.
+--
+-- 2. Compatible bipartitions that are not fully resolved. They do not change
+-- the distance if they are present in the other tree nor when they are missing
+-- in the other tree.
+
 -- | Get all bipartitions, but combine leaves from multifurcations. This is
 -- useful to find incompatible splits. See
 -- 'ELynx.Data.Tree.Distance.incompatibleSplitsDistance'. Assume that a root
 -- node with three children is actually not a multifurcation (because then we
--- would have no induced bypartitions), but rather corresponds to an unrooted
+-- would have no induced bipartitions), but rather corresponds to an unrooted
 -- tree.
 bipartitionsCombined :: (Ord a, Show a) => Tree a -> S.Set (Bipartition a)
 bipartitionsCombined t@(Node _ xs)
