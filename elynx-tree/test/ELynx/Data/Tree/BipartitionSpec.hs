@@ -25,9 +25,13 @@ import           Data.Tree
 import           Test.Hspec
 
 import           ELynx.Data.Tree.Bipartition
+import           ELynx.Data.Tree.Partition
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
+
+pfrom :: [L.ByteString] -> Partition L.ByteString
+pfrom = pfromset . S.fromList
 
 treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
@@ -37,31 +41,31 @@ getSimpleTrees = parseFileWith manyNewick treeFileSimple
 
 bipartitionToBranchAnswer :: M.Map (Bipartition L.ByteString) (Sum Double)
 bipartitionToBranchAnswer =
-  M.fromList [ (bp (S.fromList ["B"]) (S.fromList ["A","C","D","E"]), Sum {getSum = 0.3})
-             , (bp (S.fromList ["B","C","D","E"]) (S.fromList ["A"]), Sum {getSum = 0.1})
-             , (bp (S.fromList ["B","C","E"]) (S.fromList ["A","D"]), Sum {getSum = 5.0e-2})
-             , (bp (S.fromList ["B","E"]) (S.fromList ["A","C","D"]), Sum {getSum = 0.4})
-             , (bp (S.fromList ["C"]) (S.fromList ["A","B","D","E"]), Sum {getSum = 1.0e-2})
-             , (bp (S.fromList ["D"]) (S.fromList ["A","B","C","E"]), Sum {getSum = 0.25})
-             , (bp (S.fromList ["E"]) (S.fromList ["A","B","C","D"]), Sum {getSum = 0.8}) ]
+  M.fromList [ (bp (pfrom ["B"]) (pfrom ["A","C","D","E"]), Sum {getSum = 0.3})
+             , (bp (pfrom ["B","C","D","E"]) (pfrom ["A"]), Sum {getSum = 0.1})
+             , (bp (pfrom ["B","C","E"]) (pfrom ["A","D"]), Sum {getSum = 5.0e-2})
+             , (bp (pfrom ["B","E"]) (pfrom ["A","C","D"]), Sum {getSum = 0.4})
+             , (bp (pfrom ["C"]) (pfrom ["A","B","D","E"]), Sum {getSum = 1.0e-2})
+             , (bp (pfrom ["D"]) (pfrom ["A","B","C","E"]), Sum {getSum = 0.25})
+             , (bp (pfrom ["E"]) (pfrom ["A","B","C","D"]), Sum {getSum = 0.8}) ]
 
 bipartitionsFirstTree :: S.Set (Bipartition L.ByteString)
-bipartitionsFirstTree = S.fromList [ bp (S.fromList ["B"]) (S.fromList ["A","C","D","E"])
-                                   , bp (S.fromList ["B","C","D","E"]) (S.fromList ["A"])
-                                   , bp (S.fromList ["B","D","E"]) (S.fromList ["A","C"])
-                                   , bp (S.fromList ["B","E"]) (S.fromList ["A","C","D"])
-                                   , bp (S.fromList ["C"]) (S.fromList ["A","B","D","E"])
-                                   , bp (S.fromList ["D"]) (S.fromList ["A","B","C","E"])
-                                   , bp (S.fromList ["E"]) (S.fromList ["A","B","C","D"]) ]
+bipartitionsFirstTree = S.fromList [ bp (pfrom ["B"]) (pfrom ["A","C","D","E"])
+                                   , bp (pfrom ["B","C","D","E"]) (pfrom ["A"])
+                                   , bp (pfrom ["B","D","E"]) (pfrom ["A","C"])
+                                   , bp (pfrom ["B","E"]) (pfrom ["A","C","D"])
+                                   , bp (pfrom ["C"]) (pfrom ["A","B","D","E"])
+                                   , bp (pfrom ["D"]) (pfrom ["A","B","C","E"])
+                                   , bp (pfrom ["E"]) (pfrom ["A","B","C","D"]) ]
 
 bipartitionsSecondTree :: S.Set (Bipartition L.ByteString)
-bipartitionsSecondTree = S.fromList [ bp (S.fromList ["B"]) (S.fromList ["A","C","D","E"])
-                                    , bp (S.fromList ["B","C","D","E"]) (S.fromList ["A"])
-                                    , bp (S.fromList ["B","C","E"]) (S.fromList ["A","D"])
-                                    , bp (S.fromList ["B","E"]) (S.fromList ["A","C","D"])
-                                    , bp (S.fromList ["C"]) (S.fromList ["A","B","D","E"])
-                                    , bp (S.fromList ["D"]) (S.fromList ["A","B","C","E"])
-                                    , bp (S.fromList ["E"]) (S.fromList ["A","B","C","D"])]
+bipartitionsSecondTree = S.fromList [ bp (pfrom ["B"]) (pfrom ["A","C","D","E"])
+                                    , bp (pfrom ["B","C","D","E"]) (pfrom ["A"])
+                                    , bp (pfrom ["B","C","E"]) (pfrom ["A","D"])
+                                    , bp (pfrom ["B","E"]) (pfrom ["A","C","D"])
+                                    , bp (pfrom ["C"]) (pfrom ["A","B","D","E"])
+                                    , bp (pfrom ["D"]) (pfrom ["A","B","C","E"])
+                                    , bp (pfrom ["E"]) (pfrom ["A","B","C","D"])]
 
 spec :: Spec
 spec = do

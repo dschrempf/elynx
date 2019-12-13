@@ -1,5 +1,5 @@
 {- |
-   Description :  Functions to work with transition probability matrices on rooted trees
+   Description :  Work with transition probability matrices on rooted trees
    Copyright   :  (c) Dominik Schrempf 2017
    License     :  GPLv3
 

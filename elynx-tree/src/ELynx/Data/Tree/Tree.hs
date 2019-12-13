@@ -49,6 +49,8 @@ module ELynx.Data.Tree.Tree
   , pruneWith
   , merge
   , tZipWith
+  , partitionTree
+  , subForestGetPartitions
   ) where
 
 import           Control.Monad
@@ -61,6 +63,7 @@ import           Data.Tree
 import           System.Random.MWC
 
 import           ELynx.Tools.Random
+import           ELynx.Data.Tree.Partition
 
 -- | The simplest tree. Usually an extant leaf.
 singleton :: a -> Tree a
@@ -141,3 +144,25 @@ tZipWith :: Traversable t => (a -> b -> c) -> [a] -> t b -> Maybe (t c)
 tZipWith f xs = sequenceA . snd . mapAccumL pair xs
     where pair [] _     = ([], Nothing)
           pair (y:ys) z = (ys, Just (f y z))
+
+-- | Each node of a tree is root of a subtree. Get the leaves of the subtree of
+-- each node.
+partitionTree :: (Ord a) => Tree a -> Tree (Partition a)
+partitionTree (Node l []) = Node (psingleton l) []
+partitionTree (Node _ xs) = Node (punions $ map rootLabel xs') xs'
+  where xs' = map partitionTree xs
+
+-- | Loop through each tree in a forest to report the complementary leaf sets.
+subForestGetPartitions :: (Ord a)
+                     => Partition a          -- ^ Complementary partition at the stem
+                     -> Tree (Partition a)   -- ^ Tree with partition nodes
+                     -> [Partition a]
+subForestGetPartitions lvs t = lvsOthers
+  where
+    xs               = subForest t
+    nChildren        = length xs
+    lvsChildren      = map rootLabel xs
+    lvsOtherChildren = [ punions $ lvs
+                         : take i lvsChildren ++ drop (i+1) lvsChildren
+                       | i <- [0 .. (nChildren - 1)] ]
+    lvsOthers        = map (punion lvs) lvsOtherChildren

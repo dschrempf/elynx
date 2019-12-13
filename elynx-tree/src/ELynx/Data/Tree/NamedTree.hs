@@ -28,3 +28,6 @@ instance Named Int where
 
 instance Named L.ByteString where
   getName = id
+
+instance Named Double where
+  getName = L.toLazyByteString . L.doubleDec

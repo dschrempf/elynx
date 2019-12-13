@@ -38,7 +38,7 @@ import           Text.Printf
 import           Compare.Options
 
 import           ELynx.Data.Tree.Bipartition
-import           ELynx.Data.Tree.BranchSupportTree
+import           ELynx.Data.Tree.BranchSupportTree as BS
 import           ELynx.Data.Tree.Distance
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.NamedTree
@@ -108,13 +108,23 @@ compareCmd outFile = do
   liftIO $ T.hPutStrLn outH $ formatD "Symmetric"
     (T.pack $ show $ symmetric t1 t2)
   liftIO $ T.hPutStrLn outH $ formatD "Branch score"
-    (T.pack $ show $ branchScore t1 t2)
-  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.9)"
-    (T.pack $ show $ incompatibleSplits (collapse 0.9 t1) (collapse 0.9 t2))
-  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.5)"
-    (T.pack $ show $ incompatibleSplits (collapse 0.5 t1) (collapse 0.5 t2))
-  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.1)"
-    (T.pack $ show $ incompatibleSplits (collapse 0.1 t1) (collapse 0.1 t2))
+    (T.pack $ show $ branchScoreWith getName getLen t1 t2)
+  let t1' = BS.normalize t1
+      t2' = BS.normalize t2
+  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.10)"
+    (T.pack $ show $ incompatibleSplits (collapse 0.1 t1') (collapse 0.1 t2'))
+  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.50)"
+    (T.pack $ show $ incompatibleSplits (collapse 0.5 t1') (collapse 0.5 t2'))
+  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.60)"
+    (T.pack $ show $ incompatibleSplits (collapse 0.6 t1') (collapse 0.6 t2'))
+  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.70)"
+    (T.pack $ show $ incompatibleSplits (collapse 0.7 t1') (collapse 0.7 t2'))
+  liftIO $ L.hPutStrLn outH $ toNewick (collapse 0.7 t1')
+  liftIO $ L.hPutStrLn outH $ toNewick (collapse 0.7 t2')
+  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.80)"
+    (T.pack $ show $ incompatibleSplits (collapse 0.8 t1') (collapse 0.8 t2'))
+  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.90)"
+    (T.pack $ show $ incompatibleSplits (collapse 0.9 t1') (collapse 0.9 t2'))
 
   -- Bipartitions.
   let bp1 = bipartitions (fmap getName t1)

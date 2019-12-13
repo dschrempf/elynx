@@ -54,6 +54,8 @@ instance BranchSupportLabel (PhyloLabel a) where
     | s > 0 = l {brSup = Just s}
     | otherwise = error "Branch support cannot be negative."
 
+-- Of course, the boundaries for branch support and length are chosen pretty
+-- arbitrarily :).
 instance Arbitrary a => Arbitrary (PhyloLabel a) where
   arbitrary = PhyloLabel
     <$> arbitrary

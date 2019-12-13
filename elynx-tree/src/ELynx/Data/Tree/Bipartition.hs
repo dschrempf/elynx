@@ -22,60 +22,70 @@ That's why we have to make sure that for
 > Bipartition x y
 we always have @x >= y@.
 
+TODO: Strictly distinguish ROOTED / UNROOTED. It doesn't make sense to assume
+that a tree is unrooted when the root is a trifurcation. Rather, I have to use
+two data types.
+
+TODO: The functions bipartitions' and friends seem to be bogus. To me it seems
+that recursive bipartitionsUnsafe and friends should be all I need.
+
 -}
 
 module ELynx.Data.Tree.Bipartition
   ( -- * The 'Bipartition' data type.
     Bipartition ()
+  , bps
   , bp
   , bpmap
   , bphuman
     -- * Working with 'Bipartition's.
   , bipartitions
+  , bipartitionsCompatible
   , bipartitionToBranch
-  , bipartitionsCombined
   ) where
 
-import           Data.List
-import qualified Data.Map             as M
+import           Data.Foldable             (foldr')
+import qualified Data.Map                  as M
 import           Data.Maybe
-import qualified Data.Set             as S
+import qualified Data.Set                  as S
 import           Data.Tree
 
+import           ELynx.Data.Tree.Partition
 import           ELynx.Data.Tree.Tree
 
--- XXX: Maybe use this in the future?
--- -- | A convenient shortcut.
--- type S a = S.Set a
-
--- | Bipartitions with 'S.Set's, since order of elements within the leaf sets
--- is not important. Also the order of the two leaf sets of the bipartition is
--- not important (see 'Eq' instance definition).
-newtype Bipartition a = Bipartition (S.Set a, S.Set a)
+-- | Each branch of a tree partitions the leaves of the tree into two
+-- 'Partition's, or a bipartition. Also the order of the two partitions of the
+-- 'Bipartition' is not important (see the 'Eq' instance).
+newtype Bipartition a = Bipartition {bps :: (Partition a, Partition a) -- ^ Tuple of partitions
+                                    }
   deriving (Show, Read)
 
--- XXX: At some point I should provide a readable show instance. In this case, I
--- need the following identity to hold:
+-- I decided to NOT provide a human readable show instance because in this case,
+-- I need the following identity to hold:
+--
 -- > read . show = id
 --
--- instance Show a => Show (Bipartition a) where
---   show (Bipartition (x, y)) = "(" ++ showSet x ++ "|" ++ showSet y ++  ")"
---     where showSet s = intercalate "," $ map show $ S.toList s
+-- This identity is met by the derived instance anyways. A more human readable
+-- instance would most likely violate the identity.
 
--- | Show a bipartition in a human readable form.
+-- | Show a bipartition in a human readable form. Use a provided function to
+-- extract the valuable information.
 bphuman :: (a -> String) -> Bipartition a -> String
-bphuman f (Bipartition (x, y)) = "(" ++ showSet x ++ "|" ++ showSet y ++  ")"
-  where showSet s = intercalate "," $ map f $ S.toList s
+bphuman f (Bipartition (x, y)) = "(" ++ pshow f x ++ "|" ++ pshow f y ++  ")"
 
 -- | Create a bipartition from two 'S.Set's.
-bp :: Ord a => S.Set a -> S.Set a -> Bipartition a
-bp x y = if x >= y
-         then Bipartition (x, y)
-         else Bipartition (y, x)
+bp :: Ord a => Partition a -> Partition a -> Bipartition a
+bp xs ys = if xs >= ys
+         then Bipartition (xs, ys)
+         else Bipartition (ys, xs)
+
+-- | Map a function over all elements in the 'Bipartition's.
+bpmap :: (Ord a, Ord b) => (a -> b) -> Bipartition a -> Bipartition b
+bpmap f (Bipartition (x, y)) = bp (pmap f x) (pmap f y)
 
 -- | Create a bipartition from two 'S.Set's.
-bpWith :: (Ord a, Ord b) => (a -> b) -> S.Set a -> S.Set a -> Bipartition b
-bpWith f x y = bpmap f $ bp x y
+bpwith :: (Ord a, Ord b) => (a -> b) -> Partition a -> Partition a -> Bipartition b
+bpwith f x y = bpmap f $ bp x y
 
 instance (Eq a) => Eq (Bipartition a) where
   Bipartition x == Bipartition y = x == y
@@ -83,34 +93,11 @@ instance (Eq a) => Eq (Bipartition a) where
 instance (Ord a) => Ord (Bipartition a) where
   Bipartition x `compare` Bipartition y = x `compare` y
 
--- | Map a function over all elements in the 'Bipartition's.
-bpmap :: (Ord a, Ord b) => (a -> b) -> Bipartition a -> Bipartition b
-bpmap f (Bipartition (x, y)) = bp (S.map f x) (S.map f y)
+-- Check if a bipartition is valid. For now, only checks if one set is empty.
+valid :: Bipartition a -> Bool
+valid (Bipartition (xs, ys)) = not $ pnull xs || pnull ys
 
--- | Each node of a tree is root of a subtree. Get the leaves of the subtree of
--- each node.
-leavesTree :: (Ord a) => Tree a -> Tree (S.Set a)
-leavesTree (Node l []) = Node (S.singleton l) []
-leavesTree (Node _ xs) = Node (S.unions $ map rootLabel xs') xs'
-  where xs' = map leavesTree xs
-
--- | Loop through each tree in a forest to report the complementary leaf sets.
-subForestGetLeafSets :: (Ord a)
-                     => S.Set a          -- ^ Complementary leaf set at the stem
-                     -> Tree (S.Set a)   -- ^ Tree with leaf set nodes
-                     -> [S.Set a]
-subForestGetLeafSets lvsS t = lvsOthers
-  where
-    xs               = subForest t
-    nChildren        = length xs
-    lvsChildren      = map rootLabel xs
-    lvsOtherChildren = [ S.unions $ lvsS
-                         : take i lvsChildren ++ drop (i+1) lvsChildren
-                       | i <- [0 .. (nChildren - 1)] ]
-    lvsOthers        = map (S.union lvsS) lvsOtherChildren
-
-
--- | Get all bipartitions.
+-- | Get all bipartitions of the tree.
 bipartitions :: Ord a => Tree a -> S.Set (Bipartition a)
 bipartitions t = if S.size (S.fromList lvs) == length lvs
                  then bipartitionsUnsafe t
@@ -129,24 +116,97 @@ bipartitionsUnsafe t =
   S.unions [ bipartitions' lvs x
            | (lvs, x) <- zip lvsOthers (subForest lvsTree) ]
   where
-    lvsTree = leavesTree t
-    lvsOthers = subForestGetLeafSets S.empty lvsTree
+    lvsTree = partitionTree t
+    lvsOthers = subForestGetPartitions pempty lvsTree
 
 -- The actual recursive worker function calculating the bipartition. Assume that
 -- the root node has been handled adequately with 'bipartitions'.
-bipartitions' :: Ord a => S.Set a -> Tree (S.Set a) -> S.Set (Bipartition a)
+bipartitions' :: Ord a => Partition a -> Tree (Partition a) -> S.Set (Bipartition a)
 bipartitions' lvsStem t@(Node lvs xs)
-  | S.null lvsStem = error "bipartitions': no complementing leaf set."
+  | pnull lvsStem = error "bipartitions': no complementing leaf set."
   -- Leaf; return a singleton map; bipartition with the leaf and the rest of the tree.
   | null xs        = S.singleton $ bp lvsStem lvs
   -- For degree two nodes, pass the creation of the set on.
   | length xs == 1 = bipartitions' lvsStem (head xs)
   -- We have rose trees, so we need to through the list of children and combine
-  -- each of them with the rest. Also, we use up the possible branch information
-  -- 'br' and start afresh with 'mempty'.
+  -- each of them with the rest.
   | otherwise      = S.unions $ S.singleton (bp lvsStem lvs) : zipWith bipartitions' lvsOthers xs
   where
-    lvsOthers = subForestGetLeafSets lvsStem t
+    lvsOthers = subForestGetPartitions lvsStem t
+
+-- TODO: Move documentation to Distance.hs?
+
+-- | A multifurcation on a tree may (but not necessarily does) represent missing
+-- information about the order of bifurcations. In this case, it is interesting
+-- to get a set of compatible bifurcations of the tree. For example, the tree
+--
+-- > (A,(B,C,D))
+--
+-- induces the following bipartitions:
+--
+-- > A|BCD
+-- > B|ACD
+-- > C|ABD
+-- > D|ABC
+--
+-- Those are also reported by 'bipartitions'. However, it is additionally compatible with
+--
+-- > AB|CD
+-- > AC|BD
+-- > AD|BC
+--
+-- 'bipartitionsCompatible' returns all of these bipartitions.
+bipartitionsCompatible :: Ord a => Tree a -> S.Set (Bipartition a)
+bipartitionsCompatible t = if S.size (S.fromList lvs) == length lvs
+                           then bipartitionsCompatibleUnsafe pempty (partitionTree t)
+                           else error "bipartitionsCompatible: The tree contains duplicate leaves."
+  where lvs = leaves t
+
+-- TODO: Remove; THIS IS TOO SLOW.
+
+-- Get all partitions of a list of Monoids. Inspired by the partitions function
+-- of the combinatorial package available at
+-- https://hackage.haskell.org/package/combinatorial-0.1.0.1.
+partitions :: Monoid a => [a] -> [(a, a)]
+partitions = foldr'
+             (\xs -> concatMap (\(lxs, rxs) -> [(xs <> lxs, rxs), (lxs, xs <> rxs)]))
+             [(mempty, mempty)]
+
+-- Get all bipartitions of a list of partitions. This is true Haskell beauty!
+allBipartitions :: Ord a => [Partition a] -> S.Set (Bipartition a)
+allBipartitions xs = S.fromList $ filter valid $ map (uncurry bp) ps
+  where ps = partitions xs
+
+-- | See 'bipartitionsCompatible', but do not check if leaves are unique.
+bipartitionsCompatibleUnsafe :: Ord a => Partition a -> Tree (Partition a) -> S.Set (Bipartition a)
+bipartitionsCompatibleUnsafe lvs   (Node lvsN [] ) = S.singleton $ bp lvs lvsN
+-- If the root stem is split by degree two nodes, just go on since the root stem
+-- does not induce any bipartitions.
+bipartitionsCompatibleUnsafe lvs   (Node _    [c]) = bipartitionsCompatibleUnsafe lvs c
+-- We have rose trees, so we need to through the list of children and combine
+-- each of them with the rest.
+bipartitionsCompatibleUnsafe lvs t@(Node _    cs ) = S.unions $
+  allBipartitions (lvs : map rootLabel cs) :
+  zipWith bipartitionsCompatibleUnsafe lvsOthers cs
+  where lvsOthers = subForestGetPartitions lvs t
+
+-- TODO: Remove?
+
+-- -- The actual recursive worker function calculating the compatible bipartition.
+-- -- Assume that the root node has been handled adequately with
+-- -- 'bipartitionsCompatible'.
+-- bipartitionsCompatible' :: Ord a => S.Set a -> Tree (S.Set a) -> S.Set (Bipartition a)
+-- bipartitionsCompatible' lvsStem t@(Node lvs xs)
+--   | S.null lvsStem = error "bipartitionsCompatible': no complementing leaf set."
+--   -- Leaf; return a singleton map; bipartition with the leaf and the rest of the tree.
+--   | null xs        = S.singleton $ bp lvsStem lvs
+--   -- For degree two nodes, pass the creation of the set on.
+--   | length xs == 1 = bipartitionsCompatible' lvsStem (head xs)
+--   -- Rose trees are compatible with all combinations of leaf sets.
+--   | otherwise      = S.unions $ S.singleton (bp lvsStem lvs) : zipWith bipartitions' lvsOthers xs
+--   where
+--     lvsOthers = subForestGetLeafSets lvsStem t
+
 
 -- | Each branch on a 'Tree' defines a unique 'Bipartition' of leaves. Convert a
 -- tree into a 'M.Map' from each 'Bipartition' to the branch inducing the
@@ -181,40 +241,40 @@ bipartitionToBranchUnsafe f g t =
   M.unionsWith (<>) [ bipartitionToBranch' lvs mempty f g x
                     | (lvs, x) <- zip lvsOthers (subForest nodeAndLeavesTrees) ]
   where
-    lvsTree            = leavesTree t
+    lvsTree            = partitionTree t
     nodeAndLeavesTrees = fromJust $ merge t lvsTree
-    lvsOthers          = subForestGetLeafSets S.empty lvsTree
+    lvsOthers          = subForestGetPartitions pempty lvsTree
 
 -- We need information about the nodes, and also about the leaves of the induced
 -- sub trees. Hence, we need a somewhat complicated node type @(a, S.Set a)@.
 bipartitionToBranch' :: (Ord a, Ord b, Monoid c)
-                     => S.Set a           -- ^ Complementary set of leaves
-                                          -- towards the stem
+                     => Partition a       -- ^ Complementary partition towards
+                                          -- the stem
                      -> c                 -- ^ Maybe we have to pass along some
                                           -- information from above (degree two
                                           -- nodes)
                      -> (a -> b)          -- ^ Extract value to compare on
                      -> (a -> c)          -- ^ Extract information about branch
                                           -- from node
-                     -> Tree (a, S.Set a) -- ^ Tree containing nodes and sub
-                                          -- tree leaf sets
+                     -> Tree (a, Partition a) -- ^ Tree containing nodes and sub
+                                              -- tree leaf sets
                      -> M.Map (Bipartition b) c
-bipartitionToBranch' lvsStem br f g t@(Node l xs )
-  | S.null lvsStem  = error "bipartitionToBranch': no complementing leaf set."
+bipartitionToBranch' lvs br f g t@(Node l xs )
+  | pnull lvs       = error "bipartitionToBranch': no complementing leaf set."
   -- Leaf; return a singleton map; bipartition with the leaf and the rest of the tree.
-  | null xs         = M.singleton (bpWith f lvsStem lvsThisNode) (br <> g label)
+  | null xs         = M.singleton (bpwith f lvs lvsThisNode) (br <> g label)
   -- Pass the creation of the map entry on, but extend the branch.
-  | length xs == 1  = bipartitionToBranch' lvsStem (br <> g label) f g (head xs)
+  | length xs == 1  = bipartitionToBranch' lvs (br <> g label) f g (head xs)
   -- We have rose trees, so we need to through the list of children and combine
   -- each of them with the rest. Also, we use up the possible branch information
   -- 'br' and start afresh with 'mempty'.
-  | otherwise       = M.insert (bpWith f lvsStem lvsThisNode) (br <> g label)
-                      $ M.unions [ bipartitionToBranch' lvs mempty f g x
-                                 | (lvs, x) <- zip lvsOthers xs ]
+  | otherwise       = M.insert (bpwith f lvs lvsThisNode) (br <> g label)
+                      $ M.unions [ bipartitionToBranch' ls mempty f g x
+                                 | (ls, x) <- zip lvsOthers xs ]
   where
     label       = fst l
     lvsThisNode = snd l
-    lvsOthers   = subForestGetLeafSets lvsStem $ fmap snd t
+    lvsOthers   = subForestGetPartitions lvs $ fmap snd t
 
 -- TODO: Somehow this is wrong when used with multifurcating trees (i.e., the
 -- incompatible split distance). Then, we need to distinguish between
@@ -225,32 +285,37 @@ bipartitionToBranch' lvsStem br f g t@(Node l xs )
 -- the distance if they are present in the other tree nor when they are missing
 -- in the other tree.
 
--- | Get all bipartitions, but combine leaves from multifurcations. This is
--- useful to find incompatible splits. See
--- 'ELynx.Data.Tree.Distance.incompatibleSplitsDistance'. Assume that a root
--- node with three children is actually not a multifurcation (because then we
--- would have no induced bipartitions), but rather corresponds to an unrooted
--- tree.
-bipartitionsCombined :: (Ord a, Show a) => Tree a -> S.Set (Bipartition a)
-bipartitionsCombined t@(Node _ xs)
-  | null xs        = S.empty
-  | length xs == 1 = bipartitionsCombined (head xs)
-  -- One big multifurcation does not induce any bipartitions.
-  | length xs >  3 = S.empty
-  | otherwise      = res
-  where
-    res = S.unions [ bipartitionsCombined' lvs x
-                   | (lvs, x) <- zip lvsOthers (subForest lvsTree) ]
-    lvsTree = leavesTree t
-    lvsOthers = subForestGetLeafSets S.empty lvsTree
+-- TODO: Remove this, I think it is bogus.
 
-bipartitionsCombined' :: Ord a => S.Set a -> Tree (S.Set a) -> S.Set (Bipartition a)
-bipartitionsCombined' lvsStem t@(Node lvs xs)
-  | S.null lvsStem = error "bipartitionsCombined': no complementing leaf set."
-  | null xs        = S.singleton $ bp lvsStem lvs
-  | length xs == 1 = bipartitionsCombined' lvsStem (head xs)
-  | length xs == 2 = S.unions $
-                     S.singleton (bp lvsStem lvs) : zipWith bipartitionsCombined' lvsOthers xs
-  | otherwise      = S.singleton $ bp lvsStem lvs
-  where
-    lvsOthers = subForestGetLeafSets lvsStem t
+-- -- | Get all bipartitions, but combine leaves from multifurcations. This is
+-- -- useful to find incompatible splits. See
+-- -- 'ELynx.Data.Tree.Distance.incompatibleSplitsDistance'. Assume that a root
+-- -- node with three children is actually not a multifurcation (because then we
+-- -- would have no induced bipartitions), but rather corresponds to an unrooted
+-- -- tree.
+-- --
+-- -- XXX: It may be more advantageous to assume that the tree is rooted. What if
+-- -- we want a multifurcation at the root?
+-- bipartitionsCombined :: (Ord a, Show a) => Tree a -> S.Set (Bipartition a)
+-- bipartitionsCombined t@(Node _ xs)
+--   | null xs        = S.empty
+--   | length xs == 1 = bipartitionsCombined (head xs)
+--   -- One big multifurcation does not induce any bipartitions.
+--   | length xs >  3 = S.empty
+--   | otherwise      = res
+--   where
+--     res = S.unions [ bipartitionsCombined' lvs x
+--                    | (lvs, x) <- zip lvsOthers (subForest lvsTree) ]
+--     lvsTree = leavesTree t
+--     lvsOthers = subForestGetLeafSets S.empty lvsTree
+
+-- bipartitionsCombined' :: Ord a => S.Set a -> Tree (S.Set a) -> S.Set (Bipartition a)
+-- bipartitionsCombined' lvsStem t@(Node lvs xs)
+--   | S.null lvsStem = error "bipartitionsCombined': no complementing leaf set."
+--   | null xs        = S.singleton $ bp lvsStem lvs
+--   | length xs == 1 = bipartitionsCombined' lvsStem (head xs)
+--   | length xs == 2 = S.unions $
+--                      S.singleton (bp lvsStem lvs) : zipWith bipartitionsCombined' lvsOthers xs
+--   | otherwise      = S.singleton $ bp lvsStem lvs
+--   where
+--     lvsOthers = subForestGetLeafSets lvsStem t

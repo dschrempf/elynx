@@ -69,9 +69,15 @@ prop_dist_same_tree distanceMeasure t = distanceMeasure t t == 0
 each :: Int -> [a] -> [a]
 each n = map head . takeWhile (not . null) . iterate (drop n)
 
+multifurcating :: Tree Char
+multifurcating = Node ' ' [Node 'A' [], Node ' ' [Node 'B' [], Node 'C' [], Node 'D' []]]
+
+bifurcating :: Tree Char
+bifurcating = Node ' ' [Node 'A' [], Node ' ' [Node 'B' [], Node ' ' [Node 'C' [], Node 'D' []]]]
+
 spec :: Spec
 spec = do
-  describe "symmetric" $
+  describe "symmetric" $ do
     it "calculates correct distances for sample trees" $ do
       simpleTrees <- getSimpleTrees
       symmetric (head simpleTrees) (simpleTrees !! 1) `shouldBe` 2
@@ -81,14 +87,25 @@ spec = do
       -- we have to skip some distances.
       each 2 (adjacent (symmetricWith getName) manyTrees)
         `shouldBe` symmetricAnswers
+    it "is zero for a collection of random trees" $
+      property $ prop_dist_same_tree
+      (symmetric :: Tree (PhyloLabel Double) -> Tree (PhyloLabel Double) -> Int)
 
-  describe "incompatibleSplit" $
-    it "calculates correct distances for completely collapsed trees" $
-    property $ prop_dist_same_tree
-    (incompatibleSplits :: Tree (PhyloLabel Int) -> Tree (PhyloLabel Int) -> Int)
-  describe "branchScore" $
+  describe "incompatibleSplit" $ do
+    it "calculates correct distances for sample trees" $ do
+      incompatibleSplits multifurcating bifurcating `shouldBe` 0
+      incompatibleSplits bifurcating multifurcating `shouldBe` 0
+    it "is zero for a collection of random trees" $
+      property $ prop_dist_same_tree
+      (incompatibleSplits :: Tree (PhyloLabel Double) -> Tree (PhyloLabel Double) -> Int)
+
+
+  describe "branchScore" $ do
     it "calculates correct distances for sample trees" $ do
       manyTrees <- getManyTrees
-      print branchScoreAnswers
+      -- print branchScoreAnswers
       each 2 (adjacent branchScore manyTrees)
         `shouldSatisfy` nearlyEqListWith 1e-5 branchScoreAnswers
+    it "is zero for a collection of random trees" $
+      property $ prop_dist_same_tree
+      (branchScore :: Tree (PhyloLabel Double) -> Tree (PhyloLabel Double) -> Double)

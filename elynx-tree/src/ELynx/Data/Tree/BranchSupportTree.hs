@@ -56,9 +56,16 @@ accept _       Nothing = True
 accept thresh (Just s) = s > thresh
 
 -- | Collapse branches with support lower than given value. Note, branch length
--- is ignored at the moment.
-collapse :: BranchSupportLabel a => Double -> Tree a -> Tree a
-collapse _      n@(Node _ []) = n
-collapse thresh   (Node l xs) = Node l $ map (collapse thresh) (highS ++ lowSubForest)
-  where (highS, lowS) = partition (accept thresh . getBranchSupport . rootLabel) xs
+-- is ignored at the moment. Continue collapsing until a fix point is reached.
+collapse :: (Show a, Eq a, BranchSupportLabel a) => Double -> Tree a -> Tree a
+collapse th tr = if tr == tr'
+                 then tr
+                 else collapse th tr'
+  where tr' = collapse' th tr
+
+-- | See 'collapse'.
+collapse' :: BranchSupportLabel a => Double -> Tree a -> Tree a
+collapse' _  t@(Node _ []) = t
+collapse' th   (Node l xs) = Node l $ map (collapse' th) (highS ++ lowSubForest)
+  where (highS, lowS) = partition (accept th . getBranchSupport . rootLabel) xs
         lowSubForest = concatMap subForest lowS

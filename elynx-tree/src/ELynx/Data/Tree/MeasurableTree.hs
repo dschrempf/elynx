@@ -26,6 +26,7 @@ module ELynx.Data.Tree.MeasurableTree
   , totalBranchLength
   , normalize
   , prune
+  , removeMultifurcations
   ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -98,3 +99,12 @@ normalize t = fmap (\n -> setLen (getLen n / s) n) t
 prune :: (Measurable a) => Tree a -> Tree a
 prune = pruneWith f
   where f da pa = lengthen (getLen pa) da
+
+-- | Remove multifurcations by copying multifurcating nodes and introducing
+-- branches of length 0.
+removeMultifurcations :: Measurable a => Tree a -> Tree a
+removeMultifurcations t@(Node _ [] )    = t
+removeMultifurcations   (Node l [x])    = Node l [removeMultifurcations x]
+removeMultifurcations   (Node l [x, y]) = Node l $ map removeMultifurcations [x, y]
+removeMultifurcations   (Node l (x:xs)) = Node l $ map removeMultifurcations [x, Node l' xs]
+  where l' = setLen 1.0 l

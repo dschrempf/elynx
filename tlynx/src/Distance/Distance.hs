@@ -124,7 +124,7 @@ distance outFileBN = do
       distanceMeasure = case dist of
         Symmetric           -> \t1 t2 -> fromIntegral $ symmetricWith getName t1 t2
         IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplitsWith getName t1 t2
-        BranchScore         -> branchScore
+        BranchScore         -> branchScoreWith getName getLen
       normalizeF = if argsNormalize a then M.normalize else id
       collapseF = case dist of
         -- For the incompatible split distance we have to collapse branches with
