@@ -50,6 +50,7 @@ data DistanceArguments = DistanceArguments
   , argsNormalize         :: Bool
   , argsSummaryStatistics :: Bool
   , argsMasterTreeFile    :: Maybe FilePath
+  , argsNewickIqTree      :: Bool
   , argsInFiles           :: [FilePath]
   }
 
@@ -63,6 +64,7 @@ distanceArguments = DistanceArguments <$>
   <*> normalizeSwitch
   <*> summaryStatisticsSwitch
   <*> masterTreeFile
+  <*> newickIqTree
   <*> many inFilesArg
 
 masterTreeFile :: Parser (Maybe FilePath)
@@ -125,6 +127,12 @@ normalizeSwitch = switch $
   long "normalize" <>
   short 'n' <>
   help "Normalize trees before distance calculation; only affect distances depending on branch lengths"
+
+newickIqTree :: Parser Bool
+newickIqTree = switch $
+  long "newick-iqtree"
+  <> short 'i'
+  <> help "Use IQ-TREE Newick format (internal node labels are branch support values)"
 
 -- | Information about provided distance types.
 distanceFooter :: String

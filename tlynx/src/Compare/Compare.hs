@@ -48,22 +48,28 @@ import           ELynx.Export.Tree.Newick          (toNewick)
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
 
-treesOneFile :: FilePath -> Compare (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
+treesOneFile :: FilePath
+             -> Compare (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
 treesOneFile tf = do
+  a <- lift ask
+  let nw = if argsNewickIqTree a then manyNewickIqTree else manyNewick
   $(logInfo) $ T.pack $ "Parse file '" ++ tf ++ "'."
-  ts <- liftIO $ parseFileWith manyNewick tf
+  ts <- liftIO $ parseFileWith nw tf
   let n = length ts
   case compare n 2 of
     LT -> error "Not enough trees in file."
     GT -> error "Too many trees in file."
     EQ -> return (head ts, head . tail $ ts)
 
-treesTwoFiles :: FilePath -> FilePath -> Compare (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
+treesTwoFiles :: FilePath -> FilePath
+              -> Compare (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
 treesTwoFiles tf1 tf2 = do
+  a <- lift ask
+  let nw = if argsNewickIqTree a then oneNewickIqTree else oneNewick
   $(logInfo) $ T.pack $ "Parse first tree file '" ++ tf1 ++ "'."
-  t1 <- liftIO $ parseFileWith oneNewick tf1
+  t1 <- liftIO $ parseFileWith nw tf1
   $(logInfo) $ T.pack $ "Parse second tree file '" ++ tf2 ++ "'."
-  t2 <- liftIO $ parseFileWith oneNewick tf2
+  t2 <- liftIO $ parseFileWith nw tf2
   return (t1, t2)
 
 -- | More detailed comparison of two trees.
@@ -86,8 +92,10 @@ compareCmd outFile = do
 
   liftIO $ hPutStrLn outH "Tree 1:"
   liftIO $ L.hPutStrLn outH $ toNewick t1
+  liftIO $ hPrint outH t1
   liftIO $ hPutStrLn outH "Tree 2:"
   liftIO $ L.hPutStrLn outH $ toNewick t2
+  liftIO $ hPrint outH t2
   liftIO $ hPutStrLn outH ""
 
   -- Check input.
@@ -119,12 +127,13 @@ compareCmd outFile = do
     (T.pack $ show $ incompatibleSplits (collapse 0.6 t1') (collapse 0.6 t2'))
   liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.70)"
     (T.pack $ show $ incompatibleSplits (collapse 0.7 t1') (collapse 0.7 t2'))
-  liftIO $ L.hPutStrLn outH $ toNewick (collapse 0.7 t1')
-  liftIO $ L.hPutStrLn outH $ toNewick (collapse 0.7 t2')
   liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.80)"
     (T.pack $ show $ incompatibleSplits (collapse 0.8 t1') (collapse 0.8 t2'))
   liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.90)"
     (T.pack $ show $ incompatibleSplits (collapse 0.9 t1') (collapse 0.9 t2'))
+  -- liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (1.01)"
+  --   (T.pack $ show $ incompatibleSplits (collapse 1.01 t1') (collapse 1.01 t2'))
+  liftIO $ L.hPutStrLn outH $ toNewick (collapse 1.01 t1')
 
   -- Bipartitions.
   let bp1 = bipartitions (fmap getName t1)

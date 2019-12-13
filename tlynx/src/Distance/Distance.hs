@@ -70,6 +70,7 @@ showTriplet n args (i, j, d) = i' <> j' <> d'
 distance :: Maybe FilePath -> Distance ()
 distance outFileBN = do
   a <- lift ask
+  let nw = if argsNewickIqTree a then manyNewickIqTree else manyNewick
   -- Determine output handle (stdout or file).
   let outFile = (++ ".out") <$> outFileBN
   outH <- outHandle "results" outFile
@@ -78,7 +79,7 @@ distance outFileBN = do
   mtree <- case mname of
     Nothing -> return Nothing
     Just f  -> do $(logInfo) $ T.pack $ "Read master tree from file: " <> f <> "."
-                  ts <- liftIO $ parseFileWith manyNewick f
+                  ts <- liftIO $ parseFileWith nw f
                   let n = length ts
                   when (n > 1) (error "More than one tree found in master file.")
                   $(logInfo) "Compute distances between all trees and master tree."
@@ -90,10 +91,10 @@ distance outFileBN = do
     then
       do ts <- if null tfps
               then do $(logInfo) "Read trees from standard input."
-                      liftIO $ parseIOWith manyNewick
+                      liftIO $ parseIOWith nw
               else do let f = head tfps
                       $(logInfo) $ T.pack $ "Read trees from file: " <> f <> "."
-                      liftIO $ parseFileWith manyNewick f
+                      liftIO $ parseFileWith nw f
          let n = length ts
          when (n < 1) (error "Not enough trees found in file.")
          when (isNothing mtree) $ $(logInfo) "Compute pairwise distances between trees in the same file."

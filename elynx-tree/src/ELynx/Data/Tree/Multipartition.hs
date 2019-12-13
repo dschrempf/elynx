@@ -90,6 +90,8 @@ multipartitionsUnsafe xs t@(Node _ ys    ) = S.unions $
 -- | Find the multipartition containing a given element.
 findMp :: Ord a => a -> Multipartition a -> Partition a
 findMp l m = fromMaybe
-               (error "findMp: Could not find element in multipartition.")
-               (find (pmember l) ps)
+             -- (error "findMp: Could not find element in multipartition.")
+             -- XXX: Is it correct to return the empty Partition if nothing is found?
+             pempty
+             (find (pmember l) ps)
   where ps = mps m

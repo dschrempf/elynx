@@ -23,17 +23,26 @@ import           Control.Monad.Trans.Reader
 import           Options.Applicative
 
 -- | Arguments needed to examine phylogenetic trees.
-newtype ExamineArguments = ExamineArguments
-  { inFile     :: Maybe FilePath }
+data ExamineArguments = ExamineArguments
+  { argsInFile           :: Maybe FilePath
+  , argsNewickIqTree :: Bool }
 
 -- | Logger and reader data type.
 type Examine = LoggingT (ReaderT ExamineArguments IO)
 
 -- | Command line parser.
 examineArguments :: Parser ExamineArguments
-examineArguments = ExamineArguments <$> optional inFileArg
+examineArguments = ExamineArguments <$>
+  optional inFile
+  <*> newickIqTree
 
-inFileArg :: Parser FilePath
-inFileArg = strArgument $
+inFile :: Parser FilePath
+inFile = strArgument $
   metavar "INPUT-FILE" <>
   help "Read trees from INPUT-FILE"
+
+newickIqTree :: Parser Bool
+newickIqTree = switch $
+  long "newick-iqtree"
+  <> short 'i'
+  <> help "Use IQ-TREE Newick format (internal node labels are branch support values)"

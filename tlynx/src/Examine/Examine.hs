@@ -44,7 +44,9 @@ readTrees mfp = do
   case mfp of
     Nothing -> $(logInfo) "Read tree(s) from standard input."
     Just fp -> $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
-  liftIO $ parseFileOrIOWith manyNewick mfp
+  a <- lift ask
+  let nw = if argsNewickIqTree a then manyNewickIqTree else manyNewick
+  liftIO $ parseFileOrIOWith nw mfp
 
 examineTree :: (Measurable a, Named a)
             => Handle -> Tree a -> IO ()
@@ -57,7 +59,8 @@ examineTree h t = do
 -- | Examine phylogenetic trees.
 examine :: Maybe FilePath -> Examine ()
 examine outFn = do
-  ExamineArguments inFn <- lift ask
+  a <- lift ask
+  let inFn = argsInFile a
   trs <- readTrees inFn
   let outFilePath = (++ ".out") <$> outFn
   outH <- outHandle "results" outFilePath

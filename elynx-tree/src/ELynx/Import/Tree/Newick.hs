@@ -21,6 +21,7 @@ Code partly taken from Biobase.Newick.Import.
 
 module ELynx.Import.Tree.Newick
   ( Parser
+  -- * Newick tree format
   , newick
   , oneNewick
   , manyNewick
@@ -29,6 +30,10 @@ module ELynx.Import.Tree.Newick
   , node
   , name
   , branchLength
+  -- * Newick tree format with branch support as node names (e.g., used by IQ-TREE)
+  , newickIqTree
+  , oneNewickIqTree
+  , manyNewickIqTree
   ) where
 
 import qualified Data.ByteString.Lazy       as L
@@ -116,3 +121,53 @@ branchLengthGiven = try float <|> decimalAsDouble
 
 decimalAsDouble :: Parser Double
 decimalAsDouble = fromIntegral <$> (decimal :: Parser Int)
+
+--------------------------------------------------------------------------------
+-- IQ-TREE STUFF.
+
+-- | IQ-TREE stores the branch support as node names after the closing bracket of a forest.
+newickIqTree :: Parser (Tree (PhyloLabel L.ByteString))
+newickIqTree = treeIqTree <* char (c2w ';') <?> "newickIqTree"
+
+-- | IQ-TREE stores the branch support as node names after the closing bracket of a forest.
+oneNewickIqTree :: Parser (Tree (PhyloLabel L.ByteString))
+oneNewickIqTree = newickIqTree <* space <* eof <?> "oneNewickIqTree"
+
+-- | IQ-TREE stores the branch support as node names after the closing bracket of a forest.
+manyNewickIqTree :: Parser [Tree (PhyloLabel L.ByteString)]
+manyNewickIqTree = some (newickIqTree <* space) <* eof <?> "manyNewickIqTree"
+
+-- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
+treeIqTree :: Parser (Tree (PhyloLabel L.ByteString))
+treeIqTree = space *> (branchedIqTree <|> leaf) <?> "treeIqTree"
+
+-- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
+forestIqTree :: Parser [Tree (PhyloLabel L.ByteString)]
+forestIqTree = do
+  _ <- char (c2w '(')
+  f <- treeIqTree `sepBy1` char (c2w ',')
+  _ <- char (c2w ')')
+    <?> "forestIqTree"
+  return f
+
+-- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
+branchedIqTree :: Parser (Tree (PhyloLabel L.ByteString))
+branchedIqTree = do
+  f <- forestIqTree
+  s <- branchSupportIqTree
+  n <- nodeIqTree
+    <?> "branchedIqTree"
+  let n' = n {brSup = s}
+  return $ Node n' f
+
+-- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
+branchSupportIqTree :: Parser (Maybe Double)
+branchSupportIqTree = optional $ try float <|> try decimalAsDouble
+
+-- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
+nodeIqTree :: Parser (PhyloLabel L.ByteString)
+nodeIqTree = do
+  n <- name
+  b <- branchLength
+    <?> "nodeIqTree"
+  return $ PhyloLabel n Nothing b

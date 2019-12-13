@@ -26,8 +26,12 @@ class Named a where
 instance Named Int where
   getName = L.toLazyByteString . L.intDec
 
+instance Named Double where
+  getName = L.toLazyByteString . L.doubleDec
+
+instance Named Char where
+  getName = L.toLazyByteString . L.char8
+
 instance Named L.ByteString where
   getName = id
 
-instance Named Double where
-  getName = L.toLazyByteString . L.doubleDec

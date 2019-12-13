@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+
 {- |
 Module      :  ELynx.Data.Tree.DistanceSpec
 Copyright   :  (c) Dominik Schrempf 2019

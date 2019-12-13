@@ -24,8 +24,9 @@ import           Options.Applicative
 
 -- | Arguments of compare command.
 data CompareArguments = CompareArguments
-  { argsNormalize  :: Bool
-  , argsInFiles    :: [FilePath] }
+  { argsNormalize    :: Bool
+  , argsNewickIqTree :: Bool
+  , argsInFiles      :: [FilePath] }
 
 
 -- | Logger and reader data type.
@@ -35,6 +36,7 @@ type Compare = LoggingT (ReaderT CompareArguments IO)
 compareArguments :: Parser CompareArguments
 compareArguments = CompareArguments <$>
   normalize
+  <*> newickIqTree
   <*> some file
 
 normalize :: Parser Bool
@@ -47,3 +49,9 @@ file :: Parser FilePath
 file = strArgument $
   metavar "NAME"
   <> help "Tree file"
+
+newickIqTree :: Parser Bool
+newickIqTree = switch $
+  long "newick-iqtree"
+  <> short 'i'
+  <> help "Use IQ-TREE Newick format (internal node labels are branch support values)"

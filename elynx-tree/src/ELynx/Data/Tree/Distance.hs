@@ -34,8 +34,11 @@ import           Data.Tree
 
 import           ELynx.Data.Tree.Bipartition
 import           ELynx.Data.Tree.MeasurableTree
+import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.Multipartition
 import           ELynx.Data.Tree.Partition
+
+-- import           Debug.Trace
 
 -- -- Difference between two 'Set's, see 'Set.difference'. Do not compare elements
 -- -- directly but apply a function beforehand.
@@ -70,8 +73,8 @@ symmetricWith f t1 t2 = length $ symmetricDifference (bs t1) (bs t2)
   where bs t = bipartitions $ fmap f t
 
 -- | See 'symmetricWith', but with 'id' for comparisons.
-symmetric :: Ord a => Tree a -> Tree a -> Int
-symmetric = symmetricWith id
+symmetric :: (Ord a, Named a) => Tree a -> Tree a -> Int
+symmetric = symmetricWith getName
 
 -- TODO Too slow.
 -- -- | Number of incompatible splits. Similar to 'symmetricWith' but
@@ -85,52 +88,56 @@ symmetric = symmetricWith id
 --         cs t = bipartitionsCompatible $ fmap f t
 
 takeLeaf :: Ord a => Multipartition a -> Partition a -> a -> Partition a
-takeLeaf m ls l | l `pmember` ls = ls
-                | otherwise      = ls `punion` findMp l m
+takeLeaf m p l | l `pmember` p = p
+               | otherwise     = p `punion` findMp l m
 
 takeLeaves :: Ord a => Partition a -> Multipartition a -> Partition a
-takeLeaves ls m = foldl' (takeLeaf m) pempty ls
+takeLeaves p m = foldl' (takeLeaf m) pempty p
 
 -- Is a bipartition compatible with a multipartition?
 --
 -- The idea is the following.
 --
--- 1. Take one partition of the bipartition (the first, or the shorter one).
+-- 1. Take one partition of the bipartition (the first, in the future maybe the
+-- shorter one).
 --
 -- 2. For each leaf of the partition, add the partition of the multipartition
 -- containing the leaf.
 --
 -- 3. If the resulting set of leafs (the union of the added partitions) does not
--- contain leaves of the other partition of the bipartitions (the second, or the
--- longer one), I am OK!
-compatible :: Ord a => Bipartition a -> Multipartition a -> Bool
-compatible b m = (ls `pdifference` takeLeaves ls m) == pempty
+-- contain leaves of the other partition of the bipartitions, I am OK!
+compatible :: (Ord a) => Bipartition a -> Multipartition a -> Bool
+compatible b m =
+  -- traceShow (takeLeaves ls m `pdifference` ls) $
+  (takeLeaves ls m `pdifference` ls) == pempty
   where ls = fst $ bps b
 
-countIncompatibilities :: Ord a => S.Set (Bipartition a) -> S.Set (Multipartition a) -> Int
+countIncompatibilities :: (Ord a) => S.Set (Bipartition a) -> S.Set (Multipartition a) -> Int
 countIncompatibilities bs ms = foldl' (\i b -> if any (compatible b) ms then i else i+1) 0 bs
 
--- | Number of incompatible splits. Similar to 'symmetricWith' but
--- merges multifurcations.
+-- | Number of incompatible splits. Similar to 'symmetricWith' but all
+-- bipartition induced by multifurcations are considered.
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
-incompatibleSplitsWith :: (Ord b, Show b) => (a -> b) -> Tree a -> Tree a -> Int
+incompatibleSplitsWith :: (Ord b) => (a -> b) -> Tree a -> Tree a -> Int
 incompatibleSplitsWith f t1 t2 = countIncompatibilities putIncBs1 ms2 +
                                  countIncompatibilities putIncBs2 ms1
-  -- TODO: Now we have to check if the putative differences are actually compatible.
-  where bs t = bipartitions $ fmap f t
-        bs1 = bs t1
-        bs2 = bs t2
-        ms t = multipartitions $ fmap f t
-        ms1 = ms t1
-        ms2 = ms t2
-        -- Putative incompatible bipartitions of trees one and two, respectively.
-        putIncBs1 = bs1 S.\\ bs2
-        putIncBs2 = bs2 S.\\ bs1
+  where
+    -- Bipartitions.
+    bs t = bipartitions $ fmap f t
+    bs1 = bs t1
+    bs2 = bs t2
+    -- Putative incompatible bipartitions of trees one and two, respectively.
+    putIncBs1 = bs1 S.\\ bs2
+    putIncBs2 = bs2 S.\\ bs1
+    -- Multipartitions.
+    ms t = multipartitions $ fmap f t
+    ms1 = ms t1
+    ms2 = ms t2
 
 -- | See 'incompatibleSplitsWith', use 'id' for comparisons.
-incompatibleSplits :: (Ord a, Show a) => Tree a -> Tree a -> Int
-incompatibleSplits = incompatibleSplitsWith id
+incompatibleSplits :: (Ord a, Named a) => Tree a -> Tree a -> Int
+incompatibleSplits = incompatibleSplitsWith getName
 
 -- | Compute branch score distance between two trees. Before comparing the leaf
 -- labels, apply a function. This is useful, for example, to compare the labels
@@ -150,8 +157,8 @@ branchScoreWith f g t1 t2 = sqrt dsSquared
         dsSquared = foldl' (\acc e -> acc + e*e) 0 dBs
 
 -- | See 'branchScoreWith', use 'id' for comparisons.
-branchScore :: (Ord a, Measurable a) => Tree a -> Tree a -> Double
-branchScore = branchScoreWith id getLen
+branchScore :: (Ord a, Named a, Measurable a) => Tree a -> Tree a -> Double
+branchScore = branchScoreWith getName getLen
 
 -- | Compute pairwise distances of a list of input trees. Use given distance
 -- measure. Returns a triple, the first two elements are the indices of the

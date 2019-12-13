@@ -44,7 +44,7 @@ ex2 = Node 0 [Node 1 [], Node 2 [], Node 0 [Node 3 [], Node 4 []], Node 5 []]
 sol2 :: Set (Multipartition Int)
 sol2 = fromList [ mp [pfromlist [1], pfromlist [2], pfromlist [3,4], pfromlist [5]] ]
 
-prop_bifurcating_tree :: (Ord a, Measurable a, Show a, Named a, BranchSupportLabel a) => Tree a -> Bool
+prop_bifurcating_tree :: (Ord a, Measurable a, Named a, BranchSupportLabel a) => Tree a -> Bool
 prop_bifurcating_tree t = multipartitions (removeMultifurcations t) == empty
 
 spec :: Spec
