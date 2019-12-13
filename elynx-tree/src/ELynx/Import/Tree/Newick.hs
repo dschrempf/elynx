@@ -63,11 +63,9 @@ tree = space *> (branched <|> leaf) <?> "tree"
 branched :: Parser (Tree (PhyloLabel L.ByteString))
 branched = do
   f <- forest
-  s <- branchSupport
   n <- node
     <?> "branched"
-  let n' = n {brSup = s}
-  return $ Node n' f
+  return $ Node n f
 
 -- | A 'forest' is a set of trees separated by @,@ and enclosed by parentheses.
 forest :: Parser [Tree (PhyloLabel L.ByteString)]
@@ -93,8 +91,9 @@ node :: Parser (PhyloLabel L.ByteString)
 node = do
   n <- name
   b <- branchLength
+  s <- branchSupport
     <?> "node"
-  return $ PhyloLabel n Nothing b
+  return $ PhyloLabel n s b
 
 checkNameCharacter :: Word8 -> Bool
 checkNameCharacter c = c `notElem` map c2w " :;()[],"

@@ -44,19 +44,13 @@ toNewick t =
     go (Node l [])   = lbl l
     go (Node l ts)   = L.word8 (c2w '(')
                        <> mconcat (intersperse (L.word8 $ c2w ',') $ map go ts)
-                       <> L.word8 (c2w ')') <> brSup l
+                       <> L.word8 (c2w ')')
                        <> lbl l
+                       -- After reading several discussion, I go for the "more
+                       -- semantical form" with branch support values in square
+                       -- brackets.
+                       <> L.word8 (c2w '[') <> brSup l <> L.word8 (c2w ']')
     lbl l = L.lazyByteString (getName l)
             <> L.word8 (c2w ':')
             <> L.doubleDec (getLen l)
     brSup l = maybe mempty L.doubleDec (getBranchSupport l)
-
--- -- | Convenience function for exporting trees with 'Int' labels and 'Double'
--- -- branch lengths.
--- toNewickPhyloIntTree :: Tree PhyloIntLabel -> L.ByteString
--- toNewickPhyloIntTree = toNewickWith (L.intDec . pLabel) (L.doubleDec . pBrLen)
-
--- -- | Convenience function for exporting trees with 'L.ByteString' labels and
--- -- 'Double' branch lengths.
--- toNewickPhyloByteStringTree :: Tree PhyloByteStringLabel -> L.ByteString
--- toNewickPhyloByteStringTree = toNewickWith (L.lazyByteString . pLabel) (L.doubleDec . pBrLen)
