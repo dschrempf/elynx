@@ -46,11 +46,11 @@ toNewick t =
                        <> mconcat (intersperse (L.word8 $ c2w ',') $ map go ts)
                        <> L.word8 (c2w ')')
                        <> lbl l
-                       -- After reading several discussion, I go for the "more
-                       -- semantical form" with branch support values in square
-                       -- brackets.
-                       <> L.word8 (c2w '[') <> brSup l <> L.word8 (c2w ']')
-    lbl l = L.lazyByteString (getName l)
-            <> L.word8 (c2w ':')
-            <> L.doubleDec (getLen l)
-    brSup l = maybe mempty L.doubleDec (getBranchSupport l)
+    brSup s  = L.word8 (c2w '[') <> L.doubleDec s <> L.word8 (c2w ']')
+    mBrSup l = maybe mempty brSup (getBranchSupport l)
+    lbl l    = L.lazyByteString (getName l)
+               <> L.word8 (c2w ':')
+               <> L.doubleDec (getLen l)
+               -- After reading several discussion, I go for the "more semantical
+               -- form" with branch support values in square brackets.
+               <> mBrSup l

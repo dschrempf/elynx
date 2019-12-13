@@ -77,7 +77,11 @@ forest = do
   return f
 
 branchSupport :: Parser (Maybe Double)
-branchSupport = optional $ try float <|> try decimalAsDouble
+branchSupport = optional $ do
+  _ <- try $ char (c2w '[')
+  s <- try float <|> try decimalAsDouble
+  _ <- try $ char (c2w ']')
+  return s
 
 -- | A 'leaf' is a 'node' without children.
 leaf :: Parser (Tree (PhyloLabel L.ByteString))
