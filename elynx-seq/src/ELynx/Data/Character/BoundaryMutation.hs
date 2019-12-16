@@ -12,7 +12,8 @@ that allows mutations only when the population is monomorphic.
 
 * Changelog
 
-TODO: BM states can not be read and written with a single letter, like characters.
+TODO: BM states can not be read and written with a single letter, like
+characters. Check status of implementation.
 
 -}
 

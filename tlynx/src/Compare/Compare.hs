@@ -160,8 +160,8 @@ compareCmd outFile = do
   if S.null bpCommon
     then liftIO $ hPutStrLn outH "There are no common bipartitions."
     else do
-    let bpToBrLen1 = M.map getSum $ bipartitionToBranch getName (Sum . getLen) t1
-        bpToBrLen2 = M.map getSum $ bipartitionToBranch getName (Sum . getLen) t2
+    let bpToBrLen1 = M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t1
+        bpToBrLen2 = M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t2
     liftIO $ hPutStrLn outH "Common bipartitions and their respective differences in branch lengths."
     -- Header.
     liftIO $ hPutStrLn outH header

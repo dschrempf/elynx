@@ -22,10 +22,6 @@ That's why we have to make sure that for
 > Bipartition x y
 we always have @x >= y@.
 
-TODO: Strictly distinguish ROOTED / UNROOTED. It doesn't make sense to assume
-that a tree is unrooted when the root is a trifurcation. Rather, I have to use
-two data types.
-
 -}
 
 module ELynx.Data.Tree.Bipartition
@@ -37,7 +33,7 @@ module ELynx.Data.Tree.Bipartition
   , bphuman
     -- * Working with 'Bipartition's.
   , bipartitions
-  , bipartitionToBranch
+  , bipartitionToBranchLength
   ) where
 
 import qualified Data.Map                  as M
@@ -111,24 +107,34 @@ bipartitionsUnsafe p t@(Node ls xs) =
   where
     lsOthers = subForestGetPartitions p t
 
--- | Each branch on a 'Tree' defines a unique 'Bipartition' of leaves. Convert a
--- tree into a 'M.Map' from each 'Bipartition' to the branch inducing the
--- respective 'Bipartition'. The information about the branch is extracted from
--- the nodes with a given function. If the tree has degree two nodes, the branch
--- values are combined; a unity element is required, and so we need the 'Monoid'
--- type class constraint. Checks if leaves are unique.
-bipartitionToBranch :: (Ord a, Ord b, Monoid c)
-                    => (a -> b)      -- ^ Value to compare on
-                    -> (a -> c)      -- ^ Convert node to branch length
+-- | For a given rose 'Tree', remove all degree two nodes and reconnect the
+-- resulting disconnected pairs of branches and sum their branch lengths. For
+-- this operation, a combining binary function and a unity element is required,
+-- and so we need the 'Monoid' type class constraint. Now, each branch on the
+-- tree defines a unique 'Bipartition' of leaves. Convert a tree into a 'M.Map'
+-- from each 'Bipartition' to the length of the branch inducing the respective
+-- 'Bipartition'. The relevant information about the leaves is extracted from
+-- the (leaf) nodes with a given function. Also check if leaves are unique.
+bipartitionToBranchLength :: (Ord a, Ord b, Monoid c)
+                    => (a -> b)      -- ^ Convert node labels to leaves (usually
+                                     -- leaf names)
+                    -> (a -> c)      -- ^ Get length of branch attached to node
                     -> Tree a        -- ^ Tree to dissect
                     -> M.Map (Bipartition b) c
-bipartitionToBranch f g t = if S.size (S.fromList ls) == length ls
+bipartitionToBranchLength f g t = if S.size (S.fromList ls) == length ls
                  then M.filterWithKey (const . valid) $
-                      bipartitionToBranchUnsafe pempty mempty f g lAndPTree
+                      bipartitionToBranchUnsafe (mempty, pempty) f lAndPTree
                  else error "bipartitionToBranch: The tree contains duplicate leaves."
   where ls        = leaves t
+        bTree     = fmap g t
         pTree     = partitionTree t
-        lAndPTree = fromJust $ merge t pTree
+        lAndPTree = fromJust $ merge bTree pTree
+
+-- | See 'bipartitionToBranch'. When calculating the map, branches separated by
+-- various degree two nodes have to be combined. Hence, not only the
+-- complementary partition towards the stem, but also the node label itself have
+-- to be passed along.
+type Info c a = (c, Partition a)
 
 -- | See 'bipartitionToBranch', but does not check if leaves are unique. We need
 -- information about the nodes, and also about the leaves of the induced sub
@@ -136,23 +142,19 @@ bipartitionToBranch f g t = if S.size (S.fromList ls) == length ls
 --
 -- > (a, Partition a)
 bipartitionToBranchUnsafe :: (Ord a, Ord b, Monoid c)
-  -- TODO: Also use (a, Partition a). Probably define a type.
-  => Partition a           -- ^ Complementary partition towards the stem
-  -> c                     -- ^ Maybe we have to pass along some information
-                           -- from above (degree two nodes)
-  -> (a -> b)              -- ^ Value to compare on
-  -> (a -> c)              -- ^ Convert node to branch length
-  -> Tree (a, Partition a) -- ^ Tree to dissect
+  => Info c a
+  -> (a -> b)        -- ^ Value to compare on
+  -> Tree (Info c a) -- ^ Tree to dissect
   -> M.Map (Bipartition b) c
-bipartitionToBranchUnsafe p br f g (Node l [] ) =
-  M.singleton (bpwith f p (snd l)) (br <> g (fst l))
+bipartitionToBranchUnsafe (l, p) f (Node (l', p') [] ) =
+  M.singleton (bpwith f p p') (l <> l')
 -- The branch length has to be added for degree two nodes.
-bipartitionToBranchUnsafe p br f g (Node l [x]) =
-  bipartitionToBranchUnsafe p (br <> g (fst l)) f g x
+bipartitionToBranchUnsafe (l, p) f (Node (l', _ ) [x]) =
+  bipartitionToBranchUnsafe (l <> l', p) f x
 -- Go through the list of children and combine each of them with the rest.
-bipartitionToBranchUnsafe p br f g t@(Node l xs) =
+bipartitionToBranchUnsafe (l, p) f t@(Node (l', p') xs) =
   M.unionsWith (<>) $
-  M.singleton (bpwith f p (snd l)) (br <> g (fst l)) :
-  [ bipartitionToBranchUnsafe lvs mempty f g x | (lvs, x) <- zip lvsOthers xs ]
+  M.singleton (bpwith f p p') (l <> l') :
+  [ bipartitionToBranchUnsafe (mempty, lvs) f x | (lvs, x) <- zip lvsOthers xs ]
   where
     lvsOthers = subForestGetPartitions p (fmap snd t)

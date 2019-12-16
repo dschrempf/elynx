@@ -79,5 +79,5 @@ spec = do
   describe "bipartitionToBranch" $
     it "creates a map from bipartitions to branch lengths" $ do
       simpleTrees <- getSimpleTrees
-      bipartitionToBranch label (Sum . brLen) (simpleTrees !! 2)
+      bipartitionToBranchLength label (Sum . brLen) (simpleTrees !! 2)
         `shouldBe` bipartitionToBranchAnswer

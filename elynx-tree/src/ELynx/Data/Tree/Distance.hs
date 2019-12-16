@@ -143,7 +143,7 @@ branchScoreWith :: (Ord a, Ord b, Floating c)
                                     -- associated with a node
                         -> Tree a -> Tree a -> c
 branchScoreWith f g t1 t2 = sqrt dsSquared
-  where bs        = bipartitionToBranch f (Sum . g)
+  where bs        = bipartitionToBranchLength f (Sum . g)
         dBs       = M.map getSum $ M.unionWith (-) (bs t1) (bs t2)
         dsSquared = foldl' (\acc e -> acc + e*e) 0 dBs
 

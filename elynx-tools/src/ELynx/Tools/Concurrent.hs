@@ -50,7 +50,7 @@ splitGen n gen
       seeds :: [V.Vector Word32] <- replicateM n $ uniformVector gen 256
       mapM initialize seeds
 
--- -- TODO: This just doesn't work... The only thing I found:
+-- -- XXX: This just doesn't work... The only thing I found:
 -- -- https://stackoverflow.com/a/16250010.
 -- parComp :: (PrimMonad m, Monoid b) => Int -> (Int -> Gen (PrimState m) -> m b)
 --         -> Gen (PrimState m) -> m b

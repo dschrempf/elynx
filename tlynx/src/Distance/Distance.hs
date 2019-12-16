@@ -44,7 +44,6 @@ import           Distance.Options
 import           ELynx.Data.Tree.BranchSupportTree as B
 import           ELynx.Data.Tree.Distance
 import           ELynx.Data.Tree.MeasurableTree    as M
-import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Export.Tree.Newick
 import           ELynx.Import.Tree.Newick
