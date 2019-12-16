@@ -166,3 +166,45 @@ subForestGetPartitions lvs t = lvsOthers
                          : take i lvsChildren ++ drop (i+1) lvsChildren
                        | i <- [0 .. (nChildren - 1)] ]
     lvsOthers        = map (punion lvs) lvsOtherChildren
+
+-- The root label will be moved. I don't know yet how the branch info will be
+-- combined. Branch lengths are easy. What about branch support?
+loop :: Tree a -> [Tree a]
+loop (Node l []) = [Node l []]
+loop (Node l [x]) = undefined
+
+
+
+-- Assume binary trees.
+-- For now just ignore degree two nodes.
+-- The root node is copied. This is in general wrong, but let's just go with it for now.
+
+two :: Tree a -> [Tree a]
+two t = left t ++ right t
+
+-- TODO: STOP CONDITIONS. How do I combine the two?
+left :: Tree a -> [Tree a]
+left t@(Node _ [] )                = [t]
+left   (Node i [x])                = concatMap two [ Node i [x] ]
+left   (Node i [Node j [x]   , z]) = concatMap two [ Node i [x           , Node j [z]  ] ]
+left   (Node i [Node j [x, y], z]) = concatMap two [ Node i [x           , Node j [y,z]]
+                                                   , Node i [Node j [x,z], y           ] ]
+left   (Node _  _ )                = []
+
+right :: Tree a -> [Tree a]
+right t@(Node _ [] )                = [t]
+right   (Node i [x])                = concatMap two [ Node i [x] ]
+right   (Node i [x, Node j [z]   ]) = concatMap two [ Node i [Node j [x]  , z  ] ]
+right   (Node i [x, Node j [y, z]]) = concatMap two [ Node i [y           , Node j [x,z]]
+                                                    , Node i [Node j [x,y], z           ] ]
+right   (Node _  _ )                = []
+
+-- | Connect two trees in all possible ways.
+--
+-- Basically, introduce a branch between two trees. If the trees have n, and m
+-- branches, respectively, there are n*m ways to connect them.
+--
+-- A base node has to be given which will be used wherever a new node is
+-- introduced.
+connect :: a -> Tree a -> Tree a -> [Tree a]
+connect = undefined
