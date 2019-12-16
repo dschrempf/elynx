@@ -38,29 +38,9 @@ import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.Multipartition
 import           ELynx.Data.Tree.Partition
 
--- import           Debug.Trace
-
--- -- Difference between two 'Set's, see 'Set.difference'. Do not compare elements
--- -- directly but apply a function beforehand.
--- differenceWith :: (Ord a, Ord b) => (a -> b) -> Set.Set a -> Set.Set a -> Set.Set a
--- differenceWith f xs ys = Set.filter (\e -> f e `Set.notMember` ys') xs
---   where ys' = Set.map f ys
-
--- -- Symmetric difference between two 'Set's. Do not compare elements directly but
--- -- apply a function beforehand.
--- symmetricDifferenceWith :: (Ord a, Ord b) => (a -> b) -> Set.Set a -> Set.Set a -> Set.Set a
--- symmetricDifferenceWith f xs ys = xsNotInYs `Set.union` ysNotInXs
---   where
---     xsNotInYs = differenceWith f xs ys
---     ysNotInXs = differenceWith f ys xs
-
 -- Symmetric difference between two 'Set's.
 symmetricDifference :: Ord a => S.Set a -> S.Set a -> S.Set a
 symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
-
--- -- Symmetric difference between two 'Map's.
--- symmetricDifferenceM :: Ord k => M.Map k a -> M.Map k a -> M.Map k a
--- symmetricDifferenceM x y = M.difference x y `M.union` M.difference y x
 
 -- | Symmetric (Robinson-Foulds) distance between two trees. Before comparing
 -- the leaf labels, apply a given function. This is useful, for example, to
@@ -76,17 +56,6 @@ symmetricWith f t1 t2 = length $ symmetricDifference (bs t1) (bs t2)
 symmetric :: (Ord a, Named a) => Tree a -> Tree a -> Int
 symmetric = symmetricWith getName
 
--- TODO Too slow.
--- -- | Number of incompatible splits. Similar to 'symmetricWith' but
--- -- merges multifurcations.
--- --
--- -- XXX: Comparing a list of trees with this function recomputes bipartitions.
--- incompatibleSplitsWith :: (Ord b, Show b) => (a -> b) -> Tree a -> Tree a -> Int
--- incompatibleSplitsWith f t1 t2 = S.size (bs t1 S.\\ cs t2) + S.size (bs t2 S.\\ cs t1)
---   -- where ms t = bipartitionsCombined $ fmap f t
---   where bs t = bipartitions $ fmap f t
---         cs t = bipartitionsCompatible $ fmap f t
-
 takeLeaf :: Ord a => Multipartition a -> Partition a -> a -> Partition a
 takeLeaf m p l | l `pmember` p = p
                | otherwise     = p `punion` findMp l m
@@ -94,22 +63,8 @@ takeLeaf m p l | l `pmember` p = p
 takeLeaves :: Ord a => Partition a -> Multipartition a -> Partition a
 takeLeaves p m = foldl' (takeLeaf m) pempty p
 
--- Is a bipartition compatible with a multipartition?
---
--- The idea is the following.
---
--- 1. Take one partition of the bipartition (the first, in the future maybe the
--- shorter one).
---
--- 2. For each leaf of the partition, add the partition of the multipartition
--- containing the leaf.
---
--- 3. If the resulting set of leafs (the union of the added partitions) does not
--- contain leaves of the other partition of the bipartitions, I am OK!
 compatible :: (Ord a) => Bipartition a -> Multipartition a -> Bool
-compatible b m =
-  -- traceShow (takeLeaves ls m `pdifference` ls) $
-  (takeLeaves ls m `pdifference` ls) == pempty
+compatible b m = (takeLeaves ls m `pdifference` ls) == pempty
   where ls = fst $ bps b
 
 countIncompatibilities :: (Ord a) => S.Set (Bipartition a) -> S.Set (Multipartition a) -> Int
@@ -117,6 +72,42 @@ countIncompatibilities bs ms = foldl' (\i b -> if any (compatible b) ms then i e
 
 -- | Number of incompatible splits. Similar to 'symmetricWith' but all
 -- bipartition induced by multifurcations are considered.
+--
+-- A multifurcation on a tree may (but not necessarily does) represent missing
+-- information about the order of bifurcations. In this case, it is interesting
+-- to get a set of compatible bifurcations of the tree. For example, the tree
+--
+-- > (A,(B,C,D))
+--
+-- induces the following bipartitions:
+--
+-- > A|BCD
+-- > B|ACD
+--
+-- > C|ABD
+-- > D|ABC
+--
+-- Those are also reported by 'bipartitions'. However, it is additionally compatible with
+--
+-- > AB|CD
+-- > AC|BD
+-- > AD|BC
+--
+--
+-- To check if a bipartition is compatible with a multipartition, the following
+-- algorithm is used.
+--
+-- 1. Take one partition of the bipartition (at the moment the first, in the
+-- future maybe the shorter one).
+--
+-- 2. For each leaf of the taken partition, add the partition of the
+-- multipartition containing the leaf (takeLeaves and takeLeaf).
+--
+-- 3. If the resulting set of leafs (the union of the added partitions) does not
+-- contain leaves of the other partition of the bipartitions, I am OK!
+--
+-- Only if a bipartition is not compatible with all induced multifurcations of
+-- the other tree, it is incompatible.
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
 incompatibleSplitsWith :: (Ord b) => (a -> b) -> Tree a -> Tree a -> Int
@@ -176,4 +167,3 @@ adjacent :: (Tree a -> Tree a -> b) -- ^ Distance function
          -> [Tree a]                -- ^ Input trees
          -> [b]
 adjacent dist trs = [ dist x y | (x, y) <- zip trs (tail trs) ]
-

@@ -123,9 +123,9 @@ distance outFileBN = do
   when (argsNormalize a) $ $(logInfo) "Normalize trees before calculation of distances."
   let distanceMeasure :: Tree (PhyloLabel L.ByteString) -> Tree (PhyloLabel L.ByteString) -> Double
       distanceMeasure = case dist of
-        Symmetric           -> \t1 t2 -> fromIntegral $ symmetricWith getName t1 t2
-        IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplitsWith getName t1 t2
-        BranchScore         -> branchScoreWith getName getLen
+        Symmetric           -> \t1 t2 -> fromIntegral $ symmetric t1 t2
+        IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplits t1 t2
+        BranchScore         -> branchScore
       normalizeF = if argsNormalize a then M.normalize else id
       collapseF = case dist of
         -- For the incompatible split distance we have to collapse branches with
@@ -141,7 +141,6 @@ distance outFileBN = do
         Just t  -> [ (0, i, distanceMeasure t t') | ( i, t' ) <- zip [1..] trees' ]
       ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds
-  -- XXX: It may be good to use the common 'io' function also here.
   liftIO $ hPutStrLn outH $ "Summary statistics of " ++ show dist ++ " Distance:"
   liftIO $ T.hPutStrLn outH $ T.justifyLeft 10 ' ' "Mean: " <> T.pack (printf pf (mean dsVec))
   liftIO $ T.hPutStrLn outH $ T.justifyLeft 10 ' ' "Variance: " <> T.pack (printf pf (variance dsVec))

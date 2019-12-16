@@ -92,10 +92,10 @@ compareCmd outFile = do
 
   liftIO $ hPutStrLn outH "Tree 1:"
   liftIO $ L.hPutStrLn outH $ toNewick t1
-  liftIO $ hPrint outH t1
+  -- liftIO $ hPrint outH t1
   liftIO $ hPutStrLn outH "Tree 2:"
   liftIO $ L.hPutStrLn outH $ toNewick t2
-  liftIO $ hPrint outH t2
+  -- liftIO $ hPrint outH t2
   liftIO $ hPutStrLn outH ""
 
   -- Check input.
@@ -133,7 +133,7 @@ compareCmd outFile = do
     (T.pack $ show $ incompatibleSplits (collapse 0.9 t1') (collapse 0.9 t2'))
   -- liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (1.01)"
   --   (T.pack $ show $ incompatibleSplits (collapse 1.01 t1') (collapse 1.01 t2'))
-  liftIO $ L.hPutStrLn outH $ toNewick (collapse 1.01 t1')
+  -- liftIO $ L.hPutStrLn outH $ toNewick (collapse 1.01 t1')
 
   -- Bipartitions.
   let bp1 = bipartitions (fmap getName t1)
