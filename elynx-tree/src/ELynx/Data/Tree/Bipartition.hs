@@ -123,7 +123,8 @@ bipartitionToBranch :: (Ord a, Ord b, Monoid c)
                     -> Tree a        -- ^ Tree to dissect
                     -> M.Map (Bipartition b) c
 bipartitionToBranch f g t = if S.size (S.fromList ls) == length ls
-                 then bipartitionToBranchUnsafe pempty mempty f g lAndPTree
+                 then M.filterWithKey (const . valid) $
+                      bipartitionToBranchUnsafe pempty mempty f g lAndPTree
                  else error "bipartitionToBranch: The tree contains duplicate leaves."
   where ls        = leaves t
         pTree     = partitionTree t
@@ -150,9 +151,8 @@ bipartitionToBranchUnsafe p br f g (Node l [x]) =
   bipartitionToBranchUnsafe p (br <> g (fst l)) f g x
 -- Go through the list of children and combine each of them with the rest.
 bipartitionToBranchUnsafe p br f g t@(Node l xs) =
-  -- TODO: WHY DOES THIS NOT WORK?
-  M.unionsWith (<>)
-  (M.singleton (bpwith f p (snd l)) (br <> g (fst l))) :
+  M.unionsWith (<>) $
+  M.singleton (bpwith f p (snd l)) (br <> g (fst l)) :
   [ bipartitionToBranchUnsafe lvs mempty f g x | (lvs, x) <- zip lvsOthers xs ]
   where
     lvsOthers = subForestGetPartitions p (fmap snd t)
