@@ -15,16 +15,18 @@ module ELynx.Data.Tree.TreeSpec
   (spec
   ) where
 
-import qualified Data.ByteString.Lazy.Char8     as L
+import qualified Data.ByteString.Lazy.Char8           as L
 import           Data.Maybe
 import           Data.Tree
 import           Test.Hspec
+import           Test.QuickCheck                      hiding (label)
+import           Test.QuickCheck.Instances.Containers ()
 
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree
-import           ELynx.Import.Tree.Newick       hiding (node)
-import           ELynx.Tools.InputOutput        (parseByteStringWith)
+import           ELynx.Import.Tree.Newick             hiding (node)
+import           ELynx.Tools.InputOutput              (parseByteStringWith)
 
 node :: Int -> Tree Int
 node n = Node n []
@@ -48,6 +50,19 @@ largeTree = parseByteStringWith "Sample newick byte string" newick sampleTreeBS
 subSampleLargeTree :: Tree (PhyloLabel L.ByteString)
 subSampleLargeTree = fromJust $ subTree ((== 'P') . L.head . label) largeTree
 
+prop_roots_3n3 :: Tree a -> Bool
+prop_roots_3n3 t
+  -- XXX: Skip not bifurcating trees. This is ugly, I know.
+  | not $ bifurcating t   = True
+  | length (leaves t) < 3 = length (roots t) == 1
+  | otherwise             = length (roots t) == 2 * length (leaves t) - 3
+
+prop_connect_nm :: a -> Tree a -> Tree a -> Bool
+prop_connect_nm n l r
+  | not (bifurcating l) || not (bifurcating r)     = True
+  | length (leaves l) < 3 || length (leaves r) < 3 = length (connect n l r) == 1
+  | otherwise = length (connect n l r) == length (leaves l) * length (leaves r)
+
 spec :: Spec
 spec = do
   describe "subTree" $ do
@@ -64,3 +79,27 @@ spec = do
     it "leaves height constant for Measurable trees" $
       height (prune subSampleLargeTree) `shouldBe` height subSampleLargeTree
 
+  describe "roots" $ do
+    it "correctly handles leaves and cherries" $ do
+      let tleaf   = Node 0 [] :: Tree Int
+          tcherry = Node 0 [Node 1 [], Node 2 []] :: Tree Int
+      roots tleaf `shouldBe` [tleaf]
+      roots tcherry `shouldBe` [tcherry]
+    it "correctly handles simple trees" $ do
+      let simpleTre =   Node "i" [ Node "j" [Node "x" [], Node "y" []], Node "z" [] ]
+          simpleSol = [ Node "i" [ Node "x" []
+                                 , Node "j" [ Node "y" []
+                                            , Node "z" [] ] ]
+                      , Node "i" [ Node "j" [ Node "x" []
+                                            , Node "z" [] ]
+                                 , Node "y" [] ]
+                      , Node "i" [ Node "j" [ Node "x" []
+                                            , Node "y" [] ]
+                                 , Node "z" [] ] ]
+      roots simpleTre `shouldBe` simpleSol
+    it "returns the correct number of rooted trees for arbitrary trees" $
+      property (prop_roots_3n3 :: (Tree Int -> Bool))
+
+  describe "connect" $
+    it "returns the correct number of rooted trees for arbitrary trees" $
+      property (prop_connect_nm :: Int -> Tree Int -> Tree Int -> Bool)

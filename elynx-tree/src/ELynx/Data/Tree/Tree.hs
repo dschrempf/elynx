@@ -51,6 +51,9 @@ module ELynx.Data.Tree.Tree
   , tZipWith
   , partitionTree
   , subForestGetPartitions
+  , bifurcating
+  , roots
+  , connect
   ) where
 
 import           Control.Monad
@@ -120,10 +123,10 @@ nSubSamples :: (PrimMonad m, Ord a)
             => Int -> Seq.Seq a -> Int -> Tree a -> Gen (PrimState m) -> m [Maybe (Tree a)]
 nSubSamples nS lvs nL tree g = replicateM nS $ subSample lvs nL tree g
 
--- | Prune degree 2 inner nodes. The information stored in a pruned node can be
--- used to change the daughter node. To discard this information, use,
--- @pruneWith const tree@, otherwise @pruneWith (\daughter parent -> combined)
--- tree@.
+-- | Prune or remove degree 2 inner nodes. The information stored in a pruned
+-- node can be used to change the daughter node. To discard this information,
+-- use, @pruneWith const tree@, otherwise @pruneWith (\daughter parent ->
+-- combined) tree@.
 pruneWith :: (a -> a -> a) -> Tree a -> Tree a
 pruneWith _  n@(Node _ [])       = n
 pruneWith f    (Node paLbl [ch]) = let lbl = f (rootLabel ch) paLbl
@@ -167,44 +170,62 @@ subForestGetPartitions lvs t = lvsOthers
                        | i <- [0 .. (nChildren - 1)] ]
     lvsOthers        = map (punion lvs) lvsOtherChildren
 
--- The root label will be moved. I don't know yet how the branch info will be
--- combined. Branch lengths are easy. What about branch support?
-loop :: Tree a -> [Tree a]
-loop (Node l []) = [Node l []]
-loop (Node l [x]) = undefined
+-- | Check if a tree is bifurcating and does not include degree two nodes. I
+-- know, one should use a proper data structure to encode bifurcating trees, but
+-- I don't have enough time for this now.
+bifurcating :: Tree a -> Bool
+bifurcating (Node _ []    ) = True
+bifurcating (Node _ [_]   ) = False
+bifurcating (Node _ [x, y]) = bifurcating x && bifurcating y
+bifurcating (Node _ _     ) = False
 
+-- TODO: This bifurcating stuff irritates me. There are two solutions:
+--
+-- 1. Use a bifurcating data structure.
+--
+-- 2. Do not move down multifurcations.
+--
+-- Solution 1 is pretty, but doesn't allow for what we actually want to do,
+-- which is solution 2. We want to encode clades that for sure do not contain
+-- the root as multifurcations.
 
+-- | For a rooted, bifurcating tree, get all possible rooted trees. For a tree
+-- with @n>2@ leaves, there are @(2n-3)@ rooted trees. Beware, a bifurcating
+-- tree without degree two nodes is assumed (see 'bifurcating'). The root node
+-- is moved.
+roots :: Tree a -> [Tree a]
+-- Leaves, and cherries have to be handled separately, because they cannot be
+-- rotated.
+roots t@(Node _ [])                     = [t]
+roots t@(Node _ [Node _ [], Node _ []]) = [t]
+roots t | bifurcating t = left t ++ right t
+        | otherwise     = error "roots: Tree is not bifurcating."
 
--- Assume binary trees.
--- For now just ignore degree two nodes.
--- The root node is copied. This is in general wrong, but let's just go with it for now.
-
-two :: Tree a -> [Tree a]
-two t = left t ++ right t
-
--- TODO: STOP CONDITIONS. How do I combine the two?
+-- Move the root to the left.
 left :: Tree a -> [Tree a]
-left t@(Node _ [] )                = [t]
-left   (Node i [x])                = concatMap two [ Node i [x] ]
-left   (Node i [Node j [x]   , z]) = concatMap two [ Node i [x           , Node j [z]  ] ]
-left   (Node i [Node j [x, y], z]) = concatMap two [ Node i [x           , Node j [y,z]]
-                                                   , Node i [Node j [x,z], y           ] ]
-left   (Node _  _ )                = []
+left   (Node i [Node j [x]   , z]) = left $ Node i [x           , Node j [z]  ]
+left   (Node i [Node j [x, y], z]) = left  (Node i [x           , Node j [y,z]]) ++
+                                     right (Node i [Node j [x,z], y           ])
+left t@(Node _  [Node _ []   , _]) = [t]
+left   (Node _ [] )                = error "left: Encountered a leaf."
+left   _                           = error "left: Tree is not bifurcating."
 
+-- Move the root to the right.
 right :: Tree a -> [Tree a]
-right t@(Node _ [] )                = [t]
-right   (Node i [x])                = concatMap two [ Node i [x] ]
-right   (Node i [x, Node j [z]   ]) = concatMap two [ Node i [Node j [x]  , z  ] ]
-right   (Node i [x, Node j [y, z]]) = concatMap two [ Node i [y           , Node j [x,z]]
-                                                    , Node i [Node j [x,y], z           ] ]
-right   (Node _  _ )                = []
+right   (Node i [x, Node j [z]   ]) = right $ Node i [Node j [x]  , z  ]
+right   (Node i [x, Node j [y, z]]) = left  (Node i [y           , Node j [x,z]]) ++
+                                      right (Node i [Node j [x,y], z           ])
+right t@(Node _ [_, Node _ []   ]) = [t]
+right   (Node _ [] )                = error "right: Encountered a leaf."
+right   (Node _ [_])                = error "right: TODO; this case has to be handled separately."
+right   _                           = error "left: Tree is not bifurcating."
 
 -- | Connect two trees in all possible ways.
 --
 -- Basically, introduce a branch between two trees. If the trees have n, and m
 -- branches, respectively, there are n*m ways to connect them.
 --
--- A base node has to be given which will be used wherever a new node is
+-- A base node has to be given which will be used wherever the new node is
 -- introduced.
 connect :: a -> Tree a -> Tree a -> [Tree a]
-connect = undefined
+connect n l r = [ Node n [x, y] | x <- roots l, y <- roots r]
