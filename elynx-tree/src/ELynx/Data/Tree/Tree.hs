@@ -198,7 +198,8 @@ roots :: Tree a -> [Tree a]
 -- rotated.
 roots t@(Node _ [])                     = [t]
 roots t@(Node _ [Node _ [], Node _ []]) = [t]
-roots t | bifurcating t = left t ++ right t
+-- TODO: SOMETHING IS WRONG HERE.
+roots t | bifurcating t = [t] ++ left t ++ right t
         | otherwise     = error "roots: Tree is not bifurcating."
 
 -- Move the root to the left.
@@ -206,6 +207,7 @@ left :: Tree a -> [Tree a]
 left   (Node i [Node j [x]   , z]) = left $ Node i [x           , Node j [z]  ]
 left   (Node i [Node j [x, y], z]) = left  (Node i [x           , Node j [y,z]]) ++
                                      right (Node i [Node j [x,z], y           ])
+-- TODO: OR HERE. THE NUMBERS OF TREES DO NOT MATCH WITH THE CONNECT FUNCTION.
 left t@(Node _  [Node _ []   , _]) = [t]
 left   (Node _ [] )                = error "left: Encountered a leaf."
 left   _                           = error "left: Tree is not bifurcating."

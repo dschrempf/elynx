@@ -50,15 +50,16 @@ largeTree = parseByteStringWith "Sample newick byte string" newick sampleTreeBS
 subSampleLargeTree :: Tree (PhyloLabel L.ByteString)
 subSampleLargeTree = fromJust $ subTree ((== 'P') . L.head . label) largeTree
 
-prop_roots_3n3 :: Tree a -> Bool
-prop_roots_3n3 t
+prop_roots :: Tree a -> Bool
+prop_roots t
   -- XXX: Skip not bifurcating trees. This is ugly, I know.
   | not $ bifurcating t   = True
   | length (leaves t) < 3 = length (roots t) == 1
   | otherwise             = length (roots t) == 2 * length (leaves t) - 3
 
-prop_connect_nm :: a -> Tree a -> Tree a -> Bool
-prop_connect_nm n l r
+prop_connect :: a -> Tree a -> Tree a -> Bool
+prop_connect n l r
+  -- XXX: Skip not bifurcating trees. This is ugly, I know.
   | not (bifurcating l) || not (bifurcating r)     = True
   | length (leaves l) < 3 || length (leaves r) < 3 = length (connect n l r) == 1
   | otherwise = length (connect n l r) == length (leaves l) * length (leaves r)
@@ -98,8 +99,8 @@ spec = do
                                  , Node "z" [] ] ]
       roots simpleTre `shouldBe` simpleSol
     it "returns the correct number of rooted trees for arbitrary trees" $
-      property (prop_roots_3n3 :: (Tree Int -> Bool))
+      property (prop_roots :: (Tree Int -> Bool))
 
   describe "connect" $
     it "returns the correct number of rooted trees for arbitrary trees" $
-      property (prop_connect_nm :: Int -> Tree Int -> Tree Int -> Bool)
+      property (prop_connect :: Int -> Tree Int -> Tree Int -> Bool)
