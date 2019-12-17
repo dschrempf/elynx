@@ -123,38 +123,38 @@ bipartitionToBranchLength :: (Ord a, Ord b, Monoid c)
                     -> M.Map (Bipartition b) c
 bipartitionToBranchLength f g t = if S.size (S.fromList ls) == length ls
                  then M.filterWithKey (const . valid) $
-                      bipartitionToBranchUnsafe (mempty, pempty) f lAndPTree
-                 else error "bipartitionToBranch: The tree contains duplicate leaves."
+                      bipartitionToBranchLengthUnsafe (mempty, pempty) f lAndPTree
+                 else error "bipartitionToBranchLength: The tree contains duplicate leaves."
   where ls        = leaves t
         bTree     = fmap g t
         pTree     = partitionTree t
         lAndPTree = fromJust $ merge bTree pTree
 
--- | See 'bipartitionToBranch'. When calculating the map, branches separated by
--- various degree two nodes have to be combined. Hence, not only the
--- complementary partition towards the stem, but also the node label itself have
--- to be passed along.
+-- | See 'bipartitionToBranchLength'. When calculating the map, branches
+-- separated by various degree two nodes have to be combined. Hence, not only
+-- the complementary partition towards the stem, but also the node label itself
+-- have to be passed along.
 type Info c a = (c, Partition a)
 
--- | See 'bipartitionToBranch', but does not check if leaves are unique. We need
--- information about the nodes, and also about the leaves of the induced sub
--- trees. Hence, we need a somewhat complicated node label type
+-- | See 'bipartitionToBranchLength', but does not check if leaves are unique.
+-- We need information about the nodes, and also about the leaves of the induced
+-- sub trees. Hence, we need a somewhat complicated node label type
 --
 -- > (a, Partition a)
-bipartitionToBranchUnsafe :: (Ord a, Ord b, Monoid c)
+bipartitionToBranchLengthUnsafe :: (Ord a, Ord b, Monoid c)
   => Info c a
   -> (a -> b)        -- ^ Value to compare on
   -> Tree (Info c a) -- ^ Tree to dissect
   -> M.Map (Bipartition b) c
-bipartitionToBranchUnsafe (l, p) f (Node (l', p') [] ) =
+bipartitionToBranchLengthUnsafe (l, p) f (Node (l', p') [] ) =
   M.singleton (bpwith f p p') (l <> l')
 -- The branch length has to be added for degree two nodes.
-bipartitionToBranchUnsafe (l, p) f (Node (l', _ ) [x]) =
-  bipartitionToBranchUnsafe (l <> l', p) f x
+bipartitionToBranchLengthUnsafe (l, p) f (Node (l', _ ) [x]) =
+  bipartitionToBranchLengthUnsafe (l <> l', p) f x
 -- Go through the list of children and combine each of them with the rest.
-bipartitionToBranchUnsafe (l, p) f t@(Node (l', p') xs) =
+bipartitionToBranchLengthUnsafe (l, p) f t@(Node (l', p') xs) =
   M.unionsWith (<>) $
   M.singleton (bpwith f p p') (l <> l') :
-  [ bipartitionToBranchUnsafe (mempty, lvs) f x | (lvs, x) <- zip lvsOthers xs ]
+  [ bipartitionToBranchLengthUnsafe (mempty, lvs) f x | (lvs, x) <- zip lvsOthers xs ]
   where
     lvsOthers = subForestGetPartitions p (fmap snd t)
