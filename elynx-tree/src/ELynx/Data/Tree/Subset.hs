@@ -42,12 +42,12 @@ import qualified Data.Set  as S
 --
 -- Internally, a subset is just an 'S.Set', since the order of elements
 -- within the subset is not important, but the uniqueness of elements is.
-newtype Subset a = SG {subset :: S.Set a}
+newtype Subset a = SS {subset :: S.Set a}
   deriving (Show, Read, Eq, Ord, Semigroup, Monoid, Foldable)
 
 -- | Create a subset from a set.
 sfromset :: S.Set a -> Subset a
-sfromset = SG
+sfromset = SS
 
 -- | Create a subset from a list. Throws an error if duplicate elements are
 -- present in the list.
@@ -59,7 +59,7 @@ sfromlist l = if S.size s == length l
 
 -- | Map a function over all elements in a subset.
 smap :: Ord b => (a -> b) -> Subset a -> Subset b
-smap f = SG . S.map f . subset
+smap f = SS . S.map f . subset
 
 -- | Is the subset empty?
 snull :: Subset a -> Bool
@@ -67,23 +67,23 @@ snull = S.null . subset
 
 -- | The empty subset.
 sempty :: Subset a
-sempty = SG S.empty
+sempty = SS S.empty
 
 -- | A subset with one element.
 ssingleton :: a -> Subset a
-ssingleton = SG . S.singleton
+ssingleton = SS . S.singleton
 
 -- | Unite two subsets.
 sunion :: Ord a => Subset a -> Subset a -> Subset a
-sunion p q = SG $ subset q `S.union` subset p
+sunion p q = SS $ subset q `S.union` subset p
 
 -- | Unite a list of subsets.
 sunions :: Ord a => [Subset a] -> Subset a
-sunions = SG . S.unions . map subset
+sunions = SS . S.unions . map subset
 
 -- | Difference of two subsets.
 sdifference :: Ord a => Subset a -> Subset a -> Subset a
-sdifference p q = SG $ subset p S.\\ subset q
+sdifference p q = SS $ subset p S.\\ subset q
 
 -- | Check if an element is member of a subset.
 smember :: Ord a => a -> Subset a -> Bool
