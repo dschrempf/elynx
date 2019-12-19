@@ -29,7 +29,7 @@ import           ELynx.Data.Tree.Multipartition       (Multipartition, mp,
                                                        multipartitions)
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Data.Tree.Subgroup               (sfromlist)
+import           ELynx.Data.Tree.Subset               (sfromlist)
 
 ex1 :: Tree Int
 ex1 = Node 0 [Node 1 [], Node 2 [Node 4 [], Node 5 [], Node 6 []], Node 3 []]

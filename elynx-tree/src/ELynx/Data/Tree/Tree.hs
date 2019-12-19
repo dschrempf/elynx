@@ -50,7 +50,7 @@ module ELynx.Data.Tree.Tree
   , merge
   , tZipWith
   , partitionTree
-  , subForestGetSubgroups
+  , subForestGetSubsets
   , bifurcating
   , roots
   , connect
@@ -67,7 +67,7 @@ import           Data.Tree
 import           System.Random.MWC
 
 import           ELynx.Tools.Random
-import           ELynx.Data.Tree.Subgroup
+import           ELynx.Data.Tree.Subset
 
 -- | The simplest tree. Usually an extant leaf.
 singleton :: a -> Tree a
@@ -151,17 +151,17 @@ tZipWith f xs = sequenceA . snd . mapAccumL pair xs
 
 -- | Each node of a tree is root of a subtree. Get the leaves of the subtree of
 -- each node.
-partitionTree :: (Ord a) => Tree a -> Tree (Subgroup a)
+partitionTree :: (Ord a) => Tree a -> Tree (Subset a)
 partitionTree (Node l []) = Node (ssingleton l) []
 partitionTree (Node _ xs) = Node (sunions $ map rootLabel xs') xs'
   where xs' = map partitionTree xs
 
 -- | Loop through each tree in a forest to report the complementary leaf sets.
-subForestGetSubgroups :: (Ord a)
-                     => Subgroup a          -- ^ Complementary partition at the stem
-                     -> Tree (Subgroup a)   -- ^ Tree with partition nodes
-                     -> [Subgroup a]
-subForestGetSubgroups lvs t = lvsOthers
+subForestGetSubsets :: (Ord a)
+                     => Subset a          -- ^ Complementary partition at the stem
+                     -> Tree (Subset a)   -- ^ Tree with partition nodes
+                     -> [Subset a]
+subForestGetSubsets lvs t = lvsOthers
   where
     xs               = subForest t
     nChildren        = length xs
@@ -238,7 +238,7 @@ connect n l r = [ Node n [x, y] | x <- roots l, y <- roots r]
 -- XXX: Probably introduce a new module defining a Clade.
 
 -- | Get clades induced by multifurcations.
-clades :: Ord a => Tree a -> [Subgroup a]
+clades :: Ord a => Tree a -> [Subset a]
 clades (Node _ [] ) = []
 clades (Node _ [x]) = clades x
 clades (Node _ [x, y]) = clades x ++ clades y

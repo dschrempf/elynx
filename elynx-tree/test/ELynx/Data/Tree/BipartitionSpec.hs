@@ -25,12 +25,12 @@ import           Data.Tree
 import           Test.Hspec
 
 import           ELynx.Data.Tree.Bipartition
-import           ELynx.Data.Tree.Subgroup
+import           ELynx.Data.Tree.Subset
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
 
-sfrom :: [L.ByteString] -> Subgroup L.ByteString
+sfrom :: [L.ByteString] -> Subset L.ByteString
 sfrom = sfromset . S.fromList
 
 treeFileSimple :: FilePath

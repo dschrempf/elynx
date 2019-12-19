@@ -42,13 +42,13 @@ import           Data.Maybe
 import qualified Data.Set                  as S
 import           Data.Tree
 
-import           ELynx.Data.Tree.Subgroup
+import           ELynx.Data.Tree.Subset
 import           ELynx.Data.Tree.Tree
 
 -- | Each branch of a tree partitions the leaves of the tree into two
--- 'Subgroup's, or a bipartition. Also the order of the two partitions of the
+-- 'Subset's, or a bipartition. Also the order of the two partitions of the
 -- 'Bipartition' is not important (see the 'Eq' instance).
-newtype Bipartition a = Bipartition {bps :: (Subgroup a, Subgroup a) -- ^ Tuple of partitions
+newtype Bipartition a = Bipartition {bps :: (Subset a, Subset a) -- ^ Tuple of partitions
                                     }
   deriving (Show, Read)
 
@@ -66,7 +66,7 @@ bphuman :: (a -> String) -> Bipartition a -> String
 bphuman f (Bipartition (x, y)) = "(" ++ sshow f x ++ "|" ++ sshow f y ++  ")"
 
 -- | Create a bipartition from two 'S.Set's.
-bp :: Ord a => Subgroup a -> Subgroup a -> Bipartition a
+bp :: Ord a => Subset a -> Subset a -> Bipartition a
 bp xs ys = if xs >= ys
          then Bipartition (xs, ys)
          else Bipartition (ys, xs)
@@ -76,7 +76,7 @@ bpmap :: (Ord a, Ord b) => (a -> b) -> Bipartition a -> Bipartition b
 bpmap f (Bipartition (x, y)) = bp (smap f x) (smap f y)
 
 -- | Create a bipartition from two 'S.Set's.
-bpwith :: (Ord a, Ord b) => (a -> b) -> Subgroup a -> Subgroup a -> Bipartition b
+bpwith :: (Ord a, Ord b) => (a -> b) -> Subset a -> Subset a -> Bipartition b
 bpwith f x y = bpmap f $ bp x y
 
 instance (Eq a) => Eq (Bipartition a) where
@@ -103,7 +103,7 @@ bipartitions t = if S.size (S.fromList ls) == length ls
         pTree = partitionTree t
 
 -- | See 'bipartitions', but do not check if leaves are unique.
-bipartitionsUnsafe :: Ord a => Subgroup a -> Tree (Subgroup a) -> S.Set (Bipartition a)
+bipartitionsUnsafe :: Ord a => Subset a -> Tree (Subset a) -> S.Set (Bipartition a)
 bipartitionsUnsafe p   (Node l [] ) = S.singleton $ bp p l
 -- Degree two nodes do not induce additional bipartitions.
 bipartitionsUnsafe p   (Node _ [x]) = bipartitionsUnsafe p x
@@ -111,7 +111,7 @@ bipartitionsUnsafe p   (Node _ [x]) = bipartitionsUnsafe p x
 bipartitionsUnsafe p t@(Node ls xs) =
   S.unions $ S.singleton (bp p ls) : [ bipartitionsUnsafe lvs x | (lvs, x) <- zip lsOthers xs ]
   where
-    lsOthers = subForestGetSubgroups p t
+    lsOthers = subForestGetSubsets p t
 
 -- | For a given rose 'Tree', remove all degree two nodes and reconnect the
 -- resulting disconnected pairs of branches and sum their branch lengths. For
@@ -140,13 +140,13 @@ bipartitionToBranchLength f g t = if S.size (S.fromList ls) == length ls
 -- separated by various degree two nodes have to be combined. Hence, not only
 -- the complementary partition towards the stem, but also the node label itself
 -- have to be passed along.
-type Info c a = (c, Subgroup a)
+type Info c a = (c, Subset a)
 
 -- | See 'bipartitionToBranchLength', but does not check if leaves are unique.
 -- We need information about the nodes, and also about the leaves of the induced
 -- sub trees. Hence, we need a somewhat complicated node label type
 --
--- > (a, Subgroup a)
+-- > (a, Subset a)
 bipartitionToBranchLengthUnsafe :: (Ord a, Ord b, Monoid c)
   => Info c a
   -> (a -> b)        -- ^ Value to compare on
@@ -163,4 +163,4 @@ bipartitionToBranchLengthUnsafe (l, p) f t@(Node (l', p') xs) =
   M.singleton (bpwith f p p') (l <> l') :
   [ bipartitionToBranchLengthUnsafe (mempty, lvs) f x | (lvs, x) <- zip lvsOthers xs ]
   where
-    lvsOthers = subForestGetSubgroups p (fmap snd t)
+    lvsOthers = subForestGetSubsets p (fmap snd t)

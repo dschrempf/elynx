@@ -35,19 +35,19 @@ import qualified Data.Set                    as S
 import           Data.Tree
 
 import           ELynx.Data.Tree.Bipartition (Bipartition, bps)
-import           ELynx.Data.Tree.Subgroup
+import           ELynx.Data.Tree.Subset
 import           ELynx.Data.Tree.Tree
 
 -- | Each branch of a bifurcating tree partitions the leaves of the tree into
--- three 'Subgroup's, see 'ELynx.Data.Tree.Bipartition'. In a similar way, each
+-- three 'Subset's, see 'ELynx.Data.Tree.Bipartition'. In a similar way, each
 -- internal node induces a tripartition. Tripartitions are not yet implemented
 -- (December 2019) because it is usually sufficient to work with bipartitions.
 -- If, however, the tree is multifurcating and a specific node has more than two
--- children, the number of subgroups induced by this node is larger than three,
+-- children, the number of subsets induced by this node is larger than three,
 -- and a 'Multipartition'. Multipartitions are interesting in that we can use
 -- them for calculating incompatible splits, see 'ELynx.Data.Tree.Distance'. The
 -- order of the partitions within a multipartition is unimportant, .
-newtype Multipartition a = Multipartition { mps :: S.Set (Subgroup a) -- ^ Set of partitions
+newtype Multipartition a = Multipartition { mps :: S.Set (Subset a) -- ^ Set of partitions
                                           }
   deriving (Show, Read)
 
@@ -57,10 +57,10 @@ mphuman :: (a -> String) -> Multipartition a -> String
 mphuman f (Multipartition xs) = "(" ++ intercalate "|" (map (sshow f) (S.toList xs)) ++  ")"
 
 -- | Create a multipartition.
-mp :: Ord a => [Subgroup a] -> Multipartition a
+mp :: Ord a => [Subset a] -> Multipartition a
 mp = mp' . filter (not . snull)
 
-mp' :: Ord a => [Subgroup a] -> Multipartition a
+mp' :: Ord a => [Subset a] -> Multipartition a
 -- XXX: For now also allow multipartitions with no, one, or two elements.
 -- mp' []     = error "mp': Cannot create multipartition from empty list."
 -- mp' [_]    = error "mp': Cannot create multipartition from list with one element."
@@ -90,7 +90,7 @@ multipartitions t = if S.size (S.fromList lvs) == length lvs
   where lvs = leaves t
 
 -- | See 'multipartitions', but do not check if leaves are unique.
-multipartitionsUnsafe :: Ord a => Subgroup a -> Tree (Subgroup a) -> S.Set (Multipartition a)
+multipartitionsUnsafe :: Ord a => Subset a -> Tree (Subset a) -> S.Set (Multipartition a)
 multipartitionsUnsafe _    (Node _ []    ) = S.empty
 multipartitionsUnsafe xs   (Node _ [x]   ) = multipartitionsUnsafe xs x
 multipartitionsUnsafe xs   (Node _ [x, y]) = S.union l r
@@ -99,25 +99,25 @@ multipartitionsUnsafe xs   (Node _ [x, y]) = S.union l r
 multipartitionsUnsafe xs t@(Node _ ys    ) = S.unions $
   S.singleton (mp (xs : map rootLabel ys))
   : zipWith multipartitionsUnsafe lvsOthers ys
-  where lvsOthers = subForestGetSubgroups xs t
+  where lvsOthers = subForestGetSubsets xs t
 
 -- | Find the multipartition containing a given element.
-findMp :: Ord a => a -> Multipartition a -> Subgroup a
+findMp :: Ord a => a -> Multipartition a -> Subset a
 findMp l m = fromMaybe
-             -- Return the empty subgroup if nothing is found. This corresponds
+             -- Return the empty subset if nothing is found. This corresponds
              -- to having no information about the leaf in question.
              sempty
              (find (smember l) gs)
   where gs = mps m
 
 -- Add the subset of a bipartition which contains a given element.
-addSubGroup :: Ord a => Multipartition a -> S.Set (Subgroup a) -> a -> S.Set (Subgroup a)
-addSubGroup m gs l = findMp l m `S.insert` gs
+addSubset :: Ord a => Multipartition a -> S.Set (Subset a) -> a -> S.Set (Subset a)
+addSubset m gs l = findMp l m `S.insert` gs
 
--- Each subgroup overlaps with a number of subsets of a bipartition which are
+-- Each subset overlaps with a number of subsets of a bipartition which are
 -- returned by this function.
-overlap :: Ord a => Multipartition a -> Subgroup a -> S.Set (Subgroup a)
-overlap m = foldl' (addSubGroup m) S.empty
+overlap :: Ord a => Multipartition a -> Subset a -> S.Set (Subset a)
+overlap m = foldl' (addSubset m) S.empty
 
 -- | Multipartitions are compatible if they do not contain conflicting
 -- information. This function checks if two multipartitions are compatible with
