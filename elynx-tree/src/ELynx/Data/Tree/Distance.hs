@@ -37,7 +37,6 @@ import           ELynx.Data.Tree.Bipartition
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.Multipartition
-import           ELynx.Data.Tree.Subgroup
 
 -- Symmetric difference between two 'Set's.
 symmetricDifference :: Ord a => S.Set a -> S.Set a -> S.Set a
@@ -57,13 +56,14 @@ symmetricWith f t1 t2 = length $ symmetricDifference (bs t1) (bs t2)
 symmetric :: (Ord a, Named a) => Tree a -> Tree a -> Int
 symmetric = symmetricWith getName
 
-countIncompatibilities :: (Ord a) => S.Set (Bipartition a) -> S.Set (Multipartition a) -> Int
-countIncompatibilities bs ms = foldl' (\i b -> if any (compatible (fst $ bps b)) ms
+countIncompatibilities :: (Ord a, Show a) => S.Set (Bipartition a) -> S.Set (Multipartition a) -> Int
+countIncompatibilities bs ms = foldl' (\i b -> if any (compatible (fromBipartition b)) ms
                                                then i
                                                else i+1) 0 bs
 
 -- | Number of incompatible splits. Similar to 'symmetricWith' but all
--- bipartition induced by multifurcations are considered.
+-- bipartition induced by multifurcations are considered. For a detailed
+-- description of how the distance is calculated, see 'compatible'.
 --
 -- A multifurcation on a tree may (but not necessarily does) represent missing
 -- information about the order of bifurcations. In this case, it is interesting
@@ -79,30 +79,22 @@ countIncompatibilities bs ms = foldl' (\i b -> if any (compatible (fst $ bps b))
 -- > C|ABD
 -- > D|ABC
 --
--- Those are also reported by 'bipartitions'. However, it is additionally compatible with
+-- Those are also reported by the function 'bipartitions'. However, the tree is
+-- additionally compatible with the following hidden bipartitions:
 --
 -- > AB|CD
 -- > AC|BD
 -- > AD|BC
 --
---
--- To check if a bipartition is compatible with a multipartition, the following
--- algorithm is used.
---
--- 1. Take one partition of the bipartition (at the moment the first, in the
--- future maybe the shorter one).
---
--- 2. For each leaf of the taken partition, add the partition of the
--- multipartition containing the leaf (takeLeaves and takeLeaf).
---
--- 3. If the resulting set of leafs (the union of the added partitions) does not
--- contain leaves of the other partition of the bipartitions, I am OK!
+-- For an explanation of how compatibility of a bipartition with a
+-- multipartition is checked, see 'compatible'. Before using 'compatible',
+-- bipartitions are simply converted to multipartitions with two subsets.
 --
 -- Only if a bipartition is not compatible with all induced multifurcations of
 -- the other tree, it is incompatible.
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
-incompatibleSplitsWith :: (Ord b) => (a -> b) -> Tree a -> Tree a -> Int
+incompatibleSplitsWith :: (Ord b, Show b) => (a -> b) -> Tree a -> Tree a -> Int
 incompatibleSplitsWith f t1 t2 = countIncompatibilities putIncBs1 ms2 +
                                  countIncompatibilities putIncBs2 ms1
   where

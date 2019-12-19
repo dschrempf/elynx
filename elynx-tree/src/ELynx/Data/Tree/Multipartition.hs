@@ -22,18 +22,19 @@ module ELynx.Data.Tree.Multipartition
   , mp
   , mpmap
   , mphuman
+  , fromBipartition
     -- * Working with 'Multipartition's.
   , multipartitions
   , findMp
   , compatible
   ) where
 
-import           Data.List                (filter, find, foldl', intercalate,
-                                           sort)
-import           Data.Maybe               (fromMaybe)
-import qualified Data.Set                 as S
+import           Data.List                   (filter, find, foldl', intercalate)
+import           Data.Maybe                  (fromMaybe)
+import qualified Data.Set                    as S
 import           Data.Tree
 
+import           ELynx.Data.Tree.Bipartition (Bipartition, bps)
 import           ELynx.Data.Tree.Subgroup
 import           ELynx.Data.Tree.Tree
 
@@ -46,14 +47,14 @@ import           ELynx.Data.Tree.Tree
 -- and a 'Multipartition'. Multipartitions are interesting in that we can use
 -- them for calculating incompatible splits, see 'ELynx.Data.Tree.Distance'. The
 -- order of the partitions within a multipartition is unimportant, .
-newtype Multipartition a = Multipartition { mps :: [Subgroup a] -- ^ List of partitions
+newtype Multipartition a = Multipartition { mps :: S.Set (Subgroup a) -- ^ Set of partitions
                                           }
   deriving (Show, Read)
 
 -- | Show a multipartition in a human readable form. Use a provided function to
 -- extract the valuable information.
 mphuman :: (a -> String) -> Multipartition a -> String
-mphuman f (Multipartition xs) = "(" ++ intercalate "|" (map (sshow f) xs) ++  ")"
+mphuman f (Multipartition xs) = "(" ++ intercalate "|" (map (sshow f) (S.toList xs)) ++  ")"
 
 -- | Create a multipartition.
 mp :: Ord a => [Subgroup a] -> Multipartition a
@@ -64,17 +65,22 @@ mp' :: Ord a => [Subgroup a] -> Multipartition a
 -- mp' []     = error "mp': Cannot create multipartition from empty list."
 -- mp' [_]    = error "mp': Cannot create multipartition from list with one element."
 -- mp' [_, _] = error "mp': Cannot create multipartition from list with two elements."
-mp' xs     = Multipartition (sort xs)
+mp' xs     = Multipartition (S.fromList xs)
 
 -- | Map a function over all elements in the multipartitions.
 mpmap :: (Ord a, Ord b) => (a -> b) -> Multipartition a -> Multipartition b
-mpmap f (Multipartition xs) = mp $ map (smap f) xs
+mpmap f (Multipartition xs) = Multipartition $ S.map (smap f) xs
 
 instance (Eq a) => Eq (Multipartition a) where
   Multipartition xs == Multipartition ys = xs == ys
 
 instance (Ord a) => Ord (Multipartition a) where
   Multipartition xs `compare` Multipartition ys = xs `compare` ys
+
+-- | Convert bipartition to multipartition.
+fromBipartition :: Ord a => Bipartition a -> Multipartition a
+fromBipartition bp = mp [l, r]
+  where (l, r) = bps bp
 
 -- | Get all multipartitions of a tree.
 multipartitions :: Ord a => Tree a -> S.Set (Multipartition a)
@@ -101,16 +107,47 @@ findMp l m = fromMaybe
              -- Return the empty subgroup if nothing is found. This corresponds
              -- to having no information about the leaf in question.
              sempty
-             (find (smember l) ps)
-  where ps = mps m
+             (find (smember l) gs)
+  where gs = mps m
 
-takeLeaf :: Ord a => Multipartition a -> Subgroup a -> a -> Subgroup a
-takeLeaf m p l | l `smember` p = p
-               | otherwise     = p `sunion` findMp l m
+-- Add the subset of a bipartition which contains a given element.
+addSubGroup :: Ord a => Multipartition a -> S.Set (Subgroup a) -> a -> S.Set (Subgroup a)
+addSubGroup m gs l = findMp l m `S.insert` gs
 
-takeLeaves :: Ord a => Subgroup a -> Multipartition a -> Subgroup a
-takeLeaves p m = foldl' (takeLeaf m) sempty p
+-- Each subgroup overlaps with a number of subsets of a bipartition which are
+-- returned by this function.
+overlap :: Ord a => Multipartition a -> Subgroup a -> S.Set (Subgroup a)
+overlap m = foldl' (addSubGroup m) S.empty
 
--- | Check if a 'Subgroup' is compatible with a 'Multipartition'.
-compatible :: (Ord a) => Subgroup a -> Multipartition a -> Bool
-compatible s m = (takeLeaves s m `sdifference` s) == sempty
+-- | Multipartitions are compatible if they do not contain conflicting
+-- information. This function checks if two multipartitions are compatible with
+-- each other. Thereby, following algorithm is used:
+--
+-- 1. Take each subset of the first multipartition.
+--
+-- 2a. Determine the overlap: For each leaf of the chosen subset, add the subset
+-- of the second multipartition containing the leaf. The result is a set of
+-- subsets, which is the union of the added subsets.
+--
+-- The data type "set of subsets" is actually the same data type as a
+-- multipartition. However, it is not a partition, because it may and will not
+-- span the whole set of leaves, and so, I use @S.Set (Subset a)@. One could
+-- define a multiset data type to make this clearer.
+--
+-- 2b. Collect the set of subsets from point 1.
+--
+-- 3. Each set of subsets needs to be either equal or disjoint with other set of
+-- subsets in the collection. If so, the first multipartition is compatible with
+-- the second.
+--
+-- 4. Exchange the first with the second multipartition and go through steps 1
+-- to 3.
+--
+compatible :: (Ord a, Show a) => Multipartition a -> Multipartition a -> Bool
+compatible l r = and $
+  [x `S.disjoint` y | x <- lOverlaps, y <- lOverlaps, x /= y] ++
+  [x `S.disjoint` y | x <- rOverlaps, y <- rOverlaps, x /= y]
+  where ls = mps l
+        rs = mps r
+        lOverlaps = S.toList $ S.map (overlap r) ls
+        rOverlaps = S.toList $ S.map (overlap l) rs
