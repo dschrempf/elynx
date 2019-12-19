@@ -87,16 +87,14 @@ spec = do
       roots tleaf `shouldBe` [tleaf]
       roots tcherry `shouldBe` [tcherry]
     it "correctly handles simple trees" $ do
-      let simpleTre =   Node "i" [ Node "j" [Node "x" [], Node "y" []], Node "z" [] ]
-          simpleSol = [ Node "i" [ Node "x" []
-                                 , Node "j" [ Node "y" []
-                                            , Node "z" [] ] ]
-                      , Node "i" [ Node "j" [ Node "x" []
-                                            , Node "z" [] ]
-                                 , Node "y" [] ]
-                      , Node "i" [ Node "j" [ Node "x" []
-                                            , Node "y" [] ]
-                                 , Node "z" [] ] ]
+      let simpleTre = Node "i" [ Node "j" [Node "x" [], Node "y" []], Node "z" [] ]
+          simpleSol =
+            [ Node "i" [ Node "j" [ Node "x" [] , Node "y" [] ]
+                       , Node "z" [] ]
+            , Node "i" [ Node "x" []
+                       , Node "j" [ Node "y" [] , Node "z" [] ] ]
+            , Node "i" [ Node "j" [ Node "x" [] , Node "z" [] ]
+                       , Node "y" [] ] ]
       roots simpleTre `shouldBe` simpleSol
     it "returns the correct number of rooted trees for arbitrary trees" $
       property (prop_roots :: (Tree Int -> Bool))

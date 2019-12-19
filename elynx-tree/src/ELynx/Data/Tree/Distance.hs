@@ -18,6 +18,7 @@ All trees are assumed to be UNROOTED.
 module ELynx.Data.Tree.Distance
   ( symmetric
   , symmetricWith
+  , compatible
   , incompatibleSplits
   , incompatibleSplitsWith
   , branchScore
@@ -36,7 +37,7 @@ import           ELynx.Data.Tree.Bipartition
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.Multipartition
-import           ELynx.Data.Tree.Partition
+import           ELynx.Data.Tree.Subgroup
 
 -- Symmetric difference between two 'Set's.
 symmetricDifference :: Ord a => S.Set a -> S.Set a -> S.Set a
@@ -56,19 +57,10 @@ symmetricWith f t1 t2 = length $ symmetricDifference (bs t1) (bs t2)
 symmetric :: (Ord a, Named a) => Tree a -> Tree a -> Int
 symmetric = symmetricWith getName
 
-takeLeaf :: Ord a => Multipartition a -> Partition a -> a -> Partition a
-takeLeaf m p l | l `pmember` p = p
-               | otherwise     = p `punion` findMp l m
-
-takeLeaves :: Ord a => Partition a -> Multipartition a -> Partition a
-takeLeaves p m = foldl' (takeLeaf m) pempty p
-
-compatible :: (Ord a) => Bipartition a -> Multipartition a -> Bool
-compatible b m = (takeLeaves ls m `pdifference` ls) == pempty
-  where ls = fst $ bps b
-
 countIncompatibilities :: (Ord a) => S.Set (Bipartition a) -> S.Set (Multipartition a) -> Int
-countIncompatibilities bs ms = foldl' (\i b -> if any (compatible b) ms then i else i+1) 0 bs
+countIncompatibilities bs ms = foldl' (\i b -> if any (compatible (fst $ bps b)) ms
+                                               then i
+                                               else i+1) 0 bs
 
 -- | Number of incompatible splits. Similar to 'symmetricWith' but all
 -- bipartition induced by multifurcations are considered.

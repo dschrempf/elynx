@@ -28,21 +28,21 @@ import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.Multipartition       (Multipartition, mp,
                                                        multipartitions)
 import           ELynx.Data.Tree.NamedTree
-import           ELynx.Data.Tree.Partition            (pfromlist)
 import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Data.Tree.Subgroup               (sfromlist)
 
 ex1 :: Tree Int
 ex1 = Node 0 [Node 1 [], Node 2 [Node 4 [], Node 5 [], Node 6 []], Node 3 []]
 
 sol1 :: Set (Multipartition Int)
-sol1 = fromList [ mp [pfromlist [1], pfromlist [3], pfromlist [4,5,6]]
-                , mp [pfromlist [1,3], pfromlist [4], pfromlist [5], pfromlist [6]] ]
+sol1 = fromList [ mp [sfromlist [1], sfromlist [3], sfromlist [4,5,6]]
+                , mp [sfromlist [1,3], sfromlist [4], sfromlist [5], sfromlist [6]] ]
 
 ex2 :: Tree Int
 ex2 = Node 0 [Node 1 [], Node 2 [], Node 0 [Node 3 [], Node 4 []], Node 5 []]
 
 sol2 :: Set (Multipartition Int)
-sol2 = fromList [ mp [pfromlist [1], pfromlist [2], pfromlist [3,4], pfromlist [5]] ]
+sol2 = fromList [ mp [sfromlist [1], sfromlist [2], sfromlist [3,4], sfromlist [5]] ]
 
 prop_bifurcating_tree :: (Ord a, Measurable a, Named a, BranchSupportLabel a) => Tree a -> Bool
 prop_bifurcating_tree t = multipartitions (removeMultifurcations t) == empty

@@ -50,10 +50,11 @@ module ELynx.Data.Tree.Tree
   , merge
   , tZipWith
   , partitionTree
-  , subForestGetPartitions
+  , subForestGetSubgroups
   , bifurcating
   , roots
   , connect
+  , clades
   ) where
 
 import           Control.Monad
@@ -66,7 +67,7 @@ import           Data.Tree
 import           System.Random.MWC
 
 import           ELynx.Tools.Random
-import           ELynx.Data.Tree.Partition
+import           ELynx.Data.Tree.Subgroup
 
 -- | The simplest tree. Usually an extant leaf.
 singleton :: a -> Tree a
@@ -86,7 +87,7 @@ leaves (Node _ f)  = concatMap leaves f
 -- rootNodesAgreeWith :: (Ord c) => (a -> c) -> Tree a -> (b -> c) -> Tree b -> Bool
 -- rootNodesAgreeWith f s g t =
 --   f (rootLabel s) == g (rootLabel t) &&
---   S.fromList sDs `S.isSubsetOf` S.fromList tDs
+--   S.fromList sDs `S.isSubSetOf` S.fromList tDs
 --   where sDs = map (f . rootLabel) (subForest s)
 --         tDs = map (g . rootLabel) (subForest t)
 
@@ -150,25 +151,25 @@ tZipWith f xs = sequenceA . snd . mapAccumL pair xs
 
 -- | Each node of a tree is root of a subtree. Get the leaves of the subtree of
 -- each node.
-partitionTree :: (Ord a) => Tree a -> Tree (Partition a)
-partitionTree (Node l []) = Node (psingleton l) []
-partitionTree (Node _ xs) = Node (punions $ map rootLabel xs') xs'
+partitionTree :: (Ord a) => Tree a -> Tree (Subgroup a)
+partitionTree (Node l []) = Node (ssingleton l) []
+partitionTree (Node _ xs) = Node (sunions $ map rootLabel xs') xs'
   where xs' = map partitionTree xs
 
 -- | Loop through each tree in a forest to report the complementary leaf sets.
-subForestGetPartitions :: (Ord a)
-                     => Partition a          -- ^ Complementary partition at the stem
-                     -> Tree (Partition a)   -- ^ Tree with partition nodes
-                     -> [Partition a]
-subForestGetPartitions lvs t = lvsOthers
+subForestGetSubgroups :: (Ord a)
+                     => Subgroup a          -- ^ Complementary partition at the stem
+                     -> Tree (Subgroup a)   -- ^ Tree with partition nodes
+                     -> [Subgroup a]
+subForestGetSubgroups lvs t = lvsOthers
   where
     xs               = subForest t
     nChildren        = length xs
     lvsChildren      = map rootLabel xs
-    lvsOtherChildren = [ punions $ lvs
+    lvsOtherChildren = [ sunions $ lvs
                          : take i lvsChildren ++ drop (i+1) lvsChildren
                        | i <- [0 .. (nChildren - 1)] ]
-    lvsOthers        = map (punion lvs) lvsOtherChildren
+    lvsOthers        = map (sunion lvs) lvsOtherChildren
 
 -- | Check if a tree is bifurcating and does not include degree two nodes. I
 -- know, one should use a proper data structure to encode bifurcating trees, but
@@ -198,29 +199,31 @@ roots :: Tree a -> [Tree a]
 -- rotated.
 roots t@(Node _ [])                     = [t]
 roots t@(Node _ [Node _ [], Node _ []]) = [t]
--- TODO: SOMETHING IS WRONG HERE.
-roots t | bifurcating t = [t] ++ left t ++ right t
+roots t | bifurcating t = t : left t ++ right t
         | otherwise     = error "roots: Tree is not bifurcating."
 
 -- Move the root to the left.
 left :: Tree a -> [Tree a]
-left   (Node i [Node j [x]   , z]) = left $ Node i [x           , Node j [z]  ]
-left   (Node i [Node j [x, y], z]) = left  (Node i [x           , Node j [y,z]]) ++
-                                     right (Node i [Node j [x,z], y           ])
--- TODO: OR HERE. THE NUMBERS OF TREES DO NOT MATCH WITH THE CONNECT FUNCTION.
-left t@(Node _  [Node _ []   , _]) = [t]
-left   (Node _ [] )                = error "left: Encountered a leaf."
-left   _                           = error "left: Tree is not bifurcating."
+left (Node i [Node j [x]   , z]) = let t'  = Node i [x           , Node j [z]  ]
+                                   in t' : left t'
+left (Node i [Node j [x, y], z]) = let tll = Node i [x           , Node j [y,z]]
+                                       tlr = Node i [Node j [x,z], y           ]
+                                   in tll : tlr : left tll ++ right tlr
+left (Node _  [Node _ []   , _]) = []
+left (Node _ [] )                = error "left: Encountered a leaf."
+left _                           = error "left: Tree is not bifurcating."
 
 -- Move the root to the right.
 right :: Tree a -> [Tree a]
-right   (Node i [x, Node j [z]   ]) = right $ Node i [Node j [x]  , z  ]
-right   (Node i [x, Node j [y, z]]) = left  (Node i [y           , Node j [x,z]]) ++
-                                      right (Node i [Node j [x,y], z           ])
-right t@(Node _ [_, Node _ []   ]) = [t]
-right   (Node _ [] )                = error "right: Encountered a leaf."
-right   (Node _ [_])                = error "right: TODO; this case has to be handled separately."
-right   _                           = error "left: Tree is not bifurcating."
+right (Node i [x, Node j [z]   ]) = let t' = Node i [Node j [x]  , z  ]
+                                    in t' : right t'
+right (Node i [x, Node j [y, z]]) = let trl = Node i [y           , Node j [x,z]]
+                                        trr = Node i [Node j [x,y], z           ]
+                                    in trl : trr : left trl ++ right trr
+right (Node _ [_, Node _ []   ]) = []
+right (Node _ [] )                = error "right: Encountered a leaf."
+right (Node _ [_])                = error "right: TODO; this case has to be handled separately."
+right _                           = error "left: Tree is not bifurcating."
 
 -- | Connect two trees in all possible ways.
 --
@@ -231,3 +234,12 @@ right   _                           = error "left: Tree is not bifurcating."
 -- introduced.
 connect :: a -> Tree a -> Tree a -> [Tree a]
 connect n l r = [ Node n [x, y] | x <- roots l, y <- roots r]
+
+-- XXX: Probably introduce a new module defining a Clade.
+
+-- | Get clades induced by multifurcations.
+clades :: Ord a => Tree a -> [Subgroup a]
+clades (Node _ [] ) = []
+clades (Node _ [x]) = clades x
+clades (Node _ [x, y]) = clades x ++ clades y
+clades t = sfromlist (leaves t) : concatMap clades (subForest t)
