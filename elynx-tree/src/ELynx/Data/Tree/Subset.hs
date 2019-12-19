@@ -33,10 +33,11 @@ import           Data.List (intercalate)
 import qualified Data.Set  as S
 
 -- | A 'Subset' is a set of elements of type a. For example, on phylogenetic
--- trees, a 'Subset' is a set of leaves. In this case, a 'Subset' is
--- induced, for example, by a node on the (rooted) tree. The 'Subset's of leaf
--- nodes are singletons. The 'Subset's of the root node is the set of all
--- leaves. Each branch on the tree induces a pair of 'Subset's, see
+-- trees, a 'Subset' is a set of leaves. In this case, a 'Subset' is induced,
+-- for example, by a node on the (rooted) tree. The 'Subset's of leaf nodes are
+-- singletons. The 'Subset's of the root node is the set of all leaves.
+-- 'Subset's are the building blocks of partitions. Each branch on the tree
+-- induces a bipartition, or a pair of 'Subset's, see
 -- 'ELynx.Data.Tree.Bipartition'. Multifurcations induce multipartitions, see
 -- 'ELynx.Data.Tree.Multipartition'.
 --
