@@ -19,6 +19,7 @@ import qualified Data.ByteString.Lazy.Char8           as L
 import           Data.Maybe
 import           Data.Tree
 import           Test.Hspec
+import           Test.Hspec.QuickCheck
 import           Test.QuickCheck                      hiding (label)
 import           Test.QuickCheck.Instances.Containers ()
 
@@ -96,9 +97,11 @@ spec = do
             , Node "i" [ Node "j" [ Node "x" [] , Node "z" [] ]
                        , Node "y" [] ] ]
       roots simpleTre `shouldBe` simpleSol
-    it "returns the correct number of rooted trees for arbitrary trees" $
+    modifyMaxSize (*100) $
+      it "returns the correct number of rooted trees for arbitrary trees" $
       property (prop_roots :: (Tree Int -> Bool))
 
   describe "connect" $
+    modifyMaxSize (*100) $
     it "returns the correct number of rooted trees for arbitrary trees" $
       property (prop_connect :: Int -> Tree Int -> Tree Int -> Bool)

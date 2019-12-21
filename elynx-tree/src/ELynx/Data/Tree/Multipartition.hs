@@ -25,7 +25,7 @@ module ELynx.Data.Tree.Multipartition
   , fromBipartition
     -- * Working with 'Multipartition's.
   , multipartitions
-  , findMp
+  , findSubset
   , compatible
   ) where
 
@@ -102,17 +102,20 @@ multipartitionsUnsafe xs t@(Node _ ys    ) = S.unions $
   where lvsOthers = subForestGetSubsets xs t
 
 -- | Find the multipartition containing a given element.
-findMp :: Ord a => a -> Multipartition a -> Subset a
-findMp l m = fromMaybe
-             -- Return the empty subset if nothing is found. This corresponds
-             -- to having no information about the leaf in question.
-             sempty
-             (find (smember l) gs)
-  where gs = mps m
+findSubset :: Ord a => a -> Multipartition a -> Subset a
+findSubset l m = fromMaybe
+                 -- Return the empty subset if nothing is found. This corresponds
+                 -- to having no information about the leaf in question.
+                 sempty
+                 (find (smember l) ss)
+  where ss = mps m
 
 -- Add the subset of a bipartition which contains a given element.
 addSubset :: Ord a => Multipartition a -> S.Set (Subset a) -> a -> S.Set (Subset a)
-addSubset m gs l = findMp l m `S.insert` gs
+addSubset m ss l = if not $ snull ss'
+                   then ss' `S.insert` ss
+                   else ss
+  where ss' = findSubset l m
 
 -- Each subset overlaps with a number of subsets of a bipartition which are
 -- returned by this function.
@@ -132,22 +135,28 @@ overlap m = foldl' (addSubset m) S.empty
 -- The data type "set of subsets" is actually the same data type as a
 -- multipartition. However, it is not a partition, because it may and will not
 -- span the whole set of leaves, and so, I use @S.Set (Subset a)@. One could
--- define a multiset data type to make this clearer.
+-- define a multiset data type to improve comprehensibility.
 --
 -- 2b. Collect the set of subsets from point 1.
 --
--- 3. Each set of subsets needs to be either equal or disjoint with other set of
--- subsets in the collection. If so, the first multipartition is compatible with
--- the second.
+-- 3. Each set of subsets needs to be either equal or disjoint with any other
+-- set of subsets in the collection. If so, the first multipartition is
+-- compatible with the second.
 --
 -- 4. Exchange the first with the second multipartition and go through steps 1
 -- to 3.
 --
+-- See also 'ELynx.Data.Tree.Bipartition.compatible'.
 compatible :: (Ord a, Show a) => Multipartition a -> Multipartition a -> Bool
+-- compatible l r = traceShow lOverlaps $ traceShow rOverlaps $ and $
 compatible l r = and $
   [x `S.disjoint` y | x <- lOverlaps, y <- lOverlaps, x /= y] ++
   [x `S.disjoint` y | x <- rOverlaps, y <- rOverlaps, x /= y]
-  where ls = mps l
-        rs = mps r
-        lOverlaps = S.toList $ S.map (overlap r) ls
-        rOverlaps = S.toList $ S.map (overlap l) rs
+  where ls = S.toList $ mps l
+        rs = S.toList $ mps r
+        -- The subsets on the left multipartition overlap the subsets of the
+        -- right multipartition.
+        lOverlaps = map (overlap r) ls
+        -- The subsets on the left multipartition overlap the subsets of the
+        -- right multipartition.
+        rOverlaps = map (overlap l) rs

@@ -35,9 +35,7 @@ import           ELynx.Tools.Options
 
 -- | Unified way of creating a new section in the log.
 logNewSection :: MonadLogger m => Text -> m ()
-logNewSection s = do
-  $(logInfo) ""
-  $(logInfo) $ "-- " <> s
+logNewSection s = $(logInfo) $ "-- " <> s
 
 -- | The 'LoggingT' wrapper for ELynx. Prints a header and a footer, logs to
 -- 'stderr' if no file is provided. If a log file is provided, log to the file

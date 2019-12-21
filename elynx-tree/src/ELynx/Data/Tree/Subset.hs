@@ -25,6 +25,8 @@ module ELynx.Data.Tree.Subset
   , sunion
   , sunions
   , sdifference
+  , sintersection
+  , sdisjoint
   , smember
   , sshow
   ) where
@@ -85,6 +87,14 @@ sunions = SS . S.unions . map subset
 -- | Difference of two subsets.
 sdifference :: Ord a => Subset a -> Subset a -> Subset a
 sdifference p q = SS $ subset p S.\\ subset q
+
+-- | Intersection of two subsets.
+sintersection :: Ord a => Subset a -> Subset a -> Subset a
+sintersection p q = SS $ S.intersection (subset p) (subset q)
+
+-- | Are two subsets disjoint?
+sdisjoint :: Ord a => Subset a -> Subset a -> Bool
+sdisjoint p q = S.disjoint (subset p) (subset q)
 
 -- | Check if an element is member of a subset.
 smember :: Ord a => a -> Subset a -> Bool

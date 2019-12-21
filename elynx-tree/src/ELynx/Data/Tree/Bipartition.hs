@@ -35,11 +35,12 @@ module ELynx.Data.Tree.Bipartition
   , bipartition
   , bipartitions
   , bipartitionToBranchLength
+  , compatible
   ) where
 
-import qualified Data.Map                  as M
+import qualified Data.Map               as M
 import           Data.Maybe
-import qualified Data.Set                  as S
+import qualified Data.Set               as S
 import           Data.Tree
 
 import           ELynx.Data.Tree.Subset
@@ -164,3 +165,15 @@ bipartitionToBranchLengthUnsafe (l, p) f t@(Node (l', p') xs) =
   [ bipartitionToBranchLengthUnsafe (mempty, lvs) f x | (lvs, x) <- zip lvsOthers xs ]
   where
     lvsOthers = subForestGetSubsets p (fmap snd t)
+
+-- | Determine compatibility between an bipartition and a subset. If both
+-- subsets of the bipartition share elements with the given subset, the
+-- bipartition is incompatible with this subset. If all elements of the subset
+-- are either not in the bipartition or mapping to one of the two subsets of the
+-- bipartition, the bipartition and the subset are compatible. See also
+-- 'ELynx.Data.Tree.Multipartition.compatible'.
+compatible :: (Show a, Ord a) => Bipartition a -> Subset a -> Bool
+-- compatible (Bipartition (l, r)) ss = sintersection l ss `sdisjoint` sintersection r ss
+compatible (Bipartition (l, r)) ss = snull lOverlap || snull rOverlap
+  where lOverlap = sintersection l ss
+        rOverlap = sintersection r ss

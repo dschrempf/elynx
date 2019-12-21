@@ -46,5 +46,5 @@ while IFS= read -r file; do
     modules=("${modules[@]}" "$file")
 done < <(stack query | grep -e "path:.*$project_root" | tr -s " " | cut -d " " -f 3)
 
-export prof_dir=".stack-work-profiling"
-export prod_dir=".stack-work-production"
+export prof_dir=".stack-work-prof"
+export prod_dir=".stack-work-prod"

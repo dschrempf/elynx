@@ -1,7 +1,9 @@
 # Stack
 .stack-work/
-.stack-work-profiling/
-.stack-work-production/
+.stack-work-doc/
+.stack-work-test/
+.stack-work-prof/
+.stack-work-prod/
 *.cabal
 
 # Profile files.

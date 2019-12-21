@@ -94,8 +94,7 @@ logFooter = do
   let timeStr = "-- End time: " ++ t
       l       = length timeStr
   return $ intercalate "\n"
-    [ ""
-    , timeStr
+    [ timeStr
     , replicate l '-' ]
 
 versionOpt :: Parser (a -> a)

@@ -235,9 +235,9 @@ right _                           = error "left: Tree is not bifurcating."
 connect :: a -> Tree a -> Tree a -> [Tree a]
 connect n l r = [ Node n [x, y] | x <- roots l, y <- roots r]
 
--- XXX: Probably introduce a new module defining a Clade.
-
 -- | Get clades induced by multifurcations.
+--
+-- XXX: Probably introduce a new module defining a Clade.
 clades :: Ord a => Tree a -> [Subset a]
 clades (Node _ [] ) = []
 clades (Node _ [x]) = clades x

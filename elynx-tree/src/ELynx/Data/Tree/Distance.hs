@@ -18,7 +18,6 @@ All trees are assumed to be UNROOTED.
 module ELynx.Data.Tree.Distance
   ( symmetric
   , symmetricWith
-  , compatible
   , incompatibleSplits
   , incompatibleSplitsWith
   , branchScore
@@ -33,10 +32,14 @@ import           Data.Monoid
 import qualified Data.Set                       as S
 import           Data.Tree
 
-import           ELynx.Data.Tree.Bipartition
-import           ELynx.Data.Tree.MeasurableTree
+import           ELynx.Data.Tree.Bipartition    (Bipartition,
+                                                 bipartitionToBranchLength,
+                                                 bipartitions)
+import           ELynx.Data.Tree.MeasurableTree (Measurable, getLen)
+import           ELynx.Data.Tree.Multipartition (Multipartition, compatible,
+                                                 fromBipartition,
+                                                 multipartitions)
 import           ELynx.Data.Tree.NamedTree
-import           ELynx.Data.Tree.Multipartition
 
 -- Symmetric difference between two 'Set's.
 symmetricDifference :: Ord a => S.Set a -> S.Set a -> S.Set a

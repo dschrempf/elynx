@@ -18,10 +18,11 @@ import           Control.Monad.Trans.Reader
 
 import           Options
 
+import           Compare.Compare
+import           Connect.Connect
 import           Distance.Distance
 import           Examine.Examine
 import           Simulate.Simulate
-import           Compare.Compare
 
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Options
@@ -37,3 +38,4 @@ main = do
     Examine  a -> runReaderT (eLynxWrapper lvl lf examineDescription  $ examine fn) a
     Simulate a -> runReaderT (eLynxWrapper lvl lf simulateDescription $ simulate fn) a
     Compare  a -> runReaderT (eLynxWrapper lvl lf simulateDescription $ compareCmd fn) a
+    Connect  a -> runReaderT (eLynxWrapper lvl lf simulateDescription $ connectCmd fn) a

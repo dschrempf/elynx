@@ -24,10 +24,11 @@ module Options
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
 
+import           Compare.Options
+import           Connect.Options
 import           Distance.Options
 import           Examine.Options
 import           Simulate.Options
-import           Compare.Options
 
 import           ELynx.Tools.Options
 
@@ -36,12 +37,22 @@ data CommandArguments =
   | Examine ExamineArguments
   | Simulate SimulateArguments
   | Compare CompareArguments
+  | Connect ConnectArguments
 
-distanceDescription, examineDescription, simulateDescription, compareDescription :: String
+distanceDescription :: String
 distanceDescription =  "Compute distances between many phylogenetic trees."
+
+examineDescription :: String
 examineDescription  =  "Compute summary statistics of phylogenetic trees."
+
+simulateDescription :: String
 simulateDescription =  "Simulate phylogenetic trees using birth and death processes."
+
+compareDescription :: String
 compareDescription  =  "Compare two phylogenetic trees (compute distances and branch-wise differences)."
+
+connectDescription :: String
+connectDescription  =  "Connect two phylogenetic trees in all ways (possibly honoring constraints)."
 
 distanceCommand :: Mod CommandFields CommandArguments
 distanceCommand = command "distance" $
@@ -67,12 +78,18 @@ compareCommand = command "compare" $
                    info (Compare <$> compareArguments)
                      $ progDesc compareDescription
 
+connectCommand :: Mod CommandFields CommandArguments
+connectCommand = command "connect" $
+                   info (Connect <$> connectArguments)
+                     $ progDesc connectDescription
+
 commandArguments :: Parser CommandArguments
 commandArguments = hsubparser $
                    distanceCommand
                    <> examineCommand
                    <> simulateCommand
                    <> compareCommand
+                   <> connectCommand
 
 parseArguments :: IO (Arguments CommandArguments)
 parseArguments = parseArgumentsWith desc ftr commandArguments
