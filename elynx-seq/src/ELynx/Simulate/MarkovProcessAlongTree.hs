@@ -31,8 +31,8 @@ import           Control.Monad.Primitive
 import           Control.Parallel.Strategies
 import           Data.Tree
 import           Numeric.LinearAlgebra
-import           System.Random.MWC
-import           System.Random.MWC.Distributions
+import           System.Random.MWC                   (Gen, GenIO)
+import           System.Random.MWC.Distributions     (categorical)
 
 import           ELynx.Data.MarkovProcess.RateMatrix
 import           ELynx.Data.Tree.MeasurableTree

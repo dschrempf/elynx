@@ -25,8 +25,9 @@ import           Data.Tree
 import           Test.Hspec
 
 import           ELynx.Data.Tree.Bipartition
-import           ELynx.Data.Tree.Subset
+import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Data.Tree.Subset
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
 
@@ -79,5 +80,5 @@ spec = do
   describe "bipartitionToBranch" $
     it "creates a map from bipartitions to branch lengths" $ do
       simpleTrees <- getSimpleTrees
-      bipartitionToBranchLength label (Sum . brLen) (simpleTrees !! 2)
+      bipartitionToBranchLength label (Sum . getLen) (simpleTrees !! 2)
         `shouldBe` bipartitionToBranchAnswer

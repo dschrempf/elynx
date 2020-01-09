@@ -26,23 +26,23 @@ sampleLabelByteString :: L.ByteString
 sampleLabelByteString = L.pack "name:0.3"
 
 sampleLabel :: (PhyloLabel L.ByteString)
-sampleLabel = PhyloLabel (L.pack "name") Nothing 0.3
+sampleLabel = PhyloLabel (L.pack "name") Nothing (Just 0.3)
 
 sampleForestByteString :: L.ByteString
 sampleForestByteString = L.pack "(l,l,(a,b))"
 
 sampleForest :: [Tree (PhyloLabel L.ByteString)]
 sampleForest =
-  [ Node { rootLabel = PhyloLabel (L.pack "l") Nothing 0
+  [ Node { rootLabel = PhyloLabel (L.pack "l") Nothing Nothing
          , subForest = []
          }
-  , Node { rootLabel = PhyloLabel (L.pack "l") Nothing 0
+  , Node { rootLabel = PhyloLabel (L.pack "l") Nothing Nothing
          , subForest = []
          }
-  , Node { rootLabel = PhyloLabel (L.pack "") Nothing 0
+  , Node { rootLabel = PhyloLabel (L.pack "") Nothing Nothing
          , subForest =
-           [ Node {rootLabel = PhyloLabel (L.pack "a") Nothing 0, subForest = []}
-           , Node {rootLabel = PhyloLabel (L.pack "b") Nothing 0, subForest = []}
+           [ Node {rootLabel = PhyloLabel (L.pack "a") Nothing Nothing, subForest = []}
+           , Node {rootLabel = PhyloLabel (L.pack "b") Nothing Nothing, subForest = []}
            ]
          }
   ]
@@ -59,16 +59,16 @@ sampleNewickEmptyByteString = L.pack "(,(,,),);"
 
 sampleNewickEmpty :: Tree (PhyloLabel L.ByteString)
 sampleNewickEmpty =
-  Node { rootLabel = PhyloLabel (L.pack "") Nothing 0
+  Node { rootLabel = PhyloLabel (L.pack "") Nothing Nothing
        , subForest =
-           [ Node {rootLabel = PhyloLabel (L.pack "") Nothing 0, subForest = []}
-           , Node {rootLabel = PhyloLabel (L.pack "") Nothing 0, subForest =
-                      [ Node {rootLabel = PhyloLabel (L.pack "") Nothing 0, subForest = []}
-                      , Node {rootLabel = PhyloLabel (L.pack "") Nothing 0, subForest = []}
-                      , Node {rootLabel = PhyloLabel (L.pack "") Nothing 0, subForest = []}
+           [ Node {rootLabel = PhyloLabel (L.pack "") Nothing Nothing, subForest = []}
+           , Node {rootLabel = PhyloLabel (L.pack "") Nothing Nothing, subForest =
+                      [ Node {rootLabel = PhyloLabel (L.pack "") Nothing Nothing, subForest = []}
+                      , Node {rootLabel = PhyloLabel (L.pack "") Nothing Nothing, subForest = []}
+                      , Node {rootLabel = PhyloLabel (L.pack "") Nothing Nothing, subForest = []}
                       ]
                   }
-           , Node {rootLabel = PhyloLabel (L.pack "") Nothing 0, subForest = []}
+           , Node {rootLabel = PhyloLabel (L.pack "") Nothing Nothing, subForest = []}
            ]
        }
 
@@ -76,10 +76,10 @@ spec :: Spec
 spec = do
   describe "branchLength" $ do
     it "parses a colon and a branch length" $
-      parse branchLength "" (L.pack ":13.2") `shouldParse` 13.2
+      parse branchLength "" (L.pack ":13.2") `shouldParse` Just 13.2
 
-    it "returns 0 if no branch length is given" $
-      parse branchLength "" (L.pack "") `shouldParse` 0
+    it "returns Nothing if no branch length is given" $
+      parse branchLength "" (L.pack "") `shouldParse` Nothing
 
   describe "name" $ do
     it "parses a string of printable characters" $
@@ -96,7 +96,7 @@ spec = do
       parse node "" sampleLabelByteString `shouldParse` sampleLabel
 
     it "parses tree nodes with empty names and branch lengths" $
-      parse node "" (L.pack "") `shouldParse` PhyloLabel (L.pack "") Nothing 0
+      parse node "" (L.pack "") `shouldParse` PhyloLabel (L.pack "") Nothing Nothing
 
   describe "leaf" $
     it "parses a leaf of a tree" $

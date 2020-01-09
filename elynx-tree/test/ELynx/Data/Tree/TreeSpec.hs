@@ -130,7 +130,7 @@ spec = do
       a <- parseFileWith oneNewick "data/ConnectA.tree"
       b <- parseFileWith oneNewick "data/ConnectB.tree"
       c <- parseFileWith manyNewick "data/ConnectConstraints.tree"
-      let ts = connect (PhyloLabel "" Nothing 1.0) a b
+      let ts = connect (PhyloLabel "" Nothing (Just 1.0)) a b
           cs = concatMap clades c :: [Constraint (PhyloLabel L.ByteString)]
           ts' = filter (compatibleWith getName cs) ts
       length ts  `shouldBe` 63

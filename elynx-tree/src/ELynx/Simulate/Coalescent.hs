@@ -10,6 +10,8 @@ Portability :  portable
 
 Creation date: Wed May 16 13:13:11 2018.
 
+TODO: This is unused, is it?
+
 -}
 
 
@@ -34,7 +36,7 @@ simulate :: (PrimMonad m)
          -> Gen (PrimState m)
          -> m (Tree (PhyloLabel Int))
 simulate n = simulate' n 0 trs
-  where trs = [ singleton (PhyloLabel i Nothing 0.0) | i <- [0..n-1] ]
+  where trs = [ singleton (PhyloLabel i Nothing Nothing) | i <- [0..n-1] ]
 
 simulate' :: (PrimMonad m)
           => Int
@@ -56,7 +58,7 @@ simulate' n a trs g
             tl    = trs' !! (i-1)
             tr    = trs' !! i
             -- Join the two chosen trees.
-            tm    = Node (PhyloLabel a Nothing 0.0) [tl, tr]
+            tm    = Node (PhyloLabel a Nothing Nothing) [tl, tr]
             -- Take the trees on the left, the merged tree, and the trees on the right.
             trs'' = take (i-1) trs' ++ [tm] ++ drop (i+1) trs'
         simulate' (n-1) a trs'' g

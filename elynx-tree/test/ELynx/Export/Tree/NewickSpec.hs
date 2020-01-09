@@ -36,6 +36,9 @@ sampleNewickByteString1 = L.pack "(Aeropyrum0:0.5478645225,(((((((((Arabidopsi:0
 
 prop_invariant :: Tree (PhyloLabel Int) -> Bool
 prop_invariant t = parseByteStringWith "Sample newick byte string" newick (toNewick t) ==
+                   -- We have to convert Int to ByteString, but we cannot use
+                   -- arbitrary instances with ByteStrings because many
+                   -- characters are disallowed and break the Newick string.
                    fmap (\l -> l{label = getName l}) t
 
 spec :: Spec

@@ -62,7 +62,7 @@ connectCmd outFile = do
 connectTrees :: Tree (PhyloLabel L.ByteString)
              -> Tree (PhyloLabel L.ByteString)
              -> [Tree (PhyloLabel L.ByteString)]
-connectTrees = connect (PhyloLabel "" Nothing 1.0)
+connectTrees = connect (PhyloLabel "" Nothing Nothing)
 
 type Constraint a = Subset a
 

@@ -112,9 +112,9 @@ checkNameCharacter c = c `notElem` map c2w " :;()[],"
 name :: Parser L.ByteString
 name = L.pack <$> many (satisfy checkNameCharacter) <?> "name"
 
--- | Branch lengths default to 0.
-branchLength :: Parser Double
-branchLength = char (c2w ':') *> branchLengthGiven <|> pure 0 <?> "branchLength"
+-- | Branch length.
+branchLength :: Parser (Maybe Double)
+branchLength = (optional $ char (c2w ':') *> branchLengthGiven) <?> "branchLength"
 
 branchLengthGiven :: Parser Double
 branchLengthGiven = try float <|> decimalAsDouble

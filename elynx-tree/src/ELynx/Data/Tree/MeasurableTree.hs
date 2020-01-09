@@ -42,13 +42,13 @@ class Measurable a where
   -- | Set attached branch length.
   setLen :: Double -> a -> a
 
-  -- | Elongate branch length.
-  lengthen :: Double -> a -> a
-  lengthen dl l = setLen (dl + getLen l) l
+-- | Elongate branch length.
+lengthen :: Measurable a => Double -> a -> a
+lengthen dl l = setLen (dl + getLen l) l
 
-  -- | Shorten branch length.
-  shorten :: Double -> a -> a
-  shorten dl = lengthen (-dl)
+-- -- | Shorten branch length.
+-- shorten :: Double -> a -> a
+-- shorten dl = lengthen (-dl)
 
 -- | Distances from the root of a tree to its leaves.
 distancesRootLeaves :: (Measurable a) => Tree a -> [Double]
