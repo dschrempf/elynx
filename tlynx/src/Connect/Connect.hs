@@ -37,7 +37,7 @@ import           ELynx.Data.Tree.Tree        (clades, connect)
 import           ELynx.Export.Tree.Newick    (toNewick)
 import           ELynx.Import.Tree.Newick    (manyNewick, oneNewick)
 import           ELynx.Tools.InputOutput     (outHandle, parseFileWith)
-import           ELynx.Tools.Text            (fromBs, tshow)
+import           ELynx.Tools.Text            (fromBs, tShow)
 
 -- TODO: Write a proper documentation.
 
@@ -89,7 +89,7 @@ connectOnly :: Handle -> FilePath -> FilePath -> Connect ()
 connectOnly h l r = do
   (tl, tr) <- parseTrees l r
   let  ts = connectTrees tl tr
-  $(logInfo) $ "Connected trees: " <> tshow (length ts)
+  $(logInfo) $ "Connected trees: " <> tShow (length ts)
   liftIO $ L.hPutStr h $ L.unlines $ map toNewick ts
 
 connectAndFilter :: Handle -> FilePath -> FilePath -> FilePath -> Connect ()
@@ -102,6 +102,6 @@ connectAndFilter h c l r = do
       cs = concatMap clades cts :: [Constraint (PhyloLabel L.ByteString)]
       -- Only collect trees that are compatible with the constraints.
       ts' = filter (compatibleWith getName cs) ts
-  $(logInfo) $ "Connected  trees: " <> tshow (length ts)
-  $(logInfo) $ "Compatible trees: " <> tshow (length ts')
+  $(logInfo) $ "Connected  trees: " <> tShow (length ts)
+  $(logInfo) $ "Compatible trees: " <> tShow (length ts')
   liftIO $ L.hPutStr h $ L.unlines $ map toNewick ts'

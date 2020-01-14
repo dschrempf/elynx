@@ -19,6 +19,9 @@ module Options
   , distanceDescription
   , examineDescription
   , simulateDescription
+  , compareDescription
+  , connectDescription
+  , shuffleDescription
   ) where
 
 import           Options.Applicative
@@ -28,6 +31,7 @@ import           Compare.Options
 import           Connect.Options
 import           Distance.Options
 import           Examine.Options
+import           Shuffle.Options
 import           Simulate.Options
 
 import           ELynx.Tools.Options
@@ -38,6 +42,7 @@ data CommandArguments =
   | Simulate SimulateArguments
   | Compare CompareArguments
   | Connect ConnectArguments
+  | Shuffle ShuffleArguments
 
 distanceDescription :: String
 distanceDescription =  "Compute distances between many phylogenetic trees."
@@ -53,6 +58,9 @@ compareDescription  =  "Compare two phylogenetic trees (compute distances and br
 
 connectDescription :: String
 connectDescription  =  "Connect two phylogenetic trees in all ways (possibly honoring constraints)."
+
+shuffleDescription :: String
+shuffleDescription  =  "Shuffle a phylogenetic tree (keep coalescent times, but shuffle topology and leaves)."
 
 distanceCommand :: Mod CommandFields CommandArguments
 distanceCommand = command "distance" $
@@ -83,6 +91,11 @@ connectCommand = command "connect" $
                    info (Connect <$> connectArguments)
                      $ progDesc connectDescription
 
+shuffleCommand :: Mod CommandFields CommandArguments
+shuffleCommand = command "shuffle" $
+                   info (Shuffle <$> shuffleArguments)
+                     $ progDesc shuffleDescription
+
 commandArguments :: Parser CommandArguments
 commandArguments = hsubparser $
                    distanceCommand
@@ -90,6 +103,7 @@ commandArguments = hsubparser $
                    <> simulateCommand
                    <> compareCommand
                    <> connectCommand
+                   <> shuffleCommand
 
 parseArguments :: IO (Arguments CommandArguments)
 parseArguments = parseArgumentsWith desc ftr commandArguments

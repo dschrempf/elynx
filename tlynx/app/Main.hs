@@ -22,6 +22,7 @@ import           Compare.Compare
 import           Connect.Connect
 import           Distance.Distance
 import           Examine.Examine
+import           Shuffle.Shuffle
 import           Simulate.Simulate
 
 import           ELynx.Tools.Logger
@@ -37,5 +38,6 @@ main = do
     Distance a -> runReaderT (eLynxWrapper lvl lf distanceDescription $ distance fn) a
     Examine  a -> runReaderT (eLynxWrapper lvl lf examineDescription  $ examine fn) a
     Simulate a -> runReaderT (eLynxWrapper lvl lf simulateDescription $ simulate fn) a
-    Compare  a -> runReaderT (eLynxWrapper lvl lf simulateDescription $ compareCmd fn) a
-    Connect  a -> runReaderT (eLynxWrapper lvl lf simulateDescription $ connectCmd fn) a
+    Compare  a -> runReaderT (eLynxWrapper lvl lf compareDescription $ compareCmd fn) a
+    Connect  a -> runReaderT (eLynxWrapper lvl lf connectDescription $ connectCmd fn) a
+    Shuffle  a -> runReaderT (eLynxWrapper lvl lf shuffleDescription $ shuffleCmd fn) a

@@ -16,6 +16,7 @@ Equality tests.
 module ELynx.Tools.Equality
   (
     allEqual
+  , allNearlyEqual
   , nearlyEqWith
   , eps
   , nearlyEq
@@ -39,6 +40,11 @@ allEqual :: Eq a => [a] -> Bool
 allEqual [] = True
 allEqual xs = all (== head xs) (tail xs)
 
+-- | Test if all elements of a list are nearly equal; returns True for empty list.
+allNearlyEqual :: [Double] -> Bool
+allNearlyEqual [] = True
+allNearlyEqual xs = all (=~= head xs) (tail xs)
+
 -- | Test for equality with given tolerance (needed because of machine precision).
 nearlyEqWith :: Double -> Double -> Double -> Bool
 nearlyEqWith tol a b = tol > abs (a-b)
@@ -52,7 +58,7 @@ nearlyEq = nearlyEqWith eps
 (=~=) :: Double -> Double -> Bool
 (=~=) = nearlyEq
 
--- Test if the given number is nearly equal to all elements of a vector.
+-- Test if the given number is nearly equal to all elements of a list.
 nearlyEqValListWith :: Double -> Double -> [Double] -> Bool
 nearlyEqValListWith tol a = all (nearlyEqWith tol a)
 

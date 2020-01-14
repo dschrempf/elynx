@@ -48,7 +48,7 @@ instance Measurable (PhyloLabel a) where
   getLen = fromMaybe 0 . brLen
   setLen l x
     | l >= 0 = x {brLen = Just l}
-    | otherwise = error "Branch lengths cannot be negative."
+    | otherwise = error $ "Branch lengths cannot be negative: " <> show l
 
 instance BranchSupported (PhyloLabel a) where
   getBranchSupport = brSup

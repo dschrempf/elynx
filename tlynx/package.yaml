@@ -29,6 +29,7 @@ ghc-options:
   # - -fllvm
 
 dependencies:
+  - array
   - lifted-async
   - base
   - bytestring
@@ -43,6 +44,7 @@ dependencies:
   # - matrices
   - megaparsec
   - monad-logger
+  - MonadRandom
   - mwc-random
   - optparse-applicative
   - parallel

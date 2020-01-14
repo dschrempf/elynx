@@ -16,7 +16,7 @@ indispensable tools for ByteString handling :).
 module ELynx.Tools.Text
   (
     -- * Text handling.
-    tshow
+    tShow
   , fromBs
   ) where
 
@@ -26,8 +26,8 @@ import           Data.Text.Lazy          (toStrict)
 import           Data.Text.Lazy.Encoding (decodeUtf8)
 
 -- | Conversion to 'Text' from showable values.
-tshow :: Show a => a -> Text
-tshow = pack . show
+tShow :: Show a => a -> Text
+tShow = pack . show
 
 -- | Conversion to 'Text' from bytestring.
 fromBs :: ByteString -> Text

@@ -23,7 +23,7 @@ module ELynx.Tools.ByteString
   , summarizeByteString
   , c2w
   , w2c
-  , bshow
+  , bShow
   ) where
 
 import           Data.ByteString.Internal   (c2w, w2c)
@@ -58,5 +58,5 @@ summarizeByteString l s | L.length s >= fromIntegral l = L.take (fromIntegral l)
                         | otherwise = s
 
 -- | Conversion to 'L.ByteString'.
-bshow :: Show a => a -> L.ByteString
-bshow = L.pack . show
+bShow :: Show a => a -> L.ByteString
+bShow = L.pack . show

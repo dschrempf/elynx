@@ -179,7 +179,7 @@ simulateReconstructedTree
   -> Rate       -- ^ Death rate
   -> Gen (PrimState m)   -- ^ Generator (see 'System.Random.MWC')
   -> m (Tree (PhyloLabel Int))
-simulateReconstructedTree n t l m g =  toReconstructedTree <$> simulate n t l m g
+simulateReconstructedTree n t l m g =  toReconstructedTree 0 <$> simulate n t l m g
 
 -- | Convert a point process to a reconstructed tree. See Lemma 2.2.
 
@@ -191,9 +191,10 @@ simulateReconstructedTree n t l m g =  toReconstructedTree <$> simulate n t l m 
 -- contain extinct leaves. I wanted to use a Monoid constraint to get the unit
 -- element, but this fails for classical 'Int's. So, I rather have another
 -- (useless) argument.
-toReconstructedTree :: PointProcess Int Double
-                    -> Tree (PhyloLabel Int)
-toReconstructedTree pp@(PointProcess ps vs o)
+toReconstructedTree :: a                      -- Default node label.
+                    -> PointProcess a Double
+                    -> Tree (PhyloLabel a)
+toReconstructedTree l pp@(PointProcess ps vs o)
   | length ps /= length vs + 1 = error "Too few or too many points."
   | length vs <= 1             = error "Too few values."
   -- -- XXX: Test is deactivated.
@@ -202,18 +203,19 @@ toReconstructedTree pp@(PointProcess ps vs o)
   where (vsSorted, isSorted) = sort pp
         !lvs        = [ singleton (PhyloLabel p Nothing Nothing) | p <- ps ]
         !heights    = replicate (length ps) 0
-        !treeRoot   = toReconstructedTree' isSorted vsSorted lvs heights
+        !treeRoot   = toReconstructedTree' isSorted vsSorted l lvs heights
         !h          = last vsSorted
         !treeOrigin = lengthenStem (o-h) treeRoot
 
 -- Move up the tree, connect nodes when they join according to the point process.
-toReconstructedTree' :: [Int]                -- Sorted indices, see 'sort'.
-                     -> [Double]             -- Sorted merge values.
-                     -> [Tree (PhyloLabel Int)] -- Leaves with accumulated root branch lengths.
-                     -> [Double]             -- Accumulated heights of the leaves.
-                     -> Tree (PhyloLabel Int)
-toReconstructedTree' [] [] trs  _ = head trs
-toReconstructedTree' is vs trs hs = toReconstructedTree' is' vs' trs'' hs'
+toReconstructedTree' :: [Int]                 -- Sorted indices, see 'sort'.
+                     -> [Double]              -- Sorted merge values.
+                     -> a                     -- Default node label.
+                     -> [Tree (PhyloLabel a)] -- Leaves with accumulated root branch lengths.
+                     -> [Double]              -- Accumulated heights of the leaves.
+                     -> Tree (PhyloLabel a)
+toReconstructedTree' [] [] _ trs  _ = head trs
+toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
   -- For the algorithm, see 'ELynx.Coalescent.simulate', but index starts
   -- at zero.
   where !i     = head is
@@ -228,6 +230,6 @@ toReconstructedTree' is vs trs hs = toReconstructedTree' is' vs' trs'' hs'
         !tl    = lengthenStem dvl $ trs !! i
         !tr    = lengthenStem dvr $ trs !! (i+1)
         !h'    = hl + dvl       -- Should be the same as 'hr + dvr'.
-        !tm    = Node (PhyloLabel 0 Nothing Nothing) [tl, tr]
+        !tm    = Node (PhyloLabel l Nothing Nothing) [tl, tr]
         !trs'' = take i trs ++ [tm] ++ drop (i+2) trs
         !hs'   = take i hs ++ [h'] ++ drop (i+2) hs

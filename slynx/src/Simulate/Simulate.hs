@@ -115,7 +115,7 @@ reportModel :: Maybe FilePath -> P.PhyloModel -> Simulate ()
 reportModel Nothing      _ = $(logInfo) "No output file provided; omit detailed report of phylogenetic model."
 reportModel (Just outFn) m = do
   let modelFn = outFn <> ".model"
-  out "model definition (machine readable)" (bshow m <> "\n") (Just modelFn)
+  out "model definition (machine readable)" (bShow m <> "\n") (Just modelFn)
 
 -- | Simulate sequences.
 simulateCmd :: Maybe FilePath -> Simulate ()
