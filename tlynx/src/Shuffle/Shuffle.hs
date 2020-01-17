@@ -38,7 +38,8 @@ import           System.IO
 
 import           Shuffle.Options
 
-import           ELynx.Data.Tree.MeasurableTree (height, rootHeight, ultrametric)
+import           ELynx.Data.Tree.MeasurableTree (distancesOriginLeaves, height,
+                                                 rootHeight)
 import           ELynx.Data.Tree.NamedTree      (getName)
 import           ELynx.Data.Tree.PhyloTree      (PhyloLabel, brLen)
 import           ELynx.Data.Tree.Tree           (leaves)
@@ -46,6 +47,7 @@ import           ELynx.Export.Tree.Newick       (toNewick)
 import           ELynx.Import.Tree.Newick       (oneNewick)
 import           ELynx.Simulate.PointProcess    (PointProcess (PointProcess),
                                                  toReconstructedTree)
+import           ELynx.Tools.Definitions        (eps)
 import           ELynx.Tools.InputOutput        (outHandle, parseFileWith)
 import           ELynx.Tools.Text               (fromBs, tShow)
 
@@ -57,7 +59,7 @@ shuffleCmd :: Maybe FilePath -> Shuffle ()
 shuffleCmd outFile = do
   a <- lift ask
 
-  let outFn = (++ ".out") <$> outFile
+  let outFn = (++ ".tree") <$> outFile
   h <- outHandle "results" outFn
 
   t <- liftIO $ parseFileWith oneNewick (inFile a)
@@ -69,9 +71,19 @@ shuffleCmd outFile = do
       r' = r {brLen = Just 0}
       t' = t {rootLabel = r'}
   when (isNothing $ traverse brLen t')
-    (error "Not all branches have a given length.")
-  unless (ultrametric t)
+    (do
+        $(logDebug) $ tShow t'
+        error "Not all branches have a given length.")
+
+  -- Check if tree is ultrametric enough.
+  let dh = sum $ map (height t -) (distancesOriginLeaves t)
+  $(logDebug) $ "Distance in branch length to being ultrametric: " <> tShow dh
+  when (dh > 2e-4)
     (error "Tree is not ultrametric.")
+  when (dh > eps && dh < 2e-4) $
+    $(logInfo) "Tree is nearly ultrametric, ignore branch length differences smaller than 2e-4."
+  when (dh < eps) $
+    $(logInfo) "Tree is ultrametric."
 
   let cs = filter (>0) $ flatten $ mapTree rootHeight t
       ls = map getName $ leaves t
