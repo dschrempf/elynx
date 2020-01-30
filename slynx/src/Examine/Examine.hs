@@ -24,17 +24,17 @@ module Examine.Examine
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
-import qualified Data.ByteString.Lazy.Char8                 as L
-import qualified Data.Set                                   as S
+import qualified Data.ByteString.Lazy.Char8    as L
+import qualified Data.Set                      as S
 import           Text.Printf
 
 import           Examine.Options
 import           Tools
 
-import qualified ELynx.Data.Alphabet.Alphabet               as A
-import qualified ELynx.Data.Alphabet.Character              as C
+import qualified ELynx.Data.Alphabet.Alphabet  as A
+import qualified ELynx.Data.Alphabet.Character as C
 import qualified ELynx.Data.Sequence.Alignment as M
-import qualified ELynx.Data.Sequence.Sequence               as Seq
+import qualified ELynx.Data.Sequence.Sequence  as Seq
 import           ELynx.Tools.InputOutput
 
 examineAlignment :: Bool -> M.Alignment -> L.ByteString
@@ -104,8 +104,8 @@ examineAlignment perSiteFlag a =
 examine :: Bool -> [Seq.Sequence] -> L.ByteString
 examine perSiteFlag ss = Seq.summarizeSequences ss <>
   case M.fromSequences ss of
-    Left  _   -> L.empty
-    Right a   -> L.pack "\n" <> examineAlignment perSiteFlag a
+    Left  _ -> L.empty
+    Right a -> L.pack "\n" <> examineAlignment perSiteFlag a
 
 -- | Examine sequences.
 examineCmd :: Maybe FilePath -> Examine ()

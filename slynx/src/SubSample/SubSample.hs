@@ -25,11 +25,11 @@ import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
-import qualified Data.Text                                  as T
-import qualified Data.Text.Lazy                             as LT
-import qualified Data.Text.Lazy.Builder                     as LT
-import qualified Data.Text.Lazy.Builder.Int                 as LT
-import qualified Data.Vector                                as V
+import qualified Data.Text                     as T
+import qualified Data.Text.Lazy                as LT
+import qualified Data.Text.Lazy.Builder        as LT
+import qualified Data.Text.Lazy.Builder.Int    as LT
+import qualified Data.Vector                   as V
 import           System.Random.MWC
 
 import           SubSample.Options

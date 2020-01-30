@@ -48,7 +48,7 @@ import           ELynx.Data.MarkovProcess.GammaRateHeterogeneity
 import qualified ELynx.Data.MarkovProcess.MixtureModel             as M
 import qualified ELynx.Data.MarkovProcess.PhyloModel               as P
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel        as SM
-import qualified ELynx.Data.Sequence.Alignment        as A
+import qualified ELynx.Data.Sequence.Alignment                     as A
 import qualified ELynx.Data.Sequence.Sequence                      as Seq hiding
                                                                            (name)
 import           ELynx.Data.Tree.MeasurableTree

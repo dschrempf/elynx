@@ -66,8 +66,8 @@ import           Data.Traversable
 import           Data.Tree
 import           System.Random.MWC
 
-import           ELynx.Tools.Random
 import           ELynx.Data.Tree.Subset
+import           ELynx.Tools.Random
 
 -- | The simplest tree. Usually an extant leaf.
 singleton :: a -> Tree a
@@ -239,7 +239,7 @@ connect n l r = [ Node n [x, y] | x <- roots l, y <- roots r]
 --
 -- XXX: Probably introduce a new module defining a Clade.
 clades :: Ord a => Tree a -> [Subset a]
-clades (Node _ [] ) = []
-clades (Node _ [x]) = clades x
+clades (Node _ [] )    = []
+clades (Node _ [x])    = clades x
 clades (Node _ [x, y]) = clades x ++ clades y
-clades t = sfromlist (leaves t) : concatMap clades (subForest t)
+clades t               = sfromlist (leaves t) : concatMap clades (subForest t)

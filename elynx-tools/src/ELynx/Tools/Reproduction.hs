@@ -30,8 +30,8 @@ import           Data.Bifunctor        (first)
 import qualified Data.ByteString.Char8 as B
 import           Data.Either           (either)
 import           GHC.Generics          (Generic)
-import           Options.Applicative   (Parser, defaultPrefs, execParserPure,
-                                        getParseResult, info, briefDesc)
+import           Options.Applicative   (Parser, briefDesc, defaultPrefs,
+                                        execParserPure, getParseResult, info)
 import           System.Environment    (getArgs, getProgName)
 
 -- | Reproducible commands have a set of input files that have to be checked for

@@ -21,8 +21,8 @@ import           Test.Hspec
 import           Test.QuickCheck                      hiding (label)
 import           Test.QuickCheck.Instances.Containers ()
 
-import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.NamedTree
+import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Export.Tree.Newick
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput

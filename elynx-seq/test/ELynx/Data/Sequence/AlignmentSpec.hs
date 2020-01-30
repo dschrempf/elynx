@@ -14,8 +14,8 @@ Creation date: Fri Oct  5 14:25:42 2018.
 module ELynx.Data.Sequence.AlignmentSpec
   (spec) where
 
-import qualified Data.ByteString.Lazy.Char8                 as L
-import qualified Data.Matrix.Unboxed                        as M
+import qualified Data.ByteString.Lazy.Char8    as L
+import qualified Data.Matrix.Unboxed           as M
 import           Test.Hspec
 
 import           ELynx.Data.Alphabet.Alphabet

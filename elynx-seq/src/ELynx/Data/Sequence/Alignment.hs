@@ -165,7 +165,7 @@ concat l r
 -- | Concatenate a list of 'Alignment's horizontally. See
 -- 'concat'.
 concatAlignments :: [Alignment] -> Alignment
-concatAlignments []    = error "concatAlignments: Nothing to concatenate."
+concatAlignments []  = error "concatAlignments: Nothing to concatenate."
 concatAlignments [a] = a
 concatAlignments as  = foldl' concat (head as) (tail as)
 

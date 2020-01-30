@@ -24,7 +24,7 @@ import           Options.Applicative
 
 -- | Arguments needed to examine phylogenetic trees.
 data ExamineArguments = ExamineArguments
-  { argsInFile           :: Maybe FilePath
+  { argsInFile       :: Maybe FilePath
   , argsNewickIqTree :: Bool }
 
 -- | Logger and reader data type.

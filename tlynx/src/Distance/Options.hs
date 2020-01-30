@@ -25,7 +25,7 @@ import           Control.Monad.Trans.Reader
 import           Data.List
 import           Data.Void
 import           Options.Applicative
-import           Text.Megaparsec            (Parsec, try, eof)
+import           Text.Megaparsec            (Parsec, eof, try)
 import           Text.Megaparsec.Char       (char, string)
 import           Text.Megaparsec.Char.Lexer (float)
 import           Text.Printf
