@@ -13,6 +13,8 @@ Portability :  portable
 
 Creation date: Tue Nov 19 15:07:09 2019.
 
+XXX: This module is actively developed. It is not yet used by slynx nor tlynx.
+
 -}
 
 module ELynx.Tools.Reproduction
@@ -54,7 +56,7 @@ instance ToJSON a => ToJSON (Reproduction a) where
 
 instance FromJSON a => FromJSON (Reproduction a)
 
--- | Does the command line fit the provided command?
+-- Does the command line fit the provided command?
 checkArgs :: (Eq a, Show a, Reproducible a)
           => [String] -> a -> IO (Either String ())
 checkArgs as c = do
@@ -71,7 +73,7 @@ checkArgs as c = do
                           , show c ]
       else Right ()
 
--- | Does the file match the checksum?
+-- Does the file match the checksum?
 checkFile :: FilePath -> B.ByteString -> IO (Either String ())
 checkFile fp h = do
   h' <- hashFile fp
@@ -81,7 +83,7 @@ checkFile fp h = do
                         , fp ++ " has check sum " ++ B.unpack h'
                         , "Stored sum is " ++ B.unpack h ]
 
--- | Well, not much to say here. Combined 'checkArgs', and 'checkFile' for now.
+-- | Check if command line arguments and files check sums are matching.
 checkReproduction :: (Eq a, Show a, Reproducible a)
                   => Reproduction a -> IO (Either String ())
 checkReproduction (Reproduction _ as fs ss c) = do

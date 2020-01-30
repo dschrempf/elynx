@@ -9,26 +9,26 @@ The ELynx Suite is a Haskell library and a tool set for computational biology.
 The goal of the ELynx Suite is reproducible research. Evolutionary sequences and
 phylogenetic trees can be read, viewed, modified and simulated. Exact
 specification of all options is necessary, and nothing is assumed about the data
-(e.g., the type of code). The command line with all arguments is consistently,
-and automatically logged. The work overhead in the beginning usually pays off in
-the end.
+(e.g., the type of the genetic code). The command line with all arguments is
+consistently, and automatically logged. The work overhead in the beginning
+usually pays off in the end.
 
 The Elynx Suite consists of three library packages and two executables providing
 a range of sub commands.
 
 The library packages are:
 
--   **elynx-seq:** Handle evolutionary sequences and multi sequence alignments;
--   **elynx-tree:** Handle phylogenetic trees;
--   **elynx-tools:** Tools for the provided executables;
+-   **elynx-seq:** Handle evolutionary sequences and multi sequence alignments.
+-   **elynx-tree:** Handle phylogenetic trees.
+-   **elynx-tools:** Tools for the provided executables.
 
 The executables are:
 
--   **SLynx:** Analyze, modify, and simulate evolutionary sequences (FASTA format);
--   **TLynx:** Analyze, modify, and simulate phylogenetic trees (Newick format).
+-   **slynx:** Analyze, modify, and simulate evolutionary sequences (FASTA format).
+-   **tlynx:** Analyze, modify, and simulate phylogenetic trees (Newick format).
 
-**ELynx is still under development. We happily receive comments, ideas, feature
-requests, or pull requests!**
+**ELynx is actively developed. We happily receive comments, ideas, feature
+requests, and pull requests!**
 
 
 # Installation
@@ -57,8 +57,8 @@ ELynx is written in [Haskell](https://www.haskell.org/) and can be installed wit
     
         stack install
     
-    The binaries are installed into `~/.local/bin/` which has to be added [PATH](https://en.wikipedia.org/wiki/PATH_(variable)).
-    Then, they can be used directly.
+    The binaries are installed into `~/.local/bin/` which has to be added to the
+    [PATH](https://en.wikipedia.org/wiki/PATH_(variable)) environment variable. Then, they can be used directly.
 
 
 # SLynx
@@ -67,8 +67,8 @@ Handle evolutionary sequences.
 
     slynx --help
 
-    ELynx Suite version 0.5.1. Developed by Dominik Schrempf. Compiled on September
-    9, 2019, at 10:48 am, UTC.
+    ELynx Suite version 0.1.0. Developed by Dominik Schrempf. Compiled on January
+    30, 2020, at 09:18 am, UTC.
     
     Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] COMMAND
       Analyze, and simulate multi sequence alignments.
@@ -82,17 +82,14 @@ Handle evolutionary sequences.
                                Specify base name of output file
     
     Available commands:
-      concatenate              
-      examine                  If data is a multi sequence alignment, additionally
-                               analyze columns.
-      filter-rows              
-      filter-columns           
-      simulate                 
-      sub-sample               Create a given number of multi sequence alignments,
-                               each of which containing a given number of random
-                               sites drawn from the original multi sequence
-                               alignment.
-      translate                
+      concatenate              Concatenate sequences found in input files.
+      examine                  Examine sequences. If data is a multi sequence
+                               alignment, additionally analyze columns.
+      filter-rows              Filter rows (or sequences) found in input files.
+      filter-columns           Filter columns of multi-sequence alignments.
+      simulate                 Simulate multi sequence alignments.
+      sub-sample               Sub-sample columns from multi sequence alignments.
+      translate                Translate from DNA to Protein or DNAX to ProteinX.
     
     File formats:
       - FASTA
@@ -106,15 +103,20 @@ Handle evolutionary sequences.
       - ProteinS (amino acids; including gaps, and translation stops)
       - ProteinI (amino acids; including gaps, translation stops, and IUPAC codes)
     
-    The ELynx Suite.
+    The ELynx Suite
+    ---------------
     A Haskell library and a tool set for computational biology. The goal of the
     ELynx Suite is reproducible research. Evolutionary sequences and phylogenetic
     trees can be read, viewed, modified and simulated. Exact specification of all
     options is necessary, and nothing is assumed about the data (e.g., the type of
     code). The command line with all arguments is consistently, and automatically
-    logged. The work overhead in the beginning usually pays off in the end.
+    logged.
+    
     slynx     Analyze, modify, and simulate evolutionary sequences.
     tlynx     Analyze, modify, and simulate phylogenetic trees.
+    
+    Get help for specific commands:
+      slynx examine --help
 
 
 ## Concatenate
@@ -123,9 +125,8 @@ Concatenate multi sequence alignments.
 
     slynx concatenate --help
 
-    Concatenate sequences found in input files.
-    
     Usage: slynx concatenate (-a|--alphabet NAME) INPUT-FILE
+      Concatenate sequences found in input files.
     
     Available options:
       -a,--alphabet NAME       Specify alphabet type NAME
@@ -139,10 +140,9 @@ Examine sequence with `slynx examine`.
 
     slynx examine --help
 
-    Examine sequences.
-    
     Usage: slynx examine (-a|--alphabet NAME) [INPUT-FILE] [--per-site]
-      If data is a multi sequence alignment, additionally analyze columns.
+      Examine sequences. If data is a multi sequence alignment, additionally analyze
+      columns.
     
     Available options:
       -a,--alphabet NAME       Specify alphabet type NAME
@@ -157,26 +157,27 @@ Filter sequences with `filer-rows`.
 
     slynx filter-rows --help
 
-    Filter rows (or sequences) found in input files.
-    
     Usage: slynx filter-rows (-a|--alphabet NAME) [INPUT-FILE]
                              [--longer-than LENGTH] [--shorter-than LENGTH]
+                             [--standard-characters]
+      Filter rows (or sequences) found in input files.
     
     Available options:
       -a,--alphabet NAME       Specify alphabet type NAME
       INPUT-FILE               Read sequences from INPUT-FILE
       --longer-than LENGTH     Only keep sequences longer than LENGTH
       --shorter-than LENGTH    Only keep sequences shorter than LENGTH
+      --standard-characters    Only keep sequences containing at least one standard
+                               (i.e., non-IUPAC) character
       -h,--help                Show this help text
 
 Filter columns of multi sequence alignments with `filter-columns`.
 
     slynx filter-columns --help
 
-    Filter columns of multi-sequence alignments.
-    
     Usage: slynx filter-columns (-a|--alphabet NAME) [INPUT-FILE]
                                 [--standard-chars DOUBLE]
+      Filter columns of multi-sequence alignments.
     
     Available options:
       -a,--alphabet NAME       Specify alphabet type NAME
@@ -192,13 +193,13 @@ Simulate sequences with `slynx simulate`.
 
     slynx simulate --help
 
-    Simulate multi sequence alignments.
-    
     Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL]
                           [-m|--mixture-model MODEL] [-e|--edm-file NAME]
+                          [-p|--siteprofile-files NAMES]
                           [-w|--mixture-model-weights "[DOUBLE,DOUBLE,...]"]
                           [-g|--gamma-rate-heterogeneity "(NCAT,SHAPE)"]
                           (-l|--length NUMBER) [-S|--seed [INT]]
+      Simulate multi sequence alignments.
     
     Available options:
       -t,--tree-file Name      Read trees from file NAME
@@ -210,6 +211,8 @@ Simulate sequences with `slynx simulate`.
                                are shown below (mutually exclusive with -s option)
       -e,--edm-file NAME       Empirical distribution model file NAME in Phylobayes
                                format
+      -p,--siteprofile-files NAMES
+                               File names of site profiles in Phylobayes format
       -w,--mixture-model-weights "[DOUBLE,DOUBLE,...]"
                                Weights of mixture model components
       -g,--gamma-rate-heterogeneity "(NCAT,SHAPE)"
@@ -257,8 +260,7 @@ Sub-sample columns from multi sequence alignments.
     Usage: slynx sub-sample (-a|--alphabet NAME) [INPUT-FILE]
                             (-n|--number-of-sites INT)
                             (-m|--number-of-alignments INT) [-S|--seed [INT]]
-      Create a given number of multi sequence alignments, each of which containing a
-      given number of random sites drawn from the original multi sequence alignment.
+      Sub-sample columns from multi sequence alignments.
     
     Available options:
       -a,--alphabet NAME       Specify alphabet type NAME
@@ -269,6 +271,9 @@ Sub-sample columns from multi sequence alignments.
       -S,--seed [INT]          Seed for random number generator; list of 32 bit
                                integers with up to 256 elements (default: random)
       -h,--help                Show this help text
+    
+    Create a given number of multi sequence alignments, each of which contains a
+    given number of random sites drawn from the original multi sequence alignment.
 
 
 ## Translate
@@ -277,10 +282,9 @@ Translate sequences.
 
     slynx translate --help
 
-    Translate from DNA to Protein or DNAX to ProteinX.
-    
     Usage: slynx translate (-a|--alphabet NAME) [INPUT-FILE]
                            (-r|--reading-frame INT) (-u|--universal-code CODE)
+      Translate from DNA to Protein or DNAX to ProteinX.
     
     Available options:
       -a,--alphabet NAME       Specify alphabet type NAME
@@ -297,8 +301,8 @@ Handle phylogenetic trees in Newick format.
 
     tlynx --help
 
-    ELynx Suite version 0.5.1. Developed by Dominik Schrempf. Compiled on September
-    9, 2019, at 10:48 am, UTC.
+    ELynx Suite version 0.1.0. Developed by Dominik Schrempf. Compiled on January
+    30, 2020, at 09:18 am, UTC.
     
     Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] COMMAND
       Compare, examine, and simulate phylogenetic trees.
@@ -312,26 +316,34 @@ Handle phylogenetic trees in Newick format.
                                Specify base name of output file
     
     Available commands:
-      compare                  
-      examine                  
-      simulate                 Simulate reconstructed trees using the point process.
-                               See Gernhard, T. (2008). The conditioned
-                               reconstructed process. Journal of Theoretical
-                               Biology, 253(4), 769–778.
-                               http://doi.org/10.1016/j.jtbi.2008.04.005
+      distance                 Compute distances between many phylogenetic trees.
+      examine                  Compute summary statistics of phylogenetic trees.
+      simulate                 Simulate phylogenetic trees using birth and death
+                               processes.
+      compare                  Compare two phylogenetic trees (compute distances and
+                               branch-wise differences).
+      connect                  Connect two phylogenetic trees in all ways (possibly
+                               honoring constraints).
+      shuffle                  Shuffle a phylogenetic tree (keep coalescent times,
+                               but shuffle topology and leaves).
     
     File formats:
       - Newick
     
-    The ELynx Suite.
+    The ELynx Suite
+    ---------------
     A Haskell library and a tool set for computational biology. The goal of the
     ELynx Suite is reproducible research. Evolutionary sequences and phylogenetic
     trees can be read, viewed, modified and simulated. Exact specification of all
     options is necessary, and nothing is assumed about the data (e.g., the type of
     code). The command line with all arguments is consistently, and automatically
-    logged. The work overhead in the beginning usually pays off in the end.
+    logged.
+    
     slynx     Analyze, modify, and simulate evolutionary sequences.
     tlynx     Analyze, modify, and simulate phylogenetic trees.
+    
+    Get help for specific commands:
+      slynx examine --help
 
 
 ## Compare
@@ -340,24 +352,18 @@ Compute distances between phylogenetic trees.
 
     tlynx compare --help
 
-    Compute distances between phylogenetic trees.
-    
-    Usage: tlynx compare (-d|--distance MEASURE) [-s|--summary-statistics]
-                         [INPUT-FILES]
+    Usage: tlynx compare [-n|--normalize] [-b|--bipartitions] [-i|--newick-iqtree]
+                         NAME
+      Compare two phylogenetic trees (compute distances and branch-wise
+      differences).
     
     Available options:
-      -d,--distance MEASURE    Type of distance to calculate (available distance
-                               measures are listed below)
-      -s,--summary-statistics  Report summary statistics only
-      INPUT-FILES              Read tree(s) from INPUT-FILES; if more files are
-                               given, one tree is expected per file
+      -n,--normalize           Normalize trees before comparison
+      -b,--bipartitions        Print common and missing bipartitions
+      -i,--newick-iqtree       Use IQ-TREE Newick format (internal node labels are
+                               branch support values)
+      NAME                     Tree file
       -h,--help                Show this help text
-    
-    Available distance measures:
-      Symmetric distance: -d symmetric
-      Incompatible split distance: -d incompatible-split[VAL]
-        Collapse branches with support less than VAL before distance calculation;
-        in this way, only well supported difference contribute to the distance measure.
 
 
 ## Examine
@@ -366,12 +372,13 @@ Compute summary statistics of phylogenetic trees.
 
     tlynx examine --help
 
-    Compute summary statistics of phylogenetic trees.
-    
-    Usage: tlynx examine [INPUT-FILE]
+    Usage: tlynx examine [INPUT-FILE] [-i|--newick-iqtree]
+      Compute summary statistics of phylogenetic trees.
     
     Available options:
       INPUT-FILE               Read trees from INPUT-FILE
+      -i,--newick-iqtree       Use IQ-TREE Newick format (internal node labels are
+                               branch support values)
       -h,--help                Show this help text
 
 
@@ -381,15 +388,11 @@ Simulate phylogenetic trees using birth and death processes.
 
     tlynx simulate --help
 
-    Simulate phylogenetic trees using birth and death processes.
-    
     Usage: tlynx simulate [-t|--nTrees INT] [-n|--nLeaves INT] [-H|--height DOUBLE]
                           [-M|--condition-on-mrca] [-l|--lambda DOUBLE]
                           [-m|--mu DOUBLE] [-r|--rho DOUBLE] [-u|--sub-sample]
                           [-s|--summary-statistics] [-S|--seed [INT]]
-      Simulate reconstructed trees using the point process. See Gernhard, T. (2008).
-      The conditioned reconstructed process. Journal of Theoretical Biology, 253(4),
-      769–778. http://doi.org/10.1016/j.jtbi.2008.04.005
+      Simulate phylogenetic trees using birth and death processes.
     
     Available options:
       -t,--nTrees INT          Number of trees (default: 10)
@@ -409,9 +412,16 @@ Simulate phylogenetic trees using birth and death processes.
     Height of Trees: if no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate.
     Summary statistics only: only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character.
     Sub-sampling: simulate one big tree with n'=round(n/rho), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with rho=1.0, the same tree is reported over and over again.
+    Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005
 
 
 # ELynx
 
-Documentation of the library can be found on Hackage.
+Documentation of the library can be found on [Hackage](https://hackage.haskell.org/):
+
+-   [elynx-seq](https://hackage.haskell.org/package/elynx-seq)
+-   [elynx-tree](https://hackage.haskell.org/package/elynx-tree)
+-   [elynx-tools](https://hackage.haskell.org/package/elynx-tools)
+-   [slynx](https://hackage.haskell.org/package/slynx)
+-   [tlynx](https://hackage.haskell.org/package/tlynx)
 
