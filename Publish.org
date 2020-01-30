@@ -81,3 +81,10 @@ do
     stack upload --pvp-bounds both .)
 done
 #+END_SRC
+
+#+RESULTS: HackageUploadTarballs
+: Uploading elynx-seq-0.1.0.tar.gz... done!
+: Uploading elynx-tools-0.1.0.tar.gz... done!
+: Uploading elynx-tree-0.1.0.tar.gz... done!
+: Uploading slynx-0.1.0.tar.gz... done!
+: Uploading tlynx-0.1.0.tar.gz... done!

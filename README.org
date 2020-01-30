@@ -465,10 +465,12 @@ Sub-sampling: simulate one big tree with n'=round(n/rho), n'>=n, leaves, and ran
 Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005
 #+end_example
 
-* ELynx
-Documentation of the library can be found on [[https://hackage.haskell.org/][Hackage]]:
+* Library documentation
+Documentation of the libraries can be found on [[https://hackage.haskell.org/][Hackage]]:
 - [[https://hackage.haskell.org/package/elynx-seq][elynx-seq]]
 - [[https://hackage.haskell.org/package/elynx-tree][elynx-tree]]
 - [[https://hackage.haskell.org/package/elynx-tools][elynx-tools]]
+
+Documentation of the executables is, or course, also available:
 - [[https://hackage.haskell.org/package/slynx][slynx]]
 - [[https://hackage.haskell.org/package/tlynx][tlynx]]
