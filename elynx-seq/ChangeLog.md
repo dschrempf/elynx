@@ -1,10 +1,10 @@
 
 # Table of Contents
 
-1.  [Changelog for ELynx](#org9916021)
+1.  [Changelog for ELynx](#org84a041b)
 
 
-<a id="org9916021"></a>
+<a id="org84a041b"></a>
 
 # Changelog for ELynx
 
