@@ -1,0 +1,100 @@
+#!/usr/bin/env stack
+{- stack
+  --resolver lts-14.20
+  runghc
+  --package comonad
+  --package containers
+  --package elynx-tree
+  --package elynx-tools
+  --package rosezipper
+-}
+
+import           Control.Comonad                (extend, extract)
+import           Control.Monad                  (unless)
+import           Data.Foldable                  (foldl')
+import           Data.List                      (sortOn, tails)
+import           Data.Ord                       (Down (Down))
+import           Data.Tree                      (Tree (Node), flatten,
+                                                 subForest)
+import           System.Environment             (getArgs)
+
+import           ELynx.Data.Tree.MeasurableTree (Measurable, rootHeight)
+-- import           ELynx.Data.Tree.PhyloTree      (PhyloLabel (PhyloLabel))
+import           ELynx.Data.Tree.Tree           (bifurcating, leaves)
+-- import           ELynx.Export.Tree.Newick       (toNewick)
+import           ELynx.Import.Tree.Newick       (oneNewick)
+import           ELynx.Tools.InputOutput        (parseFileWith)
+
+-- Algorithm; get the maximum number of optimal constraints K:
+--
+-- 1. Get an ordered set of nodes (splits) on the tree. Basically get the height
+-- of all internal nodes and sort them.
+--
+-- 2. Get the path p_n from the root to each node n (maybe already do this while
+-- performing step 1). An example of a path is: llr (go left, go left, go right
+-- to reach the node).
+--
+-- 3. Traverse the list of nodes and their paths.
+--    If the path of the next node p_(n+1) is
+--    - p_n ++ (l|r): leave K constant.
+--    - otherwise:    add 1 to K.
+--
+-- 4. Report K.
+
+getNNodes :: [a] -> Int
+getNNodes [ ] = 0
+getNNodes [_] = 0
+getNNodes xs  = length xs - 1
+
+getNNodesTree :: Tree a -> Tree Int
+getNNodesTree = extend (getNNodes . leaves)
+
+isInternal :: Tree a -> Bool
+isInternal (Node _ []) = False
+isInternal _ = True
+
+getOrderedNodeZippers :: Measurable a => Tree a -> [Tree a]
+getOrderedNodeZippers t = filter isInternal $ map snd $ sortOn (Down . fst) labels
+  where t'     = extend (\x -> (rootHeight x, x)) t
+        labels = flatten t'
+
+combine :: (Show a, Eq a) => Int -> (Tree a, Tree a) -> Int
+-- combine n (x, y) = traceShow x $ if y `elem` subForest x then n else n+1
+combine n (x, y) = if y `elem` subForest x then n else n+1
+
+-- | Get the maximum number of optimal non-trivial (see
+-- 'getMaxNonTrivialConstraints') constraints. A constraint is optimal, if it is
+-- non-trivial and if it relates two consecutive nodes on the time axis.
+getMaxOptimalConstraints :: (Show a, Eq a) => [Tree a] -> Int
+getMaxOptimalConstraints xs = foldl' combine 0 pairs
+  where pairs = [ (head xs', head (tail xs'))
+                | xs' <- take (length xs - 1) $ tails xs ]
+
+-- | The maximum number of non-trivial constraints. A constraint is trivial if
+-- the compared nodes are on the same lineage (because then, the order is
+-- already defined by the topology). Basically, the maximum number of
+-- non-trivial constraints is the number of node pairs on different lineages.
+-- Note that the maximum number of informative constraints is lower than the
+-- maximum number of non-trivial constraints, because two non-trivial
+-- constraints might be redundant. For example, the tree
+-- @(((al:1,ar:1)A:2,(bl:2,br:2)B:1)C:2,(dl:4,dr:4)D:1)@ may only have one or
+-- two informative constraints @{(D>C)}@, or @{(D>B), (D>A)}@ but has three
+-- non-trivial constraints {(DA), (DB), (DC)}. Plot the tree!
+--
+-- Assume tree is bifurcating.
+getMaxNonTrivialConstraints :: Tree Int -> Int
+getMaxNonTrivialConstraints (Node _ [])  = 0
+getMaxNonTrivialConstraints (Node _ xs)  = product (map extract xs) + sum (map getMaxNonTrivialConstraints xs)
+
+main :: IO ()
+main = do
+  as <- getArgs
+  t <- parseFileWith oneNewick (head as)
+  unless (bifurcating t) (error "Tree is not bifurcating.")
+  let nNodesTree = getNNodesTree t
+      maxNonTrivialConstraints = getMaxNonTrivialConstraints nNodesTree
+  -- print $ toNewick $ fmap (\x -> PhyloLabel x Nothing Nothing) nNodesTree
+  -- print nNodesTree
+  putStrLn $ "Maximum number of non-trivial constraints: " <> show maxNonTrivialConstraints
+  let maxOptimalConstraints = getMaxOptimalConstraints . getOrderedNodeZippers $ t
+  putStrLn $ "Maximum number of optimal constraints: " <> show maxOptimalConstraints
