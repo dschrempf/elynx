@@ -25,6 +25,7 @@ import           Options.Applicative
 -- | Arguments of compare command.
 data CompareArguments = CompareArguments
   { argsNormalize    :: Bool
+  , argsBipartitions :: Bool
   , argsNewickIqTree :: Bool
   , argsInFiles      :: [FilePath] }
 
@@ -36,6 +37,7 @@ type Compare = LoggingT (ReaderT CompareArguments IO)
 compareArguments :: Parser CompareArguments
 compareArguments = CompareArguments <$>
   normalize
+  <*> bipartitions
   <*> newickIqTree
   <*> some file
 
@@ -44,6 +46,12 @@ normalize = switch $
   long "normalize"
   <> short 'n'
   <> help "Normalize trees before comparison"
+
+bipartitions :: Parser Bool
+bipartitions = switch $
+  long "bipartitions"
+  <> short 'b'
+  <> help "Print common and missing bipartitions"
 
 file :: Parser FilePath
 file = strArgument $

@@ -108,6 +108,7 @@ shuffle n o cs ls = do
   lss <- grabble ls n (length ls)
   return [toReconstructedTree "" (PointProcess names times o) | (times, names) <- zip css lss]
 
+-- TODO: This seems to be 'extend' from comonad!
 mapTree :: (Tree a -> b) -> Tree a -> Tree b
 mapTree f t@(Node _ cs) = Node (f t) (map (mapTree f) cs)
 

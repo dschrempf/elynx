@@ -21,37 +21,41 @@ module Filter.Filter
   )
   where
 
+import           Control.Monad                 (when)
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader
-import qualified Data.ByteString.Lazy.Char8                 as L
-import           Data.Maybe                                 (fromMaybe)
-import qualified Data.Text                                  as T
+import qualified Data.ByteString.Lazy.Char8    as L
+import           Data.Maybe                    (fromMaybe)
+import qualified Data.Text                     as T
 
 import           Filter.Options
 import           Tools
 
 import qualified ELynx.Data.Sequence.Alignment as M
-import qualified ELynx.Data.Sequence.Sequence               as S
+import qualified ELynx.Data.Sequence.Sequence  as S
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Misc
 
-filterRows :: Maybe Int -> Maybe Int -> [S.Sequence] -> L.ByteString
-filterRows ml ms ss = sequencesToFasta $ compose filters ss
-  where filters = map (fromMaybe id) [S.filterLongerThan <$> ml, S.filterShorterThan <$> ms]
+filterRows :: Maybe Int -> Maybe Int -> Bool -> [S.Sequence] -> L.ByteString
+filterRows ml ms std ss = sequencesToFasta $ compose filters ss
+  where filters' = map (fromMaybe id) [S.filterLongerThan <$> ml, S.filterShorterThan <$> ms]
+        filters  = if std then S.filterStandard : filters'  else filters'
 
 -- | Filter sequences.
 filterRowsCmd :: Maybe FilePath -> FilterRows ()
 filterRowsCmd outFileBaseName = do
   $(logInfo) "Command: Filter sequences of a list of sequences."
-  FilterRowsArguments al inFile long short <- lift ask
+  FilterRowsArguments al inFile long short std <- lift ask
   maybe (return ())
     (\val -> $(logInfo) $ T.pack $ "  Keep sequences longer than " <> show val <> ".") long
   maybe (return ())
     (\val -> $(logInfo) $ T.pack $ "  Keep sequences shorter than " <> show val <> ".") short
+  when std $
+    $(logInfo) "  Keep sequences containing at least one standard (i.e., non-IUPAC) character."
   ss <- readSeqs al inFile
-  let result      = filterRows long short ss
+  let result      = filterRows long short std ss
   let outFilePath = (++ ".fasta") <$> outFileBaseName
   out "filtered sequences" result outFilePath
 

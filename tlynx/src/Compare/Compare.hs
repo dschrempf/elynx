@@ -30,7 +30,9 @@ import qualified Data.Map                          as M
 import           Data.Monoid
 import qualified Data.Set                          as S
 import qualified Data.Text                         as T
+import qualified Data.Text.Encoding                as E
 import qualified Data.Text.IO                      as T
+
 import           Data.Tree
 import           System.IO
 import           Text.Printf
@@ -119,14 +121,17 @@ compareCmd outFile = do
     (T.pack $ show $ branchScoreWith getName getLen t1 t2)
   let t1' = BS.normalize t1
       t2' = BS.normalize t2
+  $(logDebug) "Trees with normalized branch support values:"
+  $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick t1'
+  $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick t2'
   liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.10)"
     (T.pack $ show $ incompatibleSplits (collapse 0.1 t1') (collapse 0.1 t2'))
   liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.50)"
     (T.pack $ show $ incompatibleSplits (collapse 0.5 t1') (collapse 0.5 t2'))
-  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.60)"
-    (T.pack $ show $ incompatibleSplits (collapse 0.6 t1') (collapse 0.6 t2'))
-  liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.70)"
-    (T.pack $ show $ incompatibleSplits (collapse 0.7 t1') (collapse 0.7 t2'))
+  -- liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.60)"
+  --   (T.pack $ show $ incompatibleSplits (collapse 0.6 t1') (collapse 0.6 t2'))
+  -- liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.70)"
+  --   (T.pack $ show $ incompatibleSplits (collapse 0.7 t1') (collapse 0.7 t2'))
   liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.80)"
     (T.pack $ show $ incompatibleSplits (collapse 0.8 t1') (collapse 0.8 t2'))
   liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (0.90)"
@@ -136,36 +141,38 @@ compareCmd outFile = do
   -- liftIO $ L.hPutStrLn outH $ toNewick (collapse 1.01 t1')
 
   -- Bipartitions.
-  let bp1 = bipartitions (fmap getName t1)
-      bp2 = bipartitions (fmap getName t2)
-      bp1Only = bp1 S.\\ bp2
-      bp2Only = bp2 S.\\ bp1
-  unless (S.null bp1Only)
-    (do
-        liftIO $ hPutStrLn outH ""
-        liftIO $ hPutStrLn outH "Bipartitions in Tree 1 that are not in Tree 2."
-        -- let bp1Strs = map (bphuman L.unpack . bpmap getName) (S.toList bp1Only)
-        forM_ bp1Only (liftIO . hPutStrLn outH . bphuman L.unpack))
-        -- let bp1Strs = map (bphuman L.unpack) (S.toList bp1Only)
-        -- liftIO $ hPutStrLn outH $ intercalate "\n" bp1Strs)
-  unless (S.null bp2Only)
-    (do
-        liftIO $ hPutStrLn outH ""
-        liftIO $ hPutStrLn outH "Bipartitions in Tree 2 that are not in Tree 1."
-        forM_ bp2Only (liftIO . hPutStrLn outH . bphuman L.unpack))
+  when (argsBipartitions a) (do
+    let bp1 = bipartitions (fmap getName t1)
+        bp2 = bipartitions (fmap getName t2)
+        bp1Only = bp1 S.\\ bp2
+        bp2Only = bp2 S.\\ bp1
+    unless (S.null bp1Only)
+      (do
+          liftIO $ hPutStrLn outH ""
+          liftIO $ hPutStrLn outH "Bipartitions in Tree 1 that are not in Tree 2."
+          -- let bp1Strs = map (bphuman L.unpack . bpmap getName) (S.toList bp1Only)
+          forM_ bp1Only (liftIO . hPutStrLn outH . bphuman L.unpack))
+          -- let bp1Strs = map (bphuman L.unpack) (S.toList bp1Only)
+          -- liftIO $ hPutStrLn outH $ intercalate "\n" bp1Strs)
+    unless (S.null bp2Only)
+      (do
+          liftIO $ hPutStrLn outH ""
+          liftIO $ hPutStrLn outH "Bipartitions in Tree 2 that are not in Tree 1."
+          forM_ bp2Only (liftIO . hPutStrLn outH . bphuman L.unpack))
 
-  -- Common bipartitions and their respective differences in branch lengths.
-  liftIO $ hPutStrLn outH ""
-  let bpCommon = bp1 `S.intersection` bp2
-  if S.null bpCommon
-    then liftIO $ hPutStrLn outH "There are no common bipartitions."
-    else do
-    let bpToBrLen1 = M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t1
-        bpToBrLen2 = M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t2
-    liftIO $ hPutStrLn outH "Common bipartitions and their respective differences in branch lengths."
-    -- Header.
-    liftIO $ hPutStrLn outH header
-    forM_ bpCommon (liftIO . hPutStrLn outH . getCommonBpStr L.unpack bpToBrLen1 bpToBrLen2)
+    -- Common bipartitions and their respective differences in branch lengths.
+    liftIO $ hPutStrLn outH ""
+    let bpCommon = bp1 `S.intersection` bp2
+    if S.null bpCommon
+      then liftIO $ hPutStrLn outH "There are no common bipartitions."
+      else do
+      let bpToBrLen1 = M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t1
+          bpToBrLen2 = M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t2
+      liftIO $ hPutStrLn outH "Common bipartitions and their respective differences in branch lengths."
+      -- Header.
+      liftIO $ hPutStrLn outH header
+      forM_ bpCommon (liftIO . hPutStrLn outH . getCommonBpStr L.unpack bpToBrLen1 bpToBrLen2))
+
   liftIO $ hClose outH
   -- TODO. Plot using haskell-chart.
   -- See https://github.com/timbod7/haskell-chart/wiki.

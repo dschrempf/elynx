@@ -40,6 +40,7 @@ module ELynx.Data.Sequence.Sequence
   -- * Filtering
   , filterShorterThan
   , filterLongerThan
+  , filterStandard
   ) where
 
 import           Control.Parallel.Strategies
@@ -161,3 +162,12 @@ filterShorterThan n = filter (\x -> length x < n)
 -- | Only take 'Sequence's that are longer than a given number.
 filterLongerThan :: Int -> [Sequence] -> [Sequence]
 filterLongerThan n = filter (\x -> length x > n)
+
+-- | Only take 'Sequence's that contain at least on non-IUPAC character.
+filterStandard :: [Sequence] -> [Sequence]
+filterStandard = filter (\s -> anyStandard (alphabet s) s)
+
+-- Are all characters IUPAC characters?
+anyStandard :: A.Alphabet -> Sequence -> Bool
+anyStandard a s = V.any (A.isStd a) cs
+  where cs = characters s

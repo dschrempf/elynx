@@ -35,7 +35,8 @@ data FilterRowsArguments = FilterRowsArguments
   { frAlphabet :: Alphabet
   , frInFile   :: Maybe FilePath
   , frLonger   :: Maybe Int
-  , frShorter  :: Maybe Int }
+  , frShorter  :: Maybe Int
+  , frStandard :: Bool }
 
 -- | Arguments needed for filtering columns of a multi sequence alignment.
 data FilterColsArguments = FilterColsArguments
@@ -56,6 +57,7 @@ filterRowsArguments = FilterRowsArguments
               <*> optional inFileArg
               <*> filterLongerThanOpt
               <*> filterShorterThanOpt
+              <*> filterStandardChars
 
 filterLongerThanOpt :: Parser (Maybe Int)
 filterLongerThanOpt = optional $ option auto $
@@ -68,6 +70,11 @@ filterShorterThanOpt = optional $ option auto $
   long "shorter-than" <>
   metavar "LENGTH" <>
   help "Only keep sequences shorter than LENGTH"
+
+filterStandardChars :: Parser Bool
+filterStandardChars = switch $
+  long "standard-characters" <>
+  help "Only keep sequences containing at least one standard (i.e., non-IUPAC) character"
 
 -- | Command line parser.
 filterColsArguments :: Parser FilterColsArguments

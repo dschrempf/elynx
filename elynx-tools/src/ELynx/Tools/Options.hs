@@ -79,10 +79,10 @@ logHeader desc = do
   t  <- time
   p  <- getProgName
   as <- getArgs
-  let l = length desc
+  -- let l = length desc
   return $ intercalate "\n"
-    [ replicate (l+3) '-'
-    , "-- " <> desc
+    -- [ replicate (l+4) '-'
+    [ "=== " <> desc
     , hdr
     , "Start time: " ++ t
     , "Command line: " ++ p ++ " " ++ unwords as ]
@@ -91,11 +91,11 @@ logHeader desc = do
 logFooter :: IO String
 logFooter = do
   t <- time
-  let timeStr = "-- End time: " ++ t
-      l       = length timeStr
+  let timeStr = "=== End time: " ++ t
+      -- l       = length timeStr
   return $ intercalate "\n"
-    [ timeStr
-    , replicate l '-' ]
+    [ timeStr ]
+    -- , replicate l '-' ]
 
 versionOpt :: Parser (a -> a)
 versionOpt = infoOption hdr

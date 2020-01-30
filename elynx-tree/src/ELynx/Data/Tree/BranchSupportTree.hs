@@ -20,7 +20,6 @@ module ELynx.Data.Tree.BranchSupportTree
   ) where
 
 import           Data.List
-import           Data.Maybe
 import           Data.Tree
 
 -- TODO: Implement the preferred way:
@@ -48,8 +47,10 @@ apply f l = setBranchSupport (f <$> s) l
 -- | Normalize branch support values. The maximum branch support value will be
 -- set to 1.0.
 normalize :: BranchSupported a => Tree a -> Tree a
-normalize t = if isNothing m then t else fmap (apply (/ fromJust m)) t
-  where m = maximum $ fmap getBranchSupport t
+normalize t = case mm of
+  Nothing -> t
+  Just m  -> fmap (apply (/ m)) t
+  where mm = maximum $ fmap getBranchSupport t
 
 accept :: Double -> Maybe Double -> Bool
 accept _       Nothing = True

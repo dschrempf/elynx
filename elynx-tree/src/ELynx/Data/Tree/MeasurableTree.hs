@@ -54,7 +54,8 @@ lengthen dl l = setLen (dl + getLen l) l
 -- shorten :: Double -> a -> a
 -- shorten dl = lengthen (-dl)
 
--- | Distances from the root node of a tree to its leaves.
+-- | Distances from the root node of a tree to its leaves (this are not the
+-- distances from the origin to the leaves, see 'distancesOriginLeaves').
 distancesRootLeaves :: (Measurable a) => Tree a -> [Double]
 distancesRootLeaves (Node _ []) = [0]
 distancesRootLeaves (Node _ f ) = concat [map (+ getLen (rootLabel d)) (distancesRootLeaves d) | d <- f]
@@ -79,7 +80,8 @@ averageDistanceOriginLeaves tr = sum ds / fromIntegral n
   where ds = distancesOriginLeaves tr
         n  = length ds
 
--- | Height of a tree. Return 0 if the tree is empty.
+-- | Height (max distance between origin and leaves) of a tree. Return 0 if the
+-- tree is empty.
 height :: (Measurable a) => Tree a -> Double
 height = maximum . distancesOriginLeaves
 
