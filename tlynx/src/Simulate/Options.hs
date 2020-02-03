@@ -28,13 +28,13 @@ import           Options.Applicative
 
 import           ELynx.Tools.Options
 
--- | Arguments need to simulate phylogenetic trees.
+-- | Arguments need to simulate phylogenetic trees using birth and death processes.
 data SimulateArguments = SimulateArguments
   { argsNTrees        :: Int            -- ^ Simulated trees.
   , argsNLeaves       :: Int            -- ^ Number of leaves.
   , argsHeight        :: Maybe Double   -- ^ Tree height (time to origin or MRCA).
   , argsConditionMRCA :: Bool           -- ^ False: condition on origin; True:
-                                          --   condition on MRCA.
+                                        -- condition on MRCA.
   , argsLambda        :: Double         -- ^ Birth rate.
   , argsMu            :: Double         -- ^ Death rate.
   , argsRho           :: Double         -- ^ Smapling rate.

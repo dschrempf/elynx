@@ -18,6 +18,7 @@ import           Control.Monad.Trans.Reader
 
 import           Options
 
+import           Coalesce.Coalesce
 import           Compare.Compare
 import           Connect.Connect
 import           Distance.Distance
@@ -38,6 +39,7 @@ main = do
     Distance a -> runReaderT (eLynxWrapper lvl lf distanceDescription $ distance fn) a
     Examine  a -> runReaderT (eLynxWrapper lvl lf examineDescription  $ examine fn) a
     Simulate a -> runReaderT (eLynxWrapper lvl lf simulateDescription $ simulate fn) a
+    Coalesce a -> runReaderT (eLynxWrapper lvl lf coalesceDescription $ coalesce fn) a
     Compare  a -> runReaderT (eLynxWrapper lvl lf compareDescription $ compareCmd fn) a
     Connect  a -> runReaderT (eLynxWrapper lvl lf connectDescription $ connectCmd fn) a
     Shuffle  a -> runReaderT (eLynxWrapper lvl lf shuffleDescription $ shuffleCmd fn) a

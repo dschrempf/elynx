@@ -19,6 +19,7 @@ module Options
   , distanceDescription
   , examineDescription
   , simulateDescription
+  , coalesceDescription
   , compareDescription
   , connectDescription
   , shuffleDescription
@@ -33,6 +34,7 @@ import           Distance.Options
 import           Examine.Options
 import           Shuffle.Options
 import           Simulate.Options
+import           Coalesce.Options
 
 import           ELynx.Tools.Options
 
@@ -40,6 +42,7 @@ data CommandArguments =
   Distance DistanceArguments
   | Examine ExamineArguments
   | Simulate SimulateArguments
+  | Coalesce CoalesceArguments
   | Compare CompareArguments
   | Connect ConnectArguments
   | Shuffle ShuffleArguments
@@ -51,7 +54,10 @@ examineDescription :: String
 examineDescription  =  "Compute summary statistics of phylogenetic trees."
 
 simulateDescription :: String
-simulateDescription =  "Simulate phylogenetic trees using birth and death processes."
+simulateDescription =  "Simulate phylogenetic trees using birth and death processes (see also the 'coalesce' command for simulations using the coalescent process)."
+
+coalesceDescription :: String
+coalesceDescription =  "Simulate phylogenetic trees using the coalescent processes (see also the 'simulate' command for simulations using the birth and death process)."
 
 compareDescription :: String
 compareDescription  =  "Compare two phylogenetic trees (compute distances and branch-wise differences)."
@@ -81,6 +87,13 @@ simulateCommand = command "simulate" $
                        <> progDesc simulateDescription
                        <> footerDoc (Just $ pretty simulateFooter) )
 
+coalesceCommand :: Mod CommandFields CommandArguments
+coalesceCommand = command "coalesce" $
+                   info (Coalesce <$> coalesceArguments)
+                     ( fullDesc
+                       <> progDesc coalesceDescription
+                       <> footerDoc (Just $ pretty coalesceFooter) )
+
 compareCommand :: Mod CommandFields CommandArguments
 compareCommand = command "compare" $
                    info (Compare <$> compareArguments)
@@ -101,6 +114,7 @@ commandArguments = hsubparser $
                    distanceCommand
                    <> examineCommand
                    <> simulateCommand
+                   <> coalesceCommand
                    <> compareCommand
                    <> connectCommand
                    <> shuffleCommand
