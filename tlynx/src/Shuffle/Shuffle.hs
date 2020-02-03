@@ -22,9 +22,11 @@ module Shuffle.Shuffle
   ( shuffleCmd
   ) where
 
+import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
-import           Control.Monad.Random
+import           Control.Monad.Primitive
+import           Control.Monad.Trans.Class      (lift)
 import           Control.Monad.Trans.Reader
 import           Data.Array                     (elems)
 import           Data.Array.ST                  (newListArray, readArray,
@@ -34,7 +36,9 @@ import           Data.List                      (filter)
 import           Data.Maybe                     (isNothing)
 import           Data.Tree                      (Tree (Node), flatten,
                                                  rootLabel)
+import qualified Data.Vector.Unboxed            as V
 import           System.IO
+import           System.Random.MWC
 
 import           Shuffle.Options
 
@@ -92,20 +96,23 @@ shuffleCmd outFile = do
   $(logDebug) "The coalescent times are: "
   $(logDebug) $ tShow cs
 
-  ts <- liftIO $ shuffle (nReplicates a) (height t) cs ls
+  gen <- liftIO $ maybe createSystemRandom (initialize . V.fromList) (argsSeed a)
+
+  ts <- liftIO $ shuffle (nReplicates a) (height t) cs ls gen
   liftIO $ L.hPutStr h $ L.unlines $ map toNewick ts
 
   liftIO $ hClose h
 
-shuffle :: MonadRandom m
+shuffle :: PrimMonad m
         => Int            -- How many?
         -> Double         -- Stem length.
         -> [Double]       -- Coalescent times.
         -> [L.ByteString] -- Leave names.
+        -> Gen (PrimState m)
         -> m [Tree (PhyloLabel L.ByteString)]
-shuffle n o cs ls = do
-  css <- grabble cs n (length cs)
-  lss <- grabble ls n (length ls)
+shuffle n o cs ls gen = do
+  css <- grabble cs n (length cs) gen
+  lss <- grabble ls n (length ls) gen
   return [toReconstructedTree "" (PointProcess names times o) | (times, names) <- zip css lss]
 
 -- TODO: This seems to be 'extend' from comonad!
@@ -116,10 +123,10 @@ mapTree f t@(Node _ cs) = Node (f t) (map (mapTree f) cs)
 --
 -- @grabble xs m n@ is /O(m*n')/, where @n' = min n (length xs)@. Choose @n@
 -- elements from @xs@, without replacement, and that @m@ times.
-grabble :: MonadRandom m => [a] -> Int -> Int -> m [[a]]
-grabble xs m n = do
+grabble :: PrimMonad m => [a] -> Int -> Int -> Gen (PrimState m) -> m [[a]]
+grabble xs m n gen = do
     swapss <- replicateM m $ forM [0 .. min (maxIx - 1) n] $ \i -> do
-                j <- getRandomR (i, maxIx)
+                j <- uniformR (i, maxIx) gen
                 return (i, j)
     return $ map (take n . swapElems xs) swapss
     where

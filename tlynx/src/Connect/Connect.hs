@@ -39,9 +39,7 @@ import           ELynx.Import.Tree.Newick    (manyNewick, oneNewick)
 import           ELynx.Tools.InputOutput     (outHandle, parseFileWith)
 import           ELynx.Tools.Text            (fromBs, tShow)
 
--- TODO: Write a proper documentation.
-
--- | Connect two trees honoring possible constraints.
+-- | Connect two trees honoring possible constraints. See 'connect'.
 connectCmd :: Maybe FilePath -> Connect ()
 connectCmd outFile = do
   -- Determine output handle (stdout or file).

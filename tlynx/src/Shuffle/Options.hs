@@ -20,22 +20,17 @@ module Shuffle.Options
 
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Reader
--- import           Data.Word
+import           Data.Word
 import           Options.Applicative
 
--- import           ELynx.Tools.Options
+import           ELynx.Tools.Options
 
 -- | Arguments of shuffle command.
 data ShuffleArguments = ShuffleArguments
   { newickIqTreeFlag :: Bool
   , nReplicates      :: Int
-  , inFile           :: FilePath }
-  -- -- TODO. Too complicated at the moment with MWC, use MonadRandom, but then
-  -- -- seed option would not match other commands, so leave the option out for
-  -- -- now. Maybe, when working on this, try using splitmix consistently.
-  --
-  -- -- | Seed of NRG, random if 'Nothing'.
-  -- , argsSeed         :: Maybe [Word32] }
+  , inFile           :: FilePath
+  , argsSeed         :: Maybe [Word32] }
 
 -- | Logger and reader data type.
 type Shuffle = LoggingT (ReaderT ShuffleArguments IO)
@@ -46,7 +41,7 @@ shuffleArguments = ShuffleArguments
   <$> newickIqTree
   <*> n
   <*> file
-  -- <*> seedOpt
+  <*> seedOpt
 
 newickIqTree :: Parser Bool
 newickIqTree = switch $

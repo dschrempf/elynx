@@ -9,6 +9,9 @@ I decided that there should not be any automatic code detection. Reaons:
 1. Reproducible runs.
 2. Separation between extended and IUPAC codes.
 
+** Splitmix
+Keep an eye on [[https://github.com/phadej/splitmix][Splitmix]], a fast, splitable random number generator.
+
 * Easy
 Provide descriptions (or headers?) for all sub commands so that they show up in
 help.
