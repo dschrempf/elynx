@@ -49,6 +49,8 @@ getRootStates n d g = replicateM n $ categorical d g
 -- | Simulate a number of sites for a given substitution model. Only the states
 -- at the leafs are retained. The states at internal nodes are removed. This has
 -- a lower memory footprint.
+--
+-- XXX: Improve performance. Use vectors, not lists.
 simulateAndFlatten :: (PrimMonad m, Measurable a)
   => Int -> StationaryDistribution -> ExchangeabilityMatrix -> Tree a -> Gen (PrimState m) -> m [[State]]
 simulateAndFlatten n d e t g = do

@@ -10,8 +10,6 @@ Portability :  portable
 
 Creation date: Wed May 16 13:13:11 2018.
 
-TODO: This is unused, is it?
-
 -}
 
 

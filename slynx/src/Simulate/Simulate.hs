@@ -77,9 +77,9 @@ simulateAlignment pm t n g = do
   gs <- splitGen c g
   let chunks = getChunks c n
   leafStatesS <- case pm of
-    -- TODO: This parallelization is not very intelligent, because the matrices
-    -- exponentiation is done in all threads. So ten threads will exponentiate
-    -- the same matrix ten times.
+    -- XXX @performace: This parallelization is not very intelligent, because
+    -- the matrices exponentiation is done in all threads. So ten threads will
+    -- exponentiate the same matrix ten times.
     P.SubstitutionModel sm -> mapConcurrently
       (\(num, gen) -> simulateAndFlatten num d e t gen) (zip chunks gs)
       where d = SM.stationaryDistribution sm
@@ -91,8 +91,9 @@ simulateAlignment pm t n g = do
         ws = vector $ M.getWeights mm
         ds = map SM.stationaryDistribution $ M.getSubstitutionModels mm
         es = map SM.exchangeabilityMatrix  $ M.getSubstitutionModels mm
-  -- XXX: The horizontal concatenation might be slow. If so, 'concatenateSeqs'
-  -- or 'concatenateAlignments' can be used, which directly appends vectors.
+  -- XXX @performace. The horizontal concatenation might be slow. If so,
+  -- 'concatenateSeqs' or 'concatenateAlignments' can be used, which directly
+  -- appends vectors.
   let leafStates = horizontalConcat leafStatesS
       leafNames  = map getName $ leaves t
       code       = P.getAlphabet pm
