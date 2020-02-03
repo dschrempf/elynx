@@ -37,6 +37,7 @@ dependencies:
   - containers
   # - data-memocombinators
   # - distribution
+  - gnuplot
   # - hstats
   # - hmatrix
   # - integration

@@ -32,6 +32,7 @@ import qualified Data.Set                          as S
 import qualified Data.Text                         as T
 import qualified Data.Text.Encoding                as E
 import qualified Data.Text.IO                      as T
+import           Graphics.Gnuplot.Simple
 
 import           Data.Tree
 import           System.IO
@@ -164,18 +165,25 @@ compareCmd outFile = do
     liftIO $ hPutStrLn outH ""
     let bpCommon = bp1 `S.intersection` bp2
     if S.null bpCommon
-      then liftIO $ hPutStrLn outH "There are no common bipartitions."
+      then do liftIO $ hPutStrLn outH "There are no common bipartitions."
+              liftIO $ hPutStrLn outH "No plots have been generated."
       else do
       let bpToBrLen1 = M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t1
           bpToBrLen2 = M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t2
       liftIO $ hPutStrLn outH "Common bipartitions and their respective differences in branch lengths."
       -- Header.
       liftIO $ hPutStrLn outH header
-      forM_ bpCommon (liftIO . hPutStrLn outH . getCommonBpStr L.unpack bpToBrLen1 bpToBrLen2))
+      forM_ bpCommon (liftIO . hPutStrLn outH . getCommonBpStr L.unpack bpToBrLen1 bpToBrLen2)
+
+      case outFn of
+        Nothing -> $(logInfo) "No output file name provided. Do not generate plots."
+        Just fn -> do
+          let compareCommonBps = [ (bpToBrLen1 M.! b, bpToBrLen2 M.! b) | b <- S.toList bpCommon ]
+          liftIO $ epspdfPlot fn (plotBps compareCommonBps)
+          $(logInfo) "Comparison of branch lengths plot generated (EPS and PDF)"
+    )
 
   liftIO $ hClose outH
-  -- TODO. Plot using haskell-chart.
-  -- See https://github.com/timbod7/haskell-chart/wiki.
 
 header :: String
 header = intercalate "  " $ cols ++ ["Bipartition"]
@@ -197,3 +205,11 @@ getCommonBpStr f m1 m2 p = intercalate "  "
         d  = l1 - l2
         rd = 2 * d / (l1 + l2)
         s  = bphuman f p
+
+plotBps :: [(Double, Double)] -> [Attribute] -> IO ()
+plotBps xs as = plotPathStyle as' ps xs
+  where as' = as ++
+          [ Title "Comparison of branch lengths of common branches"
+          , XLabel "Branch lengths, tree 1"
+          , YLabel "Branch lengths, tree 2" ]
+        ps = PlotStyle Points (DefaultStyle 1)

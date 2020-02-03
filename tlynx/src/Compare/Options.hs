@@ -51,7 +51,7 @@ bipartitions :: Parser Bool
 bipartitions = switch $
   long "bipartitions"
   <> short 'b'
-  <> help "Print common and missing bipartitions"
+  <> help "Print and plot common and missing bipartitions"
 
 file :: Parser FilePath
 file = strArgument $
