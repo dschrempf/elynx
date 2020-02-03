@@ -19,6 +19,7 @@ This module is to be imported qualified.
 module ELynx.Data.Sequence.Sequence
   ( -- * Types
     Name
+  , Description
   , Characters
   , Sequence (..)
   -- * Input
@@ -61,6 +62,9 @@ import           ELynx.Tools.Equality
 -- | For now, 'Name's are just 'L.ByteString's.
 type Name = L.ByteString
 
+-- | The description of a sequence.
+type Description = L.ByteString
+
 -- | The vector of characters of a sequence.
 type Characters = V.Vector Character
 
@@ -72,10 +76,12 @@ fromByteString = V.fromList . map fromChar . L.unpack
 toByteString :: Characters -> L.ByteString
 toByteString = L.pack . map toChar . V.toList
 
--- | Sequences have a name, a code and hopefully a lot of data.
-data Sequence = Sequence { name       :: Name
-                         , alphabet   :: A.Alphabet
-                         , characters :: Characters }
+-- | Sequences have a name, a possibly empty description, a code and hopefully a
+-- lot of data.
+data Sequence = Sequence { name        :: Name
+                         , description :: Description
+                         , alphabet    :: A.Alphabet
+                         , characters  :: Characters }
   deriving (Show, Eq)
 
 getInfo :: Sequence -> L.ByteString
@@ -140,14 +146,18 @@ countGaps s = V.length . V.filter (A.isGap $ alphabet s) $ characters s
 
 -- | Trim to given length.
 trim :: Int -> Sequence -> Sequence
-trim n (Sequence nm a cs) = Sequence nm a (V.take (fromIntegral n) cs)
+trim n (Sequence nm d a cs) = Sequence nm d a (V.take (fromIntegral n) cs)
 
 -- | Concatenate two sequences. 'Name's have to match.
 concat :: Sequence -> Sequence -> Sequence
-concat (Sequence i c cs) (Sequence j k ks)
-  | i == j && c == k = Sequence i c (cs <> ks)
-  | otherwise        = error $ "concatenate: Sequences do not have equal names: "
-                       ++ L.unpack i ++ ", " ++ L.unpack j ++ "."
+concat (Sequence i d c cs) (Sequence j f k ks)
+  | i /= j     = error $ "concatenate: Sequences do not have equal names: "
+             ++ L.unpack i ++ ", " ++ L.unpack j ++ "."
+  | d /= f     = error $ "concatenate: Sequences do not have equal descriptions: "
+             ++ L.unpack d ++ ", " ++ L.unpack f ++ "."
+  | c /= k     = error $ "concatenate: Sequences do not have equal alphabets: "
+             ++ show c ++ ", " ++ show k ++ "."
+  | otherwise  = Sequence i d c (cs <> ks)
 
 -- | Concatenate a list of sequences, see 'concat'.
 concatSequences :: [[Sequence]] -> [Sequence]

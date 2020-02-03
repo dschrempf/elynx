@@ -29,7 +29,7 @@ import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8    as L
 import qualified Data.Set                      as S
 import           Data.Void
-import           Data.Word8
+import           Data.Word8                    (Word8, isAlphaNum)
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 
@@ -44,16 +44,20 @@ type Parser = Parsec Void L.ByteString
 isSpecial :: Word8 -> Bool
 isSpecial w = w `elem` map c2w ['_', '|', '.', '-']
 
-isHeaderChar :: Word8 -> Bool
-isHeaderChar w = isAlphaNum w || isSpecial w
+isHeader :: Word8 -> Bool
+isHeader w = isAlphaNum w || isSpecial w
 
-sequenceHeader :: Parser L.ByteString
+isHorizontalSpace :: Word8 -> Bool
+isHorizontalSpace w = (w == c2w ' ') || (w == c2w '\t')
+
+sequenceHeader :: Parser (L.ByteString, L.ByteString)
 sequenceHeader = do
   _ <- char (c2w '>')
-  h <- takeWhile1P (Just "Header character") isHeaderChar
-  -- XXX: Allow description.
+  n <- takeWhile1P (Just "Name") isHeader
+  _ <- takeWhileP (Just "Horizontal space") isHorizontalSpace
+  d <- takeWhileP (Just "Description") isHeader
   _ <- eol
-  return h
+  return (n, d)
 
 -- It is a little faster to directly pass the set of allowed characters. Then,
 -- this set only has to be calculcated once per sequence in 'fastaSequence'.
@@ -69,11 +73,11 @@ sequenceLine s = do
 
 -- | Parse a sequence of characters.
 fastaSequence :: Alphabet -> Parser Sequence
-fastaSequence a = do hd <- sequenceHeader
+fastaSequence a = do (n, d) <- sequenceHeader
                      let !alph  = S.map toWord (A.all . alphabetSpec $ a)
                      lns <- some (sequenceLine alph)
                      _  <- many eol
-                     return $ Sequence hd a (fromByteString $ L.concat lns)
+                     return $ Sequence n d a (fromByteString $ L.concat lns)
 
 -- | Parse a Fasta file with given 'Alphabet'.
 fasta :: Alphabet -> Parser [Sequence]

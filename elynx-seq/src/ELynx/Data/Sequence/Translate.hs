@@ -27,11 +27,12 @@ import           ELynx.Tools.Vector
 
 -- | Translate a sequence from 'DNA' or 'DNAX' to 'ProteinS'.
 translateSeq :: UniversalCode -> Int -> Sequence -> Sequence
-translateSeq uc rf (Sequence n a cs) = case a of
-                                      DNA  -> Sequence n ProteinS (cs' $ translate uc)
-                                      DNAX -> Sequence n ProteinS (cs' $ translateX uc)
-                                      DNAI -> Sequence n ProteinI (cs' $ translateI uc)
-                                      _    -> error "translate: can only translate DNA, DNAX, and DNAI."
+translateSeq uc rf (Sequence n d a cs) =
+  case a of
+    DNA  -> Sequence n d ProteinS (cs' $ translate uc)
+    DNAX -> Sequence n d ProteinS (cs' $ translateX uc)
+    DNAI -> Sequence n d ProteinI (cs' $ translateI uc)
+    _    -> error "translate: can only translate DNA, DNAX, and DNAI."
   where cs' f = C.fromCVec $ translateVecWith f rf (C.toCVec cs)
 
 -- Translate from DNA to Protein with given reading frame (0, 1, 2).

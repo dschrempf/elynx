@@ -14,8 +14,6 @@ Provide descriptions (or headers?) for all sub commands so that they show up in
 help.
 
 * Medium
-** TODO Improve output of (mixture, gamma) model
-** TODO Enable description in FASTA files sequence headers
 * Hard
 ** TODO ELynx file
 Provide an internal =OutFileBaseName.elynx= file that stores all input files and

@@ -29,7 +29,11 @@ ssData :: M.Matrix Character
 ssData = M.fromLists $ map (reverse . map fromChar) [ "AAA", "GAA", "TAA" ]
 
 ssA :: Alignment
-ssA = Alignment (map L.pack ["SEQUENCE_1", "SEQUENCE_2", "SEQUENCE_3"]) DNAI ssData
+ssA = Alignment
+      (map L.pack ["SEQUENCE_1", "SEQUENCE_2", "SEQUENCE_3"])
+      (replicate 3 L.empty)
+      DNAI
+      ssData
 
 spec :: Spec
 spec =

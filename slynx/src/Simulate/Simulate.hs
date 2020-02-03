@@ -98,7 +98,7 @@ simulateAlignment pm t n g = do
       code       = P.getAlphabet pm
       -- XXX: Probably use type safe stuff here?
       alph       = A.all $ alphabetSpec code
-      sequences  = [ Seq.Sequence sName code (V.fromList $ map (`Set.elemAt` alph) ss) |
+      sequences  = [ Seq.Sequence sName "" code (V.fromList $ map (`Set.elemAt` alph) ss) |
                     (sName, ss) <- zip leafNames leafStates ]
   return $ either error id $ A.fromSequences sequences
 
@@ -112,9 +112,9 @@ summarizeEDMComponents cs = LC.pack
 -- necessary. A human readable summary is reported anyways, and for Protein
 -- models the exchangeabilities are too many.
 reportModel :: Maybe FilePath -> P.PhyloModel -> Simulate ()
-reportModel Nothing      _ = $(logInfo) "No output file provided; omit detailed report of phylogenetic model."
+reportModel Nothing      _ = $(logInfo) "No output file provided; omit writing machine-readable phylogenetic model."
 reportModel (Just outFn) m = do
-  let modelFn = outFn <> ".model"
+  let modelFn = outFn <> ".model.gz"
   out "model definition (machine readable)" (bShow m <> "\n") (Just modelFn)
 
 -- | Simulate sequences.
@@ -166,13 +166,17 @@ simulateCmd outFn = do
       return phyloModel'
     Just (n, alpha) -> do
       $(logInfo) $ LT.toStrict $ LT.decodeUtf8
-        $ LC.intercalate "\n" $ P.summarize phyloModel' ++ summarizeGammaRateHeterogeneity n alpha
+        $ LC.intercalate "\n" $ P.summarize phyloModel'
+      $(logInfo) ""
+      $(logInfo) $ LT.toStrict $ LT.decodeUtf8
+        $ LC.intercalate "\n" $ summarizeGammaRateHeterogeneity n alpha
       return $ expand n alpha phyloModel'
 
   -- -- XXX: Do not report possibly huge empirical distribution mixture models
   -- -- for now, because it takes too long and uses too much disk space :).
   unless (isJust sProfiles) (
-    do reportModel outFn phyloModel
+    do $(logInfo) ""
+       reportModel outFn phyloModel
        $(logInfo) ""
     )
 
@@ -181,7 +185,7 @@ simulateCmd outFn = do
   $(logInfo) $ T.pack $ "Length: " <> show alignmentLength <> "."
   let maybeSeed = argsMaybeSeed a
   gen <- case maybeSeed of
-    Nothing -> $(logInfo) "Seed: random"
+    Nothing -> $(logInfo) "Seed: random."
                >> liftIO createSystemRandom
     Just s  -> $(logInfo) (T.pack ("Seed: " <> show s <> "."))
                >> liftIO (initialize (V.fromList s))

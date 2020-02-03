@@ -68,9 +68,10 @@ import           ELynx.Tools.Matrix
 
 -- | A collection of sequences.
 data Alignment = Alignment
-                              { names    :: [S.Name]
-                              , alphabet :: A.Alphabet
-                              , matrix   :: M.Matrix Character
+                              { names        :: [S.Name]
+                              , descriptions :: [S.Description]
+                              , alphabet     :: A.Alphabet
+                              , matrix       :: M.Matrix Character
                               }
   deriving (Show, Eq)
 
@@ -86,22 +87,23 @@ nSequences = M.rows . matrix
 fromSequences :: [S.Sequence] -> Either String Alignment
 fromSequences ss
   | S.equalLength ss && allEqual (map S.alphabet ss) =
-      Right $ Alignment ns a d
+      Right $ Alignment ns ds a d
   | S.equalLength ss =
       Left "Sequences do not have equal codes."
   | otherwise =
       Left "Sequences do not have equal lengths."
   where
     ns   = map S.name ss
+    ds   = map S.description ss
     a    = S.alphabet $ head ss
     bss  = map S.characters ss
     d    = M.fromRows bss
 
 -- | Conversion to list of 'S.Sequence's.
 toSequences :: Alignment -> [S.Sequence]
-toSequences (Alignment ns a d) = zipWith (\n r -> S.Sequence n a r) ns rows
+toSequences (Alignment ns ds a da) = zipWith3 (\n d r -> S.Sequence n d a r) ns ds rows
   where
-    rows  = M.toRows d
+    rows  = M.toRows da
 
 -- -- | Show a 'Alignment', untrimmed.
 -- summarizeSeq :: Alignment -> Int -> L.ByteString
@@ -136,12 +138,12 @@ join :: Alignment
      -> Alignment
 -- top bottom.
 join t b
-  | length t == length b &&
-    al       == alphabet b
-  = Alignment ns al (tD === bD)
-  | otherwise  = error "join: Multi sequence alignments do not have equal length."
+  | length t /= length b      = error "join: Multi sequence alignments do not have equal lengths."
+  | alphabet t /= alphabet b  = error "join: Multi sequence alignments do not have equal alphabets."
+  | otherwise                 = Alignment ns ds al (tD === bD)
   where
     ns = names t ++ names b
+    ds = descriptions t ++ descriptions b
     tD = matrix t
     bD = matrix b
     al = alphabet t
@@ -153,14 +155,19 @@ concat :: Alignment
        -> Alignment
 -- left right.
 concat l r
-  | nSequences l == nSequences r &&
-    al           == alphabet r
-  = Alignment (names l) al (lD ||| rD)
-  | otherwise = error "concat: Multi sequence alignments do not have equal length."
+  | nSequences l /= nSequences r =
+      error "concat: Multi sequence alignments do not have an equal number of sequences."
+  | alphabet l /= alphabet r =
+      error "concat: Multi sequence alignments do not have an equal alphabets."
+  | names l /= names r =
+      error "concat: Multi sequence alignments do not have an equal names."
+  | descriptions l /= descriptions r =
+      error "concat: Multi sequence alignments do not have an equal descriptions."
+  | otherwise =
+      Alignment (names l) (descriptions l) (alphabet l) (lD ||| rD)
   where
     lD = matrix l
     rD = matrix r
-    al = alphabet l
 
 -- | Concatenate a list of 'Alignment's horizontally. See
 -- 'concat'.
