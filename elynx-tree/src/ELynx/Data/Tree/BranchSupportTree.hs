@@ -22,16 +22,17 @@ module ELynx.Data.Tree.BranchSupportTree
 import           Data.List
 import           Data.Tree
 
--- TODO: Implementation of a proper data type. When parsing Newick files, we
+-- XXX: Implementation of a proper data type. When parsing Newick files, we
 -- need to check if an Integer can be parsed, otherwise parse a Double. Also, if
 -- one branch support value is a Double, all others have to be converted to
 -- Double, so that we do not have a mixed data type. In this case, it may be
 -- better to use a type family? Or just use Maybe a, and don't restrict the a
 -- type?
 --
--- data BranchSupport = BSNothing
---                    | BSInt Int
---                    | BSDouble Double deriving (Num)
+-- type BranchSupport = Maybe BSValue
+--
+-- data BSValue = BSInt Int
+--              | BSDouble Double
 
 -- | At the moment, just use 'Double'. It would be preferable to use a wrapper
 -- data type that can handle 'Int' or 'Double'.
