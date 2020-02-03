@@ -22,23 +22,24 @@ module Shuffle.Shuffle
   ( shuffleCmd
   ) where
 
-import           Control.Monad
-import           Control.Monad.IO.Class
-import           Control.Monad.Logger
-import           Control.Monad.Primitive
+import           Control.Comonad                (extend)
+import           Control.Monad                  (forM, replicateM, when)
+import           Control.Monad.IO.Class         (liftIO)
+import           Control.Monad.Logger           (logDebug, logInfo)
+import           Control.Monad.Primitive        (PrimMonad, PrimState)
 import           Control.Monad.Trans.Class      (lift)
-import           Control.Monad.Trans.Reader
+import           Control.Monad.Trans.Reader     (ask)
 import           Data.Array                     (elems)
 import           Data.Array.ST                  (newListArray, readArray,
                                                  runSTArray, writeArray)
 import qualified Data.ByteString.Lazy.Char8     as L
 import           Data.List                      (filter)
 import           Data.Maybe                     (isNothing)
-import           Data.Tree                      (Tree (Node), flatten,
-                                                 rootLabel)
+import           Data.Tree                      (Tree, flatten, rootLabel)
 import qualified Data.Vector.Unboxed            as V
-import           System.IO
-import           System.Random.MWC
+import           System.IO                      (hClose)
+import           System.Random.MWC              (Gen, createSystemRandom,
+                                                 initialize, uniformR)
 
 import           Shuffle.Options
 
@@ -89,7 +90,7 @@ shuffleCmd outFile = do
   when (dh < eps) $
     $(logInfo) "Tree is ultrametric."
 
-  let cs = filter (>0) $ flatten $ mapTree rootHeight t
+  let cs = filter (>0) $ flatten $ extend rootHeight t
       ls = map getName $ leaves t
   $(logDebug) $ "Number of coalescent times: " <> tShow (length cs)
   $(logDebug) $ "Number of leaves: " <> tShow (length ls)
@@ -114,10 +115,6 @@ shuffle n o cs ls gen = do
   css <- grabble cs n (length cs) gen
   lss <- grabble ls n (length ls) gen
   return [toReconstructedTree "" (PointProcess names times o) | (times, names) <- zip css lss]
-
--- TODO: This seems to be 'extend' from comonad!
-mapTree :: (Tree a -> b) -> Tree a -> Tree b
-mapTree f t@(Node _ cs) = Node (f t) (map (mapTree f) cs)
 
 -- | From https://wiki.haskell.org/Random_shuffle.
 --

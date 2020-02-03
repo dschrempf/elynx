@@ -33,6 +33,7 @@ dependencies:
   - lifted-async
   - base
   - bytestring
+  - comonad
   - containers
   # - data-memocombinators
   # - distribution
