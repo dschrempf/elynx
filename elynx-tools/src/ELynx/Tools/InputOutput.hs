@@ -48,9 +48,6 @@ import           Text.Megaparsec
 -- XXX: For now, all files are read strictly (see help of
 -- Control.DeepSeq.force).
 readFile' :: FilePath -> IO L.ByteString
--- -- Doesn't work.
--- readFile' fn = withFile fn ReadMode $ (evaluate . force) <=< L.hGetContents
--- This works!
 readFile' fn = withFile fn ReadMode $
   (evaluate . force) <=< L.hGetContents
 
@@ -113,7 +110,8 @@ parseByteStringWith s p l = case parse p s l of
                             Left  err -> error $ errorBundlePretty err
                             Right val -> val
 
--- | Write a result with a given name to file or standard output.
+-- | Write a result with a given name to file or standard output. Supports
+-- compression.
 out :: (MonadLogger m, MonadIO m) => String -> L.ByteString -> Maybe FilePath -> m ()
 out name res mfp =
   case mfp of

@@ -48,8 +48,7 @@ import           Text.Megaparsec                 (Parsec, errorBundlePretty,
 import           ELynx.Tools.Misc
 import           Paths_elynx_tools               (version)
 
--- Be careful; it is necessary to synchronize the evomod-xxx libraries, so that
--- the version number of elynx-tools matches the others.
+-- Be careful; it is necessary to synchronize the version numbers across packages.
 versionString :: String
 versionString = "ELynx Suite version " ++ showVersion version ++ "."
 
@@ -63,7 +62,7 @@ compilationString = "Compiled on "
                            `fmap` Data.Time.getCurrentTime ))
 
 -- A short header to be used in executables. 'unlines' doesn't work here because
--- it adds an additional newline at the end :(.
+-- it adds an additional newline at the end.
 hdr :: String
 hdr = intercalate "\n" [ versionString
                        , copyrightString
@@ -108,12 +107,9 @@ versionOpt = infoOption hdr
 evoModSuiteFooter :: [Doc]
 evoModSuiteFooter =
   [ empty
-  -- , bold $ text "The ELynx Suite."
   , text "The ELynx Suite"
   , text "---------------"
   , fillParagraph "A Haskell library and a tool set for computational biology. The goal of the ELynx Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated. Exact specification of all options is necessary, and nothing is assumed about the data (e.g., the type of code). The command line with all arguments is consistently, and automatically logged."
-  -- , fill 9 (bold $ text "slynx") <+> text "Analyze, modify, and simulate evolutionary sequences."
-  -- , fill 9 (bold $ text "tlynx") <+> text "Analyze, modify, and simulate phylogenetic trees." ]
   , empty
   , fill 9 (text "slynx") <+> text "Analyze, modify, and simulate evolutionary sequences."
   , fill 9 (text "tlynx") <+> text "Analyze, modify, and simulate phylogenetic trees."
@@ -129,11 +125,10 @@ parseArgumentsWith desc ftr p = execParser $
   info (helper <*> versionOpt <*> p')
   (fullDesc
     <> header hdr
-    <> progDesc dsc'
+    <> progDesc (unlines desc)
     <> footerDoc (Just ftr'))
   where
     p'   = Arguments <$> globalArguments <*> p
-    dsc' = unlines desc
     ftr' = vsep $ map pretty ftr ++ evoModSuiteFooter
 
 -- | Verbosity levels.
