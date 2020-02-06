@@ -207,9 +207,12 @@ getCommonBpStr f m1 m2 p = intercalate "  "
         s  = bphuman f p
 
 plotBps :: [(Double, Double)] -> [Attribute] -> IO ()
-plotBps xs as = plotPathStyle as' ps xs
+plotBps xs as = plotPathsStyle as' [(ps1, xs), (ps2, line) ]
   where as' = as ++
           [ Title "Comparison of branch lengths of common branches"
           , XLabel "Branch lengths, tree 1"
           , YLabel "Branch lengths, tree 2" ]
-        ps = PlotStyle Points (DefaultStyle 1)
+        ps1 = PlotStyle Points (DefaultStyle 1)
+        m   = maximum $ map fst xs ++ map snd xs
+        line = [(0, 0), (m, m)]
+        ps2 = PlotStyle Lines (DefaultStyle 1)
