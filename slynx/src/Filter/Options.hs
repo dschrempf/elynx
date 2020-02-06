@@ -15,15 +15,11 @@ Creation date: Sun Oct  7 17:29:45 2018.
 module Filter.Options
   ( FilterRowsArguments (..)
   , FilterColsArguments (..)
-  , FilterRows
-  , FilterCols
   , filterRowsArguments
   , filterColsArguments
   ) where
 
 import           Control.Applicative
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader
 import           Options.Applicative
 
 import           Tools
@@ -43,12 +39,6 @@ data FilterColsArguments = FilterColsArguments
   { fcAlphabet :: Alphabet
   , fcInFile   :: Maybe FilePath
   , fcStandard :: Maybe Double }
-
--- | Logger and Reader for sequence filtering.
-type FilterRows = LoggingT (ReaderT FilterRowsArguments IO)
-
--- | Logger and Reader for column filtering.
-type FilterCols = LoggingT (ReaderT FilterColsArguments IO)
 
 -- | Command line parser.
 filterRowsArguments :: Parser FilterRowsArguments

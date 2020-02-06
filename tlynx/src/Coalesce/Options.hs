@@ -14,14 +14,11 @@ Creation date: Fri May  3 11:51:07 2019.
 
 module Coalesce.Options
   ( CoalesceArguments (..)
-  , Coalesce
   , coalesceArguments
   , reportCoalesceArguments
   , coalesceFooter
   ) where
 
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader
 import           Data.List
 import           Data.Word
 import           Options.Applicative
@@ -36,9 +33,6 @@ data CoalesceArguments = CoalesceArguments
   , argsSumStat       :: Bool           -- ^ Only print summary statistics?
   , argsSeed          :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
   }
-
--- | Logger and reader data type.
-type Coalesce = LoggingT (ReaderT CoalesceArguments IO)
 
 -- | Print useful information about the provided arguments.
 reportCoalesceArguments :: CoalesceArguments -> String

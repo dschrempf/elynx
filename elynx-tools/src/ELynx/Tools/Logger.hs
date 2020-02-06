@@ -17,7 +17,8 @@ Creation date: Fri Sep  6 14:43:19 2019.
 -}
 
 module ELynx.Tools.Logger
-  ( logNewSection
+  ( ELynx
+  , logNewSection
   , eLynxWrapper
   ) where
 
@@ -29,6 +30,7 @@ import           Control.Monad.Logger        (Loc, LogLevel, LogSource,
                                               filterLogger, logInfo,
                                               runLoggingT)
 import           Control.Monad.Trans.Control (MonadBaseControl)
+import           Control.Monad.Trans.Reader  (ReaderT, ask)
 import qualified Data.ByteString.Char8       as B
 import           Data.Text                   (Text, pack)
 import           System.IO                   (BufferMode (LineBuffering),
@@ -38,6 +40,7 @@ import           System.IO                   (BufferMode (LineBuffering),
 import           System.Log.FastLogger       (LogStr, fromLogStr)
 
 import           ELynx.Tools.Options
+import           ELynx.Tools.Reproduction
 
 -- | Unified way of creating a new section in the log.
 logNewSection :: MonadLogger m => Text -> m ()
@@ -46,11 +49,13 @@ logNewSection s = $(logInfo) $ "== " <> s
 -- | The 'LoggingT' wrapper for ELynx. Prints a header and a footer, logs to
 -- 'stderr' if no file is provided. If a log file is provided, log to the file
 -- and to 'stderr'.
-eLynxWrapper :: (MonadBaseControl IO m, MonadIO m)
-             => GlobalArguments -> String -> LoggingT m () -> m ()
-eLynxWrapper (GlobalArguments lvl logFile) headerMsg worker =
+eLynxWrapper :: String -> ELynx () -> ReaderT GlobalArguments IO ()
+eLynxWrapper header worker = do
+  a <- ask
+  let lvl     = logLevel a
+      logFile = (++ ".log") <$> outFileBaseName a
   runELynxLoggingT lvl logFile $ do
-    h <- liftIO $ logHeader headerMsg
+    h <- liftIO $ logHeader header
     $(logInfo) $ pack h
     worker
     f <- liftIO logFooter

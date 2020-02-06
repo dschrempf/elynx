@@ -21,8 +21,6 @@ module Connect.Connect
 
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8  as L
 import           Data.Tree
 import           System.IO
@@ -37,15 +35,14 @@ import           ELynx.Data.Tree.Tree        (clades, connect)
 import           ELynx.Export.Tree.Newick    (toNewick)
 import           ELynx.Import.Tree.Newick    (manyNewick, oneNewick)
 import           ELynx.Tools.InputOutput     (outHandle, parseFileWith)
+import           ELynx.Tools.Reproduction    (ELynx, getOutFilePath)
 import           ELynx.Tools.Text            (fromBs, tShow)
 
 -- | Connect two trees honoring possible constraints. See 'connect'.
-connectCmd :: Maybe FilePath -> Connect ()
-connectCmd outFile = do
-  -- Determine output handle (stdout or file).
-  a <- lift ask
-  let outFn = (++ ".out") <$> outFile
-  outH <- outHandle "results" outFn
+connectCmd :: ConnectArguments -> ELynx ()
+connectCmd a = do
+  fn <- getOutFilePath ".out"
+  outH <- outHandle "results" fn
 
   -- Do we have constraints or not?
   let cs = constraints a
@@ -73,7 +70,7 @@ compatibleWith :: (Show b, Ord b) => (a -> b) -> [Constraint a] -> Tree a -> Boo
 compatibleWith f cs t = compatibleAll (fmap f t) (map (smap f) cs)
 
 parseTrees :: FilePath -> FilePath
-           -> Connect (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
+           -> ELynx (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
 parseTrees l r = do
   tl <- liftIO $ parseFileWith oneNewick l
   tr <- liftIO $ parseFileWith oneNewick r
@@ -83,14 +80,14 @@ parseTrees l r = do
   $(logInfo) $ fromBs $ toNewick tr
   return (tl, tr)
 
-connectOnly :: Handle -> FilePath -> FilePath -> Connect ()
+connectOnly :: Handle -> FilePath -> FilePath -> ELynx ()
 connectOnly h l r = do
   (tl, tr) <- parseTrees l r
   let  ts = connectTrees tl tr
   $(logInfo) $ "Connected trees: " <> tShow (length ts)
   liftIO $ L.hPutStr h $ L.unlines $ map toNewick ts
 
-connectAndFilter :: Handle -> FilePath -> FilePath -> FilePath -> Connect ()
+connectAndFilter :: Handle -> FilePath -> FilePath -> FilePath -> ELynx ()
 connectAndFilter h c l r = do
   cts <- liftIO $ parseFileWith manyNewick c
   $(logInfo) "Constraints:"

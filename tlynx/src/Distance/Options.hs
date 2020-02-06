@@ -15,13 +15,10 @@ Creation date: Thu Aug 29 13:02:22 2019.
 module Distance.Options
   ( DistanceArguments (..)
   , DistanceMeasure (..)
-  , Distance
   , distanceArguments
   , distanceFooter
   ) where
 
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader
 import           Data.List
 import           Data.Void
 import           Options.Applicative
@@ -53,9 +50,6 @@ data DistanceArguments = DistanceArguments
   , argsNewickIqTree      :: Bool
   , argsInFiles           :: [FilePath]
   }
-
--- | Logger and reader data type.
-type Distance = LoggingT (ReaderT DistanceArguments IO)
 
 -- | COmmand line parser.
 distanceArguments :: Parser DistanceArguments

@@ -14,12 +14,9 @@ Creation date: Thu Sep 19 15:02:21 2019.
 
 module Compare.Options
   ( CompareArguments (..)
-  , Compare
   , compareArguments
   ) where
 
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader
 import           Options.Applicative
 
 -- | Arguments of compare command.
@@ -28,10 +25,6 @@ data CompareArguments = CompareArguments
   , argsBipartitions :: Bool
   , argsNewickIqTree :: Bool
   , argsInFiles      :: [FilePath] }
-
-
--- | Logger and reader data type.
-type Compare = LoggingT (ReaderT CompareArguments IO)
 
 -- | Parse arguments of compare command.
 compareArguments :: Parser CompareArguments

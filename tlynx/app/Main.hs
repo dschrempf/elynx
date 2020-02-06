@@ -27,19 +27,15 @@ import           Shuffle.Shuffle
 import           Simulate.Simulate
 
 import           ELynx.Tools.Logger
-import           ELynx.Tools.Options
 
 main :: IO ()
 main = do
   Arguments g c <- parseArguments
-  let fn  = outFileBaseName g
-      lvl = verbosity g
-      lf  = (++ ".log") <$> fn
   case c of
-    Distance a -> runReaderT (eLynxWrapper lvl lf distanceDescription $ distance fn) a
-    Examine  a -> runReaderT (eLynxWrapper lvl lf examineDescription  $ examine fn) a
-    Simulate a -> runReaderT (eLynxWrapper lvl lf simulateDescription $ simulate fn) a
-    Coalesce a -> runReaderT (eLynxWrapper lvl lf coalesceDescription $ coalesce fn) a
-    Compare  a -> runReaderT (eLynxWrapper lvl lf compareDescription $ compareCmd fn) a
-    Connect  a -> runReaderT (eLynxWrapper lvl lf connectDescription $ connectCmd fn) a
-    Shuffle  a -> runReaderT (eLynxWrapper lvl lf shuffleDescription $ shuffleCmd fn) a
+    Distance a -> runReaderT (eLynxWrapper distanceDescription $ distance a) g
+    Examine  a -> runReaderT (eLynxWrapper examineDescription  $ examine a) g
+    Simulate a -> runReaderT (eLynxWrapper simulateDescription $ simulate a) g
+    Coalesce a -> runReaderT (eLynxWrapper coalesceDescription $ coalesce a) g
+    Compare  a -> runReaderT (eLynxWrapper compareDescription $ compareCmd a) g
+    Connect  a -> runReaderT (eLynxWrapper connectDescription $ connectCmd a) g
+    Shuffle  a -> runReaderT (eLynxWrapper shuffleDescription $ shuffleCmd a) g

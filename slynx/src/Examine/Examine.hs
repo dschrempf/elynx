@@ -22,8 +22,6 @@ module Examine.Examine
   where
 
 import           Control.Monad.Logger
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8    as L
 import qualified Data.Set                      as S
 import           Text.Printf
@@ -36,6 +34,7 @@ import qualified ELynx.Data.Alphabet.Character as C
 import qualified ELynx.Data.Sequence.Alignment as M
 import qualified ELynx.Data.Sequence.Sequence  as Seq
 import           ELynx.Tools.InputOutput
+import           ELynx.Tools.Reproduction
 
 examineAlignment :: Bool -> M.Alignment -> L.ByteString
 examineAlignment perSiteFlag a =
@@ -108,11 +107,10 @@ examine perSiteFlag ss = Seq.summarizeSequences ss <>
     Right a -> L.pack "\n" <> examineAlignment perSiteFlag a
 
 -- | Examine sequences.
-examineCmd :: Maybe FilePath -> Examine ()
-examineCmd outFileBaseName = do
+examineCmd :: ExamineArguments -> ELynx ()
+examineCmd (ExamineArguments al inFile perSiteFlag) = do
   $(logInfo) "Command: Examine sequences."
-  ExamineArguments al inFile perSiteFlag <- lift ask
   ss <- readSeqs al inFile
   let result = examine perSiteFlag ss
-  let outFilePath = (++ ".out") <$> outFileBaseName
-  out "result of examination" result outFilePath
+  fn <- getOutFilePath ".out"
+  out "result of examination" result fn

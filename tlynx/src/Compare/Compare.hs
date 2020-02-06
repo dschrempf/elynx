@@ -22,8 +22,6 @@ module Compare.Compare
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8        as L
 import           Data.List
 import qualified Data.Map                          as M
@@ -50,12 +48,12 @@ import           ELynx.Data.Tree.Tree
 import           ELynx.Export.Tree.Newick          (toNewick)
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
+import           ELynx.Tools.Reproduction          (ELynx, getOutFilePath)
 
-treesOneFile :: FilePath
-             -> Compare (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
-treesOneFile tf = do
-  a <- lift ask
-  let nw = if argsNewickIqTree a then manyNewickIqTree else manyNewick
+treesOneFile :: Bool -> FilePath
+             -> ELynx (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
+treesOneFile iqtree tf = do
+  let nw = if iqtree then manyNewickIqTree else manyNewick
   $(logInfo) $ T.pack $ "Parse file '" ++ tf ++ "'."
   ts <- liftIO $ parseFileWith nw tf
   let n = length ts
@@ -64,11 +62,10 @@ treesOneFile tf = do
     GT -> error "Too many trees in file."
     EQ -> return (head ts, head . tail $ ts)
 
-treesTwoFiles :: FilePath -> FilePath
-              -> Compare (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
-treesTwoFiles tf1 tf2 = do
-  a <- lift ask
-  let nw = if argsNewickIqTree a then oneNewickIqTree else oneNewick
+treesTwoFiles :: Bool -> FilePath -> FilePath
+              -> ELynx (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
+treesTwoFiles iqtree tf1 tf2 = do
+  let nw = if iqtree then oneNewickIqTree else oneNewick
   $(logInfo) $ T.pack $ "Parse first tree file '" ++ tf1 ++ "'."
   t1 <- liftIO $ parseFileWith nw tf1
   $(logInfo) $ T.pack $ "Parse second tree file '" ++ tf2 ++ "'."
@@ -76,29 +73,24 @@ treesTwoFiles tf1 tf2 = do
   return (t1, t2)
 
 -- | More detailed comparison of two trees.
-compareCmd :: Maybe FilePath -> Compare ()
-compareCmd outFile = do
-  a <- lift ask
+compareCmd :: CompareArguments -> ELynx ()
+compareCmd a = do
   -- Determine output handle (stdout or file).
-  let outFn = (++ ".out") <$> outFile
+  outFn <- getOutFilePath ".out"
   outH <- outHandle "results" outFn
-  -- liftIO $ hPutStrLn outH ""
 
   -- Read input.
   let inFiles = argsInFiles a
       nFiles  = length inFiles
   (t1, t2) <- case nFiles of
-    1 -> treesOneFile (head inFiles)
-    2 -> treesTwoFiles (head inFiles) (head . tail $ inFiles)
+    1 -> treesOneFile (argsNewickIqTree a)(head inFiles)
+    2 -> treesTwoFiles (argsNewickIqTree a) (head inFiles) (head . tail $ inFiles)
     _ -> error "Need two input files with one tree each or one input file with two trees."
-  -- liftIO $ hPutStrLn outH ""
 
   liftIO $ hPutStrLn outH "Tree 1:"
   liftIO $ L.hPutStrLn outH $ toNewick t1
-  -- liftIO $ hPrint outH t1
   liftIO $ hPutStrLn outH "Tree 2:"
   liftIO $ L.hPutStrLn outH $ toNewick t2
-  -- liftIO $ hPrint outH t2
   liftIO $ hPutStrLn outH ""
 
   -- Check input.

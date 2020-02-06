@@ -14,12 +14,9 @@ Creation date: Thu Sep 19 15:02:21 2019.
 
 module Shuffle.Options
   ( ShuffleArguments (..)
-  , Shuffle
   , shuffleArguments
   ) where
 
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader
 import           Data.Word
 import           Options.Applicative
 
@@ -31,9 +28,6 @@ data ShuffleArguments = ShuffleArguments
   , nReplicates      :: Int
   , inFile           :: FilePath
   , argsSeed         :: Maybe [Word32] }
-
--- | Logger and reader data type.
-type Shuffle = LoggingT (ReaderT ShuffleArguments IO)
 
 -- | Parse arguments of shuffle command.
 shuffleArguments :: Parser ShuffleArguments

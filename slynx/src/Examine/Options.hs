@@ -14,13 +14,10 @@ Creation date: Sun Oct  7 17:29:45 2018.
 
 module Examine.Options
   ( ExamineArguments (..)
-  , Examine
   , examineArguments
   ) where
 
 import           Control.Applicative          (optional)
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader
 import           Data.Maybe                   (fromJust)
 import           Options.Applicative
 
@@ -41,9 +38,6 @@ instance Reproducible ExamineArguments where
   -- check sums. StdIO can also be checked in the same way.
   inFiles  = pure . fromJust . exInFile
   parser _ = examineArguments
-
--- | Logger and Reader type.
-type Examine = LoggingT (ReaderT ExamineArguments IO)
 
 -- | Command line parser.
 examineArguments :: Parser ExamineArguments

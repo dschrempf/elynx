@@ -26,7 +26,6 @@ import           Control.Monad                     (unless, when)
 import           Control.Monad.IO.Class            (liftIO)
 import           Control.Monad.Logger              (logDebug, logInfo)
 import           Control.Monad.Trans.Class         (lift)
-import           Control.Monad.Trans.Reader        (ask)
 import qualified Data.ByteString.Lazy.Char8        as L
 import           Data.List                         (length, sort)
 import           Data.Maybe                        (isNothing)
@@ -51,6 +50,7 @@ import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.ByteString            (alignLeft, alignRight)
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
+import           ELynx.Tools.Reproduction          (ELynx, getOutFilePath)
 
 median :: Ord a => [a] -> a
 median xs = sort xs !! l2
@@ -71,13 +71,12 @@ showTriplet n args (i, j, d) = i' <> j' <> d'
         d' = alignRight 20    $ L.pack (printf pf d)
 
 -- | Compute distance functions between phylogenetic trees.
-distance :: Maybe FilePath -> Distance ()
-distance outFileBN = do
-  a <- lift ask
+distance :: DistanceArguments -> ELynx ()
+distance a = do
   let nw = if argsNewickIqTree a then manyNewickIqTree else manyNewick
   -- Determine output handle (stdout or file).
-  let outFile = (++ ".out") <$> outFileBN
-  outH <- outHandle "results" outFile
+  outF <- getOutFilePath ".out"
+  outH <- outHandle "results" outF
   -- Master tree (in case it is given).
   let mname = argsMasterTreeFile a
   mtree <- case mname of
@@ -113,7 +112,7 @@ distance outFileBN = do
          return (ts, tfps)
   $(logDebug) "The trees are:"
   $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees
-  case outFile of
+  case outF of
     Nothing -> logNewSection "Write results to standard output."
     Just f  -> logNewSection $ T.pack $ "Write results to file " <> f <> "."
   let n        = maximum $ 6 : map length names

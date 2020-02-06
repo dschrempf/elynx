@@ -14,13 +14,10 @@ Creation date: Sun Oct  7 17:29:45 2018.
 
 module SubSample.Options
   ( SubSampleArguments (..)
-  , SubSample
   , subSampleArguments
   ) where
 
 import           Control.Applicative
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader
 import           Data.Word
 import           Options.Applicative
 
@@ -36,9 +33,6 @@ data SubSampleArguments = SubSampleArguments
     , ssNSites      :: Int
     , ssNAlignments :: Int
     , ssMbSeed      :: Maybe [Word32] }
-
--- | The sub sample command can log stuff and read necessary arguments.
-type SubSample = LoggingT (ReaderT SubSampleArguments IO)
 
 -- | Sub command parser.
 subSampleArguments :: Parser SubSampleArguments

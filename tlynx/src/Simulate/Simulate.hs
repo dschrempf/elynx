@@ -33,8 +33,6 @@ import           Control.Concurrent.Async.Lifted.Safe (mapConcurrently)
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader
 import           Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8           as L
 import           Data.Maybe
@@ -57,34 +55,35 @@ import           ELynx.Simulate.PointProcess          (simulateNReconstructedTre
 import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
+import           ELynx.Tools.Reproduction             (ELynx, getOutFilePath)
 
 -- | Simulate phylogenetic trees.
-simulate :: Maybe FilePath -> Simulate ()
-simulate outFile = do
-  a <- lift ask
+simulate :: SimulateArguments -> ELynx ()
+simulate a = do
   when (isNothing (argsHeight a) && argsConditionMRCA a) $
     error "Cannot condition on MRCA (-M) when height is not given (-H)."
   let s = argsSumStat a
-  nCap <- liftIO getNumCapabilities
+  c <- liftIO getNumCapabilities
   logNewSection "Arguments"
   $(logInfo) $ T.pack $ reportSimulateArguments a
   logNewSection "Simulation"
-  $(logInfo) $ T.pack $ "Number of used cores: " <> show nCap
+  $(logInfo) $ T.pack $ "Number of used cores: " <> show c
   trs <- if argsSubSample a
-         then simulateAndSubSampleNTreesConcurrently nCap
-         else simulateNTreesConcurrently nCap
+         then simulateAndSubSampleNTreesConcurrently a
+         else simulateNTreesConcurrently a
   let ls = if s
            then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
            else parMap rpar toNewick trs
-  let outFile' = (++ ".tree") <$> outFile
+  fn <- getOutFilePath ".tree"
   let res = L.unlines ls
-  out "simulated trees" res outFile'
+  out "simulated trees" res fn
 
-simulateNTreesConcurrently :: Int -> Simulate [Tree (PhyloLabel Int)]
-simulateNTreesConcurrently c = do
-  (SimulateArguments nT nL h cM l m r _ _ s) <- lift ask
+simulateNTreesConcurrently :: SimulateArguments -> ELynx [Tree (PhyloLabel Int)]
+simulateNTreesConcurrently (SimulateArguments nT nL h cM l m r _ _ s) = do
   let l' = l * r
       m' = m - l * (1.0 - r)
+  -- TODO: Reduce duplication.
+  c <- liftIO getNumCapabilities
   gs <- liftIO $ getNGen c s
   let chunks = getChunks c nT
       timeSpec = fmap (, cM) h
@@ -93,10 +92,10 @@ simulateNTreesConcurrently c = do
           (zip chunks gs)
   return $ concat trss
 
-simulateAndSubSampleNTreesConcurrently :: Int -> Simulate [Tree (PhyloLabel Int)]
-simulateAndSubSampleNTreesConcurrently c = do
-  (SimulateArguments nT nL h cM l m r _ _ s) <- lift ask
+simulateAndSubSampleNTreesConcurrently :: SimulateArguments -> ELynx [Tree (PhyloLabel Int)]
+simulateAndSubSampleNTreesConcurrently (SimulateArguments nT nL h cM l m r _ _ s) = do
   let nLeavesBigTree = (round $ fromIntegral nL / r) :: Int
+  c <- liftIO getNumCapabilities
   gs <- liftIO $ getNGen c s
   let chunks = getChunks c nT
       timeSpec = fmap (, cM) h

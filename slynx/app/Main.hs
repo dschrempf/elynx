@@ -26,19 +26,15 @@ import           SubSample.SubSample
 import           Translate.Translate
 
 import           ELynx.Tools.Logger
-import           ELynx.Tools.Options
 
 main :: IO ()
 main = do
-  Arguments g c <- parseArguments
-  let fn  = outFileBaseName g
-      lvl = verbosity g
-      lf  = (++ ".log") <$> fn
+  (Arguments g c) <- parseArguments
   case c of
-    Concatenate a -> runReaderT (eLynxWrapper lvl lf concatenateDescription   $ concatenateCmd fn) a
-    Examine a     -> runReaderT (eLynxWrapper lvl lf examineDescription       $ examineCmd fn) a
-    FilterRows a  -> runReaderT (eLynxWrapper lvl lf filterRowsDescription    $ filterRowsCmd fn) a
-    FilterCols a  -> runReaderT (eLynxWrapper lvl lf filterColumnsDescription $ filterColsCmd fn) a
-    Simulate a    -> runReaderT (eLynxWrapper lvl lf simulateDescription      $ simulateCmd fn) a
-    SubSample a   -> runReaderT (eLynxWrapper lvl lf subSampleDescription     $ subSampleCmd fn) a
-    Translate a   -> runReaderT (eLynxWrapper lvl lf translateDescription     $ translateCmd fn) a
+    Concatenate a -> runReaderT (eLynxWrapper concatenateDescription   $ concatenateCmd a) g
+    Examine a     -> runReaderT (eLynxWrapper examineDescription       $ examineCmd a) g
+    FilterRows a  -> runReaderT (eLynxWrapper filterRowsDescription    $ filterRowsCmd a) g
+    FilterCols a  -> runReaderT (eLynxWrapper filterColumnsDescription $ filterColsCmd a) g
+    Simulate a    -> runReaderT (eLynxWrapper simulateDescription      $ simulateCmd a) g
+    SubSample a   -> runReaderT (eLynxWrapper subSampleDescription     $ subSampleCmd a) g
+    Translate a   -> runReaderT (eLynxWrapper translateDescription     $ translateCmd a) g

@@ -14,13 +14,10 @@ Creation date: Sun Oct  7 17:29:45 2018.
 
 module Concatenate.Options
   ( ConcatenateArguments (..)
-  , Concatenate
   , concatenateArguments
   ) where
 
 import           Control.Applicative
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader
 import           Options.Applicative
 
 import           Tools
@@ -36,9 +33,6 @@ data ConcatenateArguments = ConcatenateArguments
 instance Reproducible ConcatenateArguments where
   inFiles  = ccInFiles
   parser _ = concatenateArguments
-
--- | Logger and Reader type.
-type Concatenate = LoggingT (ReaderT ConcatenateArguments IO)
 
 -- | Command line parser.
 concatenateArguments :: Parser ConcatenateArguments

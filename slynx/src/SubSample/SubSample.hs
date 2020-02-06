@@ -38,6 +38,8 @@ import           Tools
 import qualified ELynx.Data.Sequence.Alignment as M
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
+import           ELynx.Tools.Options
+import           ELynx.Tools.Reproduction
 
 -- | Get a given number of output file names with provided suffix.
 --
@@ -51,10 +53,8 @@ getOutFilePaths file n suffix = [ file ++ "." ++ digitStr i ++ "." ++ suffix
         digitStr i = T.unpack $ T.justifyRight nDigits '0' (LT.toStrict $ LT.toLazyText $ LT.decimal i)
 
 -- | Sub sample sequences.
-subSampleCmd :: Maybe FilePath  -- ^ Output file base name
-             -> SubSample ()
-subSampleCmd outFileBaseName = do
-  SubSampleArguments al inFile nSites nAlignments seed <- lift ask
+subSampleCmd :: SubSampleArguments -> ELynx ()
+subSampleCmd (SubSampleArguments al inFile nSites nAlignments seed) = do
   $(logInfo) "Command: Sub sample from a multi sequence alignment."
   $(logInfo) $ T.pack $ "  Sample " <> show nSites <> " sites."
   $(logInfo) $ T.pack $ "  Sample " <> show nAlignments <> " multi sequence alignments."
@@ -63,7 +63,8 @@ subSampleCmd outFileBaseName = do
   let a = either error id (M.fromSequences ss)
   samples <- lift $ replicateM nAlignments $ M.randomSubSample nSites a gen
   let results = map (sequencesToFasta . M.toSequences) samples
-  outFilePaths <- case outFileBaseName of
+  bn <- outFileBaseName <$> lift ask
+  outFilePaths <- case bn of
     Nothing -> return $ repeat Nothing
     Just fn -> return $ Just <$> getOutFilePaths fn nAlignments "fasta"
   zipWithM_ (out "sub sampled multi sequence alignments") results outFilePaths

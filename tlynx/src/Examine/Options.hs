@@ -14,21 +14,15 @@ Creation date: Thu Aug 29 08:16:45 2019.
 
 module Examine.Options
   ( ExamineArguments (..)
-  , Examine
   , examineArguments
   ) where
 
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader
 import           Options.Applicative
 
 -- | Arguments needed to examine phylogenetic trees.
 data ExamineArguments = ExamineArguments
   { argsInFile       :: Maybe FilePath
   , argsNewickIqTree :: Bool }
-
--- | Logger and reader data type.
-type Examine = LoggingT (ReaderT ExamineArguments IO)
 
 -- | Command line parser.
 examineArguments :: Parser ExamineArguments

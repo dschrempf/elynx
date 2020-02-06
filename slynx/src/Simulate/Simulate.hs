@@ -27,7 +27,6 @@ import           Control.Monad                                     (unless,
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy                              as L
 import qualified Data.ByteString.Lazy.Char8                        as LC
 import           Data.Maybe
@@ -66,6 +65,7 @@ import           ELynx.Tools.ByteString
 import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Misc
+import           ELynx.Tools.Reproduction
 
 -- Simulate a 'Alignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
@@ -112,16 +112,16 @@ summarizeEDMComponents cs = LC.pack
 -- XXX. Maybe provide human readable model file. But then, why is this
 -- necessary. A human readable summary is reported anyways, and for Protein
 -- models the exchangeabilities are too many.
-reportModel :: Maybe FilePath -> P.PhyloModel -> Simulate ()
-reportModel Nothing      _ = $(logInfo) "No output file provided; omit writing machine-readable phylogenetic model."
-reportModel (Just outFn) m = do
-  let modelFn = outFn <> ".model.gz"
-  out "model definition (machine readable)" (bShow m <> "\n") (Just modelFn)
+reportModel :: P.PhyloModel -> ELynx ()
+reportModel m = do
+  fn <- getOutFilePath ".model.gz"
+  case fn of
+    Nothing -> $(logInfo) "No output file provided; omit writing machine-readable phylogenetic model."
+    Just fn' -> out "model definition (machine readable)" (bShow m <> "\n") (Just fn')
 
 -- | Simulate sequences.
-simulateCmd :: Maybe FilePath -> Simulate ()
-simulateCmd outFn = do
-  a <- lift ask
+simulateCmd :: SimulateArguments -> ELynx ()
+simulateCmd a = do
   let treeFile = argsTreeFile a
 
   $(logInfo) ""
@@ -177,7 +177,7 @@ simulateCmd outFn = do
   -- -- for now, because it takes too long and uses too much disk space :).
   unless (isJust sProfiles) (
     do $(logInfo) ""
-       reportModel outFn phyloModel
+       reportModel phyloModel
        $(logInfo) ""
     )
 
@@ -191,7 +191,7 @@ simulateCmd outFn = do
     Just s  -> $(logInfo) (T.pack ("Seed: " <> show s <> "."))
                >> liftIO (initialize (V.fromList s))
   alignment <- liftIO $ simulateAlignment phyloModel tree alignmentLength gen
+  fn <- getOutFilePath ".fasta"
   let output = (sequencesToFasta . A.toSequences) alignment
-      outFile = (<> ".fasta") <$> outFn
   $(logInfo) ""
-  out "simulated multi sequence alignment" output outFile
+  out "simulated multi sequence alignment" output fn

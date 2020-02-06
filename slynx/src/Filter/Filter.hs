@@ -23,8 +23,6 @@ module Filter.Filter
 
 import           Control.Monad                 (when)
 import           Control.Monad.Logger
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.Maybe                    (fromMaybe)
 import qualified Data.Text                     as T
@@ -36,7 +34,9 @@ import qualified ELynx.Data.Sequence.Alignment as M
 import qualified ELynx.Data.Sequence.Sequence  as S
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
+import           ELynx.Tools.Logger
 import           ELynx.Tools.Misc
+import           ELynx.Tools.Reproduction
 
 filterRows :: Maybe Int -> Maybe Int -> Bool -> [S.Sequence] -> L.ByteString
 filterRows ml ms std ss = sequencesToFasta $ compose filters ss
@@ -44,10 +44,9 @@ filterRows ml ms std ss = sequencesToFasta $ compose filters ss
         filters  = if std then S.filterStandard : filters'  else filters'
 
 -- | Filter sequences.
-filterRowsCmd :: Maybe FilePath -> FilterRows ()
-filterRowsCmd outFileBaseName = do
+filterRowsCmd :: FilterRowsArguments -> ELynx ()
+filterRowsCmd (FilterRowsArguments al inFile long short std) = do
   $(logInfo) "Command: Filter sequences of a list of sequences."
-  FilterRowsArguments al inFile long short std <- lift ask
   maybe (return ())
     (\val -> $(logInfo) $ T.pack $ "  Keep sequences longer than " <> show val <> ".") long
   maybe (return ())
@@ -56,8 +55,8 @@ filterRowsCmd outFileBaseName = do
     $(logInfo) "  Keep sequences containing at least one standard (i.e., non-IUPAC) character."
   ss <- readSeqs al inFile
   let result      = filterRows long short std ss
-  let outFilePath = (++ ".fasta") <$> outFileBaseName
-  out "filtered sequences" result outFilePath
+  fn <- getOutFilePath ".fasta"
+  out "filtered sequences" result fn
 
 filterCols :: Maybe Double -> [S.Sequence] -> L.ByteString
 filterCols ms ss = sequencesToFasta . M.toSequences $ compose filters a
@@ -65,10 +64,9 @@ filterCols ms ss = sequencesToFasta . M.toSequences $ compose filters a
         filters = map (fromMaybe id) [ M.filterColsStd <$> ms ]
 
 -- | Filter columns.
-filterColsCmd :: Maybe FilePath -> FilterCols ()
-filterColsCmd outFileBaseName = do
+filterColsCmd :: FilterColsArguments -> ELynx ()
+filterColsCmd (FilterColsArguments al inFile standard) = do
   $(logInfo) "Command: Filter columns of a multi sequence alignment."
-  FilterColsArguments al inFile standard <- lift ask
   case standard of
     Nothing -> return ()
     Just p -> $(logInfo) $ T.pack $
@@ -76,5 +74,5 @@ filterColsCmd outFileBaseName = do
         ++ show p ++ "."
   ss <- readSeqs al inFile
   let result      = filterCols standard ss
-  let outFilePath = (++ ".fasta") <$> outFileBaseName
-  out "filtered sequences" result outFilePath
+  fn <- getOutFilePath ".fasta"
+  out "filtered sequences" result fn

@@ -21,8 +21,6 @@ module Concatenate.Concatenate
 where
 
 import           Control.Monad.Logger
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader
 
 import           Concatenate.Options
 import           Tools
@@ -30,14 +28,13 @@ import           Tools
 import qualified ELynx.Data.Sequence.Sequence as S
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
+import           ELynx.Tools.Reproduction
 
 -- | Concatenate sequences.
-concatenateCmd :: Maybe FilePath -> Concatenate ()
-concatenateCmd outFileBaseName = do
+concatenateCmd :: ConcatenateArguments -> ELynx ()
+concatenateCmd (ConcatenateArguments al fps) = do
   $(logInfo) "Command: Concatenate sequences."
-  ConcatenateArguments al fps <- lift ask
   sss <- mapM (readSeqs al . Just) fps
   let result      = sequencesToFasta $ S.concatSequences sss
-  let outFilePath = (++ ".fasta") <$> outFileBaseName
-  out "concatenated multi sequence alignment " result outFilePath
-
+  fn <- getOutFilePath ".fasta"
+  out "concatenated multi sequence alignment " result fn

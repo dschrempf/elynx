@@ -14,12 +14,9 @@ Creation date: Thu Sep 19 15:02:21 2019.
 
 module Connect.Options
   ( ConnectArguments (..)
-  , Connect
   , connectArguments
   ) where
 
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader
 import           Options.Applicative
 
 -- | Arguments of connect command.
@@ -28,9 +25,6 @@ data ConnectArguments = ConnectArguments
   , constraints      :: Maybe FilePath
   , inFileA          :: FilePath
   , inFileB          :: FilePath }
-
--- | Logger and reader data type.
-type Connect = LoggingT (ReaderT ConnectArguments IO)
 
 -- | Parse arguments of connect command.
 connectArguments :: Parser ConnectArguments

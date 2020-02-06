@@ -38,20 +38,14 @@ Available options:
 module Simulate.Options
   ( GammaRateHeterogeneityParams
   , SimulateArguments (..)
-  , Simulate
   , simulateArguments
   , simulateFooter
   ) where
 
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader
 import           Data.List
 import           Data.String                (words)
--- import           Data.Void
 import           Data.Word
 import           Options.Applicative
--- import           Text.Megaparsec            (Parsec, takeWhile1P)
--- import           Text.Megaparsec.Char       (space)
 
 import           ELynx.Tools.Options
 
@@ -70,9 +64,6 @@ data SimulateArguments = SimulateArguments
   , argsLength                  :: Int
   , argsMaybeSeed               :: Maybe [Word32]
   }
-
--- | A simulation can log stuff and read the necessary arguments.
-type Simulate = LoggingT (ReaderT SimulateArguments IO)
 
 -- | Sub command parser.
 simulateArguments :: Parser SimulateArguments

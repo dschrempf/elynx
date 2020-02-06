@@ -25,8 +25,6 @@ import           Control.Concurrent.Async.Lifted.Safe (mapConcurrently)
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader
 import           Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8           as L
 import           Data.Maybe
@@ -49,30 +47,30 @@ import           ELynx.Simulate.Coalescent            (simulate)
 import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
+import           ELynx.Tools.Reproduction
 
 -- | Simulate phylogenetic trees.
-coalesce :: Maybe FilePath -> Coalesce ()
-coalesce outFile = do
-  a <- lift ask
+coalesce :: CoalesceArguments -> ELynx ()
+coalesce a = do
   let s = argsSumStat a
-  nCap <- liftIO getNumCapabilities
   logNewSection "Arguments"
   $(logInfo) $ T.pack $ reportCoalesceArguments a
   logNewSection "Simulation"
-  $(logInfo) $ T.pack $ "Number of used cores: " <> show nCap
+  c <- liftIO getNumCapabilities
+  $(logInfo) $ T.pack $ "Number of used cores: " <> show c
   trs <- case argsRho a of
-           Nothing -> simulateNTreesConcurrently nCap
-           Just _  -> simulateAndSubSampleNTreesConcurrently nCap
+           Nothing -> simulateNTreesConcurrently a
+           Just _  -> simulateAndSubSampleNTreesConcurrently a
   let ls = if s
            then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
            else parMap rpar toNewick trs
-  let outFile' = (++ ".tree") <$> outFile
+  fn <- getOutFilePath ".tree"
   let res = L.unlines ls
-  out "simulated trees" res outFile'
+  out "simulated trees" res fn
 
-simulateNTreesConcurrently :: Int -> Coalesce [Tree (PhyloLabel Int)]
-simulateNTreesConcurrently c = do
-  (CoalesceArguments nT nL _ _ s) <- lift ask
+simulateNTreesConcurrently :: CoalesceArguments -> ELynx [Tree (PhyloLabel Int)]
+simulateNTreesConcurrently (CoalesceArguments nT nL _ _ s) = do
+  c <- liftIO getNumCapabilities
   gs <- liftIO $ getNGen c s
   let chunks = getChunks c nT
   trss <- liftIO $ mapConcurrently
@@ -80,9 +78,9 @@ simulateNTreesConcurrently c = do
           (zip chunks gs)
   return $ concat trss
 
-simulateAndSubSampleNTreesConcurrently :: Int -> Coalesce [Tree (PhyloLabel Int)]
-simulateAndSubSampleNTreesConcurrently c = do
-  (CoalesceArguments nT nL mR _ s) <- lift ask
+simulateAndSubSampleNTreesConcurrently :: CoalesceArguments -> ELynx [Tree (PhyloLabel Int)]
+simulateAndSubSampleNTreesConcurrently (CoalesceArguments nT nL mR _ s) = do
+  c <- liftIO getNumCapabilities
   let r = fromMaybe
           (error "cimulateAndSubSampleNTreesConcurrently: no sampling probability given.")
           mR

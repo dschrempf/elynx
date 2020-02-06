@@ -14,13 +14,10 @@ Creation date: Sun Oct  7 17:29:45 2018.
 
 module Translate.Options
   ( TranslateArguments (..)
-  , Translate
   , translateArguments
   ) where
 
 import           Control.Applicative
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader
 import           Data.List
 import           Options.Applicative
 
@@ -36,9 +33,6 @@ data TranslateArguments = TranslateArguments
     , trInFile        :: Maybe FilePath
     , trReadingFrame  :: Int
     , trUniversalCode :: UniversalCode }
-
--- | Logger and Reader type.
-type Translate = LoggingT (ReaderT TranslateArguments IO)
 
 -- | Command line parser.
 translateArguments :: Parser TranslateArguments

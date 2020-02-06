@@ -27,8 +27,6 @@ import           Control.Monad                  (forM, replicateM, when)
 import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Logger           (logDebug, logInfo)
 import           Control.Monad.Primitive        (PrimMonad, PrimState)
-import           Control.Monad.Trans.Class      (lift)
-import           Control.Monad.Trans.Reader     (ask)
 import           Data.Array                     (elems)
 import           Data.Array.ST                  (newListArray, readArray,
                                                  runSTArray, writeArray)
@@ -54,18 +52,17 @@ import           ELynx.Simulate.PointProcess    (PointProcess (PointProcess),
                                                  toReconstructedTree)
 import           ELynx.Tools.Definitions        (eps)
 import           ELynx.Tools.InputOutput        (outHandle, parseFileWith)
+import           ELynx.Tools.Reproduction       (ELynx, getOutFilePath)
 import           ELynx.Tools.Text               (fromBs, tShow)
 
 -- | Shuffle a tree. Get all coalescent times, shuffle them. Get all leaves,
 -- shuffle them. Connect the shuffled leaves with the shuffled coalescent times.
 -- The shuffled tree has a new topology while keeping the same set of coalescent
 -- times and leaves.
-shuffleCmd :: Maybe FilePath -> Shuffle ()
-shuffleCmd outFile = do
-  a <- lift ask
-
-  let outFn = (++ ".tree") <$> outFile
-  h <- outHandle "results" outFn
+shuffleCmd :: ShuffleArguments -> ELynx ()
+shuffleCmd a = do
+  fn <- getOutFilePath ".tree"
+  h <- outHandle "results" fn
 
   t <- liftIO $ parseFileWith oneNewick (inFile a)
   $(logInfo) "Input tree:"

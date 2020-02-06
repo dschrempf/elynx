@@ -22,8 +22,6 @@ where
 import           Control.Monad                  (unless)
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8     as L
 import           Data.List                      (nub, (\\))
 import qualified Data.Text                      as T
@@ -38,14 +36,14 @@ import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
+import           ELynx.Tools.Reproduction       (ELynx, getOutFilePath)
 
-readTrees :: Maybe FilePath -> Examine [Tree (PhyloLabel L.ByteString)]
-readTrees mfp = do
+readTrees :: Bool -> Maybe FilePath -> ELynx [Tree (PhyloLabel L.ByteString)]
+readTrees iqtree mfp = do
   case mfp of
     Nothing -> $(logInfo) "Read tree(s) from standard input."
     Just fp -> $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
-  a <- lift ask
-  let nw = if argsNewickIqTree a then manyNewickIqTree else manyNewick
+  let nw = if iqtree then manyNewickIqTree else manyNewick
   liftIO $ parseFileOrIOWith nw mfp
 
 examineTree :: (Measurable a, Named a)
@@ -57,11 +55,12 @@ examineTree h t = do
         dups = lvs \\ nub lvs
 
 -- | Examine phylogenetic trees.
-examine :: Maybe FilePath -> Examine ()
-examine outFn = do
-  a <- lift ask
+examine :: ExamineArguments -> ELynx ()
+examine a = do
   let inFn = argsInFile a
-  trs <- readTrees inFn
-  let outFilePath = (++ ".out") <$> outFn
-  outH <- outHandle "results" outFilePath
+      iqtree = argsNewickIqTree a
+  trs <- readTrees iqtree inFn
+  -- TODO: Compress this into getOutFileHandle?
+  fn <- getOutFilePath ".out"
+  outH <- outHandle "results" fn
   liftIO $ mapM_ (examineTree outH) trs
