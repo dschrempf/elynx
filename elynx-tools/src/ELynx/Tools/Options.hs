@@ -150,7 +150,7 @@ data Arguments a = Arguments { global :: GlobalArguments
 -- common framework for shared arguments.
 --
 data GlobalArguments = GlobalArguments
-  { verbosity       :: LogLevel
+  { logLevel        :: LogLevel
   , outFileBaseName :: Maybe FilePath }
 
 -- | See 'GlobalArguments', parser function.

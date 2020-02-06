@@ -47,9 +47,9 @@ logNewSection s = $(logInfo) $ "== " <> s
 -- 'stderr' if no file is provided. If a log file is provided, log to the file
 -- and to 'stderr'.
 eLynxWrapper :: (MonadBaseControl IO m, MonadIO m)
-             => LogLevel -> Maybe FilePath -> String -> LoggingT m () -> m ()
-eLynxWrapper lvl logFile headerMsg worker = runELynxLoggingT lvl logFile $
-  do
+             => GlobalArguments -> String -> LoggingT m () -> m ()
+eLynxWrapper (GlobalArguments lvl logFile) headerMsg worker =
+  runELynxLoggingT lvl logFile $ do
     h <- liftIO $ logHeader headerMsg
     $(logInfo) $ pack h
     worker
@@ -71,33 +71,15 @@ runELynxFileLoggingT fp logger = bracket
 runELynxStderrLoggingT :: MonadIO m => LoggingT m a -> m a
 runELynxStderrLoggingT = (`runLoggingT` output stderr)
 
-output :: Handle
-       -> Loc
-       -> LogSource
-       -> LogLevel
-       -> LogStr
-       -> IO ()
-output h loc src lvl msg =
+output :: Handle -> Loc -> LogSource -> LogLevel -> LogStr -> IO ()
+output h _ _ _ msg =
   B.hPutStr h ls
   where
-    ls = logStrToBS loc src lvl msg
+    ls = fromLogStr msg
 
-output2H :: Handle
-         -> Handle
-         -> Loc
-         -> LogSource
-         -> LogLevel
-         -> LogStr
-         -> IO ()
-output2H h1 h2 loc src lvl msg = do
-  B.hPutStr h1 ls
-  B.hPutStr h2 ls
+output2H :: Handle -> Handle -> Loc -> LogSource -> LogLevel -> LogStr -> IO ()
+output2H h1 h2 _ _ _ msg = do
+  B.hPutStrLn h1 ls
+  B.hPutStrLn h2 ls
   where
-    ls = logStrToBS loc src lvl msg
-
-logStrToBS :: Loc
-           -> LogSource
-           -> LogLevel
-           -> LogStr
-           -> B.ByteString
-logStrToBS _ _ _ msg = fromLogStr msg <> "\n"
+    ls = fromLogStr msg
