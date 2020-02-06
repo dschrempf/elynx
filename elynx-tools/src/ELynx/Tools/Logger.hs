@@ -78,7 +78,7 @@ runELynxStderrLoggingT = (`runLoggingT` output stderr)
 
 output :: Handle -> Loc -> LogSource -> LogLevel -> LogStr -> IO ()
 output h _ _ _ msg =
-  B.hPutStr h ls
+  B.hPutStrLn h ls
   where
     ls = fromLogStr msg
 
