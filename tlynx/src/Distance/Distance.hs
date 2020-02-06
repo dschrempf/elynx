@@ -22,22 +22,23 @@ module Distance.Distance
   )
 where
 
-import           Control.Monad
-import           Control.Monad.IO.Class
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader
+import           Control.Monad                     (unless, when)
+import           Control.Monad.IO.Class            (liftIO)
+import           Control.Monad.Logger              (logDebug, logInfo)
+import           Control.Monad.Trans.Class         (lift)
+import           Control.Monad.Trans.Reader        (ask)
 import qualified Data.ByteString.Lazy.Char8        as L
-import           Data.Maybe
+import           Data.List                         (length, sort)
+import           Data.Maybe                        (isNothing)
 import qualified Data.Text                         as T
 import qualified Data.Text.IO                      as T
 import qualified Data.Text.Lazy                    as LT
 import qualified Data.Text.Lazy.Encoding           as LT
-import           Data.Tree
+import           Data.Tree                         (Tree)
 import qualified Data.Vector.Unboxed               as V
-import           Statistics.Sample
-import           System.IO
-import           Text.Printf
+import           Statistics.Sample                 (mean, variance)
+import           System.IO                         (hClose, hPutStrLn)
+import           Text.Printf                       (PrintfArg, printf)
 
 import           Distance.Options
 
@@ -50,6 +51,10 @@ import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.ByteString            (alignLeft, alignRight)
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
+
+median :: Ord a => [a] -> a
+median xs = sort xs !! l2
+  where l2 = length xs `div` 2
 
 pf :: String
 pf = "%.3f"
@@ -142,6 +147,7 @@ distance outFileBN = do
       dsVec = V.fromList ds
   liftIO $ hPutStrLn outH $ "Summary statistics of " ++ show dist ++ " Distance:"
   liftIO $ T.hPutStrLn outH $ T.justifyLeft 10 ' ' "Mean: " <> T.pack (printf pf (mean dsVec))
+  liftIO $ T.hPutStrLn outH $ T.justifyLeft 10 ' ' "Median: " <> T.pack (printf pf (median ds))
   liftIO $ T.hPutStrLn outH $ T.justifyLeft 10 ' ' "Variance: " <> T.pack (printf pf (variance dsVec))
   -- L.putStrLn $ L.unlines $ map toNewick ts
   -- L.putStrLn $ L.unlines $ map toNewick tsN
