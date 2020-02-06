@@ -21,15 +21,21 @@ module ELynx.Tools.Logger
   , eLynxWrapper
   ) where
 
-import           Control.Exception.Lifted
-import           Control.Monad.Base
-import           Control.Monad.IO.Class
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Control
+import           Control.Exception.Lifted    (bracket)
+import           Control.Monad.Base          (liftBase)
+import           Control.Monad.IO.Class      (MonadIO, liftIO)
+import           Control.Monad.Logger        (Loc, LogLevel, LogSource,
+                                              LoggingT, MonadLogger,
+                                              filterLogger, logInfo,
+                                              runLoggingT)
+import           Control.Monad.Trans.Control (MonadBaseControl)
 import qualified Data.ByteString.Char8       as B
-import           Data.Text
-import           System.IO
-import           System.Log.FastLogger
+import           Data.Text                   (Text, pack)
+import           System.IO                   (BufferMode (LineBuffering),
+                                              Handle, IOMode (AppendMode),
+                                              hClose, hSetBuffering, openFile,
+                                              stderr)
+import           System.Log.FastLogger       (LogStr, fromLogStr)
 
 import           ELynx.Tools.Options
 
