@@ -53,7 +53,7 @@ module ELynx.Data.Tree.Tree
   , nSubSamples
   , pruneWith
   , dropLeafWith
-  , intersect
+  , intersectWith
   , merge
   , tZipWith
   , partitionTree
@@ -175,8 +175,8 @@ dropLeafUnsafe lf (Node x xs) = Node x (map (dropLeafUnsafe lf) xs)
 -- the same leaf set. Leaf names used for comparison are extracted by a given
 -- function. Leaves are dropped with 'dropLeafWith', and degree two nodes are
 -- pruned with 'pruneWith'.
-intersect :: (Eq a, Ord b) => (a -> b) -> (a -> a -> a) -> [Tree a] -> [Tree a]
-intersect f g ts = if null ls
+intersectWith :: (Eq a, Ord b) => (a -> b) -> (a -> a -> a) -> [Tree a] -> [Tree a]
+intersectWith f g ts = if null ls
   then error "intersect: intersection of leaves is empty."
   else map (retainLeavesWith f g ls) ts
   where

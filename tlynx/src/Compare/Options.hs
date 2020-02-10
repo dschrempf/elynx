@@ -51,7 +51,7 @@ bipartitions = switch $
 intersect :: Parser Bool
 intersect = switch $
   long "intersect"
-  <> short 's'
+  <> short 't'
   <> help "Compare intersections; i.e., before comparison, drop leaves that are not present in the other tree"
 
 file :: Parser FilePath

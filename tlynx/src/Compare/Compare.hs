@@ -44,7 +44,7 @@ import           ELynx.Data.Tree.Distance
 import           ELynx.Data.Tree.MeasurableTree    (extend, getLen)
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Data.Tree.Tree              (intersect)
+import           ELynx.Data.Tree.Tree              (intersectWith)
 import           ELynx.Export.Tree.Newick          (toNewick)
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
@@ -97,7 +97,7 @@ compareCmd a = do
   (t1, t2) <-
     if argsIntersect a
     then do
-      let [x, y] = intersect getName extend [tr1, tr2]
+      let [x, y] = intersectWith getName extend [tr1, tr2]
       liftIO $ hPutStrLn outH "Intersected trees are:"
       liftIO $ L.hPutStrLn outH $ toNewick x
       liftIO $ L.hPutStrLn outH $ toNewick y

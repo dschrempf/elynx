@@ -43,8 +43,10 @@ import           Distance.Options
 
 import           ELynx.Data.Tree.BranchSupportTree as B
 import           ELynx.Data.Tree.Distance
-import           ELynx.Data.Tree.MeasurableTree    as M
+import qualified ELynx.Data.Tree.MeasurableTree    as M
+import           ELynx.Data.Tree.NamedTree         (Named, getName)
 import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Data.Tree.Tree              (intersectWith)
 import           ELynx.Export.Tree.Newick
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.ByteString            (alignLeft, alignRight)
@@ -124,19 +126,22 @@ distance a = do
       $(logInfo) $ T.pack $ "Collapse nodes with support less than " ++ show val ++ "."
     BranchScore           -> $(logInfo) "Use branch score distance."
   when (argsNormalize a) $ $(logInfo) "Normalize trees before calculation of distances."
+  when (argsIntersect a) $ $(logInfo) "Intersect trees before calculation of distances."
   let distanceMeasure :: Tree (PhyloLabel L.ByteString) -> Tree (PhyloLabel L.ByteString) -> Double
       distanceMeasure = case dist of
         Symmetric           -> \t1 t2 -> fromIntegral $ symmetric t1 t2
         IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplits t1 t2
         BranchScore         -> branchScore
-      normalizeF = if argsNormalize a then M.normalize else id
+      normalizeF = if argsNormalize a then normalize else id
       collapseF = case dist of
         -- For the incompatible split distance we have to collapse branches with
         -- support lower than the given value. Before doing so, we normalize the
         -- branch support values.
         IncompatibleSplit val -> collapse val . B.normalize
         _                     -> id
-      trees' = map (collapseF . normalizeF) trees
+      intersectF :: (Named a, M.Measurable a, Eq a) => [Tree a] -> [Tree a]
+      intersectF = if argsIntersect a then intersectWith getName M.extend else id
+      trees' = intersectF $ map (collapseF . normalizeF) trees
   $(logDebug) "The prepared trees are:"
   $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees'
   let dsTriplets = case mtree of

@@ -45,6 +45,7 @@ instance Show DistanceMeasure where
 data DistanceArguments = DistanceArguments
   { argsDistance          :: DistanceMeasure
   , argsNormalize         :: Bool
+  , argsIntersect         :: Bool
   , argsSummaryStatistics :: Bool
   , argsMasterTreeFile    :: Maybe FilePath
   , argsNewickIqTree      :: Bool
@@ -56,6 +57,7 @@ distanceArguments :: Parser DistanceArguments
 distanceArguments = DistanceArguments <$>
   distanceOpt
   <*> normalizeSwitch
+  <*> intersectSwitch
   <*> summaryStatisticsSwitch
   <*> masterTreeFile
   <*> newickIqTree
@@ -121,6 +123,12 @@ normalizeSwitch = switch $
   long "normalize" <>
   short 'n' <>
   help "Normalize trees before distance calculation; only affect distances depending on branch lengths"
+
+intersectSwitch :: Parser Bool
+intersectSwitch = switch $
+  long "intersect"
+  <> short 't'
+  <> help "Compare intersections; i.e., before comparison, drop leaves that are not present in the other tree"
 
 newickIqTree :: Parser Bool
 newickIqTree = switch $
