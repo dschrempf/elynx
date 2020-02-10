@@ -54,6 +54,8 @@ import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Reproduction          (ELynx, getOutFilePath)
 
+import           Debug.Trace
+
 median :: Ord a => [a] -> a
 median xs = sort xs !! l2
   where l2 = length xs `div` 2
@@ -131,6 +133,14 @@ distance a = do
         Symmetric           -> \t1 t2 -> fromIntegral $ symmetric t1 t2
         IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplits t1 t2
         BranchScore         -> branchScore
+  -- Possibly intersect trees before distance calculation.
+  when (argsIntersect a) $ $(logInfo) "Intersect trees before calculation of distances."
+  let distanceMeasure =
+        if argsIntersect a
+        then (\t1 t2 -> let [t1', t2'] = intersectWith getName M.extend [t1, t2]
+                        in traceShow (toNewick t1') $ traceShow (toNewick t2')
+                           $ distanceMeasure' t1' t2')
+        else distanceMeasure'
 
   -- Possibly normalize trees.
   when (argsNormalize a) $ $(logInfo) "Normalize trees before calculation of distances."
@@ -144,14 +154,8 @@ distance a = do
         IncompatibleSplit val -> collapse val . B.normalize
         _                     -> id
 
-  -- Possibly intersect trees before distance calculation.
-  when (argsIntersect a) $ $(logInfo) "Intersect trees before calculation of distances."
-  let distanceMeasure =
-        if argsIntersect a
-        then (\t1 t2 -> let [t1', t2'] = intersectWith getName M.extend [t1, t2]
-             in distanceMeasure' t1' t2')
-        else distanceMeasure'
-      trees' = map (collapseF . normalizeF) trees
+  -- The trees can be prepared now.
+  let trees' = map (collapseF . normalizeF) trees
 
   $(logDebug) "The prepared trees are:"
   $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees'
@@ -160,6 +164,7 @@ distance a = do
         Just t  -> [ (0, i, distanceMeasure t t') | ( i, t' ) <- zip [1..] trees' ]
       ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds
+
   liftIO $ hPutStrLn outH $ "Summary statistics of " ++ show dist ++ " Distance:"
   liftIO $ T.hPutStrLn outH $ T.justifyLeft 10 ' ' "Mean: " <> T.pack (printf pf (mean dsVec))
   liftIO $ T.hPutStrLn outH $ T.justifyLeft 10 ' ' "Median: " <> T.pack (printf pf (median ds))
@@ -167,6 +172,7 @@ distance a = do
   -- L.putStrLn $ L.unlines $ map toNewick ts
   -- L.putStrLn $ L.unlines $ map toNewick tsN
   -- L.putStrLn $ L.unlines $ map toNewick tsC
+
   lift $ unless (argsSummaryStatistics a) (
     do
       let n = maximum $ 6 : map length names
@@ -176,4 +182,5 @@ distance a = do
         Nothing -> lift $ L.hPutStr outH $ L.unlines (map (showTriplet n names) dsTriplets)
         Just mn  -> lift $ L.hPutStr outH $ L.unlines (map (showTriplet n (mn : names)) dsTriplets)
     )
+
   liftIO $ hClose outH

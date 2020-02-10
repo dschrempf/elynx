@@ -77,6 +77,8 @@ import           System.Random.MWC
 import           ELynx.Data.Tree.Subset
 import           ELynx.Tools.Random
 
+import Debug.Trace
+
 -- | The simplest tree. Usually an extant leaf.
 singleton :: a -> Tree a
 singleton l = Node l []
@@ -144,38 +146,30 @@ pruneWith f    (Node paLbl chs)  = Node paLbl (map (pruneWith f) chs)
 
 -- | Drop a leaf from a tree. The resulting degree two nodes are pruned with
 -- 'pruneWith'.
-dropLeafWith :: Eq a => (a -> a -> a) -> a -> Tree a -> Tree a
-dropLeafWith f l t | l `notElem` lvs =
-                     error "dropLeafWith: leaf not found on tree."
-                   | Seq.length (Seq.fromList lvs) < length lvs =
-                     error "dropLeafWith: tree does not have unique leaves."
-                   | bifurcating t =
-                     -- XXX: For reasons of complexity, only allow bifurcating
-                     -- trees for now.
-                     error "dropleafWith: tree is not bifurcating."
-                     -- XXX: Use pruneWith outside of dropLeafUnsafe. This
-                     -- requires two loops over the tree, and is slower than
-                     -- direct pruning within dropLeafUnsafe.
-                   | otherwise = pruneWith f $ dropLeafUnsafe l t
-  where lvs = leaves t
+dropLeafWith :: (Show b, Eq b) => (a -> b) -> (a -> a -> a) -> b -> Tree a -> Tree a
+dropLeafWith f g l t
+  | l `notElem` lvs =
+      error "dropLeafWith: leaf not found on tree."
+  | Seq.length (Seq.fromList lvs) < length lvs =
+      error "dropLeafWith: tree does not have unique leaves."
+  | otherwise =
+    traceShow l $
+    -- XXX: Use pruneWith outside of dropLeafUnsafe. This is easier to program
+    -- but requires two loops over the tree.
+    pruneWith g $ dropLeafUnsafe f l t
+  where lvs = leaves $ fmap f t
 
 -- See 'dropLeafWith'.
-dropLeafUnsafe :: Eq a => a -> Tree a -> Tree a
--- Left daughter is leaf.
-dropLeafUnsafe lf (Node x [l@(Node y []), r            ])
-  | lf == y   = Node x [dropLeafUnsafe lf r]
-  | otherwise = Node x [l, dropLeafUnsafe lf r]
--- Right daughter is leaf.
-dropLeafUnsafe lf (Node x [l            , r@(Node y [])])
-  | lf == y   = Node x [dropLeafUnsafe lf l]
-  | otherwise = Node x [dropLeafUnsafe lf l, r]
-dropLeafUnsafe lf (Node x xs) = Node x (map (dropLeafUnsafe lf) xs)
+dropLeafUnsafe :: Eq b => (a -> b) -> b -> Tree a -> Tree a
+dropLeafUnsafe f lf (Node x xs) =
+  Node x $ map (dropLeafUnsafe f lf) (filter (not . isThisLeaf) xs)
+  where isThisLeaf y = null (subForest y) && f (rootLabel y) == lf
 
 -- | Compute the intersection of two trees. The intersection is the tree with
 -- the same leaf set. Leaf names used for comparison are extracted by a given
 -- function. Leaves are dropped with 'dropLeafWith', and degree two nodes are
 -- pruned with 'pruneWith'.
-intersectWith :: (Eq a, Ord b) => (a -> b) -> (a -> a -> a) -> [Tree a] -> [Tree a]
+intersectWith :: (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> [Tree a] -> [Tree a]
 intersectWith f g ts = if null ls
   then error "intersect: intersection of leaves is empty."
   else map (retainLeavesWith f g ls) ts
@@ -186,9 +180,9 @@ intersectWith f g ts = if null ls
     ls  = foldl1' Set.intersection lss
 
 -- Drop all leaves not in provided set.
-retainLeavesWith :: (Eq a, Ord b) => (a -> b) -> (a -> a -> a) -> Set.Set b -> Tree a -> Tree a
-retainLeavesWith f g ls t = foldl' (flip (dropLeafWith g)) t leavesToDrop
-  where leavesToDrop = filter (\l -> f l `Set.notMember` ls) $ leaves t
+retainLeavesWith :: (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> Set.Set b -> Tree a -> Tree a
+retainLeavesWith f g ls t = foldl' (flip (dropLeafWith f g)) t leavesToDrop
+  where leavesToDrop = filter (`Set.notMember` ls) $ leaves $ fmap f t
 
 -- | Merge two trees with the same topology. Returns 'Nothing' if the topologies are different.
 merge :: Tree a -> Tree b -> Maybe (Tree (a, b))

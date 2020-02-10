@@ -60,7 +60,7 @@ symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
 -- http://evolution.genetics.washington.edu/phylip/doc/treedist.html.
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
-symmetricWith :: (Ord b) => (a -> b) -> Tree a -> Tree a -> Int
+symmetricWith :: (Show a, Ord b) => (a -> b) -> Tree a -> Tree a -> Int
 symmetricWith f t1 t2
   | S.fromList (leaves t1') /= S.fromList (leaves t2') =
     error "symmetricWith: trees do not have equal leaf sets."
@@ -70,7 +70,7 @@ symmetricWith f t1 t2
     t2' = fmap f t2
 
 -- | See 'symmetricWith', but with 'id' for comparisons.
-symmetric :: (Ord a, Named a) => Tree a -> Tree a -> Int
+symmetric :: (Show a, Ord a, Named a) => Tree a -> Tree a -> Int
 symmetric = symmetricWith getName
 
 countIncompatibilities :: (Ord a, Show a) => S.Set (Bipartition a) -> S.Set (Multipartition a) -> Int
