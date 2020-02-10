@@ -54,8 +54,6 @@ import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Reproduction          (ELynx, getOutFilePath)
 
-import           Debug.Trace
-
 median :: Ord a => [a] -> a
 median xs = sort xs !! l2
   where l2 = length xs `div` 2
@@ -138,8 +136,9 @@ distance a = do
   let distanceMeasure =
         if argsIntersect a
         then (\t1 t2 -> let [t1', t2'] = intersectWith getName M.extend [t1, t2]
-                        in traceShow (toNewick t1') $ traceShow (toNewick t2')
-                           $ distanceMeasure' t1' t2')
+                        in
+                          -- traceShow (toNewick t1') $ traceShow (toNewick t2') $
+                          distanceMeasure' t1' t2')
         else distanceMeasure'
 
   -- Possibly normalize trees.

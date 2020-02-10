@@ -77,8 +77,6 @@ import           System.Random.MWC
 import           ELynx.Data.Tree.Subset
 import           ELynx.Tools.Random
 
-import Debug.Trace
-
 -- | The simplest tree. Usually an extant leaf.
 singleton :: a -> Tree a
 singleton l = Node l []
@@ -153,7 +151,6 @@ dropLeafWith f g l t
   | Seq.length (Seq.fromList lvs) < length lvs =
       error "dropLeafWith: tree does not have unique leaves."
   | otherwise =
-    traceShow l $
     -- XXX: Use pruneWith outside of dropLeafUnsafe. This is easier to program
     -- but requires two loops over the tree.
     pruneWith g $ dropLeafUnsafe f l t
