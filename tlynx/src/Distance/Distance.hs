@@ -44,7 +44,7 @@ import           Distance.Options
 import           ELynx.Data.Tree.BranchSupportTree as B
 import           ELynx.Data.Tree.Distance
 import qualified ELynx.Data.Tree.MeasurableTree    as M
-import           ELynx.Data.Tree.NamedTree         (Named, getName)
+import           ELynx.Data.Tree.NamedTree         (getName)
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree              (intersectWith)
 import           ELynx.Export.Tree.Newick
@@ -117,31 +117,42 @@ distance a = do
   case outF of
     Nothing -> logNewSection "Write results to standard output."
     Just f  -> logNewSection $ T.pack $ "Write results to file " <> f <> "."
-  let n        = maximum $ 6 : map length names
-      dist = argsDistance a
-  case dist of
+
+  -- Set the distance measure.
+  let dist = argsDistance a
+  case argsDistance a of
     Symmetric             -> $(logInfo) "Use symmetric (Robinson-Foulds) distance."
     IncompatibleSplit val -> do
       $(logInfo) "Use incompatible split distance."
       $(logInfo) $ T.pack $ "Collapse nodes with support less than " ++ show val ++ "."
     BranchScore           -> $(logInfo) "Use branch score distance."
-  when (argsNormalize a) $ $(logInfo) "Normalize trees before calculation of distances."
-  when (argsIntersect a) $ $(logInfo) "Intersect trees before calculation of distances."
-  let distanceMeasure :: Tree (PhyloLabel L.ByteString) -> Tree (PhyloLabel L.ByteString) -> Double
-      distanceMeasure = case dist of
+  let distanceMeasure' :: Tree (PhyloLabel L.ByteString) -> Tree (PhyloLabel L.ByteString) -> Double
+      distanceMeasure' = case dist of
         Symmetric           -> \t1 t2 -> fromIntegral $ symmetric t1 t2
         IncompatibleSplit _ -> \t1 t2 -> fromIntegral $ incompatibleSplits t1 t2
         BranchScore         -> branchScore
-      normalizeF = if argsNormalize a then normalize else id
-      collapseF = case dist of
+
+  -- Possibly normalize trees.
+  when (argsNormalize a) $ $(logInfo) "Normalize trees before calculation of distances."
+  let normalizeF = if argsNormalize a then normalize else id
+
+  -- Possibly collapse unsupported nodes.
+  let collapseF = case dist of
         -- For the incompatible split distance we have to collapse branches with
         -- support lower than the given value. Before doing so, we normalize the
         -- branch support values.
         IncompatibleSplit val -> collapse val . B.normalize
         _                     -> id
-      intersectF :: (Named a, M.Measurable a, Eq a) => [Tree a] -> [Tree a]
-      intersectF = if argsIntersect a then intersectWith getName M.extend else id
-      trees' = intersectF $ map (collapseF . normalizeF) trees
+
+  -- Possibly intersect trees before distance calculation.
+  when (argsIntersect a) $ $(logInfo) "Intersect trees before calculation of distances."
+  let distanceMeasure =
+        if argsIntersect a
+        then (\t1 t2 -> let [t1', t2'] = intersectWith getName M.extend [t1, t2]
+             in distanceMeasure' t1' t2')
+        else distanceMeasure'
+      trees' = map (collapseF . normalizeF) trees
+
   $(logDebug) "The prepared trees are:"
   $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees'
   let dsTriplets = case mtree of
@@ -158,6 +169,7 @@ distance a = do
   -- L.putStrLn $ L.unlines $ map toNewick tsC
   lift $ unless (argsSummaryStatistics a) (
     do
+      let n = maximum $ 6 : map length names
       lift $ hPutStrLn outH ""
       lift $ L.hPutStrLn outH $ header n dist
       case mname of
