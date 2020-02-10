@@ -17,6 +17,7 @@ Creation date: Thu Jan 17 14:16:34 2019.
 
 module ELynx.Data.Tree.MeasurableTree
   ( Measurable (..)
+  , extend
   , distancesRootLeaves
   , distancesOriginLeaves
   , averageDistanceOriginLeaves
@@ -46,10 +47,15 @@ class Measurable a where
   -- | Set attached branch length.
   setLen :: Double -> a -> a
 
--- | Elongate branch length.
 lengthen :: Measurable a => Double -> a -> a
 lengthen dl l = setLen (dl + getLen l) l
 
+-- | @extend daughter parent@ takes the daughter node and extends the branch by
+-- the length obtained from the parent node.
+extend :: Measurable a => a -> a -> a
+extend da pa = lengthen (getLen pa) da
+
+-- | Elongate branch length.
 -- -- | Shorten branch length.
 -- shorten :: Double -> a -> a
 -- shorten dl = lengthen (-dl)

@@ -48,6 +48,7 @@ import           ELynx.Tools.Options
 -- | Logging transformer to be used with all executables.
 type ELynx = LoggingT (ReaderT GlobalArguments IO)
 
+-- | Get out file path with extension.
 getOutFilePath :: String -> ELynx (Maybe FilePath)
 getOutFilePath ext = do
   ofbn <- outFileBaseName <$> lift ask

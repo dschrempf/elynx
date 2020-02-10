@@ -23,7 +23,7 @@ import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import qualified Data.ByteString.Lazy.Char8        as L
-import           Data.List
+import           Data.List                         (intercalate)
 import qualified Data.Map                          as M
 import           Data.Monoid
 import qualified Data.Set                          as S
@@ -41,10 +41,10 @@ import           Compare.Options
 import           ELynx.Data.Tree.Bipartition
 import           ELynx.Data.Tree.BranchSupportTree as BS
 import           ELynx.Data.Tree.Distance
-import           ELynx.Data.Tree.MeasurableTree
+import           ELynx.Data.Tree.MeasurableTree    (extend, getLen)
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Data.Tree.Tree
+import           ELynx.Data.Tree.Tree              (intersect)
 import           ELynx.Export.Tree.Newick          (toNewick)
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
@@ -82,28 +82,39 @@ compareCmd a = do
   -- Read input.
   let inFiles = argsInFiles a
       nFiles  = length inFiles
-  (t1, t2) <- case nFiles of
+  (tr1, tr2) <- case nFiles of
     1 -> treesOneFile (argsNewickIqTree a)(head inFiles)
     2 -> treesTwoFiles (argsNewickIqTree a) (head inFiles) (head . tail $ inFiles)
     _ -> error "Need two input files with one tree each or one input file with two trees."
 
   liftIO $ hPutStrLn outH "Tree 1:"
-  liftIO $ L.hPutStrLn outH $ toNewick t1
+  liftIO $ L.hPutStrLn outH $ toNewick tr1
   liftIO $ hPutStrLn outH "Tree 2:"
-  liftIO $ L.hPutStrLn outH $ toNewick t2
+  liftIO $ L.hPutStrLn outH $ toNewick tr2
   liftIO $ hPutStrLn outH ""
 
-  -- Check input.
-  let lvs1  = leaves t1
-      lvs2  = leaves t2
-      lfns1 = map getName lvs1
-      lfns2 = map getName lvs2
-      s1    = S.fromList lfns1
-      s2    = S.fromList lfns2
-  if s1 == s2
-    then liftIO $ hPutStrLn outH "Trees have the same set of leaf names."
-    else liftIO $ hPutStrLn outH "Trees do not have the same set of leaf names."
-  liftIO $ hPutStrLn outH ""
+  -- Intersect trees.
+  (t1, t2) <-
+    if argsIntersect a
+    then do
+      let [x, y] = intersect getName extend [tr1, tr2]
+      liftIO $ hPutStrLn outH "Intersected trees are:"
+      liftIO $ L.hPutStrLn outH $ toNewick x
+      liftIO $ L.hPutStrLn outH $ toNewick y
+      return (x, y)
+    else return (tr1, tr2)
+
+  -- Check input (moved to library functions).
+  -- let lvs1  = leaves t1
+  --     lvs2  = leaves t2
+  --     lfns1 = map getName lvs1
+  --     lfns2 = map getName lvs2
+  --     s1    = S.fromList lfns1
+  --     s2    = S.fromList lfns2
+  -- if s1 == s2
+  --   then liftIO $ hPutStrLn outH "Trees have the same set of leaf names."
+  --   else error "Trees do not have the same set of leaf names."
+  -- liftIO $ hPutStrLn outH ""
 
   -- Distances.
   let formatD str val = T.justifyLeft 25 ' ' str <> "  " <> val

@@ -12,6 +12,8 @@ Portability :  portable
 
 Creation date: Fri Dec 13 11:02:43 2019.
 
+TODO: Check that this module is used consistently.
+
 -}
 
 module ELynx.Data.Tree.Subset
@@ -57,7 +59,7 @@ sfromset = SS
 sfromlist :: Ord a => [a] -> Subset a
 sfromlist l = if S.size s == length l
               then sfromset s
-              else error "pfromlist: List contains duplicate elements."
+              else error "sfromlist: List contains duplicate elements."
   where s = S.fromList l
 
 -- | Map a function over all elements in a subset.

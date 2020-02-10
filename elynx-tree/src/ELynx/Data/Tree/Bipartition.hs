@@ -103,7 +103,7 @@ bipartitions t = if S.size (S.fromList ls) == length ls
   where ls    = leaves t
         pTree = partitionTree t
 
--- | See 'bipartitions', but do not check if leaves are unique.
+-- See 'bipartitions', but do not check if leaves are unique.
 bipartitionsUnsafe :: Ord a => Subset a -> Tree (Subset a) -> S.Set (Bipartition a)
 bipartitionsUnsafe p   (Node l [] ) = S.singleton $ bp p l
 -- Degree two nodes do not induce additional bipartitions.
@@ -115,13 +115,19 @@ bipartitionsUnsafe p t@(Node ls xs) =
     lsOthers = subForestGetSubsets p t
 
 -- | For a given rose 'Tree', remove all degree two nodes and reconnect the
--- resulting disconnected pairs of branches and sum their branch lengths. For
--- this operation, a combining binary function and a unity element is required,
--- and so we need the 'Monoid' type class constraint. Now, each branch on the
--- tree defines a unique 'Bipartition' of leaves. Convert a tree into a 'M.Map'
--- from each 'Bipartition' to the length of the branch inducing the respective
--- 'Bipartition'. The relevant information about the leaves is extracted from
--- the (leaf) nodes with a given function. Also check if leaves are unique.
+-- resulting disconnected pairs of branches and sum their branch lengths. Since
+-- the induced bipartitions of the daughter branches of a bifurcating root node
+-- are equal, the branches are also combined in this case. See
+-- http://evolution.genetics.washington.edu/phylip/doc/treedist.html and how
+-- unrooted trees should be handled.
+--
+-- For this operation, a combining binary function and a unity element is
+-- required. These requirements are encoded in the 'Monoid' type class
+-- constraint. Now, each branch on the tree defines a unique 'Bipartition' of
+-- leaves. Convert a tree into a 'M.Map' from each 'Bipartition' to the length
+-- of the branch inducing the respective 'Bipartition'. The relevant information
+-- about the leaves is extracted from the (leaf) nodes with a given function.
+-- Also check if leaves are unique.
 bipartitionToBranchLength :: (Ord a, Ord b, Monoid c)
                     => (a -> b)      -- ^ Convert node labels to leaves (usually
                                      -- leaf names)

@@ -23,6 +23,7 @@ import           Options.Applicative
 data CompareArguments = CompareArguments
   { argsNormalize    :: Bool
   , argsBipartitions :: Bool
+  , argsIntersect    :: Bool
   , argsNewickIqTree :: Bool
   , argsInFiles      :: [FilePath] }
 
@@ -31,6 +32,7 @@ compareArguments :: Parser CompareArguments
 compareArguments = CompareArguments <$>
   normalize
   <*> bipartitions
+  <*> intersect
   <*> newickIqTree
   <*> some file
 
@@ -45,6 +47,12 @@ bipartitions = switch $
   long "bipartitions"
   <> short 'b'
   <> help "Print and plot common and missing bipartitions"
+
+intersect :: Parser Bool
+intersect = switch $
+  long "intersect"
+  <> short 's'
+  <> help "Compare intersections; i.e., before comparison, drop leaves that are not present in the other tree"
 
 file :: Parser FilePath
 file = strArgument $

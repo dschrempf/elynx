@@ -11,7 +11,14 @@ Portability :  portable
 Creation date: Thu Jun 13 17:15:54 2019.
 
 Various distance functions for phylogenetic trees (and binary trees in general).
-All trees are assumed to be UNROOTED.
+
+TODO: All trees are assumed to be UNROOTED. See comments of 'symmetricWith' and
+'branchScoreWith', as well as 'bipartitionToBranchLength'.
+http://evolution.genetics.washington.edu/phylip/doc/treedist.html. However, this
+disagrees with the statement in 'ELynx.Data.Tree.Tree', and should be changed.
+I definitely need separate data types for rooted and unrooted trees.
+
+TODO: Use subset module.
 
 -}
 
@@ -40,6 +47,7 @@ import           ELynx.Data.Tree.Multipartition (Multipartition, compatible,
                                                  fromBipartition,
                                                  multipartitions)
 import           ELynx.Data.Tree.NamedTree
+import           ELynx.Data.Tree.Tree           (leaves)
 
 -- Symmetric difference between two 'Set's.
 symmetricDifference :: Ord a => S.Set a -> S.Set a -> S.Set a
@@ -48,12 +56,18 @@ symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
 -- | Symmetric (Robinson-Foulds) distance between two trees. Before comparing
 -- the leaf labels, apply a given function. This is useful, for example, to
 -- compare the labels of 'ELynx.Data.Tree.NamedTree.Named' trees on their names
--- only. The tree is assumed to be UNROOTED!
+-- only. The tree is assumed to be UNROOTED! See
+-- http://evolution.genetics.washington.edu/phylip/doc/treedist.html.
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
 symmetricWith :: (Ord b) => (a -> b) -> Tree a -> Tree a -> Int
-symmetricWith f t1 t2 = length $ symmetricDifference (bs t1) (bs t2)
-  where bs t = bipartitions $ fmap f t
+symmetricWith f t1 t2
+  | S.fromList (leaves t1') /= S.fromList (leaves t2') =
+    error "symmetricWith: trees do not have equal leaf sets."
+  | otherwise = length $ symmetricDifference (bipartitions t1') (bipartitions t2')
+  where
+    t1' = fmap f t1
+    t2' = fmap f t2
 
 -- | See 'symmetricWith', but with 'id' for comparisons.
 symmetric :: (Ord a, Named a) => Tree a -> Tree a -> Int
@@ -98,13 +112,16 @@ countIncompatibilities bs ms = foldl' (\i b -> if any (compatible (fromBipartiti
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
 incompatibleSplitsWith :: (Ord b, Show b) => (a -> b) -> Tree a -> Tree a -> Int
-incompatibleSplitsWith f t1 t2 = countIncompatibilities putIncBs1 ms2 +
+incompatibleSplitsWith f t1 t2
+  | S.fromList (leaves t1') /= S.fromList (leaves t2')
+  = error "incompatibleSplitsWith: trees do not have equal leaf sets."
+  | otherwise = countIncompatibilities putIncBs1 ms2 +
                                  countIncompatibilities putIncBs2 ms1
   where
-    -- Bipartitions.
-    bs t = bipartitions $ fmap f t
-    bs1 = bs t1
-    bs2 = bs t2
+    t1' = fmap f t1
+    t2' = fmap f t2
+    bs1 = bipartitions t1'
+    bs2 = bipartitions t2'
     -- Putative incompatible bipartitions of trees one and two, respectively.
     putIncBs1 = bs1 S.\\ bs2
     putIncBs2 = bs2 S.\\ bs1
@@ -121,7 +138,8 @@ incompatibleSplits = incompatibleSplitsWith getName
 -- labels, apply a function. This is useful, for example, to compare the labels
 -- of 'ELynx.Data.Tree.NamedTree.Named' trees on their names only. The branch
 -- information which is compared to compute the distance is extracted from the
--- nodes with a given function. Assumes that the trees are UNROOTED.
+-- nodes with a given function. Assumes that the trees are UNROOTED. See
+-- http://evolution.genetics.washington.edu/phylip/doc/treedist.html.
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
 branchScoreWith :: (Ord a, Ord b, Floating c)
@@ -129,7 +147,10 @@ branchScoreWith :: (Ord a, Ord b, Floating c)
                         -> (a -> c) -- ^ Branch information (e.g., length)
                                     -- associated with a node
                         -> Tree a -> Tree a -> c
-branchScoreWith f g t1 t2 = sqrt dsSquared
+branchScoreWith f g t1 t2
+  | S.fromList (leaves . fmap f $ t1) /= S.fromList (leaves . fmap f $ t2)
+  = error "branchScoreWith: trees do not have equal leaf sets."
+  | otherwise = sqrt dsSquared
   where bs        = bipartitionToBranchLength f (Sum . g)
         dBs       = M.map getSum $ M.unionWith (-) (bs t1) (bs t2)
         dsSquared = foldl' (\acc e -> acc + e*e) 0 dBs

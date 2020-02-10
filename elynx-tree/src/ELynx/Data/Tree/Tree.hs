@@ -36,6 +36,11 @@ leaves (the height of a rooted tree).
 NOTE: Try fgl or alga. Use functional graph library for unrooted trees see also
 the book /Haskell high performance programming from Thomasson/, p. 344.
 
+TODO: The 'Tree' data type is a rose tree with an ordered sub-forest. However,
+the order of the sub-forest does not matter for phylogenetic trees. Equality
+checks will throw false negatives the compared trees only differ in their orders
+of sub-trees.
+
 -}
 
 
@@ -47,6 +52,8 @@ module ELynx.Data.Tree.Tree
   , subSample
   , nSubSamples
   , pruneWith
+  , dropLeafWith
+  , intersect
   , merge
   , tZipWith
   , partitionTree
@@ -59,6 +66,7 @@ module ELynx.Data.Tree.Tree
 
 import           Control.Monad
 import           Control.Monad.Primitive
+import           Data.List               (foldl', foldl1')
 import           Data.Maybe
 import qualified Data.Sequence           as Seq
 import qualified Data.Set                as Set
@@ -133,6 +141,54 @@ pruneWith _  n@(Node _ [])       = n
 pruneWith f    (Node paLbl [ch]) = let lbl = f (rootLabel ch) paLbl
                                    in pruneWith f $ Node lbl (subForest ch)
 pruneWith f    (Node paLbl chs)  = Node paLbl (map (pruneWith f) chs)
+
+-- | Drop a leaf from a tree. The resulting degree two nodes are pruned with
+-- 'pruneWith'.
+dropLeafWith :: Eq a => (a -> a -> a) -> a -> Tree a -> Tree a
+dropLeafWith f l t | l `notElem` lvs =
+                     error "dropLeafWith: leaf not found on tree."
+                   | Seq.length (Seq.fromList lvs) < length lvs =
+                     error "dropLeafWith: tree does not have unique leaves."
+                   | bifurcating t =
+                     -- XXX: For reasons of complexity, only allow bifurcating
+                     -- trees for now.
+                     error "dropleafWith: tree is not bifurcating."
+                     -- XXX: Use pruneWith outside of dropLeafUnsafe. This
+                     -- requires two loops over the tree, and is slower than
+                     -- direct pruning within dropLeafUnsafe.
+                   | otherwise = pruneWith f $ dropLeafUnsafe l t
+  where lvs = leaves t
+
+-- See 'dropLeafWith'.
+dropLeafUnsafe :: Eq a => a -> Tree a -> Tree a
+-- Left daughter is leaf.
+dropLeafUnsafe lf (Node x [l@(Node y []), r            ])
+  | lf == y   = Node x [dropLeafUnsafe lf r]
+  | otherwise = Node x [l, dropLeafUnsafe lf r]
+-- Right daughter is leaf.
+dropLeafUnsafe lf (Node x [l            , r@(Node y [])])
+  | lf == y   = Node x [dropLeafUnsafe lf l]
+  | otherwise = Node x [dropLeafUnsafe lf l, r]
+dropLeafUnsafe lf (Node x xs) = Node x (map (dropLeafUnsafe lf) xs)
+
+-- | Compute the intersection of two trees. The intersection is the tree with
+-- the same leaf set. Leaf names used for comparison are extracted by a given
+-- function. Leaves are dropped with 'dropLeafWith', and degree two nodes are
+-- pruned with 'pruneWith'.
+intersect :: (Eq a, Ord b) => (a -> b) -> (a -> a -> a) -> [Tree a] -> [Tree a]
+intersect f g ts = if null ls
+  then error "intersect: intersection of leaves is empty."
+  else map (retainLeavesWith f g ls) ts
+  where
+    -- Leaf sets.
+    lss = map (Set.fromList . leaves . fmap f) ts
+    -- Common leaf set.
+    ls  = foldl1' Set.intersection lss
+
+-- Drop all leaves not in provided set.
+retainLeavesWith :: (Eq a, Ord b) => (a -> b) -> (a -> a -> a) -> Set.Set b -> Tree a -> Tree a
+retainLeavesWith f g ls t = foldl' (flip (dropLeafWith g)) t leavesToDrop
+  where leavesToDrop = filter (\l -> f l `Set.notMember` ls) $ leaves t
 
 -- | Merge two trees with the same topology. Returns 'Nothing' if the topologies are different.
 merge :: Tree a -> Tree b -> Maybe (Tree (a, b))

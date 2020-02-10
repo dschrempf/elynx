@@ -122,6 +122,8 @@ spec = do
       it "returns the correct number of rooted trees for arbitrary trees" $
       property (prop_roots :: (Tree Int -> Bool))
 
+  -- TODO: dropLeafWith, intersect.
+
   describe "connect" $
     modifyMaxSize (*100) $ do
     it "returns the correct number of rooted trees for arbitrary trees" $
