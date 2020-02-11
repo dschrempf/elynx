@@ -48,9 +48,9 @@ import           Data.Tree
 
 import           ELynx.Data.Tree.Tree
 
--- | Each branch of a tree partitions the leaves of the tree into two
--- 'Subset's, or a bipartition. Also the order of the two partitions of the
--- 'Bipartition' is not important (see the 'Eq' instance).
+-- | Each branch of a tree partitions the leaves of the tree into two subsets,
+-- or a bipartition. Also the order of the two partitions of the 'Bipartition'
+-- is not important (see the 'Eq' instance).
 newtype Bipartition a = Bipartition {bps :: (S.Set a, S.Set a) -- ^ Tuple of partitions
                                     }
   deriving (Show, Read)
@@ -72,7 +72,7 @@ bphuman f (Bipartition (x, y)) = "(" ++ sshow f x ++ "|" ++ sshow f y ++ ")"
 sshow :: (a -> String) -> S.Set a -> String
 sshow f = intercalate "," . map f . S.toList
 
--- | Create a bipartition from two 'Subset's.
+-- | Create a bipartition from two subsets.
 bp :: Ord a => S.Set a -> S.Set a -> Bipartition a
 bp xs ys = if xs >= ys then Bipartition (xs, ys) else Bipartition (ys, xs)
 

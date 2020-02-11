@@ -47,7 +47,7 @@ import           ELynx.Data.Tree.Bipartition    ( Bipartition
 import           ELynx.Data.Tree.Tree
 
 -- | Each branch of a bifurcating tree partitions the leaves of the tree into
--- three 'Subset's, see 'ELynx.Data.Tree.Bipartition'. In a similar way, each
+-- three subsets, see 'ELynx.Data.Tree.Bipartition'. In a similar way, each
 -- internal node induces a tripartition. Tripartitions are not yet implemented
 -- (December 2019) because it is usually sufficient to work with bipartitions.
 -- If, however, the tree is multifurcating and a specific node has more than two
