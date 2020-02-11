@@ -90,15 +90,6 @@ leaves :: Tree a -> [a]
 leaves (Node l []) = [l]
 leaves (Node _ f)  = concatMap leaves f
 
--- -- | Check if ancestor and daughters of first tree are a subset of the ancestor
--- -- and daughters of the second tree. Useful to test if, e.g., speciations agree.
--- rootNodesAgreeWith :: (Ord c) => (a -> c) -> Tree a -> (b -> c) -> Tree b -> Bool
--- rootNodesAgreeWith f s g t =
---   f (rootLabel s) == g (rootLabel t) &&
---   S.fromList sDs `S.isSubSetOf` S.fromList tDs
---   where sDs = map (f . rootLabel) (subForest s)
---         tDs = map (g . rootLabel) (subForest t)
-
 -- | Get subtree of 'Tree' with nodes satisfying predicate. Return 'Nothing', if
 -- no leaf satisfies predicate. At the moment: recursively, for each child, take
 -- the child if any leaf in the child satisfies the predicate.
@@ -111,13 +102,11 @@ subTree p (Node lbl chs) = if null subTrees
                            else Just $ Node lbl subTrees
   where subTrees = mapMaybe (subTree p) chs
 
--- XXX: If module gets too big, move the sampling functions into their own
--- module.
--- | Extract a random sub tree with N leaves of a tree with M leaves, where M>N
--- (otherwise error). The complete list of leaves (names are assumed to be
--- unique) has to be provided as a 'Seq.Seq', and a 'Seq.Set', so that we have
--- fast sub-sampling as well as lookup and don't have to recompute them when
--- many sub-samples are requested.
+-- | Extract a random subtree with @N@ leaves of a tree with @M@ leaves, where
+-- @M>N@ (otherwise error). The complete list of leaves (names are assumed to be
+-- unique) has to be provided as a 'Seq.Seq', and a 'Seq.Set', so that fast
+-- sub-sampling as well as lookup are fast and so that these data structures do
+-- not have to be recomputed when many sub-samples are requested.
 subSample :: (PrimMonad m, Ord a)
   => Seq.Seq a -> Int -> Tree a -> Gen (PrimState m) -> m (Maybe (Tree a))
 subSample lvs n tree g
@@ -127,40 +116,40 @@ subSample lvs n tree g
       let ls = Set.fromList sampledLs
       return $ subTree (`Set.member` ls) tree
 
--- | See 'subSample', but n times.
+-- | See 'subSample', but @n@ times.
 nSubSamples :: (PrimMonad m, Ord a)
             => Int -> Seq.Seq a -> Int -> Tree a -> Gen (PrimState m) -> m [Maybe (Tree a)]
 nSubSamples nS lvs nL tree g = replicateM nS $ subSample lvs nL tree g
 
--- | Prune or remove degree 2 inner nodes. The information stored in a pruned
+-- | Prune or remove degree two inner nodes. The information stored in a pruned
 -- node can be used to change the daughter node. To discard this information,
--- use, @pruneWith const tree@, otherwise @pruneWith (\daughter parent ->
--- combined) tree@.
+-- use, @pruneWith const@, otherwise @pruneWith (\daughter parent -> combined)@.
 pruneWith :: (a -> a -> a) -> Tree a -> Tree a
 pruneWith _  n@(Node _ [])       = n
 pruneWith f    (Node paLbl [ch]) = let lbl = f (rootLabel ch) paLbl
                                    in pruneWith f $ Node lbl (subForest ch)
 pruneWith f    (Node paLbl chs)  = Node paLbl (map (pruneWith f) chs)
 
--- | Drop a leaf from a tree. The resulting degree two nodes are pruned with
--- 'pruneWith'.
+-- | Drop a leaf from a tree with unique leaf names. The possibly resulting
+-- degree two node is pruned with 'pruneWith'. Two functions are given for node
+-- name extraction, and for the combination of possibly resulting degree two
+-- nodes.
 dropLeafWith :: (Show b, Eq b) => (a -> b) -> (a -> a -> a) -> b -> Tree a -> Tree a
 dropLeafWith f g l t
   | l `notElem` lvs =
       error "dropLeafWith: leaf not found on tree."
   | Seq.length (Seq.fromList lvs) < length lvs =
       error "dropLeafWith: tree does not have unique leaves."
-  | otherwise =
-    -- XXX: Use pruneWith outside of dropLeafUnsafe. This is easier to program
-    -- but requires two loops over the tree.
-    pruneWith g $ dropLeafUnsafe f l t
+  | otherwise = dropLeafWithUnsafe f g l t
   where lvs = leaves $ fmap f t
 
 -- See 'dropLeafWith'.
-dropLeafUnsafe :: Eq b => (a -> b) -> b -> Tree a -> Tree a
-dropLeafUnsafe f lf (Node x xs) =
-  Node x $ map (dropLeafUnsafe f lf) (filter (not . isThisLeaf) xs)
+dropLeafWithUnsafe :: Eq b => (a -> b) -> (a -> a -> a) -> b -> Tree a -> Tree a
+dropLeafWithUnsafe f g lf (Node x xs)
+  | length xs' == 1 = let Node z zs = head xs' in Node (g z x) zs
+  | otherwise       = Node x xs'
   where isThisLeaf y = null (subForest y) && f (rootLabel y) == lf
+        xs'          = map (dropLeafWithUnsafe f g lf) (filter (not . isThisLeaf) xs)
 
 -- | Compute the intersection of two trees. The intersection is the tree with
 -- the same leaf set. Leaf names used for comparison are extracted by a given
