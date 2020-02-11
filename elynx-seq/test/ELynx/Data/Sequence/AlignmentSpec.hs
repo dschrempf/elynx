@@ -12,7 +12,9 @@ Creation date: Fri Oct  5 14:25:42 2018.
 -}
 
 module ELynx.Data.Sequence.AlignmentSpec
-  (spec) where
+  ( spec
+  )
+where
 
 import qualified Data.ByteString.Lazy.Char8    as L
 import qualified Data.Matrix.Unboxed           as M
@@ -26,19 +28,19 @@ import           ELynx.Tools.InputOutput
 import           Files
 
 ssData :: M.Matrix Character
-ssData = M.fromLists $ map (reverse . map fromChar) [ "AAA", "GAA", "TAA" ]
+ssData = M.fromLists $ map (reverse . map fromChar) ["AAA", "GAA", "TAA"]
 
 ssA :: Alignment
-ssA = Alignment
-      (map L.pack ["SEQUENCE_1", "SEQUENCE_2", "SEQUENCE_3"])
-      (replicate 3 L.empty)
-      DNAI
-      ssData
+ssA = Alignment (map L.pack ["SEQUENCE_1", "SEQUENCE_2", "SEQUENCE_3"])
+                (replicate 3 L.empty)
+                DNAI
+                ssData
 
 spec :: Spec
-spec =
-  describe "subSample" $
-  it "correctly sub sample an Alignment" $ do
-    a <- either error id . fromSequences <$> parseFileWith (fasta DNAI) fastaNucleotideIUPACFN
-    let ss = subSample [0,3,5] a
-    ss `shouldBe` ssA
+spec = describe "subSample" $ it "correctly sub sample an Alignment" $ do
+  a <-
+    either error id
+    .   fromSequences
+    <$> parseFileWith (fasta DNAI) fastaNucleotideIUPACFN
+  let ss = subSample [0, 3, 5] a
+  ss `shouldBe` ssA

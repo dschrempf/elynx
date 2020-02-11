@@ -27,11 +27,14 @@ module ELynx.Distribution.BirthDeathCriticalNoTime
   , cumulative
   , density
   , quantile
-  ) where
+  )
+where
 
-import           Data.Data                (Data, Typeable)
-import           GHC.Generics             (Generic)
-import qualified Statistics.Distribution  as D
+import           Data.Data                      ( Data
+                                                , Typeable
+                                                )
+import           GHC.Generics                   ( Generic )
+import qualified Statistics.Distribution       as D
 
 import           ELynx.Distribution.Types
 
@@ -42,13 +45,12 @@ newtype BirthDeathCriticalNoTimeDistribution = BDCNTD
   } deriving (Eq, Typeable, Data, Generic)
 
 instance D.Distribution BirthDeathCriticalNoTimeDistribution where
-    cumulative = cumulative
+  cumulative = cumulative
 
 -- | Cumulative distribution function section 2.1.2, second formula.
 cumulative :: BirthDeathCriticalNoTimeDistribution -> Time -> Double
-cumulative (BDCNTD l) x
-  | x <= 0    = 0
-  | otherwise = x * l / (1.0 + x * l)
+cumulative (BDCNTD l) x | x <= 0    = 0
+                        | otherwise = x * l / (1.0 + x * l)
 
 instance D.ContDistr BirthDeathCriticalNoTimeDistribution where
   density  = density
@@ -57,17 +59,17 @@ instance D.ContDistr BirthDeathCriticalNoTimeDistribution where
 -- | Density function section 2.1.2, first formula; t cancels out because it is
 -- expected to be much larger than 1.0; because t \in [0, \infty].
 density :: BirthDeathCriticalNoTimeDistribution -> Time -> Double
-density (BDCNTD l) x
-  | x < 0     = 0
-  | otherwise = l / ((1.0 + x * l)**2)
+density (BDCNTD l) x | x < 0     = 0
+                     | otherwise = l / ((1.0 + x * l) ** 2)
 
 -- | Inverted cumulative probability distribution 'cumulative'. See also
 -- 'D.ContDistr'.
 quantile :: BirthDeathCriticalNoTimeDistribution -> Double -> Time
 quantile (BDCNTD l) p
-  | p >= 0 && p <= 1 = p / (l - l*p)
-  | otherwise        =
-    error $ "PointProcess.quantile: p must be in [0,1]. Got: " ++ show p ++ "."
+  | p >= 0 && p <= 1
+  = p / (l - l * p)
+  | otherwise
+  = error $ "PointProcess.quantile: p must be in [0,1]. Got: " ++ show p ++ "."
 
 instance D.ContGen BirthDeathCriticalNoTimeDistribution where
   genContVar = D.genContinuous

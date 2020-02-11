@@ -26,11 +26,14 @@ module ELynx.Distribution.TimeOfOrigin
   , cumulative
   , density
   , quantile
-  ) where
+  )
+where
 
-import           Data.Data                (Data, Typeable)
-import           GHC.Generics             (Generic)
-import qualified Statistics.Distribution  as D
+import           Data.Data                      ( Data
+                                                , Typeable
+                                                )
+import           GHC.Generics                   ( Generic )
+import qualified Statistics.Distribution       as D
 
 import           ELynx.Distribution.Types
 
@@ -43,15 +46,15 @@ data TimeOfOriginDistribution = TOD
   } deriving (Eq, Typeable, Data, Generic)
 
 instance D.Distribution TimeOfOriginDistribution where
-    cumulative = cumulative
+  cumulative = cumulative
 
 -- | Cumulative distribution function Corollary 3.3.
 cumulative :: TimeOfOriginDistribution -> Time -> Double
-cumulative (TOD n l m) x
-  | x <= 0    = 0
-  | otherwise = te ** fromIntegral n
-  where d  = l - m
-        te = l * (1.0 - exp (-d*x)) / (l - m*exp(-d*x))
+cumulative (TOD n l m) x | x <= 0    = 0
+                         | otherwise = te ** fromIntegral n
+ where
+  d  = l - m
+  te = l * (1.0 - exp (-d * x)) / (l - m * exp (-d * x))
 
 instance D.ContDistr TimeOfOriginDistribution where
   density  = density
@@ -61,24 +64,30 @@ instance D.ContDistr TimeOfOriginDistribution where
 density :: TimeOfOriginDistribution -> Time -> Double
 density (TOD nn l m) x
   | x < 0     = 0
-  | otherwise = n * l**n * d**2 * t1**(n-1.0) * ex / (t2**(n+1.0))
-  where d  = l - m
-        n  = fromIntegral nn
-        ex = exp(-d*x)
-        t1 = 1.0 - ex
-        t2 = l - m*ex
+  | otherwise = n * l ** n * d ** 2 * t1 ** (n - 1.0) * ex / (t2 ** (n + 1.0))
+ where
+  d  = l - m
+  n  = fromIntegral nn
+  ex = exp (-d * x)
+  t1 = 1.0 - ex
+  t2 = l - m * ex
 
 -- | The inverted cumulative probability distribution 'cumulative'. See also
 -- 'D.ContDistr'.
 quantile :: TimeOfOriginDistribution -> Double -> Time
 quantile (TOD n' l m) p
-  | p >= 0 && p <= 1 = -1.0/d * log(t1/t2)
-  | otherwise        =
-    error $ "PointProcess.quantile: p must be in [0,1] range. Got: " ++ show p ++ "."
- where d  = l - m
-       n  = fromIntegral n'
-       t1 = l*(1.0-p**(1.0/n))
-       t2 = l - p**(1.0/n)*m
+  | p >= 0 && p <= 1
+  = -1.0 / d * log (t1 / t2)
+  | otherwise
+  = error
+    $  "PointProcess.quantile: p must be in [0,1] range. Got: "
+    ++ show p
+    ++ "."
+ where
+  d  = l - m
+  n  = fromIntegral n'
+  t1 = l * (1.0 - p ** (1.0 / n))
+  t2 = l - p ** (1.0 / n) * m
 
 instance D.ContGen TimeOfOriginDistribution where
   genContVar = D.genContinuous

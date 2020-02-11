@@ -19,19 +19,20 @@ module ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
   ( Parser
   , EDMComponent
   , siteprofiles
-  ) where
+  )
+where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8        as L
-import           Data.List                         (nub)
-import qualified Data.Vector.Storable              as V
+import qualified Data.ByteString.Lazy.Char8    as L
+import           Data.List                      ( nub )
+import qualified Data.Vector.Storable          as V
 import           Data.Void
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
 import           ELynx.Data.MarkovProcess.EDMModel
-import           ELynx.Tools.ByteString            (c2w)
+import           ELynx.Tools.ByteString         ( c2w )
 
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString
@@ -41,11 +42,11 @@ siteprofiles :: Parser [EDMComponent]
 siteprofiles = do
   _  <- headerLines
   cs <- many dataLine
-  _  <- many newline *> eof
-     <?> "phylobayes siteprofiles"
-  let ls = map length cs
+  _  <- many newline *> eof <?> "phylobayes siteprofiles"
+  let ls  = map length cs
       nLs = length $ nub ls
-  when (nLs /= 1) (error "The site profiles have a different number of entries.")
+  when (nLs /= 1)
+       (error "The site profiles have a different number of entries.")
   return cs
 
 horizontalSpace :: Parser ()
@@ -60,18 +61,16 @@ line = do
 headerLines :: Parser ()
 headerLines = do
   _ <- line
-  _ <- many newline
-    <?> "headerLine"
+  _ <- many newline <?> "headerLine"
   pure ()
 
 dataLine :: Parser EDMComponent
 dataLine = do
   -- Ignore site number.
-  _ <- decimal :: Parser Integer
-  _ <- horizontalSpace
+  _    <- decimal :: Parser Integer
+  _    <- horizontalSpace
   -- Also ignore additional white space on line.
   vals <- float `sepEndBy1` horizontalSpace
-  _ <- many newline
-    <?> "dataLine"
+  _    <- many newline <?> "dataLine"
   -- Set the weight to 1.0 for all sites.
   return (1.0, V.fromList vals)

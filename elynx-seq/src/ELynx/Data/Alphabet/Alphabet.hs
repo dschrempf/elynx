@@ -30,9 +30,8 @@ instance, with 'ELynx.Data.Alphabet.Character.fromCVec', and
 -}
 
 module ELynx.Data.Alphabet.Alphabet
-  (
-    Alphabet (..)
-  , AlphabetSpec (..)
+  ( Alphabet(..)
+  , AlphabetSpec(..)
   , alphabetSpec
   , description
   , isStd
@@ -40,10 +39,11 @@ module ELynx.Data.Alphabet.Alphabet
   , isUnknown
   , isIUPAC
   , isMember
-  ) where
+  )
+where
 
 import qualified Data.Set                      as S
-import           Prelude                       hiding (all)
+import           Prelude                 hiding ( all )
 
 import           ELynx.Data.Alphabet.Character
 
@@ -59,8 +59,10 @@ description DNAX     = "DNAX (nucleotides; including gaps)"
 description DNAI     = "DNAI (nucleotides; including gaps, and IUPAC codes)"
 description Protein  = "Protein (amino acids)"
 description ProteinX = "ProteinX (amino acids; including gaps)"
-description ProteinS = "ProteinS (amino acids; including gaps, and translation stops)"
-description ProteinI = "ProteinI (amino acids; including gaps, translation stops, and IUPAC codes)"
+description ProteinS =
+  "ProteinS (amino acids; including gaps, and translation stops)"
+description ProteinI =
+  "ProteinI (amino acids; including gaps, translation stops, and IUPAC codes)"
 
 -- | Alphabet specification. 'S.Set' is used because it provides fast lookups.
 data AlphabetSpec = AlphabetSpec {
@@ -111,14 +113,20 @@ isIUPAC = isWith iupac
 isMember :: Alphabet -> Character -> Bool
 isMember = isWith all
 
-fromChars :: String -> String -> String -> String -> (Char -> String) -> AlphabetSpec
-fromChars st ga un iu to = AlphabetSpec st' ga' un' iu' al (fromString . to . toChar)
-  where
-    st' = S.fromList $ fromString st
-    ga' = S.fromList $ fromString ga
-    un' = S.fromList $ fromString un
-    iu' = S.fromList $ fromString iu
-    al  = S.unions [st', ga', un', iu']
+fromChars
+  :: String -> String -> String -> String -> (Char -> String) -> AlphabetSpec
+fromChars st ga un iu to = AlphabetSpec st'
+                                        ga'
+                                        un'
+                                        iu'
+                                        al
+                                        (fromString . to . toChar)
+ where
+  st' = S.fromList $ fromString st
+  ga' = S.fromList $ fromString ga
+  un' = S.fromList $ fromString un
+  iu' = S.fromList $ fromString iu
+  al  = S.unions [st', ga', un', iu']
 
 dna :: AlphabetSpec
 dna = fromChars "ACGT" [] [] [] toStdDNA

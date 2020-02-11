@@ -51,14 +51,18 @@ Y                 Tyr                 Tyrosine
 -}
 
 module ELynx.Data.Character.AminoAcidX
-  ( AminoAcidX (..)
-  ) where
+  ( AminoAcidX(..)
+  )
+where
 
 import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
-import qualified ELynx.Data.Character.Character as C
-import           ELynx.Tools.ByteString         (c2w, w2c)
+import qualified ELynx.Data.Character.Character
+                                               as C
+import           ELynx.Tools.ByteString         ( c2w
+                                                , w2c
+                                                )
 
 -- | Amino acids.
 data AminoAcidX = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
@@ -90,29 +94,29 @@ toWord Gap = c2w '-'
 
 fromWord :: Word8 -> AminoAcidX
 fromWord w = case w2c w of
-               'A' -> A
-               'C' -> C
-               'D' -> D
-               'E' -> E
-               'F' -> F
-               'G' -> G
-               'H' -> H
-               'I' -> I
-               'K' -> K
-               'L' -> L
-               'M' -> M
-               'N' -> N
-               'P' -> P
-               'Q' -> Q
-               'R' -> R
-               'S' -> S
-               'T' -> T
-               'V' -> V
-               'W' -> W
-               'Y' -> Y
-               '-' -> Gap
-               '.' -> Gap
-               _   -> error "fromWord: Cannot convert to AminoAcidX."
+  'A' -> A
+  'C' -> C
+  'D' -> D
+  'E' -> E
+  'F' -> F
+  'G' -> G
+  'H' -> H
+  'I' -> I
+  'K' -> K
+  'L' -> L
+  'M' -> M
+  'N' -> N
+  'P' -> P
+  'Q' -> Q
+  'R' -> R
+  'S' -> S
+  'T' -> T
+  'V' -> V
+  'W' -> W
+  'Y' -> Y
+  '-' -> Gap
+  '.' -> Gap
+  _   -> error "fromWord: Cannot convert to AminoAcidX."
 
 derivingUnbox "AminoAcidX"
     [t| AminoAcidX -> Word8 |]
@@ -124,4 +128,4 @@ instance C.Character AminoAcidX where
   fromWord = fromWord
 
 instance C.CharacterX AminoAcidX where
-  gap        = Gap
+  gap = Gap

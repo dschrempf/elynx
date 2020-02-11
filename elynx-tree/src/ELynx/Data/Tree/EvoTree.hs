@@ -15,8 +15,9 @@ XXX: This module is not used.
 -}
 
 module ELynx.Data.Tree.EvoTree
-  ( EvoLabel (..)
-  ) where
+  ( EvoLabel(..)
+  )
+where
 
 -- | An evolutionary label has some information about where the corresponding
 -- node is on the tree, and if the node is 'extant', 'extinct', 'internal', or

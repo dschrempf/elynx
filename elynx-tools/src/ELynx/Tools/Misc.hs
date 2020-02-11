@@ -21,7 +21,8 @@ module ELynx.Tools.Misc
   , compose
   , allValues
   , horizontalConcat
-  ) where
+  )
+where
 
 import           Data.List
 
@@ -31,7 +32,7 @@ compose = foldl (flip (.)) id
 
 -- | Get all values of a bounded enumerated type.
 allValues :: (Bounded a, Enum a) => [a]
-allValues = [minBound..]
+allValues = [minBound ..]
 
 -- | A brain f***. As an example, let @xss@ be a list of alignments (i.e., a
 -- list of a list of a list of alleles). This function horizontally concatenates

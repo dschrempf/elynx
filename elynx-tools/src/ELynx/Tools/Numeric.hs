@@ -17,14 +17,15 @@ module ELynx.Tools.Numeric
   ( harmonic
   , xLogX
   , roundN
-  ) where
+  )
+where
 
 import           ELynx.Tools.Equality
 
 -- | Calculate the nth harmonic number.
 harmonic :: Int -> Double
 harmonic 1 = 1.0
-harmonic n = 1.0 / fromIntegral n + harmonic (n-1)
+harmonic n = 1.0 / fromIntegral n + harmonic (n - 1)
 
 -- | Calculate x*log(x) but set to 0.0 when x is smaller than 'eps'.
 xLogX :: Double -> Double
@@ -34,4 +35,4 @@ xLogX x | x < 0.0          = error "Argument lower than zero."
 
 -- | Round double to a given precision.
 roundN :: Int -> Double -> Double
-roundN n v = fromInteger (round $ v * (10^n)) / (10.0^^n)
+roundN n v = fromInteger (round $ v * (10 ^ n)) / (10.0 ^^ n)

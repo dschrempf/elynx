@@ -16,7 +16,8 @@ module ELynx.Tools.Definitions
   ( eps
   , precision
   , chunksize
-  ) where
+  )
+where
 
 -- | Required precision when comparing 'Double' values.
 eps :: Double

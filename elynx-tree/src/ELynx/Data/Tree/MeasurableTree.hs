@@ -16,7 +16,7 @@ Creation date: Thu Jan 17 14:16:34 2019.
 
 
 module ELynx.Data.Tree.MeasurableTree
-  ( Measurable (..)
+  ( Measurable(..)
   , extend
   , distancesRootLeaves
   , distancesOriginLeaves
@@ -31,14 +31,15 @@ module ELynx.Data.Tree.MeasurableTree
   , prune
   , removeMultifurcations
   , ultrametric
-  ) where
+  )
+where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.Foldable
 import           Data.Tree
 
 import           ELynx.Data.Tree.Tree
-import           ELynx.Tools.Equality       (allNearlyEqual)
+import           ELynx.Tools.Equality           ( allNearlyEqual )
 
 -- | A 'Node' label with measurable and modifiable branch length to the parent.
 class Measurable a where
@@ -64,7 +65,8 @@ extend da pa = lengthen (getLen pa) da
 -- distances from the origin to the leaves, see 'distancesOriginLeaves').
 distancesRootLeaves :: (Measurable a) => Tree a -> [Double]
 distancesRootLeaves (Node _ []) = [0]
-distancesRootLeaves (Node _ f ) = concat [map (+ getLen (rootLabel d)) (distancesRootLeaves d) | d <- f]
+distancesRootLeaves (Node _ f) =
+  concat [ map (+ getLen (rootLabel d)) (distancesRootLeaves d) | d <- f ]
 
 -- -- | Distances from the origin of a tree to its leaves (this is not the distance
 -- -- from the root node to the leaves, which would be @distanceOriginLeaves t -
@@ -83,8 +85,9 @@ distancesOriginLeaves t@(Node l _) = map (+ getLen l) (distancesRootLeaves t)
 -- 'distancesOriginLeaves'.
 averageDistanceOriginLeaves :: (Measurable a) => Tree a -> Double
 averageDistanceOriginLeaves tr = sum ds / fromIntegral n
-  where ds = distancesOriginLeaves tr
-        n  = length ds
+ where
+  ds = distancesOriginLeaves tr
+  n  = length ds
 
 -- | Height (max distance between origin and leaves) of a tree. Return 0 if the
 -- tree is empty.
@@ -105,15 +108,18 @@ shortenStem dl = lengthenStem (-dl)
 
 -- | Summarize a tree with measureable branch lengths.
 summarize :: (Measurable a) => Tree a -> L.ByteString
-summarize t = L.intercalate "\n" $ map L.pack
+summarize t = L.intercalate "\n" $ map
+  L.pack
   [ "Leaves: " ++ show n ++ "."
   , "Height: " ++ show h ++ "."
   , "Average distance root to leaves: " ++ show h' ++ "."
-  , "Total branch length: " ++ show b ++ "." ]
-  where n = length . leaves $ t
-        h = height t
-        b = totalBranchLength t
-        h' = sum (distancesOriginLeaves t) / fromIntegral n
+  , "Total branch length: " ++ show b ++ "."
+  ]
+ where
+  n  = length . leaves $ t
+  h  = height t
+  b  = totalBranchLength t
+  h' = sum (distancesOriginLeaves t) / fromIntegral n
 
 -- | Total branch length of a tree.
 totalBranchLength :: (Measurable a) => Tree a -> Double
@@ -127,16 +133,17 @@ normalize t = fmap (\n -> setLen (getLen n / s) n) t
 -- | Prune degree 2 nodes. Add branch lengths but forget pruned node label. See
 -- 'pruneWith'.
 prune :: (Measurable a) => Tree a -> Tree a
-prune = pruneWith f
-  where f da pa = lengthen (getLen pa) da
+prune = pruneWith f where f da pa = lengthen (getLen pa) da
 
 -- | Remove multifurcations by copying multifurcating nodes and introducing
 -- branches of length 0.
 removeMultifurcations :: Measurable a => Tree a -> Tree a
-removeMultifurcations t@(Node _ [] )    = t
-removeMultifurcations   (Node l [x])    = Node l [removeMultifurcations x]
-removeMultifurcations   (Node l [x, y]) = Node l $ map removeMultifurcations [x, y]
-removeMultifurcations   (Node l (x:xs)) = Node l $ map removeMultifurcations [x, Node l' xs]
+removeMultifurcations t@(Node _ [] ) = t
+removeMultifurcations (  Node l [x]) = Node l [removeMultifurcations x]
+removeMultifurcations (Node l [x, y]) =
+  Node l $ map removeMultifurcations [x, y]
+removeMultifurcations (Node l (x : xs)) = Node l
+  $ map removeMultifurcations [x, Node l' xs]
   where l' = setLen 1.0 l
 
 -- | Check if a tree is ultrametric.

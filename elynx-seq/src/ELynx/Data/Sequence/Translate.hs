@@ -27,19 +27,24 @@ import           ELynx.Tools.Vector
 
 -- | Translate a sequence from 'DNA' or 'DNAX' to 'ProteinS'.
 translateSeq :: UniversalCode -> Int -> Sequence -> Sequence
-translateSeq uc rf (Sequence n d a cs) =
-  case a of
-    DNA  -> Sequence n d ProteinS (cs' $ translate uc)
-    DNAX -> Sequence n d ProteinS (cs' $ translateX uc)
-    DNAI -> Sequence n d ProteinI (cs' $ translateI uc)
-    _    -> error "translate: can only translate DNA, DNAX, and DNAI."
+translateSeq uc rf (Sequence n d a cs) = case a of
+  DNA  -> Sequence n d ProteinS (cs' $ translate uc)
+  DNAX -> Sequence n d ProteinS (cs' $ translateX uc)
+  DNAI -> Sequence n d ProteinI (cs' $ translateI uc)
+  _    -> error "translate: can only translate DNA, DNAX, and DNAI."
   where cs' f = C.fromCVec $ translateVecWith f rf (C.toCVec cs)
 
 -- Translate from DNA to Protein with given reading frame (0, 1, 2).
-translateVecWith :: (V.Unbox a, Ord a, V.Unbox b)
-              => (Codon a -> b) -> Int -> V.Vector a -> V.Vector b
-translateVecWith f rf cs | rf > 2    = error "translateVecWith: reading frame is larger than 2."
-                         | rf < 0    = error "translateVecWith: reading frame is negative."
-                         | otherwise  = aas
-  where codons = map unsafeFromVec $ chop 3 $ V.drop rf cs
-        aas = V.fromList $ map f codons
+translateVecWith
+  :: (V.Unbox a, Ord a, V.Unbox b)
+  => (Codon a -> b)
+  -> Int
+  -> V.Vector a
+  -> V.Vector b
+translateVecWith f rf cs
+  | rf > 2    = error "translateVecWith: reading frame is larger than 2."
+  | rf < 0    = error "translateVecWith: reading frame is negative."
+  | otherwise = aas
+ where
+  codons = map unsafeFromVec $ chop 3 $ V.drop rf cs
+  aas    = V.fromList $ map f codons

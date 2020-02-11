@@ -14,8 +14,7 @@ Equality tests.
 -}
 
 module ELynx.Tools.Equality
-  (
-    allEqual
+  ( allEqual
   , allNearlyEqualWith
   , allNearlyEqual
   , nearlyEqWith
@@ -28,7 +27,8 @@ module ELynx.Tools.Equality
   , nearlyEqVec
   , nearlyEqMatWith
   , nearlyEqMat
-  ) where
+  )
+where
 
 import           Numeric.LinearAlgebra
 
@@ -52,7 +52,7 @@ allNearlyEqual = allNearlyEqualWith eps
 
 -- | Test for equality with given tolerance (needed because of machine precision).
 nearlyEqWith :: Double -> Double -> Double -> Bool
-nearlyEqWith tol a b = tol > abs (a-b)
+nearlyEqWith tol a b = tol > abs (a - b)
 
 -- | Test for equality with predefined tolerance 'eps' (needed because of
 -- machine precision).

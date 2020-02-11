@@ -47,23 +47,29 @@ import           ELynx.Tools.Reproduction
 --
 -- Will result in @BasePath.00.fasta@ up to @BasePath.10.fasta@.
 getOutFilePaths :: String -> Int -> String -> [FilePath]
-getOutFilePaths file n suffix = [ file ++ "." ++ digitStr i ++ "." ++ suffix
-                                | i <- [0 .. n-1] ]
-  where nDigits    = ceiling $ logBase (10 :: Double) (fromIntegral n)
-        digitStr i = T.unpack $ T.justifyRight nDigits '0' (LT.toStrict $ LT.toLazyText $ LT.decimal i)
+getOutFilePaths file n suffix =
+  [ file ++ "." ++ digitStr i ++ "." ++ suffix | i <- [0 .. n - 1] ]
+ where
+  nDigits = ceiling $ logBase (10 :: Double) (fromIntegral n)
+  digitStr i = T.unpack
+    $ T.justifyRight nDigits '0' (LT.toStrict $ LT.toLazyText $ LT.decimal i)
 
 -- | Sub sample sequences.
 subSampleCmd :: SubSampleArguments -> ELynx ()
 subSampleCmd (SubSampleArguments al inFile nSites nAlignments seed) = do
   $(logInfo) "Command: Sub sample from a multi sequence alignment."
   $(logInfo) $ T.pack $ "  Sample " <> show nSites <> " sites."
-  $(logInfo) $ T.pack $ "  Sample " <> show nAlignments <> " multi sequence alignments."
-  ss <- readSeqs al inFile
+  $(logInfo)
+    $  T.pack
+    $  "  Sample "
+    <> show nAlignments
+    <> " multi sequence alignments."
+  ss  <- readSeqs al inFile
   gen <- liftIO $ maybe createSystemRandom (initialize . V.fromList) seed
   let a = either error id (M.fromSequences ss)
   samples <- lift $ replicateM nAlignments $ M.randomSubSample nSites a gen
   let results = map (sequencesToFasta . M.toSequences) samples
-  bn <- outFileBaseName <$> lift ask
+  bn           <- outFileBaseName <$> lift ask
   outFilePaths <- case bn of
     Nothing -> return $ repeat Nothing
     Just fn -> return $ Just <$> getOutFilePaths fn nAlignments "fasta"

@@ -12,7 +12,9 @@ Creation date: Fri Jan 25 16:47:28 2019.
 -}
 
 module ELynx.Data.MarkovProcess.NucleotideSpec
-  (spec) where
+  ( spec
+  )
+where
 
 import           Data.Vector.Generic
 import           Test.Hspec
@@ -20,7 +22,7 @@ import           Test.Hspec
 import           ELynx.Data.MarkovProcess.Nucleotide
 import           ELynx.Data.MarkovProcess.RateMatrix
 import           ELynx.Data.MarkovProcess.SubstitutionModel
-import           ELynx.Tools.Equality                       (nearlyEqVec)
+import           ELynx.Tools.Equality           ( nearlyEqVec )
 
 stationaryDist :: StationaryDistribution
 stationaryDist = fromList [0.2, 0.3, 0.3, 0.2]
@@ -30,7 +32,8 @@ hkyModel = hky 6.0 stationaryDist
 
 spec :: Spec
 spec =
-  describe "getStationaryDistribution" $
-  it "extracts the stationary distribution from a rate matrix" $ do
-  let sd = getStationaryDistribution (rateMatrix hkyModel)
-  sd `nearlyEqVec` stationaryDist `shouldBe` True
+  describe "getStationaryDistribution"
+    $ it "extracts the stationary distribution from a rate matrix"
+    $ do
+        let sd = getStationaryDistribution (rateMatrix hkyModel)
+        sd `nearlyEqVec` stationaryDist `shouldBe` True

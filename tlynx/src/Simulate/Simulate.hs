@@ -24,8 +24,8 @@ Elsevier BV, 2009, 261, 58-66
 -}
 
 module Simulate.Simulate
-        ( simulate
-        )
+  ( simulate
+  )
 where
 import           Control.Concurrent             ( getNumCapabilities )
 import           Control.Concurrent.Async.Lifted.Safe
@@ -47,11 +47,11 @@ import           Simulate.Options
 
 import           ELynx.Data.Tree.MeasurableTree ( prune )
 import           ELynx.Data.Tree.PhyloTree      ( PhyloLabel )
+import           ELynx.Data.Tree.SubSample      ( nSubSamples )
 import           ELynx.Data.Tree.SumStat        ( formatNChildSumStat
                                                 , toNChildSumStat
                                                 )
 import           ELynx.Data.Tree.Tree
-import           ELynx.Data.Tree.SubSample      ( nSubSamples )
 import           ELynx.Export.Tree.Newick       ( toNewick )
 import           ELynx.Simulate.PointProcess    ( TimeSpec
                                                 , simulateNReconstructedTrees
@@ -67,96 +67,79 @@ import           ELynx.Tools.Reproduction       ( ELynx
 -- | Simulate phylogenetic trees.
 simulate :: SimulateArguments -> ELynx ()
 simulate a@(SimulateArguments nTrees nLeaves height mrca lambda mu rho subS sumS seed)
-        = do
-                when (isNothing height && mrca)
-                        $ error
-                                  "Cannot condition on MRCA (-M) when height is not given (-H)."
-                c <- liftIO getNumCapabilities
-                logNewSection "Arguments"
-                $(logInfo) $ T.pack $ reportSimulateArguments a
-                logNewSection "Simulation"
-                $(logInfo) $ T.pack $ "Number of used cores: " <> show c
-                gs <- liftIO $ getNGen c seed
-                let     chunks   = getChunks c nTrees
-                        timeSpec = fmap (, mrca) height
-                trs <- if subS
-                        then simulateAndSubSampleNTreesConcurrently
-                                nLeaves
-                                lambda
-                                mu
-                                rho
-                                timeSpec
-                                chunks
-                                gs
-                        else simulateNTreesConcurrently nLeaves
-                                                        lambda
-                                                        mu
-                                                        rho
-                                                        timeSpec
-                                                        chunks
-                                                        gs
-                let ls = if sumS
-                            then parMap
-                                    rpar
-                                    (formatNChildSumStat . toNChildSumStat)
-                                    trs
-                            else parMap rpar toNewick trs
-                fn <- getOutFilePath ".tree"
-                let res = L.unlines ls
-                out "simulated trees" res fn
+  = do
+    when (isNothing height && mrca)
+      $ error "Cannot condition on MRCA (-M) when height is not given (-H)."
+    c <- liftIO getNumCapabilities
+    logNewSection "Arguments"
+    $(logInfo) $ T.pack $ reportSimulateArguments a
+    logNewSection "Simulation"
+    $(logInfo) $ T.pack $ "Number of used cores: " <> show c
+    gs <- liftIO $ getNGen c seed
+    let chunks   = getChunks c nTrees
+        timeSpec = fmap (, mrca) height
+    trs <- if subS
+      then simulateAndSubSampleNTreesConcurrently nLeaves
+                                                  lambda
+                                                  mu
+                                                  rho
+                                                  timeSpec
+                                                  chunks
+                                                  gs
+      else simulateNTreesConcurrently nLeaves lambda mu rho timeSpec chunks gs
+    let ls = if sumS
+          then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
+          else parMap rpar toNewick trs
+    fn <- getOutFilePath ".tree"
+    let res = L.unlines ls
+    out "simulated trees" res fn
 
 simulateNTreesConcurrently
-        :: Int
-        -> Double
-        -> Double
-        -> Double
-        -> TimeSpec
-        -> [Int]
-        -> [GenIO]
-        -> ELynx [Tree (PhyloLabel Int)]
+  :: Int
+  -> Double
+  -> Double
+  -> Double
+  -> TimeSpec
+  -> [Int]
+  -> [GenIO]
+  -> ELynx [Tree (PhyloLabel Int)]
 simulateNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
-        let     l' = l * r
-                m' = m - l * (1.0 - r)
-        trss <- liftIO $ mapConcurrently
-                (\(n, g) ->
-                        simulateNReconstructedTrees n nLeaves timeSpec l' m' g
-                )
-                (zip chunks gs)
-        return $ concat trss
+  let l' = l * r
+      m' = m - l * (1.0 - r)
+  trss <- liftIO $ mapConcurrently
+    (\(n, g) -> simulateNReconstructedTrees n nLeaves timeSpec l' m' g)
+    (zip chunks gs)
+  return $ concat trss
 
 simulateAndSubSampleNTreesConcurrently
-        :: Int
-        -> Double
-        -> Double
-        -> Double
-        -> TimeSpec
-        -> [Int]
-        -> [GenIO]
-        -> ELynx [Tree (PhyloLabel Int)]
+  :: Int
+  -> Double
+  -> Double
+  -> Double
+  -> TimeSpec
+  -> [Int]
+  -> [GenIO]
+  -> ELynx [Tree (PhyloLabel Int)]
 simulateAndSubSampleNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
-        let nLeavesBigTree = (round $ fromIntegral nLeaves / r) :: Int
-        logNewSection
-                $  T.pack
-                $  "Simulate one big tree with "
-                <> show nLeavesBigTree
-                <> " leaves."
-        tr <- liftIO $ simulateReconstructedTree nLeavesBigTree
-                                                 timeSpec
-                                                 l
-                                                 m
-                                                 (head gs)
-        -- Log the base tree.
-        $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick tr
-        logNewSection
-                $  T.pack
-                $  "Sub sample "
-                <> show (sum chunks)
-                <> " trees with "
-                <> show nLeaves
-                <> " leaves."
-        let lvs = Seq.fromList $ leaves tr
-        trss <- liftIO $ mapConcurrently
-                (\(nSamples, g) -> nSubSamples nSamples lvs nLeaves tr g)
-                (zip chunks gs)
-        let trs = catMaybes $ concat trss
-        return $ map prune trs
+  let nLeavesBigTree = (round $ fromIntegral nLeaves / r) :: Int
+  logNewSection
+    $  T.pack
+    $  "Simulate one big tree with "
+    <> show nLeavesBigTree
+    <> " leaves."
+  tr <- liftIO $ simulateReconstructedTree nLeavesBigTree timeSpec l m (head gs)
+  -- Log the base tree.
+  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick tr
+  logNewSection
+    $  T.pack
+    $  "Sub sample "
+    <> show (sum chunks)
+    <> " trees with "
+    <> show nLeaves
+    <> " leaves."
+  let lvs = Seq.fromList $ leaves tr
+  trss <- liftIO $ mapConcurrently
+    (\(nSamples, g) -> nSubSamples nSamples lvs nLeaves tr g)
+    (zip chunks gs)
+  let trs = catMaybes $ concat trss
+  return $ map prune trs

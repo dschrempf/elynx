@@ -18,7 +18,7 @@ Creation date: Fri Oct  5 08:41:05 2018.
 module Translate.Translate
   ( translateCmd
   )
-  where
+where
 
 import           Control.Monad.Logger
 import qualified Data.Text                     as T
@@ -44,6 +44,6 @@ translateCmd (TranslateArguments al inFile rf uc) = do
   $(logInfo) $ T.pack $ "  Reading frame: " <> show rf <> "."
   $(logInfo) ""
   ss <- readSeqs al inFile
-  let result      = sequencesToFasta $ translateSeqs rf uc ss
+  let result = sequencesToFasta $ translateSeqs rf uc ss
   fn <- getOutFilePath ".fasta"
   out "translated sequences" result fn

@@ -20,9 +20,10 @@ The order of nucleotides is A, C, G, T; see 'ELynx.Data.Character.Nucleotide'.
 module ELynx.Data.MarkovProcess.Nucleotide
   ( jc
   , hky
-  ) where
+  )
+where
 
-import           Numeric.LinearAlgebra                      hiding (normalize)
+import           Numeric.LinearAlgebra   hiding ( normalize )
 
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.MarkovProcess.RateMatrix
@@ -55,27 +56,33 @@ n = 4
 
 -- | JC model matrix.
 jcExch :: ExchangeabilityMatrix
-jcExch =
-  (n><n)
-  [ 0.0, 1.0, 1.0, 1.0
-  , 1.0, 0.0, 1.0, 1.0
-  , 1.0, 1.0, 0.0, 1.0
-  , 1.0, 1.0, 1.0, 0.0 ]
+jcExch = (n >< n)
+  [ 0.0
+  , 1.0
+  , 1.0
+  , 1.0
+  , 1.0
+  , 0.0
+  , 1.0
+  , 1.0
+  , 1.0
+  , 1.0
+  , 0.0
+  , 1.0
+  , 1.0
+  , 1.0
+  , 1.0
+  , 0.0
+  ]
 
 -- | JC substitution model.
 jc :: SubstitutionModel
-jc = substitutionModel DNA "JC" [] f jcExch
-  where f = uniformVec n
+jc = substitutionModel DNA "JC" [] f jcExch where f = uniformVec n
 
 hkyExch :: Double -> ExchangeabilityMatrix
-hkyExch k =
-  (n><n)
-  [ 0.0, 1.0,   k, 1.0
-  , 1.0, 0.0, 1.0,   k
-  ,   k, 1.0, 0.0, 1.0
-  , 1.0,   k, 1.0, 0.0 ]
+hkyExch k = (n >< n)
+  [0.0, 1.0, k, 1.0, 1.0, 0.0, 1.0, k, k, 1.0, 0.0, 1.0, 1.0, k, 1.0, 0.0]
 
 -- | HKY substitution model.
 hky :: Double -> StationaryDistribution -> SubstitutionModel
-hky k f = substitutionModel DNA "HKY" [k] f e
-  where e = hkyExch k
+hky k f = substitutionModel DNA "HKY" [k] f e where e = hkyExch k

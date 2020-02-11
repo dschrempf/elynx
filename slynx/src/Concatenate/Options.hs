@@ -13,9 +13,10 @@ Creation date: Sun Oct  7 17:29:45 2018.
 -}
 
 module Concatenate.Options
-  ( ConcatenateArguments (..)
+  ( ConcatenateArguments(..)
   , concatenateArguments
-  ) where
+  )
+where
 
 import           Control.Applicative
 import           Options.Applicative
@@ -31,16 +32,13 @@ data ConcatenateArguments = ConcatenateArguments
     , ccInFiles  :: [FilePath] }
 
 instance Reproducible ConcatenateArguments where
-  inFiles  = ccInFiles
+  inFiles = ccInFiles
   parser _ = concatenateArguments
 
 -- | Command line parser.
 concatenateArguments :: Parser ConcatenateArguments
-concatenateArguments = ConcatenateArguments
-               <$> alphabetOpt
-               <*> some inFileArg
+concatenateArguments = ConcatenateArguments <$> alphabetOpt <*> some inFileArg
 
 inFileArg :: Parser FilePath
-inFileArg = strArgument $
-  metavar "INPUT-FILE" <>
-  help "Read sequences from INPUT-FILE"
+inFileArg =
+  strArgument $ metavar "INPUT-FILE" <> help "Read sequences from INPUT-FILE"

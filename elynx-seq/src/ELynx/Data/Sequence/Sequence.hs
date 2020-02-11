@@ -21,7 +21,7 @@ module ELynx.Data.Sequence.Sequence
     Name
   , Description
   , Characters
-  , Sequence (..)
+  , Sequence(..)
   -- * Input
   , fromByteString
   -- * Output
@@ -42,15 +42,19 @@ module ELynx.Data.Sequence.Sequence
   , filterShorterThan
   , filterLongerThan
   , filterStandard
-  ) where
+  )
+where
 
 import           Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8    as L
-import           Data.List                     (maximumBy)
-import           Data.Ord                      (comparing)
+import           Data.List                      ( maximumBy )
+import           Data.Ord                       ( comparing )
 import qualified Data.Vector.Unboxed           as V
-import           Prelude                       hiding (concat, length)
-import qualified Prelude                       as Pr (length)
+import           Prelude                 hiding ( concat
+                                                , length
+                                                )
+import qualified Prelude                       as Pr
+                                                ( length )
 import qualified Text.Printf                   as P
 
 import qualified ELynx.Data.Alphabet.Alphabet  as A
@@ -85,17 +89,21 @@ data Sequence = Sequence { name        :: Name
   deriving (Show, Eq)
 
 getInfo :: Sequence -> L.ByteString
-getInfo s = L.unwords [ alignLeft nameWidth (name s)
-                      , alignRight fieldWidth (L.pack $ show $ alphabet s)
-                      , alignRight fieldWidth (L.pack . show $ len)
-                      , alignRight fieldWidth (L.pack $ P.printf "%.3f" pGaps) ]
-  where len = length s
-        nGaps = countGaps s
-        pGaps = fromIntegral nGaps / fromIntegral len :: Double
+getInfo s = L.unwords
+  [ alignLeft nameWidth (name s)
+  , alignRight fieldWidth (L.pack $ show $ alphabet s)
+  , alignRight fieldWidth (L.pack . show $ len)
+  , alignRight fieldWidth (L.pack $ P.printf "%.3f" pGaps)
+  ]
+ where
+  len   = length s
+  nGaps = countGaps s
+  pGaps = fromIntegral nGaps / fromIntegral len :: Double
 
 -- | Trim and show a 'Sequence'.
 summarize :: Sequence -> L.ByteString
-summarize s = L.unwords [ getInfo s , summarizeByteString summaryLength $ toByteString (characters s) ]
+summarize s = L.unwords
+  [getInfo s, summarizeByteString summaryLength $ toByteString (characters s)]
 
 -- | Trim and show a list of 'Sequence's.
 summarizeSequences :: [Sequence] -> L.ByteString
@@ -103,26 +111,36 @@ summarizeSequences ss = header ss <> body (take summaryNSequences ss)
 
 -- | Header printed before 'Sequence' list.
 tableHeader :: L.ByteString
-tableHeader = L.unwords [ alignLeft  nameWidth "Name"
-                        , alignRight fieldWidth        "Code"
-                        , alignRight fieldWidth        "Length"
-                        , alignRight fieldWidth        "Gaps [%]"
-                        , "Sequence" ]
+tableHeader = L.unwords
+  [ alignLeft nameWidth "Name"
+  , alignRight fieldWidth "Code"
+  , alignRight fieldWidth "Length"
+  , alignRight fieldWidth "Gaps [%]"
+  , "Sequence"
+  ]
 
 -- | A short description of the sequence.
 header :: [Sequence] -> L.ByteString
-header ss = L.unlines $
-  reportIfSubsetIsShown ++
-  [ L.pack $ "For each sequence, the " ++ show summaryLength ++ " first bases are shown."
-  , L.pack $ "List contains " ++ show (Pr.length ss) ++ " sequences."
-  , ""
-  , tableHeader ]
-  where l = Pr.length ss
-        s = show summaryNSequences ++ " out of " ++
-            show (Pr.length ss) ++ " sequences are shown."
-        reportIfSubsetIsShown
-          | l > summaryNSequences = [L.pack s]
-          | otherwise = []
+header ss =
+  L.unlines
+    $  reportIfSubsetIsShown
+    ++ [ L.pack
+       $  "For each sequence, the "
+       ++ show summaryLength
+       ++ " first bases are shown."
+       , L.pack $ "List contains " ++ show (Pr.length ss) ++ " sequences."
+       , ""
+       , tableHeader
+       ]
+ where
+  l = Pr.length ss
+  s =
+    show summaryNSequences
+      ++ " out of "
+      ++ show (Pr.length ss)
+      ++ " sequences are shown."
+  reportIfSubsetIsShown | l > summaryNSequences = [L.pack s]
+                        | otherwise             = []
 
 -- | Trim and show a list of 'Sequence's.
 body :: [Sequence] -> L.ByteString
@@ -151,13 +169,29 @@ trim n (Sequence nm d a cs) = Sequence nm d a (V.take (fromIntegral n) cs)
 -- | Concatenate two sequences. 'Name's have to match.
 concat :: Sequence -> Sequence -> Sequence
 concat (Sequence i d c cs) (Sequence j f k ks)
-  | i /= j     = error $ "concatenate: Sequences do not have equal names: "
-             ++ L.unpack i ++ ", " ++ L.unpack j ++ "."
-  | d /= f     = error $ "concatenate: Sequences do not have equal descriptions: "
-             ++ L.unpack d ++ ", " ++ L.unpack f ++ "."
-  | c /= k     = error $ "concatenate: Sequences do not have equal alphabets: "
-             ++ show c ++ ", " ++ show k ++ "."
-  | otherwise  = Sequence i d c (cs <> ks)
+  | i /= j
+  = error
+    $  "concatenate: Sequences do not have equal names: "
+    ++ L.unpack i
+    ++ ", "
+    ++ L.unpack j
+    ++ "."
+  | d /= f
+  = error
+    $  "concatenate: Sequences do not have equal descriptions: "
+    ++ L.unpack d
+    ++ ", "
+    ++ L.unpack f
+    ++ "."
+  | c /= k
+  = error
+    $  "concatenate: Sequences do not have equal alphabets: "
+    ++ show c
+    ++ ", "
+    ++ show k
+    ++ "."
+  | otherwise
+  = Sequence i d c (cs <> ks)
 
 -- | Concatenate a list of sequences, see 'concat'.
 concatSequences :: [[Sequence]] -> [Sequence]
@@ -179,5 +213,4 @@ filterStandard = filter (\s -> anyStandard (alphabet s) s)
 
 -- Are all characters IUPAC characters?
 anyStandard :: A.Alphabet -> Sequence -> Bool
-anyStandard a s = V.any (A.isStd a) cs
-  where cs = characters s
+anyStandard a s = V.any (A.isStd a) cs where cs = characters s

@@ -12,7 +12,9 @@ Creation date: Fri Jan 18 09:59:57 2019.
 -}
 
 module ELynx.Export.Sequence.FastaSpec
-  (spec) where
+  ( spec
+  )
+where
 
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Export.Sequence.Fasta
@@ -23,10 +25,14 @@ import           Test.Hspec
 
 spec :: Spec
 spec =
-  describe "sequencesToFasta" $
-    it "should create a fasta bytestring that, when parsed again, is the original sequence" $ do
-    ss <- parseFileWith (fasta DNAI) fastaNucleotideIUPACFN
-    let f   = sequencesToFasta ss
-        ss' = parseByteStringWith
-          "Fasta byte string created from sequence object" (fasta DNAI) f
-    ss `shouldBe` ss'
+  describe "sequencesToFasta"
+    $ it
+        "should create a fasta bytestring that, when parsed again, is the original sequence"
+    $ do
+        ss <- parseFileWith (fasta DNAI) fastaNucleotideIUPACFN
+        let f   = sequencesToFasta ss
+            ss' = parseByteStringWith
+              "Fasta byte string created from sequence object"
+              (fasta DNAI)
+              f
+        ss `shouldBe` ss'

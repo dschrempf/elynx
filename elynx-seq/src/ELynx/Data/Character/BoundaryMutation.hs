@@ -35,10 +35,11 @@ module ELynx.Data.Character.BoundaryMutation
   , stateSpace
   , stateSpaceSize
   , neighbors
-  ) where
+  )
+where
 
-import qualified Data.ByteString.Lazy.Char8      as L
-import           Numeric.SpecFunctions           (choose)
+import qualified Data.ByteString.Lazy.Char8    as L
+import           Numeric.SpecFunctions          ( choose )
 
 import           ELynx.Data.Character.Nucleotide
 import           ELynx.Tools.Misc
@@ -77,15 +78,18 @@ data State = Bnd { bndN :: PopulationSize     -- | Population size.
 
 -- | L.ByteString representation of 'State'; without surrounding brackets.
 showCounts :: State -> L.ByteString
-showCounts (Bnd n a) = L.intersperse ',' $ L.concat $ map (L.pack . toCounts) allValues
-  where toCounts b
-          | a == b    = show n
-          | otherwise = "0"
-showCounts (Ply n i a b) = L.intersperse ',' $ L.concat $ map (L.pack . toCounts) allValues
-  where toCounts c
-          | c == a    = show i
-          | c == b    = show (n-i)
-          | otherwise = "0"
+showCounts (Bnd n a) = L.intersperse ',' $ L.concat $ map (L.pack . toCounts)
+                                                          allValues
+ where
+  toCounts b | a == b    = show n
+             | otherwise = "0"
+showCounts (Ply n i a b) = L.intersperse ',' $ L.concat $ map
+  (L.pack . toCounts)
+  allValues
+ where
+  toCounts c | c == a    = show i
+             | c == b    = show (n - i)
+             | otherwise = "0"
 
 showState :: State -> L.ByteString
 showState s = L.singleton '(' <> showCounts s <> L.singleton ')'
@@ -100,22 +104,22 @@ showState s = L.singleton '(' <> showCounts s <> L.singleton ')'
 -- a polymorphic state with lower allele count, this would move some polymorphic
 -- states closer to their respective boundaries),
 instance Ord State where
-  Bnd {} <= Ply {}            = True
-  Ply {} <= Bnd {}            = False
-  s@(Bnd n a) <= t@(Bnd m b)
-    | s == t                  = True
-    | n /= m                  = n <= m
-    | otherwise               = a <= b
-  s@(Ply n i a b) <= t@(Ply m j c d)
-    | s == t                  = True
-    | n /= m                  = n <= m
-    | a < c                   = True
-    | a > c                   = False
-    -- We can be sure that a  = c now.
-    | b < d                   = True
-    | b > d                   = False
-    -- Now we can be sure that both nucleotides are the same.
-    | otherwise               = i <= j
+  Bnd{} <= Ply{} = True
+  Ply{} <= Bnd{} = False
+  s@(Bnd n a) <= t@(Bnd m b) | s == t    = True
+                             | n /= m    = n <= m
+                             | otherwise = a <= b
+  s@(Ply n i a b) <= t@(Ply m j c d) | s == t    = True
+                                     | n /= m    = n <= m
+                                     | a < c     = True
+                                     | a > c     = False
+                                     |
+-- We can be sure that a  = c now.
+                                       b < d     = True
+                                     | b > d     = False
+                                     |
+-- Now we can be sure that both nucleotides are the same.
+                                       otherwise = i <= j
 
 -- | Fixed population size when converting a 'State' to or from a number. In
 -- this case, a fixed population size is necessary so that @toEnum . fromEnum ==
@@ -133,29 +137,39 @@ setPopulationSize n s = if valid s' then Just s' else Nothing
 
 -- | See 'setPopulationSize'. Does not check if resulting 'State' is valid.
 unsafeSetPopulationSize :: Int -> State -> State
-unsafeSetPopulationSize n (Bnd _ s)     = Bnd n s
+unsafeSetPopulationSize n (Bnd _ s    ) = Bnd n s
 unsafeSetPopulationSize n (Ply _ i a b) = Ply n i a b
 
 -- | For a given population size 'PopulationSize', convert a number 'Int' to 'State'.
 fromIndexWith :: PopulationSize -> Int -> State
 fromIndexWith n i
-  | i >= stateSpaceSize n = error $
-    "Index " ++ show i ++ "out of bounds when population size is " ++ show n ++ "."
-  | i < nAlleles = Bnd n (toEnum i)
-  | otherwise = Ply n (i' - j + 1) x k
-  where i' = i - nAlleles
-        l = [ (enumCombination a b * (n-1), a, b)
-            | a <- [minBound .. pred maxBound]
-            , b <- [succ a ..]]
-        (j, x, k) = last $ takeWhile (\(e, _, _) -> e <= i') l
+  | i >= stateSpaceSize n
+  = error
+    $  "Index "
+    ++ show i
+    ++ "out of bounds when population size is "
+    ++ show n
+    ++ "."
+  | i < nAlleles
+  = Bnd n (toEnum i)
+  | otherwise
+  = Ply n (i' - j + 1) x k
+ where
+  i' = i - nAlleles
+  l =
+    [ (enumCombination a b * (n - 1), a, b)
+    | a <- [minBound .. pred maxBound]
+    , b <- [succ a ..]
+    ]
+  (j, x, k) = last $ takeWhile (\(e, _, _) -> e <= i') l
 
 -- | Convert 'State' to a number 'Int' for the given population size 'PopulationSize'.
 -- Back conversion can be done with 'fromIndexWith', with the same population size.
 toIndex :: State -> Int
-toIndex (Bnd _ a)     = fromEnum a
+toIndex (Bnd _ a    ) = fromEnum a
 -- We also have to shift the enumeration value by the number of boundary
 -- states, which is 'nAlleles'.
-toIndex (Ply n i a b) = nAlleles + enumCombination a b * (n-1) + i-1
+toIndex (Ply n i a b) = nAlleles + enumCombination a b * (n - 1) + i - 1
 
 -- | Enumeration only works when the population size is 'nFixed'. Only then,
 -- @toEnum . fromEnum == id@ can be guaranteed. This is because @toEnum ::
@@ -183,18 +197,20 @@ instance Enum State where
 --  AT
 -- @
 countCombinationsUpToAllele :: Allele -> Int
-countCombinationsUpToAllele a = round $ nAlleles `choose` 2 - (nAlleles - fromEnum a) `choose` 2
+countCombinationsUpToAllele a =
+  round $ nAlleles `choose` 2 - (nAlleles - fromEnum a) `choose` 2
 
 -- See 'countCombinationsUpToAllele'. The @-1@ pops up because we start counting
 -- from 0. For example, the enumeration value of @GT@ (with @fromEnum G = k = 2@
 -- and @fromEnum T = 3@) is then @enumCombinationsUpToK 2 + (3-2)@.
 enumCombination :: Allele -> Allele -> Int
-enumCombination a b = countCombinationsUpToAllele a - 1 + (fromEnum b - fromEnum a)
+enumCombination a b =
+  countCombinationsUpToAllele a - 1 + (fromEnum b - fromEnum a)
 
 -- | A fixed population size 'nFixed' is assumed.
 instance Bounded State where
   minBound = Bnd nFixed minBound
-  maxBound = Ply nFixed (nFixed-1) (pred maxBound) maxBound
+  maxBound = Ply nFixed (nFixed - 1) (pred maxBound) maxBound
 
 -- -- I am not sure if I should remove the 'Character' instance because writing
 -- -- Fasta files with boundary mutation model states is not really promising
@@ -211,21 +227,19 @@ instance Bounded State where
 --   isGapOrUnknown _ = error "Not implemented."
 
 valid :: State -> Bool
-valid (Bnd n _)
-  | n <= 1    = False
-  | otherwise = True
-valid (Ply n i a b)
-  | n <= 1    = False
-  | a >= b    = False
-  | i <= 0    = False
-  | i >= n    = False
-  | otherwise = True
+valid (Bnd n _) | n <= 1    = False
+                | otherwise = True
+valid (Ply n i a b) | n <= 1    = False
+                    | a >= b    = False
+                    | i <= 0    = False
+                    | i >= n    = False
+                    | otherwise = True
 
 filterValidStates :: [State] -> [State]
 filterValidStates = filter valid
 
 getPopulationSize :: State -> PopulationSize
-getPopulationSize (Bnd n _)     = n
+getPopulationSize (Bnd n _    ) = n
 getPopulationSize (Ply n _ _ _) = n
 
 -- CCC: This function is a not very efficient. A better would be something like:
@@ -248,8 +262,7 @@ stateSpace n = map (fromIndexWith n) [0 .. stateSpaceSize n - 1]
 -- | The state space of the boundary mutation model for four alleles and a
 -- population size N is 4 + 6*(N-1).
 stateSpaceSize :: PopulationSize -> Int
-stateSpaceSize n = k + k*(k-1) `div` 2 * (n-1)
-  where k = nAlleles
+stateSpaceSize n = k + k * (k - 1) `div` 2 * (n - 1) where k = nAlleles
 
 -- -- This is a very convenient version of toIndex, but can we always guarantee
 -- -- that the state space is sorted the same way?
@@ -269,15 +282,14 @@ neighbors s t = s `elem` getNeighbors t
 
 getNeighbors :: State -> [State]
 getNeighbors (Bnd n a) = filterValidStates allNeighbors
-  where allNeighbors = [ Ply n (n-1) a b |
-                         b <- [minBound .. maxBound] :: [Allele] ]
-                       ++
-                       [ Ply n 1 b a |
-                         b <- [minBound .. maxBound] :: [Allele] ]
-getNeighbors (Ply n i a b)
+ where
+  allNeighbors =
+    [ Ply n (n - 1) a b | b <- [minBound .. maxBound] :: [Allele] ]
+      ++ [ Ply n 1 b a | b <- [minBound .. maxBound] :: [Allele] ]
+getNeighbors (Ply n i a b) |
   -- Careful when the population size is two, because then each polymorphic
   -- states has two boundary states as neighbors.
-  | i == 1 && n == 2  = Bnd n a : [Bnd n b]
-  | i == 1            = Bnd n b : [Ply n 2 a b]
-  | i == (n-1)        = Bnd n a : [Ply n (n-2) a b]
-  | otherwise         = Ply n (i+1) a b : [Ply n (i-1) a b]
+                             i == 1 && n == 2 = Bnd n a : [Bnd n b]
+                           | i == 1           = Bnd n b : [Ply n 2 a b]
+                           | i == (n - 1)     = Bnd n a : [Ply n (n - 2) a b]
+                           | otherwise = Ply n (i + 1) a b : [Ply n (i - 1) a b]

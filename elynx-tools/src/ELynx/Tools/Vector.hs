@@ -14,17 +14,17 @@ Tools for vectors from 'Data.Vector.Generic'.
 -}
 
 module ELynx.Tools.Vector
-  (
-    sumVec
+  ( sumVec
   , normalizeSumVec
   , uniformVec
   , meanVec
   , chop
   , randomInsert
-  ) where
+  )
+where
 
 import           Control.Monad.Primitive
-import qualified Data.Vector.Generic     as V
+import qualified Data.Vector.Generic           as V
 import           System.Random.MWC
 
 -- | Sum of elements.
@@ -34,8 +34,9 @@ sumVec = V.foldl' (+) 0
 -- | Normalize a vector such that elements sum to a given value.
 normalizeSumVec :: (Fractional a, V.Vector v a) => a -> v a -> v a
 normalizeSumVec c v = V.map (* c') v
-  where s = sumVec v
-        c' = c/s
+ where
+  s  = sumVec v
+  c' = c / s
 
 -- | A uniform vector of given length.
 uniformVec :: (Fractional a, V.Vector v a) => Int -> v a
@@ -49,10 +50,11 @@ meanVec v = sumVec v / fromIntegral (V.length v)
 -- length, it is dropped.
 chop :: V.Vector v a => Int -> v a -> [v a]
 chop n xs | V.length xs < n = []
-          | otherwise     = V.take n xs : chop n (V.drop n xs)
+          | otherwise       = V.take n xs : chop n (V.drop n xs)
 
 -- | Insert element into random position of vector.
-randomInsert :: (PrimMonad m, V.Vector v a) => a -> v a -> Gen (PrimState m) -> m (v a)
+randomInsert
+  :: (PrimMonad m, V.Vector v a) => a -> v a -> Gen (PrimState m) -> m (v a)
 randomInsert e v g = do
   let l = V.length v
   i <- uniformR (0, l) g

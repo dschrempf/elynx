@@ -27,11 +27,14 @@ module ELynx.Distribution.BirthDeathCritical
   , cumulative
   , density
   , quantile
-  ) where
+  )
+where
 
-import           Data.Data                (Data, Typeable)
-import           GHC.Generics             (Generic)
-import qualified Statistics.Distribution  as D
+import           Data.Data                      ( Data
+                                                , Typeable
+                                                )
+import           GHC.Generics                   ( Generic )
+import qualified Statistics.Distribution       as D
 
 import           ELynx.Distribution.Types
 
@@ -43,14 +46,13 @@ data BirthDeathCriticalDistribution = BDCD
   } deriving (Eq, Typeable, Data, Generic)
 
 instance D.Distribution BirthDeathCriticalDistribution where
-    cumulative = cumulative
+  cumulative = cumulative
 
 -- | Cumulative distribution function section 2.1.2, second formula.
 cumulative :: BirthDeathCriticalDistribution -> Time -> Double
-cumulative (BDCD t l) x
-  | x <= 0    = 0
-  | x >  t    = 1
-  | otherwise = x / (1.0 + l * x) * (1.0 + l * t) / t
+cumulative (BDCD t l) x | x <= 0    = 0
+                        | x > t     = 1
+                        | otherwise = x / (1.0 + l * x) * (1.0 + l * t) / t
 
 instance D.ContDistr BirthDeathCriticalDistribution where
   density  = density
@@ -58,19 +60,22 @@ instance D.ContDistr BirthDeathCriticalDistribution where
 
 -- | Density function section 2.1.2, first formula.
 density :: BirthDeathCriticalDistribution -> Time -> Double
-density (BDCD t l) x
-  | x < 0     = 0
-  | x > t     = 0
-  | otherwise = (1.0 + l * t) / (t * (1.0 + l * x)**2)
+density (BDCD t l) x | x < 0     = 0
+                     | x > t     = 0
+                     | otherwise = (1.0 + l * t) / (t * (1.0 + l * x) ** 2)
 
 -- | Inverted cumulative probability distribution 'cumulative'. See also
 -- 'D.ContDistr'.
 quantile :: BirthDeathCriticalDistribution -> Double -> Time
 quantile (BDCD t l) p
-  | p >= 0 && p <= 1 = res
-  | otherwise        =
-    error $ "PointProcess.quantile: p must be in [0,1] range. Got: " ++ show p ++ "."
- where res = p * t / (1 + l*t - l*p*t)
+  | p >= 0 && p <= 1
+  = res
+  | otherwise
+  = error
+    $  "PointProcess.quantile: p must be in [0,1] range. Got: "
+    ++ show p
+    ++ "."
+  where res = p * t / (1 + l * t - l * p * t)
 
 instance D.ContGen BirthDeathCriticalDistribution where
   genContVar = D.genContinuous

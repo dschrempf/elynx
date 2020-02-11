@@ -19,19 +19,21 @@ Write FASTA files.
 module ELynx.Export.Sequence.Fasta
   ( sequenceToFasta
   , sequencesToFasta
-  ) where
+  )
+where
 
-import qualified Data.ByteString.Lazy.Char8   as L
+import qualified Data.ByteString.Lazy.Char8    as L
 
 import           ELynx.Data.Sequence.Sequence
 
 fastaHeader :: L.ByteString -> L.ByteString -> L.ByteString
-fastaHeader n d = L.singleton '>' <> n <> if L.null d then L.empty else L.pack " " <> d
+fastaHeader n d =
+  L.singleton '>' <> n <> if L.null d then L.empty else L.pack " " <> d
 
 -- | Convert a 'Sequence' to Fasta format.
 sequenceToFasta :: Sequence -> L.ByteString
-sequenceToFasta s = L.unlines [ fastaHeader (name s) (description s)
-                              , toByteString $ characters s ]
+sequenceToFasta s =
+  L.unlines [fastaHeader (name s) (description s), toByteString $ characters s]
 
 -- | Convert a list 'Sequence's to Fasta format. A newline is added between any
 -- two 'Sequence's.

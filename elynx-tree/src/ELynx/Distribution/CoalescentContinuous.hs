@@ -14,13 +14,15 @@ Creation date: Wed May 16 12:40:45 2018.
 
 module ELynx.Distribution.CoalescentContinuous
   ( coalescentDistributionCont
-  ) where
+  )
+where
 
-import           Numeric.SpecFunctions               (choose)
+import           Numeric.SpecFunctions          ( choose )
 import           Statistics.Distribution.Exponential
 
 -- | Distribution of the next coalescent event for a number of samples @n@. The
 -- time is measured in units of effective number of population size.
-coalescentDistributionCont :: Int -- ^ Sample size.
-                           -> ExponentialDistribution
+coalescentDistributionCont
+  :: Int -- ^ Sample size.
+  -> ExponentialDistribution
 coalescentDistributionCont n = exponential (choose n 2)

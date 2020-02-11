@@ -18,7 +18,8 @@ module ELynx.Data.Sequence.Defaults
   , summaryLength
   , summaryNSequences
   , fieldWidth
-  ) where
+  )
+where
 
 -- | Space reserved for sequence names when printing them.
 nameWidth :: Int

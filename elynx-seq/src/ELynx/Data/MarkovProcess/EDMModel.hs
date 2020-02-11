@@ -13,12 +13,12 @@ Creation date: Tue Mar 19 13:25:55 2019.
 -}
 
 module ELynx.Data.MarkovProcess.EDMModel
-  (
-    EDMComponent
+  ( EDMComponent
   , edmModel
-  ) where
+  )
+where
 
-import qualified Data.Vector.Storable                       as V
+import qualified Data.Vector.Storable          as V
 
 import           ELynx.Data.MarkovProcess.MixtureModel
 import           ELynx.Data.MarkovProcess.RateMatrix
@@ -30,9 +30,9 @@ type EDMComponent = (Weight, V.Vector Double)
 
 -- | Create an EDM model from components and a substitution module construction
 -- manual from stationary distributions.
-edmModel :: [EDMComponent] -> (StationaryDistribution -> SubstitutionModel)
-         -> MixtureModel
-edmModel cs f =
-  MixtureModel n [ Component w (f d)
-                 | (w, d) <- cs ]
+edmModel
+  :: [EDMComponent]
+  -> (StationaryDistribution -> SubstitutionModel)
+  -> MixtureModel
+edmModel cs f = MixtureModel n [ Component w (f d) | (w, d) <- cs ]
   where n = "EDM" ++ show (length cs)

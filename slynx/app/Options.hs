@@ -13,8 +13,8 @@ Creation date: Sat Sep  7 18:55:03 2019.
 -}
 
 module Options
-  ( Arguments (..)
-  , CommandArguments (..)
+  ( Arguments(..)
+  , CommandArguments(..)
   , parseArguments
   , concatenateDescription
   , examineDescription
@@ -23,7 +23,8 @@ module Options
   , simulateDescription
   , subSampleDescription
   , translateDescription
-  ) where
+  )
+where
 
 import           Options.Applicative
 import           Options.Applicative.Help.Pretty
@@ -52,75 +53,79 @@ data CommandArguments =
 -- instance Reproducible CommandArguments where
 --   inFiles (Concatenate a) = inFiles a
 
-concatenateDescription, examineDescription, filterRowsDescription, filterColumnsDescription, simulateDescription, subSampleDescription, translateDescription :: String
-concatenateDescription   = "Concatenate sequences found in input files."
-examineDescription       = "Examine sequences. If data is a multi sequence alignment, additionally analyze columns."
-filterRowsDescription    =  "Filter rows (or sequences) found in input files."
+concatenateDescription, examineDescription, filterRowsDescription, filterColumnsDescription, simulateDescription, subSampleDescription, translateDescription
+  :: String
+concatenateDescription = "Concatenate sequences found in input files."
+examineDescription =
+  "Examine sequences. If data is a multi sequence alignment, additionally analyze columns."
+filterRowsDescription = "Filter rows (or sequences) found in input files."
 filterColumnsDescription = "Filter columns of multi-sequence alignments."
-simulateDescription      = "Simulate multi sequence alignments."
-subSampleDescription     =  "Sub-sample columns from multi sequence alignments."
-translateDescription     =  "Translate from DNA to Protein or DNAX to ProteinX."
+simulateDescription = "Simulate multi sequence alignments."
+subSampleDescription = "Sub-sample columns from multi sequence alignments."
+translateDescription = "Translate from DNA to Protein or DNAX to ProteinX."
 
 concatenateCommand :: Mod CommandFields CommandArguments
-concatenateCommand = command "concatenate" $
-                     info (Concatenate <$> concatenateArguments)
-                     $ progDesc concatenateDescription
+concatenateCommand =
+  command "concatenate" $ info (Concatenate <$> concatenateArguments) $ progDesc
+    concatenateDescription
 
 examineCommand :: Mod CommandFields CommandArguments
-examineCommand = command "examine" $
-                     info (Examine <$> examineArguments)
-                     ( fullDesc
-                       <> progDesc examineDescription )
+examineCommand = command "examine" $ info
+  (Examine <$> examineArguments)
+  (fullDesc <> progDesc examineDescription)
 
 filterRowsCommand :: Mod CommandFields CommandArguments
-filterRowsCommand = command "filter-rows" $
-                     info (FilterRows <$> filterRowsArguments)
-                     $ progDesc filterRowsDescription
+filterRowsCommand =
+  command "filter-rows" $ info (FilterRows <$> filterRowsArguments) $ progDesc
+    filterRowsDescription
 
 filterColumnsCommand :: Mod CommandFields CommandArguments
-filterColumnsCommand = command "filter-columns" $
-                     info (FilterCols <$> filterColsArguments)
-                     $ progDesc filterColumnsDescription
+filterColumnsCommand =
+  command "filter-columns"
+    $ info (FilterCols <$> filterColsArguments)
+    $ progDesc filterColumnsDescription
 
 simulateCommand :: Mod CommandFields CommandArguments
-simulateCommand = command "simulate" $
-                  info (Simulate <$> simulateArguments)
-                  (fullDesc
-                   <> progDesc simulateDescription
-                   <> footerDoc (Just $ pretty simulateFooter) )
+simulateCommand = command "simulate" $ info
+  (Simulate <$> simulateArguments)
+  (fullDesc <> progDesc simulateDescription <> footerDoc
+    (Just $ pretty simulateFooter)
+  )
 
 subSampleCommand :: Mod CommandFields CommandArguments
-subSampleCommand = command "sub-sample" $
-                   info (SubSample <$> subSampleArguments)
-                   ( fullDesc
-                     <> progDesc subSampleDescription
-                     <> footer "Create a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment." )
+subSampleCommand = command "sub-sample" $ info
+  (SubSample <$> subSampleArguments)
+  (  fullDesc
+  <> progDesc subSampleDescription
+  <> footer
+       "Create a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment."
+  )
 
 translateCommand :: Mod CommandFields CommandArguments
-translateCommand = command "translate" $
-                   info (Translate <$> translateArguments)
-                   $ progDesc translateDescription
+translateCommand =
+  command "translate" $ info (Translate <$> translateArguments) $ progDesc
+    translateDescription
 
 commandArguments :: Parser CommandArguments
-commandArguments = hsubparser $
-                   concatenateCommand
-                   <> examineCommand
-                   <> filterRowsCommand
-                   <> filterColumnsCommand
-                   <> simulateCommand
-                   <> subSampleCommand
-                   <> translateCommand
+commandArguments =
+  hsubparser
+    $  concatenateCommand
+    <> examineCommand
+    <> filterRowsCommand
+    <> filterColumnsCommand
+    <> simulateCommand
+    <> subSampleCommand
+    <> translateCommand
 
 parseArguments :: IO (Arguments CommandArguments)
 parseArguments = parseArgumentsWith desc ftr commandArguments
 
 desc :: [String]
-desc = [ "Analyze, and simulate multi sequence alignments." ]
+desc = ["Analyze, and simulate multi sequence alignments."]
 
 ftr :: [String]
-ftr = [ "File formats:" ] ++ fs ++
-      [ "", "Alphabet types:" ] ++ as
-  where
-    toListItem = ("  - " ++)
-    fs = map toListItem ["FASTA"]
-    as = map (toListItem . description) [(minBound :: Alphabet) ..]
+ftr = ["File formats:"] ++ fs ++ ["", "Alphabet types:"] ++ as
+ where
+  toListItem = ("  - " ++)
+  fs         = map toListItem ["FASTA"]
+  as         = map (toListItem . description) [(minBound :: Alphabet) ..]

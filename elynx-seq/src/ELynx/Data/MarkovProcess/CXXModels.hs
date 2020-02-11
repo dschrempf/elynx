@@ -18,15 +18,17 @@ XXX: For now, I only provide Poisson exchangeabilities.
 -}
 
 module ELynx.Data.MarkovProcess.CXXModels
-  (
-    cxx
-  ) where
+  ( cxx
+  )
+where
 
 import           ELynx.Data.MarkovProcess.AminoAcid
 import           ELynx.Data.MarkovProcess.CXXModelsData
-import qualified ELynx.Data.MarkovProcess.MixtureModel      as M
+import qualified ELynx.Data.MarkovProcess.MixtureModel
+                                               as M
 import           ELynx.Data.MarkovProcess.RateMatrix
-import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
+import qualified ELynx.Data.MarkovProcess.SubstitutionModel
+                                               as S
 
 -- | Create CXX model with given number of components and probably with custom
 -- weights.
@@ -43,7 +45,7 @@ cxx 30 Nothing   = Just c30
 cxx 40 Nothing   = Just c40
 cxx 50 Nothing   = Just c50
 cxx 60 Nothing   = Just c60
-cxx _ _          = Nothing
+cxx _  _         = Nothing
 
 -- | C10 model.
 c10 :: M.MixtureModel
@@ -113,16 +115,22 @@ componentName nComps comp = cxxName nComps ++ "; component " ++ show comp
 
 -- Keep in mind, that when using different exchangeabilities, I have to decide
 -- about global or local normalization.
-cxxSubstitutionModelFromStatDist :: Int -> Int -> StationaryDistribution -> S.SubstitutionModel
+cxxSubstitutionModelFromStatDist
+  :: Int -> Int -> StationaryDistribution -> S.SubstitutionModel
 cxxSubstitutionModelFromStatDist nComps comp = poissonCustom (Just name)
   where name = componentName nComps comp
 
-cxxSubstitutionModelsFromStatDists :: [StationaryDistribution] -> [S.SubstitutionModel]
-cxxSubstitutionModelsFromStatDists ds = zipWith (cxxSubstitutionModelFromStatDist nComp) [1..] ds
+cxxSubstitutionModelsFromStatDists
+  :: [StationaryDistribution] -> [S.SubstitutionModel]
+cxxSubstitutionModelsFromStatDists ds = zipWith
+  (cxxSubstitutionModelFromStatDist nComp)
+  [1 ..]
+  ds
   where nComp = length ds
 
-cxxFromStatDistsAndWeights :: [M.Weight] -> [StationaryDistribution] -> M.MixtureModel
+cxxFromStatDistsAndWeights
+  :: [M.Weight] -> [StationaryDistribution] -> M.MixtureModel
 cxxFromStatDistsAndWeights ws ds = M.MixtureModel (cxxName nComps) comps
-  where
-    nComps = length ds
-    comps = zipWith M.Component ws (cxxSubstitutionModelsFromStatDists ds)
+ where
+  nComps = length ds
+  comps  = zipWith M.Component ws (cxxSubstitutionModelsFromStatDists ds)

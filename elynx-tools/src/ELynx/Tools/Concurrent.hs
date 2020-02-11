@@ -22,7 +22,8 @@ module ELynx.Tools.Concurrent
   , parComp
   , getChunks
   , parMapChunk
-  ) where
+  )
+where
 
 import           Control.Concurrent
 import           Control.Concurrent.Async
@@ -30,7 +31,7 @@ import           Control.Monad
 -- import qualified Control.Monad.Parallel      as P
 import           Control.Monad.Primitive
 import           Control.Parallel.Strategies
-import qualified Data.Vector                 as V
+import qualified Data.Vector                   as V
 import           Data.Word
 import           System.Random.MWC
 
@@ -45,10 +46,10 @@ getNGen n ms = do
 -- | Split a generator.
 splitGen :: PrimMonad m => Int -> Gen (PrimState m) -> m [Gen (PrimState m)]
 splitGen n gen
-  | n <= 0    = return []
+  | n <= 0 = return []
   | otherwise = do
-      seeds :: [V.Vector Word32] <- replicateM n $ uniformVector gen 256
-      mapM initialize seeds
+    seeds :: [V.Vector Word32] <- replicateM n $ uniformVector gen 256
+    mapM initialize seeds
 
 -- -- XXX: This just doesn't work... The only thing I found:
 -- -- https://stackoverflow.com/a/16250010.
@@ -63,7 +64,7 @@ splitGen n gen
 -- | Perform random calculation in parallel. Does only work with 'IO' and the moment.
 parComp :: Int -> (Int -> GenIO -> IO b) -> GenIO -> IO [b]
 parComp num fun gen = do
-  ncap   <- getNumCapabilities
+  ncap <- getNumCapabilities
   let chunks = getChunks ncap num
   gs <- splitGen ncap gen
   mapConcurrently (uncurry fun) (zip chunks gs)
@@ -73,9 +74,10 @@ parComp num fun gen = do
 -- to the number of calculations.
 getChunks :: Int -> Int -> [Int]
 getChunks c n = ns
-  where n'  = n `div` c
-        r = n `mod` c
-        ns = replicate r (n'+1) ++ replicate (c - r) n'
+ where
+  n' = n `div` c
+  r  = n `mod` c
+  ns = replicate r (n' + 1) ++ replicate (c - r) n'
 
 -- XXX: This should actually be in a module called Parallel, not Concurrent.
 -- | Parallel map with given chunk size.

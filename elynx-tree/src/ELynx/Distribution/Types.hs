@@ -16,7 +16,8 @@ Creation date: Wed May 16 12:21:57 2018.
 module ELynx.Distribution.Types
   ( Time
   , Rate
-  ) where
+  )
+where
 
 -- | Branch lengths are measured in time.
 type Time = Double

@@ -13,17 +13,17 @@ Creation date: Tue Feb 11 15:56:01 2020.
 -}
 
 module ELynx.Data.Tree.SubSample
-        ( subSample
-        , nSubSamples
-        )
+  ( subSample
+  , nSubSamples
+  )
 where
 
 import           Control.Monad                  ( replicateM )
-import           Data.Tree
 import           Control.Monad.Primitive
-import           System.Random.MWC
 import qualified Data.Sequence                 as Seq
 import qualified Data.Set                      as Set
+import           Data.Tree
+import           System.Random.MWC
 
 import           ELynx.Data.Tree.Tree           ( subTree )
 import           ELynx.Tools.Random
@@ -34,30 +34,28 @@ import           ELynx.Tools.Random
 -- sub-sampling as well as lookup are fast and so that these data structures do
 -- not have to be recomputed when many sub-samples are requested.
 subSample
-        :: (PrimMonad m, Ord a)
-        => Seq.Seq a
-        -> Int
-        -> Tree a
-        -> Gen (PrimState m)
-        -> m (Maybe (Tree a))
+  :: (PrimMonad m, Ord a)
+  => Seq.Seq a
+  -> Int
+  -> Tree a
+  -> Gen (PrimState m)
+  -> m (Maybe (Tree a))
 subSample lvs n tree g
-        | Seq.length lvs < n
-        = error
-                "Given list of leaves is shorter than requested number of leaves."
-        | otherwise
-        = do
-                sampledLs <- sample lvs n g
-                let ls = Set.fromList sampledLs
-                return $ subTree (`Set.member` ls) tree
+  | Seq.length lvs < n = error
+    "Given list of leaves is shorter than requested number of leaves."
+  | otherwise = do
+    sampledLs <- sample lvs n g
+    let ls = Set.fromList sampledLs
+    return $ subTree (`Set.member` ls) tree
 
 -- | See 'subSample', but @n@ times.
 nSubSamples
-        :: (PrimMonad m, Ord a)
-        => Int
-        -> Seq.Seq a
-        -> Int
-        -> Tree a
-        -> Gen (PrimState m)
-        -> m [Maybe (Tree a)]
+  :: (PrimMonad m, Ord a)
+  => Int
+  -> Seq.Seq a
+  -> Int
+  -> Tree a
+  -> Gen (PrimState m)
+  -> m [Maybe (Tree a)]
 nSubSamples nS lvs nL tree g = replicateM nS $ subSample lvs nL tree g
 

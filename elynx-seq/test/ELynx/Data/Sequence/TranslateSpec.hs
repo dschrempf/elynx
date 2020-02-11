@@ -12,7 +12,9 @@ Creation date: Fri Oct  5 14:25:42 2018.
 -}
 
 module ELynx.Data.Sequence.TranslateSpec
-  (spec) where
+  ( spec
+  )
+where
 
 import           Test.Hspec
 
@@ -25,8 +27,7 @@ import           Files
 
 spec :: Spec
 spec =
-  describe "translateDNAX" $
-    it "correctly translates a test sequence" $ do
+  describe "translateDNAX" $ it "correctly translates a test sequence" $ do
     ss  <- parseFileWith (fasta DNAX) fastaTranslateDNAFN
     ss' <- parseFileWith (fasta ProteinS) fastaTranslateProteinFN
     map (translateSeq VertebrateMitochondrial 0) ss `shouldBe` ss'

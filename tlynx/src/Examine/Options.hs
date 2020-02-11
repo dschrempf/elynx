@@ -13,9 +13,10 @@ Creation date: Thu Aug 29 08:16:45 2019.
 -}
 
 module Examine.Options
-  ( ExamineArguments (..)
+  ( ExamineArguments(..)
   , examineArguments
-  ) where
+  )
+where
 
 import           Options.Applicative
 
@@ -26,17 +27,12 @@ data ExamineArguments = ExamineArguments
 
 -- | Command line parser.
 examineArguments :: Parser ExamineArguments
-examineArguments = ExamineArguments <$>
-  optional inFile
-  <*> newickIqTree
+examineArguments = ExamineArguments <$> optional inFile <*> newickIqTree
 
 inFile :: Parser FilePath
-inFile = strArgument $
-  metavar "INPUT-FILE" <>
-  help "Read trees from INPUT-FILE"
+inFile =
+  strArgument $ metavar "INPUT-FILE" <> help "Read trees from INPUT-FILE"
 
 newickIqTree :: Parser Bool
-newickIqTree = switch $
-  long "newick-iqtree"
-  <> short 'i'
-  <> help "Use IQ-TREE Newick format (internal node labels are branch support values)"
+newickIqTree = switch $ long "newick-iqtree" <> short 'i' <> help
+  "Use IQ-TREE Newick format (internal node labels are branch support values)"

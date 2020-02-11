@@ -15,26 +15,28 @@ See header of 'ELynx.Data.Alphabet.Alphabet'.
 -}
 
 module ELynx.Data.Character.Character
-  (
-    Character (..)
+  ( Character(..)
   , fromChar
   , toChar
   , fromString
   , toString
-  , CharacterX (..)
+  , CharacterX(..)
   , isGap
-  , CharacterI (..)
+  , CharacterI(..)
   , isUnknown
   , isIUPAC
   , isStandard
   , convert
-  ) where
+  )
+where
 
-import qualified Data.Set                 as S
-import           Data.Vector.Unboxed.Base (Unbox)
-import           Data.Word8               (Word8)
+import qualified Data.Set                      as S
+import           Data.Vector.Unboxed.Base       ( Unbox )
+import           Data.Word8                     ( Word8 )
 
-import           ELynx.Tools.ByteString   (c2w, w2c)
+import           ELynx.Tools.ByteString         ( c2w
+                                                , w2c
+                                                )
 
 
 -- XXX: Remove name clash with ELynx.Data.Alphabet.Alphabet.Character?

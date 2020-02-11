@@ -19,16 +19,19 @@ To be imported qualified.
 -}
 
 module ELynx.Data.MarkovProcess.PhyloModel
-  ( PhyloModel (..)
+  ( PhyloModel(..)
   , getAlphabet
   , summarize
-  ) where
+  )
+where
 
-import qualified Data.ByteString.Lazy.Char8                 as L
+import qualified Data.ByteString.Lazy.Char8    as L
 
 import           ELynx.Data.Alphabet.Alphabet
-import qualified ELynx.Data.MarkovProcess.MixtureModel      as M
-import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
+import qualified ELynx.Data.MarkovProcess.MixtureModel
+                                               as M
+import qualified ELynx.Data.MarkovProcess.SubstitutionModel
+                                               as S
 
 -- | A phylogenetic model is a mixture model or a substitution model. More
 -- complicated models may be added.
@@ -37,10 +40,10 @@ data PhyloModel = MixtureModel M.MixtureModel | SubstitutionModel S.Substitution
 
 -- | Extract code from phylogenetic model.
 getAlphabet :: PhyloModel -> Alphabet
-getAlphabet (MixtureModel mm)      = M.getAlphabet mm
+getAlphabet (MixtureModel      mm) = M.getAlphabet mm
 getAlphabet (SubstitutionModel sm) = S.alphabet sm
 
 -- | Summarize a phylogenetic model; lines to be printed to screen or log.
 summarize :: PhyloModel -> [L.ByteString]
-summarize (MixtureModel mm)      = M.summarize mm
+summarize (MixtureModel      mm) = M.summarize mm
 summarize (SubstitutionModel sm) = S.summarize sm

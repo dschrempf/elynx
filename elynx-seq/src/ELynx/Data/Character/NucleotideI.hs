@@ -48,14 +48,18 @@ N       any          A  C  G  T         N
 -}
 
 module ELynx.Data.Character.NucleotideI
-  ( NucleotideI (..)
-  ) where
+  ( NucleotideI(..)
+  )
+where
 
 import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
-import qualified ELynx.Data.Character.Character as C
-import           ELynx.Tools.ByteString         (c2w, w2c)
+import qualified ELynx.Data.Character.Character
+                                               as C
+import           ELynx.Tools.ByteString         ( c2w
+                                                , w2c
+                                                )
 
 -- | NucleotideIs.
 data NucleotideI = A | C | G | T
@@ -89,25 +93,25 @@ toWord Gap = c2w '-'
 
 fromWord :: Word8 -> NucleotideI
 fromWord w = case w2c w of
-               'A' ->  A
-               'C' ->  C
-               'G' ->  G
-               'T' ->  T
-               'U' ->  U
-               'W' ->  W
-               'S' ->  S
-               'M' ->  M
-               'K' ->  K
-               'R' ->  R
-               'Y' ->  Y
-               'B' ->  B
-               'D' ->  D
-               'H' ->  H
-               'V' ->  V
-               'N' ->  N
-               '-' ->  Gap
-               '.' ->  Gap
-               _   -> error "fromWord: Cannot convert to NucleotideI."
+  'A' -> A
+  'C' -> C
+  'G' -> G
+  'T' -> T
+  'U' -> U
+  'W' -> W
+  'S' -> S
+  'M' -> M
+  'K' -> K
+  'R' -> R
+  'Y' -> Y
+  'B' -> B
+  'D' -> D
+  'H' -> H
+  'V' -> V
+  'N' -> N
+  '-' -> Gap
+  '.' -> Gap
+  _   -> error "fromWord: Cannot convert to NucleotideI."
 
 derivingUnbox "NucleotideI"
     [t| NucleotideI -> Word8 |]
@@ -138,7 +142,7 @@ toStandard N   = [A, C, G, T]
 toStandard Gap = []
 
 instance C.CharacterX NucleotideI where
-  gap        = Gap
+  gap = Gap
 
 instance C.CharacterI NucleotideI where
   unknown    = N

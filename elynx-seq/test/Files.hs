@@ -22,7 +22,8 @@ module Files
   , componentsFilePhylobayes
   , fastaTranslateDNAFN
   , fastaTranslateProteinFN
-  ) where
+  )
+where
 
 dataDir :: FilePath
 dataDir = "data/"
@@ -40,7 +41,8 @@ fastaDifferentLengthFN :: FilePath
 fastaDifferentLengthFN = dataDir ++ "NucleotideDifferentLength.fasta"
 
 fastaDifferentLengthTrimmedFN :: FilePath
-fastaDifferentLengthTrimmedFN = dataDir ++ "NucleotideDifferentLengthTrimmed.fasta"
+fastaDifferentLengthTrimmedFN =
+  dataDir ++ "NucleotideDifferentLengthTrimmed.fasta"
 
 fastaErroneousFN :: FilePath
 fastaErroneousFN = dataDir ++ "Erroneous.fasta"
@@ -52,4 +54,5 @@ fastaTranslateDNAFN :: FilePath
 fastaTranslateDNAFN = dataDir ++ "TranslateMitochondrialVertebrateDNA.fasta"
 
 fastaTranslateProteinFN :: FilePath
-fastaTranslateProteinFN = dataDir ++ "TranslateMitochondrialVertebrateProtein.fasta"
+fastaTranslateProteinFN =
+  dataDir ++ "TranslateMitochondrialVertebrateProtein.fasta"

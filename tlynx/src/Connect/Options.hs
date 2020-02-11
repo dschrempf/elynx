@@ -13,9 +13,10 @@ Creation date: Thu Sep 19 15:02:21 2019.
 -}
 
 module Connect.Options
-  ( ConnectArguments (..)
+  ( ConnectArguments(..)
   , connectArguments
-  ) where
+  )
+where
 
 import           Options.Applicative
 
@@ -28,31 +29,26 @@ data ConnectArguments = ConnectArguments
 
 -- | Parse arguments of connect command.
 connectArguments :: Parser ConnectArguments
-connectArguments = ConnectArguments
-  <$> newickIqTree
-  <*> constraintsFile
-  <*> fileA
-  <*> fileB
+connectArguments =
+  ConnectArguments <$> newickIqTree <*> constraintsFile <*> fileA <*> fileB
 
 newickIqTree :: Parser Bool
-newickIqTree = switch $
-  long "newick-iqtree"
-  <> short 'i'
-  <> help "Use IQ-TREE Newick format (internal node labels are branch support values)"
+newickIqTree = switch $ long "newick-iqtree" <> short 'i' <> help
+  "Use IQ-TREE Newick format (internal node labels are branch support values)"
 
 constraintsFile :: Parser (Maybe FilePath)
-constraintsFile = optional $ strOption $
-  metavar "CONSTRAINTS"
-  <> short 'c'
-  <> long "contraints"
-  <> help "File containing one or more Newick trees to be used as constraints"
+constraintsFile =
+  optional
+    $  strOption
+    $  metavar "CONSTRAINTS"
+    <> short 'c'
+    <> long "contraints"
+    <> help "File containing one or more Newick trees to be used as constraints"
 
 fileA :: Parser FilePath
-fileA = strArgument $
-  metavar "TREE-FILE-A"
-  <> help "File containing the first Newick tree"
+fileA = strArgument $ metavar "TREE-FILE-A" <> help
+  "File containing the first Newick tree"
 
 fileB :: Parser FilePath
-fileB = strArgument $
-  metavar "TREE-FILE-B"
-  <> help "File containing the second Newick tree"
+fileB = strArgument $ metavar "TREE-FILE-B" <> help
+  "File containing the second Newick tree"

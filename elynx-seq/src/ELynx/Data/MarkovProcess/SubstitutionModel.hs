@@ -35,13 +35,15 @@ module ELynx.Data.MarkovProcess.SubstitutionModel
   , appendName
   -- * Output
   , summarize
-  ) where
+  )
+where
 
-import qualified Data.ByteString.Lazy.Char8          as L
-import qualified Numeric.LinearAlgebra               as LinAlg
+import qualified Data.ByteString.Lazy.Char8    as L
+import qualified Numeric.LinearAlgebra         as LinAlg
 
 import           ELynx.Data.Alphabet.Alphabet
-import qualified ELynx.Data.MarkovProcess.RateMatrix as R
+import qualified ELynx.Data.MarkovProcess.RateMatrix
+                                               as R
 import           ELynx.Tools.Definitions
 import           ELynx.Tools.LinearAlgebra
 import           ELynx.Tools.Numeric
@@ -68,52 +70,70 @@ data SubstitutionModel = SubstitutionModel
 
 -- | Calculate rate matrix from substitution model.
 rateMatrix :: SubstitutionModel -> R.RateMatrix
-rateMatrix sm = R.fromExchangeabilityMatrix (exchangeabilityMatrix sm) (stationaryDistribution sm)
+rateMatrix sm = R.fromExchangeabilityMatrix (exchangeabilityMatrix sm)
+                                            (stationaryDistribution sm)
 
 -- | Get scale of substitution model.
 totalRate :: SubstitutionModel -> Double
 totalRate sm = R.totalRate (stationaryDistribution sm) (rateMatrix sm)
 
 -- | Create normalized 'SubstitutionModel'. See 'normalize'.
-substitutionModel :: Alphabet -> Name -> Params
-                  -> R.StationaryDistribution -> R.ExchangeabilityMatrix
-                  -> SubstitutionModel
+substitutionModel
+  :: Alphabet
+  -> Name
+  -> Params
+  -> R.StationaryDistribution
+  -> R.ExchangeabilityMatrix
+  -> SubstitutionModel
 substitutionModel c n ps d e = normalize $ SubstitutionModel c n ps d e
 
 -- | Create UNNORMALIZED 'SubstitutionModel'. See 'substitutionModel'.
-unnormalized :: Alphabet -> Name -> Params
-                  -> R.StationaryDistribution -> R.ExchangeabilityMatrix
-                  -> SubstitutionModel
+unnormalized
+  :: Alphabet
+  -> Name
+  -> Params
+  -> R.StationaryDistribution
+  -> R.ExchangeabilityMatrix
+  -> SubstitutionModel
 unnormalized = SubstitutionModel
 
 -- | Scale the rate of a substitution model by given factor.
 scale :: Double -> SubstitutionModel -> SubstitutionModel
-scale r sm = sm {exchangeabilityMatrix = em'}
+scale r sm = sm { exchangeabilityMatrix = em' }
   where em' = LinAlg.scale r $ exchangeabilityMatrix sm
 
 -- | Normalize a substitution model, so that, on average, one substitution
 -- happens per unit time.
 normalize :: SubstitutionModel -> SubstitutionModel
-normalize sm = scale (1.0/r) sm
-  where r = totalRate sm
+normalize sm = scale (1.0 / r) sm where r = totalRate sm
 
 -- | Abbend to name.
 appendName :: Name -> SubstitutionModel -> SubstitutionModel
-appendName n sm = sm {name = n'}
-  where n' = name sm <> n
+appendName n sm = sm { name = n' } where n' = name sm <> n
 
 -- | Summarize a substitution model; lines to be printed to screen or log.
 summarize :: SubstitutionModel -> [L.ByteString]
-summarize sm = map L.pack $
-  (show (alphabet sm) ++ " substitution model: " ++ name sm ++ ".") :
-  [ "Parameters: " ++ show (params sm) ++ "." | not (null (params sm))] ++
-  case alphabet sm of
-    DNA -> [ "Stationary distribution: " ++ dispv precision (stationaryDistribution sm) ++ "."
-           , "Exchangeability matrix:\n" ++ dispmi 2 precision (exchangeabilityMatrix sm) ++ "."
+summarize sm =
+  map L.pack
+    $  (show (alphabet sm) ++ " substitution model: " ++ name sm ++ ".")
+    :  [ "Parameters: " ++ show (params sm) ++ "." | not (null (params sm)) ]
+    ++ case alphabet sm of
+         DNA ->
+           [ "Stationary distribution: "
+             ++ dispv precision (stationaryDistribution sm)
+             ++ "."
+           , "Exchangeability matrix:\n"
+             ++ dispmi 2 precision (exchangeabilityMatrix sm)
+             ++ "."
            , "Scale: " ++ show (roundN precision $ totalRate sm) ++ "."
            ]
-    Protein -> [ "Stationary distribution: " ++ dispv precision (stationaryDistribution sm) ++ "."
-               , "Scale: " ++ show (roundN precision $ totalRate sm) ++ "."
-               ]
-    _ -> error "Extended character sets are not supported with substitution models."
+         Protein ->
+           [ "Stationary distribution: "
+             ++ dispv precision (stationaryDistribution sm)
+             ++ "."
+           , "Scale: " ++ show (roundN precision $ totalRate sm) ++ "."
+           ]
+         _ ->
+           error
+             "Extended character sets are not supported with substitution models."
 

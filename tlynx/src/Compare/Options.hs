@@ -13,9 +13,10 @@ Creation date: Thu Sep 19 15:02:21 2019.
 -}
 
 module Compare.Options
-  ( CompareArguments (..)
+  ( CompareArguments(..)
   , compareArguments
-  ) where
+  )
+where
 
 import           Options.Applicative
 
@@ -29,38 +30,33 @@ data CompareArguments = CompareArguments
 
 -- | Parse arguments of compare command.
 compareArguments :: Parser CompareArguments
-compareArguments = CompareArguments <$>
-  normalize
-  <*> bipartitions
-  <*> intersect
-  <*> newickIqTree
-  <*> some file
+compareArguments =
+  CompareArguments
+    <$> normalize
+    <*> bipartitions
+    <*> intersect
+    <*> newickIqTree
+    <*> some file
 
 normalize :: Parser Bool
-normalize = switch $
-  long "normalize"
-  <> short 'n'
-  <> help "Normalize trees before comparison"
+normalize = switch $ long "normalize" <> short 'n' <> help
+  "Normalize trees before comparison"
 
 bipartitions :: Parser Bool
-bipartitions = switch $
-  long "bipartitions"
-  <> short 'b'
-  <> help "Print and plot common and missing bipartitions"
+bipartitions = switch $ long "bipartitions" <> short 'b' <> help
+  "Print and plot common and missing bipartitions"
 
 intersect :: Parser Bool
-intersect = switch $
-  long "intersect"
-  <> short 't'
-  <> help "Compare intersections; i.e., before comparison, drop leaves that are not present in the other tree"
+intersect =
+  switch
+    $  long "intersect"
+    <> short 't'
+    <> help
+         "Compare intersections; i.e., before comparison, drop leaves that are not present in the other tree"
 
 file :: Parser FilePath
-file = strArgument $
-  metavar "NAME"
-  <> help "Tree file"
+file = strArgument $ metavar "NAME" <> help "Tree file"
 
 newickIqTree :: Parser Bool
-newickIqTree = switch $
-  long "newick-iqtree"
-  <> short 'i'
-  <> help "Use IQ-TREE Newick format (internal node labels are branch support values)"
+newickIqTree = switch $ long "newick-iqtree" <> short 'i' <> help
+  "Use IQ-TREE Newick format (internal node labels are branch support values)"

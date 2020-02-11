@@ -26,11 +26,14 @@ module ELynx.Distribution.TimeOfOriginNearCritical
   , cumulative
   , density
   , quantile
-  ) where
+  )
+where
 
-import           Data.Data                (Data, Typeable)
-import           GHC.Generics             (Generic)
-import qualified Statistics.Distribution  as D
+import           Data.Data                      ( Data
+                                                , Typeable
+                                                )
+import           GHC.Generics                   ( Generic )
+import qualified Statistics.Distribution       as D
 
 import           ELynx.Distribution.Types
 
@@ -43,17 +46,17 @@ data TimeOfOriginNearCriticalDistribution = TONCD
   } deriving (Eq, Typeable, Data, Generic)
 
 instance D.Distribution TimeOfOriginNearCriticalDistribution where
-    cumulative = cumulative
+  cumulative = cumulative
 
 -- | Cumulative distribution function; see Mathematica notebook.
 cumulative :: TimeOfOriginNearCriticalDistribution -> Time -> Double
-cumulative (TONCD n' l m) t
-  | t <= 0    = 0
-  | otherwise = t1 + t2
-  where d  = l - m
-        n  = fromIntegral n'
-        t1 = (t*l/(1.0 + t*l)) ** n
-        t2 = (n * t * t1) * d / (2.0 * (1.0 + t*l))
+cumulative (TONCD n' l m) t | t <= 0    = 0
+                            | otherwise = t1 + t2
+ where
+  d  = l - m
+  n  = fromIntegral n'
+  t1 = (t * l / (1.0 + t * l)) ** n
+  t2 = (n * t * t1) * d / (2.0 * (1.0 + t * l))
 
 instance D.ContDistr TimeOfOriginNearCriticalDistribution where
   density  = density
@@ -61,24 +64,30 @@ instance D.ContDistr TimeOfOriginNearCriticalDistribution where
 
 -- | The density function Eq. (5).
 density :: TimeOfOriginNearCriticalDistribution -> Time -> Double
-density (TONCD n' l m) t
-  | t < 0     = 0
-  | otherwise = nom/den
-  where n  = fromIntegral n'
-        nom = n * (t*l/(1+t*l))**n * (2+(3+n)*t*l - (1+n)*t*m)
-        den = 2*t*(1+t*l)**2
+density (TONCD n' l m) t | t < 0     = 0
+                         | otherwise = nom / den
+ where
+  n = fromIntegral n'
+  nom =
+    n * (t * l / (1 + t * l)) ** n * (2 + (3 + n) * t * l - (1 + n) * t * m)
+  den = 2 * t * (1 + t * l) ** 2
 
 -- | The inverted cumulative probability distribution 'cumulative'. See also
 -- 'D.ContDistr'.
 quantile :: TimeOfOriginNearCriticalDistribution -> Double -> Time
 quantile (TONCD n' l m) p
-  | p >= 0 && p <= 1 = t1 + t2nom/t2den
-  | otherwise        =
-    error $ "PointProcess.quantile: p must be in [0,1] range. Got: " ++ show p ++ "."
-  where n = fromIntegral n'
-        t1 = - p**(1/n)/((-1+p**(1/n))*l)
-        t2nom = p**(2/n)*(m-l)
-        t2den = 2*(-1+p**(1/n))**2 * l**2
+  | p >= 0 && p <= 1
+  = t1 + t2nom / t2den
+  | otherwise
+  = error
+    $  "PointProcess.quantile: p must be in [0,1] range. Got: "
+    ++ show p
+    ++ "."
+ where
+  n     = fromIntegral n'
+  t1    = -p ** (1 / n) / ((-1 + p ** (1 / n)) * l)
+  t2nom = p ** (2 / n) * (m - l)
+  t2den = 2 * (-1 + p ** (1 / n)) ** 2 * l ** 2
 
 instance D.ContGen TimeOfOriginNearCriticalDistribution where
   genContVar = D.genContinuous

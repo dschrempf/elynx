@@ -17,7 +17,8 @@ module ELynx.Simulate.MarkovProcess
   , State
   , probMatrix
   , jump
-  ) where
+  )
+where
 
 import           Control.Monad.Primitive
 import           Numeric.LinearAlgebra
@@ -35,11 +36,12 @@ type State = Int
 -- | The important matrix that gives the probabilities to move from one state to
 -- another in a specific time (branch length).
 probMatrix :: RateMatrix -> Double -> ProbMatrix
-probMatrix q t | t == 0 = if rows q == cols q
-                          then ident (rows q)
-                          else error "probMatrix: Matrix is not square."
-               | t < 0 = error "probMatrix: Time is negative."
-               | otherwise = expm $ scale t q
+probMatrix q t
+  | t == 0 = if rows q == cols q
+    then ident (rows q)
+    else error "probMatrix: Matrix is not square."
+  | t < 0 = error "probMatrix: Time is negative."
+  | otherwise = expm $ scale t q
 
 -- | Move from a given state to a new one according to a transition probability
 -- matrix (for performance reasons this probability matrix needs to be given as

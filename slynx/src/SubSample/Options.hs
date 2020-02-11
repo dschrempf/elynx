@@ -13,9 +13,10 @@ Creation date: Sun Oct  7 17:29:45 2018.
 -}
 
 module SubSample.Options
-  ( SubSampleArguments (..)
+  ( SubSampleArguments(..)
   , subSampleArguments
-  ) where
+  )
+where
 
 import           Control.Applicative
 import           Data.Word
@@ -36,28 +37,27 @@ data SubSampleArguments = SubSampleArguments
 
 -- | Sub command parser.
 subSampleArguments :: Parser SubSampleArguments
-subSampleArguments = SubSampleArguments
-                     <$> alphabetOpt
-                     <*> optional filePathArg
-                     <*> subSampleNSitesOpt
-                     <*> subSampleNAlignmentsOpt
-                     <*> seedOpt
+subSampleArguments =
+  SubSampleArguments
+    <$> alphabetOpt
+    <*> optional filePathArg
+    <*> subSampleNSitesOpt
+    <*> subSampleNAlignmentsOpt
+    <*> seedOpt
 
 subSampleNSitesOpt :: Parser Int
-subSampleNSitesOpt = option auto $
-  long "number-of-sites" <>
-  short 'n' <>
-  metavar "INT" <>
-  help "Number of sites randomly drawn with replacement"
+subSampleNSitesOpt =
+  option auto $ long "number-of-sites" <> short 'n' <> metavar "INT" <> help
+    "Number of sites randomly drawn with replacement"
 
 subSampleNAlignmentsOpt :: Parser Int
-subSampleNAlignmentsOpt = option auto $
-  long "number-of-alignments" <>
-  short 'm' <>
-  metavar "INT" <>
-  help "Number of multi sequence alignments to be created"
+subSampleNAlignmentsOpt =
+  option auto
+    $  long "number-of-alignments"
+    <> short 'm'
+    <> metavar "INT"
+    <> help "Number of multi sequence alignments to be created"
 
 filePathArg :: Parser FilePath
-filePathArg = strArgument $
-  metavar "INPUT-FILE" <>
-  help "Read sequences from INPUT-FILE"
+filePathArg =
+  strArgument $ metavar "INPUT-FILE" <> help "Read sequences from INPUT-FILE"

@@ -18,12 +18,15 @@ module ELynx.Tools.Text
     -- * Text handling.
     tShow
   , fromBs
-  ) where
+  )
+where
 
-import           Data.ByteString.Lazy    (ByteString)
-import           Data.Text               (Text, pack)
-import           Data.Text.Lazy          (toStrict)
-import           Data.Text.Lazy.Encoding (decodeUtf8)
+import           Data.ByteString.Lazy           ( ByteString )
+import           Data.Text                      ( Text
+                                                , pack
+                                                )
+import           Data.Text.Lazy                 ( toStrict )
+import           Data.Text.Lazy.Encoding        ( decodeUtf8 )
 
 -- | Conversion to 'Text' from showable values.
 tShow :: Show a => a -> Text

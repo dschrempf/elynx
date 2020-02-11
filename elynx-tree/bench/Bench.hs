@@ -13,7 +13,7 @@ Creation date: Mon Dec 16 13:33:27 2019.
 -}
 
 import           Criterion.Main
-import qualified Data.ByteString.Lazy.Char8  as L
+import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.Tree
 
 import           ELynx.Data.Tree.Bipartition
@@ -31,7 +31,4 @@ main :: IO ()
 main = do
   ts <- getManyTrees
   defaultMain
-    [ bgroup "bipartition"
-      [ bench "manyTrees" $ whnf (map bipartitions) ts
-      ]
-    ]
+    [bgroup "bipartition" [bench "manyTrees" $ whnf (map bipartitions) ts]]

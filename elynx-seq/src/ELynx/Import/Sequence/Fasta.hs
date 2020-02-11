@@ -23,20 +23,23 @@ module ELynx.Import.Sequence.Fasta
   ( Parser
   , fastaSequence
   , fasta
-  ) where
+  )
+where
 
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8    as L
 import qualified Data.Set                      as S
 import           Data.Void
-import           Data.Word8                    (Word8, isAlphaNum)
+import           Data.Word8                     ( Word8
+                                                , isAlphaNum
+                                                )
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 
 import           ELynx.Data.Alphabet.Alphabet  as A
 import           ELynx.Data.Alphabet.Character
 import           ELynx.Data.Sequence.Sequence
-import           ELynx.Tools.ByteString        (c2w)
+import           ELynx.Tools.ByteString         ( c2w )
 
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString
@@ -65,7 +68,7 @@ sequenceLine :: S.Set Word8 -> Parser L.ByteString
 sequenceLine s = do
   -- FIXME: Will fail for non-capital letters.
   !xs <- takeWhile1P (Just "Alphabet character") (`S.member` s)
-  _  <- void eol <|> eof
+  _   <- void eol <|> eof
   return xs
 
 -- XXX: If sequences are parsed line by line, the lines have to be copied when
@@ -73,11 +76,12 @@ sequenceLine s = do
 
 -- | Parse a sequence of characters.
 fastaSequence :: Alphabet -> Parser Sequence
-fastaSequence a = do (n, d) <- sequenceHeader
-                     let !alph  = S.map toWord (A.all . alphabetSpec $ a)
-                     lns <- some (sequenceLine alph)
-                     _  <- many eol
-                     return $ Sequence n d a (fromByteString $ L.concat lns)
+fastaSequence a = do
+  (n, d) <- sequenceHeader
+  let !alph = S.map toWord (A.all . alphabetSpec $ a)
+  lns <- some (sequenceLine alph)
+  _   <- many eol
+  return $ Sequence n d a (fromByteString $ L.concat lns)
 
 -- | Parse a Fasta file with given 'Alphabet'.
 fasta :: Alphabet -> Parser [Sequence]

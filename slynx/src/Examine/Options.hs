@@ -13,12 +13,13 @@ Creation date: Sun Oct  7 17:29:45 2018.
 -}
 
 module Examine.Options
-  ( ExamineArguments (..)
+  ( ExamineArguments(..)
   , examineArguments
-  ) where
+  )
+where
 
-import           Control.Applicative          (optional)
-import           Data.Maybe                   (fromJust)
+import           Control.Applicative            ( optional )
+import           Data.Maybe                     ( fromJust )
 import           Options.Applicative
 
 import           Tools
@@ -36,22 +37,21 @@ instance Reproducible ExamineArguments where
   -- TODO: How do I combine optional input files with reproducibility? The
   -- answer is: use checksums! Also other input files have to be checked with
   -- check sums. StdIO can also be checked in the same way.
-  inFiles  = pure . fromJust . exInFile
+  inFiles = pure . fromJust . exInFile
   parser _ = examineArguments
 
 -- | Command line parser.
 examineArguments :: Parser ExamineArguments
-examineArguments = ExamineArguments
-           <$> alphabetOpt
-           <*> optional filePathArg
-           <*> examinePerSiteOpt
+examineArguments =
+  ExamineArguments
+    <$> alphabetOpt
+    <*> optional filePathArg
+    <*> examinePerSiteOpt
 
 examinePerSiteOpt :: Parser Bool
-examinePerSiteOpt = switch $
-  long "per-site" <>
-  help "Report per site summary statistics"
+examinePerSiteOpt =
+  switch $ long "per-site" <> help "Report per site summary statistics"
 
 filePathArg :: Parser FilePath
-filePathArg = strArgument $
-  metavar "INPUT-FILE" <>
-  help "Read sequences from INPUT-FILE"
+filePathArg =
+  strArgument $ metavar "INPUT-FILE" <> help "Read sequences from INPUT-FILE"

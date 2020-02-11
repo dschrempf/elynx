@@ -21,7 +21,8 @@ module ELynx.Tools.LinearAlgebra
   , dispv
   , dispm
   , dispmi
-  ) where
+  )
+where
 
 import           Data.List
 
@@ -30,9 +31,10 @@ import           Numeric.LinearAlgebra
 -- | Separate a square matrix into a symmetric and a skew-symmetric matrix.
 matrixSeparateSymSkew :: Matrix R -> (Matrix R, Matrix R)
 matrixSeparateSymSkew m = (mSym, mSkew)
-  where trM = tr m
-        mSym  = scale 0.5 $ m + trM
-        mSkew = scale 0.5 $ m - trM
+ where
+  trM   = tr m
+  mSym  = scale 0.5 $ m + trM
+  mSkew = scale 0.5 $ m - trM
 
 -- | Set the diagonal entries of a matrix to zero.
 matrixSetDiagToZero :: Matrix R -> Matrix R
@@ -48,4 +50,5 @@ dispm p m = intercalate "\n" $ init $ lines $ dispf p m
 
 -- | Display a matrix with given precision and indent.
 dispmi :: Int -> Int -> Matrix R -> String
-dispmi p i m = intercalate "\n" $ map (replicate i ' ' ++) $ tail $ lines $ dispf p m
+dispmi p i m =
+  intercalate "\n" $ map (replicate i ' ' ++) $ tail $ lines $ dispf p m

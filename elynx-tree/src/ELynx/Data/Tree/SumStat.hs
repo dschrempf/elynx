@@ -17,11 +17,12 @@ module ELynx.Data.Tree.SumStat
   , NChildSumStat
   , toNChildSumStat
   , formatNChildSumStat
-  ) where
+  )
+where
 
-import qualified Data.ByteString.Builder        as L
-import qualified Data.ByteString.Lazy.Char8     as L
-import           Data.Monoid                    ((<>))
+import qualified Data.ByteString.Builder       as L
+import qualified Data.ByteString.Lazy.Char8    as L
+import           Data.Monoid                    ( (<>) )
 import           Data.Tree
 import           ELynx.Data.Tree.MeasurableTree
 
@@ -41,17 +42,17 @@ type NChildSumStat = [BrLnNChildren]
 --    nLeaves2 branchLength2
 --    ....
 formatNChildSumStat :: NChildSumStat -> L.ByteString
-formatNChildSumStat s = L.toLazyByteString . mconcat $ map formatNChildSumStatLine s
+formatNChildSumStat s =
+  L.toLazyByteString . mconcat $ map formatNChildSumStatLine s
 
 formatNChildSumStatLine :: BrLnNChildren -> L.Builder
-formatNChildSumStatLine (l, n) = L.intDec n
-                                 <> L.char8 ' '
-                                 <> L.doubleDec l
-                                 <> L.char8 '\n'
+formatNChildSumStatLine (l, n) =
+  L.intDec n <> L.char8 ' ' <> L.doubleDec l <> L.char8 '\n'
 
 -- | Compute NChilSumStat for a phylogenetic tree.
 toNChildSumStat :: Measurable a => Tree a -> NChildSumStat
 toNChildSumStat (Node lbl []) = [(getLen lbl, 1)]
 toNChildSumStat (Node lbl ts) = (getLen lbl, sumCh) : concat nChSS
-  where nChSS = map toNChildSumStat ts
-        sumCh = sum $ map (snd . head) nChSS
+ where
+  nChSS = map toNChildSumStat ts
+  sumCh = sum $ map (snd . head) nChSS

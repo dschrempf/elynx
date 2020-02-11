@@ -17,7 +17,7 @@ This module is to be imported qualified.
 
 
 module ELynx.Data.Sequence.Alignment
-  ( Alignment (..)
+  ( Alignment(..)
   , length
   , nSequences
   -- | * Input, output
@@ -43,24 +43,28 @@ module ELynx.Data.Sequence.Alignment
   -- | * Sub sample
   , subSample
   , randomSubSample
-  ) where
+  )
+where
 
-import           Control.Monad                             hiding (join)
+import           Control.Monad           hiding ( join )
 import           Control.Monad.Primitive
-import qualified Data.ByteString.Lazy.Char8                as L
-import           Data.List                                 hiding (concat,
-                                                            length)
-import qualified Data.Matrix.Unboxed                       as M
-import qualified Data.Vector.Unboxed                       as V
-import           Prelude                                   hiding (concat,
-                                                            length)
+import qualified Data.ByteString.Lazy.Char8    as L
+import           Data.List               hiding ( concat
+                                                , length
+                                                )
+import qualified Data.Matrix.Unboxed           as M
+import qualified Data.Vector.Unboxed           as V
+import           Prelude                 hiding ( concat
+                                                , length
+                                                )
 import           System.Random.MWC
 
-import qualified ELynx.Data.Alphabet.Alphabet              as A
+import qualified ELynx.Data.Alphabet.Alphabet  as A
 import           ELynx.Data.Alphabet.Character
-import qualified ELynx.Data.Alphabet.DistributionDiversity as D
+import qualified ELynx.Data.Alphabet.DistributionDiversity
+                                               as D
 import           ELynx.Data.Sequence.Defaults
-import qualified ELynx.Data.Sequence.Sequence              as S
+import qualified ELynx.Data.Sequence.Sequence  as S
 import           ELynx.Tools.Concurrent
 import           ELynx.Tools.Definitions
 import           ELynx.Tools.Equality
@@ -86,24 +90,24 @@ nSequences = M.rows . matrix
 -- | Create 'Alignment' from a list of 'S.Sequence's.
 fromSequences :: [S.Sequence] -> Either String Alignment
 fromSequences ss
-  | S.equalLength ss && allEqual (map S.alphabet ss) =
-      Right $ Alignment ns ds a d
-  | S.equalLength ss =
-      Left "Sequences do not have equal codes."
-  | otherwise =
-      Left "Sequences do not have equal lengths."
-  where
-    ns   = map S.name ss
-    ds   = map S.description ss
-    a    = S.alphabet $ head ss
-    bss  = map S.characters ss
-    d    = M.fromRows bss
+  | S.equalLength ss && allEqual (map S.alphabet ss) = Right
+  $ Alignment ns ds a d
+  | S.equalLength ss = Left "Sequences do not have equal codes."
+  | otherwise = Left "Sequences do not have equal lengths."
+ where
+  ns  = map S.name ss
+  ds  = map S.description ss
+  a   = S.alphabet $ head ss
+  bss = map S.characters ss
+  d   = M.fromRows bss
 
 -- | Conversion to list of 'S.Sequence's.
 toSequences :: Alignment -> [S.Sequence]
-toSequences (Alignment ns ds a da) = zipWith3 (\n d r -> S.Sequence n d a r) ns ds rows
-  where
-    rows  = M.toRows da
+toSequences (Alignment ns ds a da) = zipWith3 (\n d r -> S.Sequence n d a r)
+                                              ns
+                                              ds
+                                              rows
+  where rows = M.toRows da
 
 -- -- | Show a 'Alignment', untrimmed.
 -- summarizeSeq :: Alignment -> Int -> L.ByteString
@@ -113,19 +117,30 @@ toSequences (Alignment ns ds a da) = zipWith3 (\n d r -> S.Sequence n d a r) ns 
 --               L.pack $ V.toList $ V.map toChar $ M.takeRow (matrix m) i ]
 
 header :: Alignment -> L.ByteString
-header a = L.unlines $
-  [ L.pack "Multi sequence alignment."
-  , L.pack $ "Code: " ++ A.description (alphabet a) ++ "."
-  , L.pack $ "Length: " ++ show (length a) ++ "." ]
-  ++ reportLengthSummary ++ reportNumberSummary
-  where reportLengthSummary =
-          [ L.pack $ "For each sequence, the "
-            ++ show summaryLength ++ " first bases are shown."
-          | length a > summaryLength ]
-        reportNumberSummary =
-          [ L.pack $ show summaryNSequences ++ " out of " ++
-            show (nSequences a) ++ " sequences are shown."
-          | nSequences a > summaryNSequences ]
+header a =
+  L.unlines
+    $  [ L.pack "Multi sequence alignment."
+       , L.pack $ "Code: " ++ A.description (alphabet a) ++ "."
+       , L.pack $ "Length: " ++ show (length a) ++ "."
+       ]
+    ++ reportLengthSummary
+    ++ reportNumberSummary
+ where
+  reportLengthSummary =
+    [ L.pack
+        $  "For each sequence, the "
+        ++ show summaryLength
+        ++ " first bases are shown."
+    | length a > summaryLength
+    ]
+  reportNumberSummary =
+    [ L.pack
+        $  show summaryNSequences
+        ++ " out of "
+        ++ show (nSequences a)
+        ++ " sequences are shown."
+    | nSequences a > summaryNSequences
+    ]
 
 -- | Similar to 'S.summarizeSequenceList' but with different Header.
 summarize :: Alignment -> L.ByteString
@@ -133,41 +148,40 @@ summarize a = header a <> S.body (toSequences a)
 
 -- | Join two 'Alignment's vertically. That is, add more sequences
 -- to an alignment. See also 'concat'.
-join :: Alignment
-     -> Alignment
-     -> Alignment
+join :: Alignment -> Alignment -> Alignment
 -- top bottom.
 join t b
-  | length t /= length b      = error "join: Multi sequence alignments do not have equal lengths."
-  | alphabet t /= alphabet b  = error "join: Multi sequence alignments do not have equal alphabets."
-  | otherwise                 = Alignment ns ds al (tD === bD)
-  where
-    ns = names t ++ names b
-    ds = descriptions t ++ descriptions b
-    tD = matrix t
-    bD = matrix b
-    al = alphabet t
+  | length t /= length b = error
+    "join: Multi sequence alignments do not have equal lengths."
+  | alphabet t /= alphabet b = error
+    "join: Multi sequence alignments do not have equal alphabets."
+  | otherwise = Alignment ns ds al (tD === bD)
+ where
+  ns = names t ++ names b
+  ds = descriptions t ++ descriptions b
+  tD = matrix t
+  bD = matrix b
+  al = alphabet t
 
 -- | Concatenate two 'Alignment's horizontally. That is, add more
 -- sites to an alignment. See also 'join'.
-concat :: Alignment
-       -> Alignment
-       -> Alignment
+concat :: Alignment -> Alignment -> Alignment
 -- left right.
 concat l r
-  | nSequences l /= nSequences r =
-      error "concat: Multi sequence alignments do not have an equal number of sequences."
-  | alphabet l /= alphabet r =
-      error "concat: Multi sequence alignments do not have an equal alphabets."
-  | names l /= names r =
-      error "concat: Multi sequence alignments do not have an equal names."
-  | descriptions l /= descriptions r =
-      error "concat: Multi sequence alignments do not have an equal descriptions."
-  | otherwise =
-      Alignment (names l) (descriptions l) (alphabet l) (lD ||| rD)
-  where
-    lD = matrix l
-    rD = matrix r
+  | nSequences l /= nSequences r
+  = error
+    "concat: Multi sequence alignments do not have an equal number of sequences."
+  | alphabet l /= alphabet r
+  = error "concat: Multi sequence alignments do not have an equal alphabets."
+  | names l /= names r
+  = error "concat: Multi sequence alignments do not have an equal names."
+  | descriptions l /= descriptions r
+  = error "concat: Multi sequence alignments do not have an equal descriptions."
+  | otherwise
+  = Alignment (names l) (descriptions l) (alphabet l) (lD ||| rD)
+ where
+  lD = matrix l
+  rD = matrix r
 
 -- | Concatenate a list of 'Alignment's horizontally. See
 -- 'concat'.
@@ -178,7 +192,7 @@ concatAlignments as  = foldl' concat (head as) (tail as)
 
 -- Only keep columns from alignment that satisfy given predicate.
 filterColsWith :: (V.Vector Character -> Bool) -> Alignment -> Alignment
-filterColsWith p a =  a {matrix = m'}
+filterColsWith p a = a { matrix = m' }
   where m' = M.fromColumns . filter p . M.toColumns $ matrix a
 
 -- | Only keep columns with standard characters. Alignment columns with IUPAC
@@ -189,9 +203,11 @@ filterColsOnlyStd a = filterColsWith (V.all $ A.isStd (alphabet a)) a
 -- | Filter columns with proportion of standard character larger than given number.
 filterColsStd :: Double -> Alignment -> Alignment
 filterColsStd prop a = filterColsWith
-  (\col -> prop * n <= fromIntegral (V.length (V.filter (A.isStd al) col))) a
-  where al = alphabet a
-        n = fromIntegral $ nSequences a
+  (\col -> prop * n <= fromIntegral (V.length (V.filter (A.isStd al) col)))
+  a
+ where
+  al = alphabet a
+  n  = fromIntegral $ nSequences a
 
 -- | Only keep columns without gaps or unknown characters.
 filterColsNoGaps :: Alignment -> Alignment
@@ -209,8 +225,9 @@ toFrequencyData a = fMapColParChunk 100 (D.frequencyCharacters spec) (matrix a)
 
 -- | Calculate the distribution of characters.
 distribution :: FrequencyData -> [Double]
-distribution fd = map (/ fromIntegral nSites) $ V.toList $
-  foldl1 (V.zipWith (+)) (M.toColumns fd)
+distribution fd = map (/ fromIntegral nSites) $ V.toList $ foldl1
+  (V.zipWith (+))
+  (M.toColumns fd)
   where nSites = M.cols fd
 
 -- | Diversity analysis. See 'kEffEntropy'.
@@ -239,13 +256,12 @@ countUnknowns a = V.length . V.filter (A.isUnknown (alphabet a)) $ allChars
 
 -- | Sample the given sites from a multi sequence alignment.
 subSample :: [Int] -> Alignment -> Alignment
-subSample is a = a {matrix = m'}
-  where m' = subSampleMatrix is $ matrix a
+subSample is a = a { matrix = m' } where m' = subSampleMatrix is $ matrix a
 
 -- | Randomly sample a given number of sites of the multi sequence alignment.
-randomSubSample :: PrimMonad m
-          => Int -> Alignment  -> Gen (PrimState m) -> m Alignment
+randomSubSample
+  :: PrimMonad m => Int -> Alignment -> Gen (PrimState m) -> m Alignment
 randomSubSample n a g = do
   let l = length a
-  is <- replicateM n $ uniformR (0, l-1) g
+  is <- replicateM n $ uniformR (0, l - 1) g
   return $ subSample is a

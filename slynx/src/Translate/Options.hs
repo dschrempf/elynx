@@ -13,9 +13,10 @@ Creation date: Sun Oct  7 17:29:45 2018.
 -}
 
 module Translate.Options
-  ( TranslateArguments (..)
+  ( TranslateArguments(..)
   , translateArguments
-  ) where
+  )
+where
 
 import           Control.Applicative
 import           Data.List
@@ -36,30 +37,27 @@ data TranslateArguments = TranslateArguments
 
 -- | Command line parser.
 translateArguments :: Parser TranslateArguments
-translateArguments = TranslateArguments <$>
-                     alphabetOpt <*>
-                     optional inFileArg <*>
-                     readingFrameOpt <*>
-                     universalCodeOpt
+translateArguments =
+  TranslateArguments
+    <$> alphabetOpt
+    <*> optional inFileArg
+    <*> readingFrameOpt
+    <*> universalCodeOpt
 
 readingFrameOpt :: Parser Int
-readingFrameOpt = option auto $
-  long "reading-frame" <>
-  short 'r' <>
-  metavar "INT" <>
-  help "Reading frame [0|1|2]."
+readingFrameOpt =
+  option auto $ long "reading-frame" <> short 'r' <> metavar "INT" <> help
+    "Reading frame [0|1|2]."
 
 universalCodeOpt :: Parser UniversalCode
-universalCodeOpt = option auto $
-  long "universal-code" <>
-  short 'u' <>
-  metavar "CODE" <>
-  help ("universal code; one of: " ++ codeStr ++ ".")
-  where codes = allValues :: [UniversalCode]
-        codeWords = map show codes
-        codeStr = intercalate ", " codeWords
+universalCodeOpt =
+  option auto $ long "universal-code" <> short 'u' <> metavar "CODE" <> help
+    ("universal code; one of: " ++ codeStr ++ ".")
+ where
+  codes     = allValues :: [UniversalCode]
+  codeWords = map show codes
+  codeStr   = intercalate ", " codeWords
 
 inFileArg :: Parser FilePath
-inFileArg = strArgument $
-  metavar "INPUT-FILE" <>
-  help "Read sequences from INPUT-FILE"
+inFileArg =
+  strArgument $ metavar "INPUT-FILE" <> help "Read sequences from INPUT-FILE"

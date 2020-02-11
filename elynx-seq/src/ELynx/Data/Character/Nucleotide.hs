@@ -28,14 +28,18 @@ T       Thymine               T         A
 -}
 
 module ELynx.Data.Character.Nucleotide
-  ( Nucleotide (..)
-  ) where
+  ( Nucleotide(..)
+  )
+where
 
 import           Data.Vector.Unboxed.Deriving
 import           Data.Word8
 
-import qualified ELynx.Data.Character.Character as C
-import           ELynx.Tools.ByteString         (c2w, w2c)
+import qualified ELynx.Data.Character.Character
+                                               as C
+import           ELynx.Tools.ByteString         ( c2w
+                                                , w2c
+                                                )
 
 -- | Nucleotides.
 data Nucleotide = A | C | G | T
@@ -53,11 +57,11 @@ toWord T = c2w 'T'
 
 fromWord :: Word8 -> Nucleotide
 fromWord w = case w2c w of
-               'A' -> A
-               'C' -> C
-               'G' -> G
-               'T' -> T
-               c   -> error $ "fromWord: Cannot convert " ++ show c ++ " to Nucleotide."
+  'A' -> A
+  'C' -> C
+  'G' -> G
+  'T' -> T
+  c   -> error $ "fromWord: Cannot convert " ++ show c ++ " to Nucleotide."
 
 derivingUnbox "Nucleotide"
     [t| Nucleotide -> Word8 |]

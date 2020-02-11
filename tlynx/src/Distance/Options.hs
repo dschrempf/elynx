@@ -13,18 +13,24 @@ Creation date: Thu Aug 29 13:02:22 2019.
 -}
 
 module Distance.Options
-  ( DistanceArguments (..)
-  , DistanceMeasure (..)
+  ( DistanceArguments(..)
+  , DistanceMeasure(..)
   , distanceArguments
   , distanceFooter
-  ) where
+  )
+where
 
 import           Data.List
 import           Data.Void
 import           Options.Applicative
-import           Text.Megaparsec            (Parsec, eof, try)
-import           Text.Megaparsec.Char       (char, string)
-import           Text.Megaparsec.Char.Lexer (float)
+import           Text.Megaparsec                ( Parsec
+                                                , eof
+                                                , try
+                                                )
+import           Text.Megaparsec.Char           ( char
+                                                , string
+                                                )
+import           Text.Megaparsec.Char.Lexer     ( float )
 import           Text.Printf
 
 import           ELynx.Tools.Options
@@ -54,26 +60,31 @@ data DistanceArguments = DistanceArguments
 
 -- | COmmand line parser.
 distanceArguments :: Parser DistanceArguments
-distanceArguments = DistanceArguments <$>
-  distanceOpt
-  <*> normalizeSwitch
-  <*> intersectSwitch
-  <*> summaryStatisticsSwitch
-  <*> masterTreeFile
-  <*> newickIqTree
-  <*> many inFilesArg
+distanceArguments =
+  DistanceArguments
+    <$> distanceOpt
+    <*> normalizeSwitch
+    <*> intersectSwitch
+    <*> summaryStatisticsSwitch
+    <*> masterTreeFile
+    <*> newickIqTree
+    <*> many inFilesArg
 
 masterTreeFile :: Parser (Maybe FilePath)
-masterTreeFile = optional $ strOption $
-  long "master-tree-file" <>
-  short 'm' <>
-  metavar "MASTER-TREE-File" <>
-  help "Compare all trees to the tree in the master tree file."
+masterTreeFile =
+  optional
+    $  strOption
+    $  long "master-tree-file"
+    <> short 'm'
+    <> metavar "MASTER-TREE-File"
+    <> help "Compare all trees to the tree in the master tree file."
 
 inFilesArg :: Parser FilePath
-inFilesArg = strArgument $
-  metavar "INPUT-FILES" <>
-  help "Read tree(s) from INPUT-FILES; if more files are given, one tree is expected per file"
+inFilesArg =
+  strArgument
+    $  metavar "INPUT-FILES"
+    <> help
+         "Read tree(s) from INPUT-FILES; if more files are given, one tree is expected per file"
 
 symmetric :: Parsec Void String DistanceMeasure
 symmetric = do
@@ -99,46 +110,51 @@ branchScore = do
   pure BranchScore
 
 distanceParser :: Parsec Void String DistanceMeasure
-distanceParser = try symmetric
-                 <|> try incompatibleSplit
+distanceParser =
+  try symmetric
+    <|> try incompatibleSplit
                  -- Try first the normalized one, since the normal branch score
                  -- parser also succeeds in this case.
-                 <|> branchScore
+    <|> branchScore
 
 distanceOpt :: Parser DistanceMeasure
-distanceOpt = option (megaReadM distanceParser) $
-  long "distance" <>
-  short 'd' <>
-  metavar "MEASURE" <>
-  help "Type of distance to calculate (available distance measures are listed below)"
+distanceOpt =
+  option (megaReadM distanceParser)
+    $  long "distance"
+    <> short 'd'
+    <> metavar "MEASURE"
+    <> help
+         "Type of distance to calculate (available distance measures are listed below)"
 
 summaryStatisticsSwitch :: Parser Bool
-summaryStatisticsSwitch = switch $
-  long "summary-statistics" <>
-  short 's' <>
-  help "Report summary statistics only"
+summaryStatisticsSwitch =
+  switch $ long "summary-statistics" <> short 's' <> help
+    "Report summary statistics only"
 
 normalizeSwitch :: Parser Bool
-normalizeSwitch = switch $
-  long "normalize" <>
-  short 'n' <>
-  help "Normalize trees before distance calculation; only affect distances depending on branch lengths"
+normalizeSwitch =
+  switch
+    $  long "normalize"
+    <> short 'n'
+    <> help
+         "Normalize trees before distance calculation; only affect distances depending on branch lengths"
 
 intersectSwitch :: Parser Bool
-intersectSwitch = switch $
-  long "intersect"
-  <> short 't'
-  <> help "Compare intersections; i.e., before comparison, drop leaves that are not present in the other tree"
+intersectSwitch =
+  switch
+    $  long "intersect"
+    <> short 't'
+    <> help
+         "Compare intersections; i.e., before comparison, drop leaves that are not present in the other tree"
 
 newickIqTree :: Parser Bool
-newickIqTree = switch $
-  long "newick-iqtree"
-  <> short 'i'
-  <> help "Use IQ-TREE Newick format (internal node labels are branch support values)"
+newickIqTree = switch $ long "newick-iqtree" <> short 'i' <> help
+  "Use IQ-TREE Newick format (internal node labels are branch support values)"
 
 -- | Information about provided distance types.
 distanceFooter :: String
-distanceFooter = intercalate "\n"
+distanceFooter = intercalate
+  "\n"
   [ "Available distance measures:"
   , "  symmetric                Symmetric distance (Robinson-Foulds distance)."
   , "  incompatible-split[VAL]  Incompatible split distance. Collapse branches"

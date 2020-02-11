@@ -27,10 +27,11 @@ module ELynx.Data.MarkovProcess.RateMatrix
   , toExchangeabilityMatrix
   , fromExchangeabilityMatrix
   , getStationaryDistribution
-  ) where
+  )
+where
 
-import           Numeric.LinearAlgebra     hiding (normalize)
-import           Prelude                   hiding ((<>))
+import           Numeric.LinearAlgebra   hiding ( normalize )
+import           Prelude                 hiding ( (<>) )
 
 import           ELynx.Tools.Equality
 import           ELynx.Tools.LinearAlgebra
@@ -64,16 +65,19 @@ normalizeWith d m = scale (1.0 / totalRate d m) m
 -- | Set the diagonal entries of a matrix such that the rows sum to 0.
 setDiagonal :: RateMatrix -> RateMatrix
 setDiagonal m = diagZeroes - diag (fromList rowSums)
-  where diagZeroes = matrixSetDiagToZero m
-        rowSums    = map norm_1 $ toRows diagZeroes
+ where
+  diagZeroes = matrixSetDiagToZero m
+  rowSums    = map norm_1 $ toRows diagZeroes
 
 -- | Extract the exchangeability matrix from a rate matrix.
-toExchangeabilityMatrix :: RateMatrix -> StationaryDistribution -> ExchangeabilityMatrix
+toExchangeabilityMatrix
+  :: RateMatrix -> StationaryDistribution -> ExchangeabilityMatrix
 toExchangeabilityMatrix m f = m <> diag oneOverF
-  where oneOverF = cmap (1.0/) f
+  where oneOverF = cmap (1.0 /) f
 
 -- | Convert exchangeability matrix to rate matrix.
-fromExchangeabilityMatrix :: ExchangeabilityMatrix -> StationaryDistribution -> RateMatrix
+fromExchangeabilityMatrix
+  :: ExchangeabilityMatrix -> StationaryDistribution -> RateMatrix
 fromExchangeabilityMatrix em d = setDiagonal $ em <> diag d
 
 -- | Get stationary distribution from 'RateMatrix'. Involves eigendecomposition.
@@ -84,12 +88,11 @@ fromExchangeabilityMatrix em d = setDiagonal $ em <> diag d
 -- Maybe monad, but then the error report is just delayed to the calling
 -- function)?
 getStationaryDistribution :: RateMatrix -> StationaryDistribution
-getStationaryDistribution m =
-  if magnitude (eVals ! i) `nearlyEq` 0
+getStationaryDistribution m = if magnitude (eVals ! i) `nearlyEq` 0
   then normalizeSumVec 1.0 distReal
   else error "Could not retrieve stationary distribution."
-    where
-      (eVals, eVecs) = eig (tr m)
-      i = minIndex eVals
-      distComplex = toColumns eVecs !! i
-      distReal = cmap realPart distComplex
+ where
+  (eVals, eVecs) = eig (tr m)
+  i              = minIndex eVals
+  distComplex    = toColumns eVecs !! i
+  distReal       = cmap realPart distComplex
