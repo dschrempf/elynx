@@ -80,11 +80,18 @@ ssingleton = SS . S.singleton
 
 -- | Unite two subsets.
 sunion :: Ord a => Subset a -> Subset a -> Subset a
-sunion p q = SS $ subset q `S.union` subset p
+sunion (SS p) (SS q) =
+  if S.disjoint p q
+  then SS $ q `S.union` p
+  else error "sunion: lists contain duplicate elements."
 
 -- | Unite a list of subsets.
 sunions :: Ord a => [Subset a] -> Subset a
-sunions = SS . S.unions . map subset
+sunions ps =
+  if S.size res == sum (map length ps)
+  then SS res
+  else error "sunions: list contains subsets with duplicate elements."
+  where res = S.unions . map subset $ ps
 
 -- | Difference of two subsets.
 sdifference :: Ord a => Subset a -> Subset a -> Subset a
