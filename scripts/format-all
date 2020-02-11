@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+source include
+
+pr="$project_root"
+
+cd "${pr}" || exit 1
+
+fd -e hs -x brittany --write-mode inplace
