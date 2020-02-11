@@ -18,11 +18,9 @@ module ELynx.Data.MarkovProcess.MixtureModel
   ( -- * Types
     Weight
   , Component(Component)
-  , MixtureModel
-    ( MixtureModel
-    -- * Getters
-    )
-  , name
+  , MixtureModel(MixtureModel)
+  , -- * Getters
+    name
   , getAlphabet
   , getWeights
   , getSubstitutionModels
