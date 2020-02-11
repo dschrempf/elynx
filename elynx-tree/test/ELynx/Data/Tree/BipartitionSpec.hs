@@ -27,12 +27,11 @@ import           Test.Hspec
 import           ELynx.Data.Tree.Bipartition
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Data.Tree.Subset
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput
 
-sfrom :: [L.ByteString] -> Subset L.ByteString
-sfrom = sfromset . S.fromList
+sfrom :: [L.ByteString] -> S.Set L.ByteString
+sfrom = S.fromList
 
 treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"

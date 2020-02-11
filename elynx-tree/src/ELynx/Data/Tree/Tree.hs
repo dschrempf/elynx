@@ -49,37 +49,33 @@ the book /Haskell high performance programming from Thomasson/, p. 344.
 
 
 module ELynx.Data.Tree.Tree
-  ( singleton
-  , degree
-  , leaves
-  , subTree
-  , subSample
-  , nSubSamples
-  , pruneWith
-  , dropLeafWith
-  , intersectWith
-  , merge
-  , tZipWith
-  , partitionTree
-  , subForestGetSubsets
-  , bifurcating
-  , roots
-  , connect
-  , clades
-  ) where
+        ( singleton
+        , degree
+        , leaves
+        , pruneWith
+        , dropLeafWith
+        , intersectWith
+        , merge
+        , tZipWith
+        , partitionTree
+        , subForestGetSubsets
+        , subTree
+        , bifurcating
+        , roots
+        , connect
+        , clades
+        )
+where
 
-import           Control.Monad
-import           Control.Monad.Primitive
-import           Data.List               (foldl', foldl1')
-import           Data.Maybe
-import qualified Data.Sequence           as Seq
-import qualified Data.Set                as Set
+import           Data.Maybe                     ( mapMaybe )
+import           Control.Monad                  ( zipWithM )
+import           Data.List                      ( foldl'
+                                                , foldl1'
+                                                )
+import qualified Data.Set                      as S
 import           Data.Traversable
 import           Data.Tree
-import           System.Random.MWC
 
-import           ELynx.Data.Tree.Subset
-import           ELynx.Tools.Random
 
 -- | The simplest tree. Usually an extant leaf.
 singleton :: a -> Tree a
@@ -92,125 +88,119 @@ degree = (+ 1) . length . subForest
 -- | Get leaves of tree.
 leaves :: Tree a -> [a]
 leaves (Node l []) = [l]
-leaves (Node _ f)  = concatMap leaves f
-
--- | Get subtree of 'Tree' with nodes satisfying predicate. Return 'Nothing', if
--- no leaf satisfies predicate. At the moment: recursively, for each child, take
--- the child if any leaf in the child satisfies the predicate.
-subTree :: (a -> Bool) -> Tree a -> Maybe (Tree a)
-subTree p leaf@(Node lbl [])
-  | p lbl     = Just leaf
-  | otherwise = Nothing
-subTree p (Node lbl chs) = if null subTrees
-                           then Nothing
-                           else Just $ Node lbl subTrees
-  where subTrees = mapMaybe (subTree p) chs
-
--- | Extract a random subtree with @N@ leaves of a tree with @M@ leaves, where
--- @M>N@ (otherwise error). The complete list of leaves (names are assumed to be
--- unique) has to be provided as a 'Seq.Seq', and a 'Seq.Set', so that fast
--- sub-sampling as well as lookup are fast and so that these data structures do
--- not have to be recomputed when many sub-samples are requested.
-subSample :: (PrimMonad m, Ord a)
-  => Seq.Seq a -> Int -> Tree a -> Gen (PrimState m) -> m (Maybe (Tree a))
-subSample lvs n tree g
-  | Seq.length lvs < n = error "Given list of leaves is shorter than requested number of leaves."
-  | otherwise = do
-      sampledLs <- sample lvs n g
-      let ls = Set.fromList sampledLs
-      return $ subTree (`Set.member` ls) tree
-
--- | See 'subSample', but @n@ times.
-nSubSamples :: (PrimMonad m, Ord a)
-            => Int -> Seq.Seq a -> Int -> Tree a -> Gen (PrimState m) -> m [Maybe (Tree a)]
-nSubSamples nS lvs nL tree g = replicateM nS $ subSample lvs nL tree g
+leaves (Node _ f ) = concatMap leaves f
 
 -- | Prune or remove degree two inner nodes. The information stored in a pruned
 -- node can be used to change the daughter node. To discard this information,
 -- use, @pruneWith const@, otherwise @pruneWith (\daughter parent -> combined)@.
 pruneWith :: (a -> a -> a) -> Tree a -> Tree a
-pruneWith _  n@(Node _ [])       = n
-pruneWith f    (Node paLbl [ch]) = let lbl = f (rootLabel ch) paLbl
-                                   in pruneWith f $ Node lbl (subForest ch)
-pruneWith f    (Node paLbl chs)  = Node paLbl (map (pruneWith f) chs)
+pruneWith _ n@(Node _ []) = n
+pruneWith f (Node paLbl [ch]) =
+        let lbl = f (rootLabel ch) paLbl
+        in  pruneWith f $ Node lbl (subForest ch)
+pruneWith f (Node paLbl chs) = Node paLbl (map (pruneWith f) chs)
 
 -- | Drop a leaf from a tree with unique leaf names. The possibly resulting
 -- degree two node is pruned with 'pruneWith'. Two functions are given for node
 -- name extraction, and for the combination of possibly resulting degree two
 -- nodes.
-dropLeafWith :: (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> b -> Tree a -> Tree a
+dropLeafWith
+        :: (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> b -> Tree a -> Tree a
 dropLeafWith f g l t
-  | l `notElem` lvs =
-      error "dropLeafWith: leaf not found on tree."
-  | Set.size (Set.fromList lvs) < length lvs =
-      error "dropLeafWith: tree does not have unique leaves."
-  | otherwise = dropLeafWithUnsafe f g l t
-  where lvs = leaves $ fmap f t
+        | l `notElem` lvs = error "dropLeafWith: leaf not found on tree."
+        | S.size (S.fromList lvs) < length lvs = error
+                "dropLeafWith: tree does not have unique leaves."
+        | otherwise = dropLeafWithUnsafe f g l t
+        where lvs = leaves $ fmap f t
 
 -- See 'dropLeafWith'.
 dropLeafWithUnsafe :: Eq b => (a -> b) -> (a -> a -> a) -> b -> Tree a -> Tree a
 dropLeafWithUnsafe f g lf (Node x xs)
-  | length xs' == 1 = let Node z zs = head xs' in Node (g z x) zs
-  | otherwise       = Node x xs'
-  where isThisLeaf y = null (subForest y) && f (rootLabel y) == lf
-        xs'          = map (dropLeafWithUnsafe f g lf) (filter (not . isThisLeaf) xs)
+        | length xs' == 1 = let Node z zs = head xs' in Node (g z x) zs
+        | otherwise       = Node x xs'
+    where
+        isThisLeaf y = null (subForest y) && f (rootLabel y) == lf
+        xs' = map (dropLeafWithUnsafe f g lf) (filter (not . isThisLeaf) xs)
 
 -- | Compute the intersection of trees. The intersections are the largest
 -- subtrees sharing the same leaf set. Leaf names used for comparison are
 -- extracted by a given function. Leaves are dropped with 'dropLeafWith', and
 -- degree two nodes are pruned with 'pruneWith'.
-intersectWith :: (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> [Tree a] -> [Tree a]
+intersectWith
+        :: (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> [Tree a] -> [Tree a]
 intersectWith f g ts = if null ls
-  then error "intersect: intersection of leaves is empty."
-  else map (retainLeavesWith f g ls) ts
-  where -- Leaf sets.
-        lss = map (Set.fromList . leaves . fmap f) ts
+        then error "intersect: intersection of leaves is empty."
+        else map (retainLeavesWith f g ls) ts
+    where -- Leaf sets.
+        lss = map (S.fromList . leaves . fmap f) ts
         -- Common leaf set.
-        ls  = foldl1' Set.intersection lss
+        ls  = foldl1' S.intersection lss
 
 -- Retain all leaves in a provided set; or conversely, drop all leaves not in a
 -- provided set.
-retainLeavesWith :: (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> Set.Set b -> Tree a -> Tree a
+retainLeavesWith
+        :: (Show b, Ord b)
+        => (a -> b)
+        -> (a -> a -> a)
+        -> S.Set b
+        -> Tree a
+        -> Tree a
 retainLeavesWith f g ls t = foldl' (flip (dropLeafWith f g)) t leavesToDrop
-  where leavesToDrop = filter (`Set.notMember` ls) $ leaves $ fmap f t
+        where leavesToDrop = filter (`S.notMember` ls) $ leaves $ fmap f t
 
 -- | Merge two trees with the same topology. Returns 'Nothing' if the topologies
 -- are different.
 merge :: Tree a -> Tree b -> Maybe (Tree (a, b))
-merge (Node l xs) (Node r ys) =
-  if length xs == length ys
-  -- I am proud of that :)).
-  then zipWithM merge xs ys >>= Just . Node (l, r)
-  else Nothing
+merge (Node l xs) (Node r ys) = if length xs == length ys
+                                -- I am proud of that :)).
+        then zipWithM merge xs ys >>= Just . Node (l, r)
+        else Nothing
 
 -- | Apply a function with different effect on each node to a 'Traversable'.
 -- Based on https://stackoverflow.com/a/41523456.
 tZipWith :: Traversable t => (a -> b -> c) -> [a] -> t b -> Maybe (t c)
 tZipWith f xs = sequenceA . snd . mapAccumL pair xs
-    where pair [] _     = ([], Nothing)
-          pair (y:ys) z = (ys, Just (f y z))
+    where
+        pair []       _ = ([], Nothing)
+        pair (y : ys) z = (ys, Just (f y z))
 
 -- | Each node of a tree is root of a subtree. Get the leaves of the subtree of
 -- each node.
-partitionTree :: (Ord a) => Tree a -> Tree (Subset a)
-partitionTree (Node l []) = Node (ssingleton l) []
-partitionTree (Node _ xs) = Node (sunions $ map rootLabel xs') xs'
-  where xs' = map partitionTree xs
+partitionTree :: (Ord a) => Tree a -> Tree (S.Set a)
+partitionTree (Node l []) = Node (S.singleton l) []
+partitionTree (Node _ xs) = Node (S.unions $ map rootLabel xs') xs'
+        where xs' = map partitionTree xs
+
+-- | Get subtree of 'Tree' with nodes satisfying predicate. Return 'Nothing', if
+-- no leaf satisfies predicate. At the moment: recursively, for each child, take
+-- the child if any leaf in the child satisfies the predicate.
+subTree :: (a -> Bool) -> Tree a -> Maybe (Tree a)
+subTree p leaf@(Node lbl []) | p lbl     = Just leaf
+                             | otherwise = Nothing
+subTree p (Node lbl chs) = if null subTrees
+        then Nothing
+        else Just $ Node lbl subTrees
+        where subTrees = mapMaybe (subTree p) chs
 
 -- | Loop through each tree in a forest to report the complementary leaf sets.
-subForestGetSubsets :: (Ord a)
-                     => Subset a          -- ^ Complementary partition at the stem
-                     -> Tree (Subset a)   -- ^ Tree with partition nodes
-                     -> [Subset a]
+subForestGetSubsets
+        :: (Ord a)
+        => S.Set a          -- ^ Complementary partition at the stem
+        -> Tree (S.Set a)   -- ^ Tree with partition nodes
+        -> [S.Set a]
 subForestGetSubsets lvs t = lvsOthers
-  where
-    xs               = subForest t
-    nChildren        = length xs
-    lvsChildren      = map rootLabel xs
-    lvsOtherChildren = [ sunions $ lvs
-                         : take i lvsChildren ++ drop (i+1) lvsChildren
-                       | i <- [0 .. (nChildren - 1)] ]
-    lvsOthers        = map (sunion lvs) lvsOtherChildren
+    where
+        xs          = subForest t
+        nChildren   = length xs
+        lvsChildren = map rootLabel xs
+        lvsOtherChildren =
+                [ S.unions
+                          $  lvs
+                          :  take i lvsChildren
+                          ++ drop (i + 1) lvsChildren
+                | i <- [0 .. (nChildren - 1)]
+                ]
+        lvsOthers = map (S.union lvs) lvsOtherChildren
 
 -- | Check if a tree is bifurcating. A Bifurcating tree only contains degree one
 -- and degree three nodes. I know, one should use a proper data structure to
@@ -238,33 +228,36 @@ bifurcating (Node _ _     ) = False
 roots :: Tree a -> [Tree a]
 -- Leaves, and cherries have to be handled separately, because they cannot be
 -- rotated.
-roots t@(Node _ [])                     = [t]
+roots t@(Node _ []                    ) = [t]
 roots t@(Node _ [Node _ [], Node _ []]) = [t]
 roots t | bifurcating t = t : left t ++ right t
         | otherwise     = error "roots: Tree is not bifurcating."
 
 -- Move the root to the left.
 left :: Tree a -> [Tree a]
-left (Node i [Node j [x]   , z]) = let t'  = Node i [x           , Node j [z]  ]
-                                   in t' : left t'
-left (Node i [Node j [x, y], z]) = let tll = Node i [x           , Node j [y,z]]
-                                       tlr = Node i [Node j [x,z], y           ]
-                                   in tll : tlr : left tll ++ right tlr
-left (Node _  [Node _ []   , _]) = []
-left (Node _ [] )                = error "left: Encountered a leaf."
-left _                           = error "left: Tree is not bifurcating."
+left (Node i [Node j [x], z]) =
+        let t' = Node i [x, Node j [z]] in t' : left t'
+left (Node i [Node j [x, y], z]) =
+        let tll = Node i [x, Node j [y, z]]
+            tlr = Node i [Node j [x, z], y]
+        in  tll : tlr : left tll ++ right tlr
+left (Node _ [Node _ [], _]) = []
+left (Node _ []            ) = error "left: Encountered a leaf."
+left _                       = error "left: Tree is not bifurcating."
 
 -- Move the root to the right.
 right :: Tree a -> [Tree a]
-right (Node i [x, Node j [z]   ]) = let t' = Node i [Node j [x]  , z  ]
-                                    in t' : right t'
-right (Node i [x, Node j [y, z]]) = let trl = Node i [y           , Node j [x,z]]
-                                        trr = Node i [Node j [x,y], z           ]
-                                    in trl : trr : left trl ++ right trr
-right (Node _ [_, Node _ []   ]) = []
-right (Node _ [] )                = error "right: Encountered a leaf."
-right (Node _ [_])                = error "right: TODO; this case has to be handled separately."
-right _                           = error "left: Tree is not bifurcating."
+right (Node i [x, Node j [z]]) =
+        let t' = Node i [Node j [x], z] in t' : right t'
+right (Node i [x, Node j [y, z]]) =
+        let trl = Node i [y, Node j [x, z]]
+            trr = Node i [Node j [x, y], z]
+        in  trl : trr : left trl ++ right trr
+right (Node _ [_, Node _ []]) = []
+right (Node _ []            ) = error "right: Encountered a leaf."
+right (Node _ [_]) =
+        error "right: TODO; this case has to be handled separately."
+right _ = error "left: Tree is not bifurcating."
 
 -- | Connect two trees with a branch in all possible ways.
 --
@@ -274,13 +267,11 @@ right _                           = error "left: Tree is not bifurcating."
 -- A base node has to be given which will be used wherever the new node is
 -- introduced.
 connect :: a -> Tree a -> Tree a -> [Tree a]
-connect n l r = [ Node n [x, y] | x <- roots l, y <- roots r]
+connect n l r = [ Node n [x, y] | x <- roots l, y <- roots r ]
 
 -- | Get clades induced by multifurcations.
---
--- XXX: Probably introduce a new module defining a Clade.
-clades :: Ord a => Tree a -> [Subset a]
-clades (Node _ [] )    = []
-clades (Node _ [x])    = clades x
+clades :: Ord a => Tree a -> [S.Set a]
+clades (Node _ []    ) = []
+clades (Node _ [x]   ) = clades x
 clades (Node _ [x, y]) = clades x ++ clades y
-clades t               = sfromlist (leaves t) : concatMap clades (subForest t)
+clades t               = S.fromList (leaves t) : concatMap clades (subForest t)
