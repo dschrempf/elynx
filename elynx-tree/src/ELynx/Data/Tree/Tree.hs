@@ -10,6 +10,10 @@ Portability :  portable
 
 Creation date: Thu Jan 17 09:57:29 2019.
 
+Functions to work with rooted, rose 'Tree's with labeled, unique leaves. The
+order of children is not important. However, for the moment, equality checks and
+other comparisons are sensitive to the order of children. See TODO note below.
+
 Comment about nomenclature:
 
 - In "Data.Tree", a 'Tree' is defined as
@@ -33,13 +37,13 @@ rooted data structure equally well. However, in these cases, some functions have
 no meaning. For example, functions measuring the distance from the root to the
 leaves (the height of a rooted tree).
 
-NOTE: Try fgl or alga. Use functional graph library for unrooted trees see also
-the book /Haskell high performance programming from Thomasson/, p. 344.
-
 TODO: The 'Tree' data type is a rose tree with an ordered sub-forest. However,
 the order of the sub-forest does not matter for phylogenetic trees. Equality
 checks will throw false negatives the compared trees only differ in their orders
 of sub-trees.
+
+NOTE: Try fgl or alga. Use functional graph library for unrooted trees see also
+the book /Haskell high performance programming from Thomasson/, p. 344.
 
 -}
 
@@ -134,11 +138,11 @@ pruneWith f    (Node paLbl chs)  = Node paLbl (map (pruneWith f) chs)
 -- degree two node is pruned with 'pruneWith'. Two functions are given for node
 -- name extraction, and for the combination of possibly resulting degree two
 -- nodes.
-dropLeafWith :: (Show b, Eq b) => (a -> b) -> (a -> a -> a) -> b -> Tree a -> Tree a
+dropLeafWith :: (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> b -> Tree a -> Tree a
 dropLeafWith f g l t
   | l `notElem` lvs =
       error "dropLeafWith: leaf not found on tree."
-  | Seq.length (Seq.fromList lvs) < length lvs =
+  | Set.size (Set.fromList lvs) < length lvs =
       error "dropLeafWith: tree does not have unique leaves."
   | otherwise = dropLeafWithUnsafe f g l t
   where lvs = leaves $ fmap f t
@@ -151,26 +155,27 @@ dropLeafWithUnsafe f g lf (Node x xs)
   where isThisLeaf y = null (subForest y) && f (rootLabel y) == lf
         xs'          = map (dropLeafWithUnsafe f g lf) (filter (not . isThisLeaf) xs)
 
--- | Compute the intersection of two trees. The intersection is the tree with
--- the same leaf set. Leaf names used for comparison are extracted by a given
--- function. Leaves are dropped with 'dropLeafWith', and degree two nodes are
--- pruned with 'pruneWith'.
+-- | Compute the intersection of trees. The intersections are the largest
+-- subtrees sharing the same leaf set. Leaf names used for comparison are
+-- extracted by a given function. Leaves are dropped with 'dropLeafWith', and
+-- degree two nodes are pruned with 'pruneWith'.
 intersectWith :: (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> [Tree a] -> [Tree a]
 intersectWith f g ts = if null ls
   then error "intersect: intersection of leaves is empty."
   else map (retainLeavesWith f g ls) ts
-  where
-    -- Leaf sets.
-    lss = map (Set.fromList . leaves . fmap f) ts
-    -- Common leaf set.
-    ls  = foldl1' Set.intersection lss
+  where -- Leaf sets.
+        lss = map (Set.fromList . leaves . fmap f) ts
+        -- Common leaf set.
+        ls  = foldl1' Set.intersection lss
 
--- Drop all leaves not in provided set.
+-- Retain all leaves in a provided set; or conversely, drop all leaves not in a
+-- provided set.
 retainLeavesWith :: (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> Set.Set b -> Tree a -> Tree a
 retainLeavesWith f g ls t = foldl' (flip (dropLeafWith f g)) t leavesToDrop
   where leavesToDrop = filter (`Set.notMember` ls) $ leaves $ fmap f t
 
--- | Merge two trees with the same topology. Returns 'Nothing' if the topologies are different.
+-- | Merge two trees with the same topology. Returns 'Nothing' if the topologies
+-- are different.
 merge :: Tree a -> Tree b -> Maybe (Tree (a, b))
 merge (Node l xs) (Node r ys) =
   if length xs == length ys
@@ -207,9 +212,9 @@ subForestGetSubsets lvs t = lvsOthers
                        | i <- [0 .. (nChildren - 1)] ]
     lvsOthers        = map (sunion lvs) lvsOtherChildren
 
--- | Check if a tree is bifurcating and does not include degree two nodes. I
--- know, one should use a proper data structure to encode bifurcating trees, but
--- I don't have enough time for this now.
+-- | Check if a tree is bifurcating. A Bifurcating tree only contains degree one
+-- and degree three nodes. I know, one should use a proper data structure to
+-- encode bifurcating trees.
 bifurcating :: Tree a -> Bool
 bifurcating (Node _ []    ) = True
 bifurcating (Node _ [_]   ) = False
@@ -261,7 +266,7 @@ right (Node _ [] )                = error "right: Encountered a leaf."
 right (Node _ [_])                = error "right: TODO; this case has to be handled separately."
 right _                           = error "left: Tree is not bifurcating."
 
--- | Connect two trees in all possible ways.
+-- | Connect two trees with a branch in all possible ways.
 --
 -- Basically, introduce a branch between two trees. If the trees have n, and m
 -- branches, respectively, there are n*m ways to connect them.

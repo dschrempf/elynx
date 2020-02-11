@@ -66,7 +66,7 @@ newtype Bipartition a = Bipartition {bps :: (Subset a, Subset a) -- ^ Tuple of p
 bphuman :: (a -> String) -> Bipartition a -> String
 bphuman f (Bipartition (x, y)) = "(" ++ sshow f x ++ "|" ++ sshow f y ++  ")"
 
--- | Create a bipartition from two 'S.Set's.
+-- | Create a bipartition from two 'Subset's.
 bp :: Ord a => Subset a -> Subset a -> Bipartition a
 bp xs ys = if xs >= ys
          then Bipartition (xs, ys)

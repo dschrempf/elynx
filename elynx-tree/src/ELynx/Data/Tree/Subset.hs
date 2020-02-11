@@ -57,9 +57,10 @@ sfromset = SS
 -- | Create a subset from a list. Throws an error if duplicate elements are
 -- present in the list.
 sfromlist :: Ord a => [a] -> Subset a
-sfromlist l = if S.size s == length l
-              then sfromset s
-              else error "sfromlist: List contains duplicate elements."
+sfromlist l =
+  if S.size s == length l
+  then sfromset s
+  else error "sfromlist: List contains duplicate elements."
   where s = S.fromList l
 
 -- | Map a function over all elements in a subset.
