@@ -24,6 +24,8 @@ import           Control.Concurrent             ( getNumCapabilities )
 import           Control.Concurrent.Async.Lifted.Safe
                                                 ( mapConcurrently )
 import           Control.Monad
+import           Control.Monad.Trans.Reader     ( ask )
+import           Control.Monad.Trans.Class      ( lift )
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Parallel.Strategies
@@ -50,7 +52,7 @@ import           ELynx.Simulate.Coalescent      ( simulate )
 import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools.Options            ( ELynx )
 
 -- | Simulate phylogenetic trees.
 coalesce :: CoalesceArguments -> ELynx ()

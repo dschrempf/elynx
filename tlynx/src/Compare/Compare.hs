@@ -51,10 +51,11 @@ import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree           ( intersectWith )
 import           ELynx.Export.Tree.Newick       ( toNewick )
 import           ELynx.Import.Tree.Newick
-import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Reproduction       ( ELynx
-                                                , getOutFilePath
+import           ELynx.Tools.InputOutput        ( getOutFilePath
+                                                , parseFileWith
+                                                , outHandle
                                                 )
+import           ELynx.Tools.Options            ( ELynx )
 
 treesOneFile
   :: Bool

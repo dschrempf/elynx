@@ -58,11 +58,11 @@ import           ELynx.Simulate.PointProcess    ( TimeSpec
                                                 , simulateReconstructedTree
                                                 )
 import           ELynx.Tools.Concurrent
-import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Logger
-import           ELynx.Tools.Reproduction       ( ELynx
-                                                , getOutFilePath
+import           ELynx.Tools.InputOutput        ( getOutFilePath
+                                                , out
                                                 )
+import           ELynx.Tools.Logger
+import           ELynx.Tools.Options            ( ELynx )
 
 -- | Simulate phylogenetic trees.
 simulate :: SimulateArguments -> ELynx ()

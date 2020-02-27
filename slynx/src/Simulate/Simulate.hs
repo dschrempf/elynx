@@ -70,8 +70,8 @@ import           ELynx.Simulate.MarkovProcessAlongTree
 import           ELynx.Tools.ByteString
 import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
+import           ELynx.Tools.Options            ( ELynx )
 import           ELynx.Tools.Misc
-import           ELynx.Tools.Reproduction
 
 -- Simulate a 'Alignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.

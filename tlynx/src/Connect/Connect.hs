@@ -43,10 +43,9 @@ import           ELynx.Import.Tree.Newick       ( manyNewick
                                                 )
 import           ELynx.Tools.InputOutput        ( outHandle
                                                 , parseFileWith
-                                                )
-import           ELynx.Tools.Reproduction       ( ELynx
                                                 , getOutFilePath
                                                 )
+import           ELynx.Tools.Options            ( ELynx )
 import           ELynx.Tools.Text               ( fromBs
                                                 , tShow
                                                 )

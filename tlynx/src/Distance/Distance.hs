@@ -66,11 +66,13 @@ import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.ByteString         ( alignLeft
                                                 , alignRight
                                                 )
-import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Logger
-import           ELynx.Tools.Reproduction       ( ELynx
-                                                , getOutFilePath
+import           ELynx.Tools.InputOutput        ( getOutFilePath
+                                                , outHandle
+                                                , parseFileWith
+                                                , parseIOWith
                                                 )
+import           ELynx.Tools.Logger
+import           ELynx.Tools.Options            ( ELynx )
 
 median :: Ord a => [a] -> a
 median xs = sort xs !! l2 where l2 = length xs `div` 2

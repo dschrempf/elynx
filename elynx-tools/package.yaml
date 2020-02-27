@@ -35,6 +35,7 @@ dependencies:
   - cryptohash-sha256
   # - data-memocombinators
   - deepseq
+  - directory
   - fast-logger
   - hmatrix
   - lifted-base

@@ -47,18 +47,22 @@ import           Data.Text                      ( Text
                                                 )
 import           System.IO                      ( BufferMode(LineBuffering)
                                                 , Handle
-                                                , IOMode(AppendMode)
+                                                , IOMode(WriteMode)
                                                 , hClose
                                                 , hSetBuffering
-                                                , openFile
                                                 , stderr
                                                 )
 import           System.Log.FastLogger          ( LogStr
                                                 , fromLogStr
                                                 )
 
-import           ELynx.Tools.Options
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools.Options            ( ELynx
+                                                , Redo
+                                                , GlobalArguments(..)
+                                                , logHeader
+                                                , logFooter
+                                                )
+import           ELynx.Tools.InputOutput        ( openFile' )
 
 -- | Unified way of creating a new section in the log.
 logNewSection :: MonadLogger m => Text -> m ()
@@ -71,8 +75,9 @@ eLynxWrapper :: String -> ELynx () -> ReaderT GlobalArguments IO ()
 eLynxWrapper header worker = do
   a <- ask
   let lvl     = logLevel a
+      rd      = redo a
       logFile = (++ ".log") <$> outFileBaseName a
-  runELynxLoggingT lvl logFile $ do
+  runELynxLoggingT lvl rd logFile $ do
     h <- liftIO $ logHeader header
     $(logInfo) $ pack h
     worker
@@ -82,16 +87,18 @@ eLynxWrapper header worker = do
 runELynxLoggingT
   :: (MonadBaseControl IO m, MonadIO m)
   => LogLevel
+  -> Redo
   -> Maybe FilePath
   -> LoggingT m a
   -> m a
-runELynxLoggingT lvl f = case f of
+runELynxLoggingT lvl rd f = case f of
   Nothing -> runELynxStderrLoggingT . filterLogger (\_ l -> l >= lvl)
-  Just fn -> runELynxFileLoggingT fn . filterLogger (\_ l -> l >= lvl)
+  Just fn -> runELynxFileLoggingT rd fn . filterLogger (\_ l -> l >= lvl)
 
-runELynxFileLoggingT :: MonadBaseControl IO m => FilePath -> LoggingT m a -> m a
-runELynxFileLoggingT fp logger =
-  bracket (liftBase $ openFile fp AppendMode) (liftBase . hClose) $ \h ->
+runELynxFileLoggingT
+  :: MonadBaseControl IO m => Redo -> FilePath -> LoggingT m a -> m a
+runELynxFileLoggingT rd fp logger =
+  bracket (liftBase $ openFile' rd fp WriteMode) (liftBase . hClose) $ \h ->
     liftBase (hSetBuffering h LineBuffering)
       >> runLoggingT logger (output2H stderr h)
 

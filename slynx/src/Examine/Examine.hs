@@ -34,7 +34,7 @@ import qualified ELynx.Data.Alphabet.Character as C
 import qualified ELynx.Data.Sequence.Alignment as M
 import qualified ELynx.Data.Sequence.Sequence  as Seq
 import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools.Options            ( ELynx )
 
 examineAlignment :: Bool -> M.Alignment -> L.ByteString
 examineAlignment perSiteFlag a =

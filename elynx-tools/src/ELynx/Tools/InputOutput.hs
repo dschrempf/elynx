@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE LambdaCase #-}
 
 {- |
 Module      :  ELynx.Tools.InputOutput
@@ -17,9 +18,10 @@ Tools involving input, output, and parsing.
 -}
 
 module ELynx.Tools.InputOutput
-  (
-    -- * Input, output.
-    readGZFile
+  ( -- * Input, output.
+    getOutFilePath
+  , openFile'
+  , readGZFile
   , writeGZFile
   , out
   , outHandle
@@ -36,6 +38,8 @@ where
 import           Codec.Compression.GZip         ( compress
                                                 , decompress
                                                 )
+import           Control.Monad.Trans.Reader     ( ask )
+import           Control.Monad.Trans.Class      ( lift )
 import           Control.DeepSeq                ( force )
 import           Control.Exception              ( evaluate )
 import           Control.Monad                  ( (<=<) )
@@ -46,7 +50,30 @@ import           Data.List                      ( isSuffixOf )
 import           Data.Maybe
 import qualified Data.Text                     as T
 import           System.IO
+import           System.Directory               ( doesFileExist )
 import           Text.Megaparsec
+
+import           ELynx.Tools.Options            ( ELynx
+                                                , Redo(..)
+                                                , outFileBaseName
+                                                , redo
+                                                )
+
+-- | Get out file path with extension.
+getOutFilePath :: String -> ELynx (Maybe FilePath)
+getOutFilePath ext = do
+  ofbn <- outFileBaseName <$> lift ask
+  return $ (++ ext) <$> ofbn
+
+checkFile :: Redo -> FilePath -> IO ()
+checkFile Overwrite _  = return ()
+checkFile Exit      fp = doesFileExist fp >>= \case
+  True ->
+    error $ "File exists:" <> fp <> ". Use --redo option to repeat analysis."
+  False -> return ()
+
+openFile' :: Redo -> FilePath -> IOMode -> IO Handle
+openFile' rd fp md = checkFile rd fp >> openFile fp md
 
 -- XXX: For now, all files are read strictly (see help of
 -- Control.DeepSeq.force).
@@ -61,9 +88,10 @@ readGZFile f | ".gz" `isSuffixOf` f = decompress <$> readFile' f
 
 -- | Write file. If file path ends with ".gz", assume gzipped file and compress
 -- before write.
-writeGZFile :: FilePath -> L.ByteString -> IO ()
-writeGZFile f | ".gz" `isSuffixOf` f = L.writeFile f . compress
-              | otherwise            = L.writeFile f
+writeGZFile :: Redo -> FilePath -> L.ByteString -> IO ()
+writeGZFile rd f r
+  | ".gz" `isSuffixOf` f = checkFile rd f >> L.writeFile f (compress r)
+  | otherwise            = checkFile rd f >> L.writeFile f r
 
 -- | Parse a possibly gzipped file.
 runParserOnFile
@@ -94,9 +122,7 @@ parseFileOrIOWith
   -> Maybe FilePath          -- ^ If no file path is given, standard input is used.
   -> IO a
 parseFileOrIOWith p mf = do
-  contents <- case mf of
-    Nothing -> L.getContents
-    Just f  -> readGZFile f
+  contents <- maybe L.getContents readGZFile mf
   return $ parseByteStringWith (fromMaybe "Standard input" mf) p contents
 
 -- | Parse a 'String' and extract the result.
@@ -121,27 +147,24 @@ parseByteStringWith s p l = case parse p s l of
 
 -- | Write a result with a given name to file or standard output. Supports
 -- compression.
-out
-  :: (MonadLogger m, MonadIO m)
-  => String
-  -> L.ByteString
-  -> Maybe FilePath
-  -> m ()
+out :: String -> L.ByteString -> Maybe FilePath -> ELynx ()
 out name res mfp = case mfp of
   Nothing -> do
     $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
     liftIO $ L.putStr res
   Just fp -> do
     $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
-    liftIO $ writeGZFile fp res
+    rd <- redo <$> lift ask
+    liftIO $ writeGZFile rd fp res
 
 -- | Get an output handle, does not support compression. The handle has to be
 -- closed after use!
-outHandle :: (MonadLogger m, MonadIO m) => String -> Maybe FilePath -> m Handle
+outHandle :: String -> Maybe FilePath -> ELynx Handle
 outHandle name mfp = case mfp of
   Nothing -> do
     $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
     return stdout
   Just fp -> do
     $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
-    liftIO $ openFile fp WriteMode
+    rd <- redo <$> lift ask
+    liftIO $ openFile' rd fp WriteMode

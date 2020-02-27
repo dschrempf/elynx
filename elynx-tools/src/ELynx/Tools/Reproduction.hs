@@ -16,9 +16,7 @@ Creation date: Tue Nov 19 15:07:09 2019.
 -}
 
 module ELynx.Tools.Reproduction
-  ( ELynx
-  , getOutFilePath
-  , Reproducible(..)
+  ( Reproducible(..)
   , Reproduction(..)
   , readR
   , writeR
@@ -26,11 +24,6 @@ module ELynx.Tools.Reproduction
 where
 
 import           Control.Monad                  ( zipWithM )
-import           Control.Monad.Logger           ( LoggingT )
-import           Control.Monad.Trans.Class      ( lift )
-import           Control.Monad.Trans.Reader     ( ReaderT
-                                                , ask
-                                                )
 import           Crypto.Hash.SHA256             ( hash )
 import           Data.Aeson                     ( FromJSON
                                                 , ToJSON
@@ -51,19 +44,6 @@ import           Options.Applicative            ( Parser
 import           System.Environment             ( getArgs
                                                 , getProgName
                                                 )
-
-import           ELynx.Tools.Options
-
--- TODO: Do these two definitions belong here?
-
--- | Logging transformer to be used with all executables.
-type ELynx = LoggingT (ReaderT GlobalArguments IO)
-
--- | Get out file path with extension.
-getOutFilePath :: String -> ELynx (Maybe FilePath)
-getOutFilePath ext = do
-  ofbn <- outFileBaseName <$> lift ask
-  return $ (++ ext) <$> ofbn
 
 -- | Reproducible commands have a set of input files that have to be checked for
 -- consistency.

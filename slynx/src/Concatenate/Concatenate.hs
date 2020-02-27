@@ -28,7 +28,7 @@ import           Tools
 import qualified ELynx.Data.Sequence.Sequence  as S
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools.Options            ( ELynx )
 
 -- | Concatenate sequences.
 concatenateCmd :: ConcatenateArguments -> ELynx ()

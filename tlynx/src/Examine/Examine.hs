@@ -39,10 +39,11 @@ import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree
 import           ELynx.Import.Tree.Newick
-import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Reproduction       ( ELynx
-                                                , getOutFilePath
+import           ELynx.Tools.InputOutput        ( getOutFilePath
+                                                , parseFileOrIOWith
+                                                , outHandle
                                                 )
+import           ELynx.Tools.Options            ( ELynx )
 
 readTrees :: Bool -> Maybe FilePath -> ELynx [Tree (PhyloLabel L.ByteString)]
 readTrees iqtree mfp = do
