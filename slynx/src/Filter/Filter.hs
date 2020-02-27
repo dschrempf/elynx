@@ -36,7 +36,6 @@ import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Misc
-import           ELynx.Tools.Reproduction
 
 filterRows :: Maybe Int -> Maybe Int -> Bool -> [S.Sequence] -> L.ByteString
 filterRows ml ms std ss = sequencesToFasta $ compose filters ss

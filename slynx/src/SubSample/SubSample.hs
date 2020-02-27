@@ -39,7 +39,6 @@ import qualified ELynx.Data.Sequence.Alignment as M
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Options
-import           ELynx.Tools.Reproduction
 
 -- | Get a given number of output file names with provided suffix.
 --

@@ -18,7 +18,6 @@ module SubSample.Options
   )
 where
 
-import           Control.Applicative
 import           Data.Word
 import           Options.Applicative
 
@@ -30,7 +29,7 @@ import           ELynx.Tools.Options
 -- | Data structure holding the Command line arguments.
 data SubSampleArguments = SubSampleArguments
     { ssAlphabet    :: Alphabet
-    , ssInFile      :: Maybe FilePath
+    , ssInFile      :: FilePath
     , ssNSites      :: Int
     , ssNAlignments :: Int
     , ssMbSeed      :: Maybe [Word32] }
@@ -40,7 +39,7 @@ subSampleArguments :: Parser SubSampleArguments
 subSampleArguments =
   SubSampleArguments
     <$> alphabetOpt
-    <*> optional filePathArg
+    <*> filePathArg
     <*> subSampleNSitesOpt
     <*> subSampleNAlignmentsOpt
     <*> seedOpt

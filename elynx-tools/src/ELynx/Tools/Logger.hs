@@ -57,7 +57,7 @@ import           System.Log.FastLogger          ( LogStr
                                                 )
 
 import           ELynx.Tools.Options            ( ELynx
-                                                , Redo
+                                                , Force
                                                 , GlobalArguments(..)
                                                 , logHeader
                                                 , logFooter
@@ -75,7 +75,7 @@ eLynxWrapper :: String -> ELynx () -> ReaderT GlobalArguments IO ()
 eLynxWrapper header worker = do
   a <- ask
   let lvl     = logLevel a
-      rd      = redo a
+      rd      = forceReanalysis a
       logFile = (++ ".log") <$> outFileBaseName a
   runELynxLoggingT lvl rd logFile $ do
     h <- liftIO $ logHeader header
@@ -87,18 +87,18 @@ eLynxWrapper header worker = do
 runELynxLoggingT
   :: (MonadBaseControl IO m, MonadIO m)
   => LogLevel
-  -> Redo
+  -> Force
   -> Maybe FilePath
   -> LoggingT m a
   -> m a
-runELynxLoggingT lvl rd f = case f of
+runELynxLoggingT lvl frc f = case f of
   Nothing -> runELynxStderrLoggingT . filterLogger (\_ l -> l >= lvl)
-  Just fn -> runELynxFileLoggingT rd fn . filterLogger (\_ l -> l >= lvl)
+  Just fn -> runELynxFileLoggingT frc fn . filterLogger (\_ l -> l >= lvl)
 
 runELynxFileLoggingT
-  :: MonadBaseControl IO m => Redo -> FilePath -> LoggingT m a -> m a
-runELynxFileLoggingT rd fp logger =
-  bracket (liftBase $ openFile' rd fp WriteMode) (liftBase . hClose) $ \h ->
+  :: MonadBaseControl IO m => Force -> FilePath -> LoggingT m a -> m a
+runELynxFileLoggingT frc fp logger =
+  bracket (liftBase $ openFile' frc fp WriteMode) (liftBase . hClose) $ \h ->
     liftBase (hSetBuffering h LineBuffering)
       >> runLoggingT logger (output2H stderr h)
 

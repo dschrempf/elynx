@@ -34,7 +34,7 @@ import           ELynx.Tools.Options            ( ELynx )
 concatenateCmd :: ConcatenateArguments -> ELynx ()
 concatenateCmd (ConcatenateArguments al fps) = do
   $(logInfo) "Command: Concatenate sequences."
-  sss <- mapM (readSeqs al . Just) fps
+  sss <- mapM (readSeqs al) fps
   let result = sequencesToFasta $ S.concatSequences sss
   fn <- getOutFilePath ".fasta"
   out "concatenated multi sequence alignment " result fn

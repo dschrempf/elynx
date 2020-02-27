@@ -18,8 +18,6 @@ module Examine.Options
   )
 where
 
-import           Control.Applicative            ( optional )
-import           Data.Maybe                     ( fromJust )
 import           Options.Applicative
 
 import           Tools
@@ -30,14 +28,11 @@ import           ELynx.Tools.Reproduction
 -- | Arguments needed to examine sequences.
 data ExamineArguments = ExamineArguments
     { exAlphabet :: Alphabet
-    , exInFile   :: Maybe FilePath
+    , exInFile   :: FilePath
     , exPerSite  :: Bool }
 
 instance Reproducible ExamineArguments where
-  -- TODO: How do I combine optional input files with reproducibility? The
-  -- answer is: use checksums! Also other input files have to be checked with
-  -- check sums. StdIO can also be checked in the same way.
-  inFiles = pure . fromJust . exInFile
+  inFiles  = pure . exInFile
   parser _ = examineArguments
 
 -- | Command line parser.
@@ -45,7 +40,7 @@ examineArguments :: Parser ExamineArguments
 examineArguments =
   ExamineArguments
     <$> alphabetOpt
-    <*> optional filePathArg
+    <*> filePathArg
     <*> examinePerSiteOpt
 
 examinePerSiteOpt :: Parser Bool

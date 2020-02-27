@@ -13,6 +13,11 @@ Portability :  portable
 
 Creation date: Tue Nov 19 15:07:09 2019.
 
+Use of standard input is not supported.
+
+TODO: Provide validate function (also store output hash and check, don't
+perform analysis).
+
 -}
 
 module ELynx.Tools.Reproduction
@@ -23,7 +28,9 @@ module ELynx.Tools.Reproduction
   )
 where
 
-import           Control.Monad                  ( zipWithM )
+import           Control.Monad                  ( zipWithM
+                                                , void
+                                                )
 import           Crypto.Hash.SHA256             ( hash )
 import           Data.Aeson                     ( FromJSON
                                                 , ToJSON
@@ -45,20 +52,22 @@ import           System.Environment             ( getArgs
                                                 , getProgName
                                                 )
 
--- | Reproducible commands have a set of input files that have to be checked for
--- consistency.
+-- | Reproducible commands have
+--   - a set of input files to be checked for consistency,
+--   - maybe standard input to be checked for consistency,
+--   - a parser to read the command line.
 class Reproducible a where
-  inFiles :: a -> [FilePath]
-  parser  :: a -> Parser a
+  inFiles    :: a -> [FilePath]
+  parser     :: a -> Parser a
 
 -- | Necessary information for a reproducible run. Notably, the input files are
 -- checked for consistency!
 data Reproduction a = Reproduction
-  { progName  :: String         -- ^ Program name.
-  , args      :: [String]       -- ^ Command line arguments without program name.
-  , filePaths :: [FilePath]     -- ^ File paths of in files.
-  , checkSums :: [String]       -- ^ SHA256 sums of in files.
-  , cmd       :: a              -- ^ Command argument.
+  { progName      :: String       -- ^ Program name.
+  , args          :: [String]     -- ^ Command line arguments without program name.
+  , filePaths     :: [FilePath]   -- ^ File paths of in files.
+  , checkSums     :: [String]     -- ^ SHA256 sums of in files.
+  , cmd           :: a            -- ^ Command argument.
   } deriving (Generic)
 
 instance ToJSON a => ToJSON (Reproduction a) where
@@ -91,7 +100,7 @@ checkFile fp h = do
     else Left $ unlines
       [ "SHA256 sum does not match for a file."
       , fp ++ " has check sum " ++ B.unpack h'
-      , "Stored sum is " ++ B.unpack h
+      , "Stored check sum is " ++ B.unpack h
       ]
 
 -- | Check if command line arguments and files check sums are matching.
@@ -135,4 +144,6 @@ writeR fp c = do
       r   = Reproduction p as fs cs' c
   -- XXX: Actually, it is only necessary to to checkArgs here. But let's just be safe.
   ch <- checkReproduction r
-  either error (const $ encodeFile fp r) ch
+  case ch of
+    Left  s -> error s
+    Right _ -> void $ encodeFile fp r

@@ -34,26 +34,38 @@ import           ELynx.Import.Sequence.Fasta
                                          hiding ( Parser )
 import           ELynx.Tools.InputOutput
 
+-- -- | Read sequences of given alphabet from file or standard input.
+-- readSeqs
+--   :: (MonadIO m, MonadLogger m) => Alphabet -> Maybe FilePath -> m [Sequence]
+-- readSeqs a mfp = do
+--   case mfp of
+--     Nothing ->
+--       $(logInfo)
+--         $  T.pack
+--         $  "Read sequences from standard input; alphabet "
+--         <> show a
+--         <> "."
+--     Just fp ->
+--       $(logInfo)
+--         $  T.pack
+--         $  "Read sequences from file "
+--         <> fp
+--         <> "; alphabet "
+--         <> show a
+--         <> "."
+--   liftIO $ parseFileOrIOWith (fasta a) mfp
+
 -- | Read sequences of given alphabet from file or standard input.
-readSeqs
-  :: (MonadIO m, MonadLogger m) => Alphabet -> Maybe FilePath -> m [Sequence]
-readSeqs a mfp = do
-  case mfp of
-    Nothing ->
-      $(logInfo)
-        $  T.pack
-        $  "Read sequences from standard input; alphabet "
-        <> show a
-        <> "."
-    Just fp ->
-      $(logInfo)
-        $  T.pack
-        $  "Read sequences from file "
-        <> fp
-        <> "; alphabet "
-        <> show a
-        <> "."
-  liftIO $ parseFileOrIOWith (fasta a) mfp
+readSeqs :: (MonadIO m, MonadLogger m) => Alphabet -> FilePath -> m [Sequence]
+readSeqs a fp = do
+  $(logInfo)
+    $  T.pack
+    $  "Read sequences from file "
+    <> fp
+    <> "; alphabet "
+    <> show a
+    <> "."
+  liftIO $ parseFileWith (fasta a) fp
 
 -- | Command line option to specify the alphabet. Used by various commands.
 alphabetOpt :: Parser Alphabet

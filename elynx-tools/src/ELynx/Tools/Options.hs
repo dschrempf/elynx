@@ -22,7 +22,7 @@ module ELynx.Tools.Options
     -- * Options
   , parseArgumentsWith
   , Verbosity(..)
-  , Redo(..)
+  , Force(..)
   , Arguments(..)
   , GlobalArguments(..)
   , globalArguments
@@ -156,7 +156,7 @@ toLogLevel Debug   = LevelDebug
 
 
 -- | Exit when output exists, or overwrite.
-data Redo = Exit | Overwrite
+newtype Force = Force Bool
 
 -- | Argument skeleton to be used with all commands.
 data Arguments a = Arguments { global :: GlobalArguments
@@ -169,7 +169,7 @@ data Arguments a = Arguments { global :: GlobalArguments
 data GlobalArguments = GlobalArguments
   { logLevel        :: LogLevel
   , outFileBaseName :: Maybe FilePath
-  , redo            :: Redo }
+  , forceReanalysis :: Force }
 
 -- | See 'GlobalArguments', parser function.
 --
@@ -202,12 +202,12 @@ outFileBaseNameOpt = strOption
     "Specify base name of output file"
   )
 
-redoOpt :: Parser Redo
+redoOpt :: Parser Force
 redoOpt = flag
-  Exit
-  Overwrite
-  (long "redo" <> short 'r' <> help
-    "Redo previous analysis and overwrite existing output files."
+  (Force False)
+  (Force True)
+  (long "force" <> short 'f' <> help
+    "Ignore previous analysis and overwrite existing output files."
   )
 
 -- | Seed option for MWC. Defaults to RANDOM.

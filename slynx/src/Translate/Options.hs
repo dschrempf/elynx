@@ -18,7 +18,6 @@ module Translate.Options
   )
 where
 
-import           Control.Applicative
 import           Data.List
 import           Options.Applicative
 
@@ -31,7 +30,7 @@ import           ELynx.Tools.Misc
 -- | Arguments needed to translate sequences.
 data TranslateArguments = TranslateArguments
     { trAlphabet      :: Alphabet
-    , trInFile        :: Maybe FilePath
+    , trInFile        :: FilePath
     , trReadingFrame  :: Int
     , trUniversalCode :: UniversalCode }
 
@@ -40,7 +39,7 @@ translateArguments :: Parser TranslateArguments
 translateArguments =
   TranslateArguments
     <$> alphabetOpt
-    <*> optional inFileArg
+    <*> inFileArg
     <*> readingFrameOpt
     <*> universalCodeOpt
 

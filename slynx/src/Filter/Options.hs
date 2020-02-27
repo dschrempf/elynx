@@ -30,7 +30,7 @@ import           ELynx.Data.Alphabet.Alphabet
 -- | Arguments needed for filtering sequences.
 data FilterRowsArguments = FilterRowsArguments
   { frAlphabet :: Alphabet
-  , frInFile   :: Maybe FilePath
+  , frInFile   :: FilePath
   , frLonger   :: Maybe Int
   , frShorter  :: Maybe Int
   , frStandard :: Bool }
@@ -38,7 +38,7 @@ data FilterRowsArguments = FilterRowsArguments
 -- | Arguments needed for filtering columns of a multi sequence alignment.
 data FilterColsArguments = FilterColsArguments
   { fcAlphabet :: Alphabet
-  , fcInFile   :: Maybe FilePath
+  , fcInFile   :: FilePath
   , fcStandard :: Maybe Double }
 
 -- | Command line parser.
@@ -46,7 +46,7 @@ filterRowsArguments :: Parser FilterRowsArguments
 filterRowsArguments =
   FilterRowsArguments
     <$> alphabetOpt
-    <*> optional inFileArg
+    <*> inFileArg
     <*> filterLongerThanOpt
     <*> filterShorterThanOpt
     <*> filterStandardChars
@@ -73,7 +73,7 @@ filterColsArguments :: Parser FilterColsArguments
 filterColsArguments =
   FilterColsArguments
     <$> alphabetOpt
-    <*> optional inFileArg
+    <*> inFileArg
     <*> filterStandardOpt
 
 filterStandardOpt :: Parser (Maybe Double)

@@ -54,9 +54,9 @@ import           System.Directory               ( doesFileExist )
 import           Text.Megaparsec
 
 import           ELynx.Tools.Options            ( ELynx
-                                                , Redo(..)
+                                                , Force(..)
                                                 , outFileBaseName
-                                                , redo
+                                                , forceReanalysis
                                                 )
 
 -- | Get out file path with extension.
@@ -65,15 +65,15 @@ getOutFilePath ext = do
   ofbn <- outFileBaseName <$> lift ask
   return $ (++ ext) <$> ofbn
 
-checkFile :: Redo -> FilePath -> IO ()
-checkFile Overwrite _  = return ()
-checkFile Exit      fp = doesFileExist fp >>= \case
+checkFile :: Force -> FilePath -> IO ()
+checkFile (Force True)  _  = return ()
+checkFile (Force False) fp = doesFileExist fp >>= \case
   True ->
-    error $ "File exists:" <> fp <> ". Use --redo option to repeat analysis."
+    error $ "File exists: " <> fp <> ". Please use the --redo option to repeat an analysis."
   False -> return ()
 
-openFile' :: Redo -> FilePath -> IOMode -> IO Handle
-openFile' rd fp md = checkFile rd fp >> openFile fp md
+openFile' :: Force -> FilePath -> IOMode -> IO Handle
+openFile' frc fp md = checkFile frc fp >> openFile fp md
 
 -- XXX: For now, all files are read strictly (see help of
 -- Control.DeepSeq.force).
@@ -88,10 +88,10 @@ readGZFile f | ".gz" `isSuffixOf` f = decompress <$> readFile' f
 
 -- | Write file. If file path ends with ".gz", assume gzipped file and compress
 -- before write.
-writeGZFile :: Redo -> FilePath -> L.ByteString -> IO ()
-writeGZFile rd f r
-  | ".gz" `isSuffixOf` f = checkFile rd f >> L.writeFile f (compress r)
-  | otherwise            = checkFile rd f >> L.writeFile f r
+writeGZFile :: Force -> FilePath -> L.ByteString -> IO ()
+writeGZFile frc f r
+  | ".gz" `isSuffixOf` f = checkFile frc f >> L.writeFile f (compress r)
+  | otherwise            = checkFile frc f >> L.writeFile f r
 
 -- | Parse a possibly gzipped file.
 runParserOnFile
@@ -154,8 +154,8 @@ out name res mfp = case mfp of
     liftIO $ L.putStr res
   Just fp -> do
     $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
-    rd <- redo <$> lift ask
-    liftIO $ writeGZFile rd fp res
+    frc <- forceReanalysis <$> lift ask
+    liftIO $ writeGZFile frc fp res
 
 -- | Get an output handle, does not support compression. The handle has to be
 -- closed after use!
@@ -166,5 +166,5 @@ outHandle name mfp = case mfp of
     return stdout
   Just fp -> do
     $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
-    rd <- redo <$> lift ask
-    liftIO $ openFile' rd fp WriteMode
+    frc <- forceReanalysis <$> lift ask
+    liftIO $ openFile' frc fp WriteMode
