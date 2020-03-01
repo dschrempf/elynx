@@ -72,6 +72,7 @@ checkFile (Force False) fp = doesFileExist fp >>= \case
     error $ "File exists: " <> fp <> ". Please use the --redo option to repeat an analysis."
   False -> return ()
 
+-- | Open existing files only if 'Force' is true.
 openFile' :: Force -> FilePath -> IOMode -> IO Handle
 openFile' frc fp md = checkFile frc fp >> openFile fp md
 

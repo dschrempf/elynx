@@ -32,15 +32,15 @@ main = do
   (Arguments g c) <- parseArguments
   case c of
     Concatenate a ->
-      runReaderT (eLynxWrapper concatenateDescription $ concatenateCmd a) g
-    Examine a -> runReaderT (eLynxWrapper examineDescription $ examineCmd a) g
+      runReaderT (eLynxWrapper concatenateDescription a $ concatenateCmd a) g
+    Examine a -> runReaderT (eLynxWrapper examineDescription a $ examineCmd a) g
     FilterRows a ->
-      runReaderT (eLynxWrapper filterRowsDescription $ filterRowsCmd a) g
+      runReaderT (eLynxWrapper filterRowsDescription a $ filterRowsCmd a) g
     FilterCols a ->
-      runReaderT (eLynxWrapper filterColumnsDescription $ filterColsCmd a) g
+      runReaderT (eLynxWrapper filterColumnsDescription a $ filterColsCmd a) g
     Simulate a ->
-      runReaderT (eLynxWrapper simulateDescription $ simulateCmd a) g
+      runReaderT (eLynxWrapper simulateDescription a $ simulateCmd a) g
     SubSample a ->
-      runReaderT (eLynxWrapper subSampleDescription $ subSampleCmd a) g
+      runReaderT (eLynxWrapper subSampleDescription a $ subSampleCmd a) g
     Translate a ->
-      runReaderT (eLynxWrapper translateDescription $ translateCmd a) g
+      runReaderT (eLynxWrapper translateDescription a $ translateCmd a) g

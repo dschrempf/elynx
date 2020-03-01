@@ -23,6 +23,7 @@ module ELynx.Tools.Logger
   )
 where
 
+import           Data.Aeson                     ( ToJSON )
 import           Control.Exception.Lifted       ( bracket )
 import           Control.Monad.Base             ( liftBase )
 import           Control.Monad.IO.Class         ( MonadIO
@@ -63,6 +64,9 @@ import           ELynx.Tools.Options            ( ELynx
                                                 , logFooter
                                                 )
 import           ELynx.Tools.InputOutput        ( openFile' )
+import           ELynx.Tools.Reproduction       ( Reproducible
+                                                , writeR
+                                                )
 
 -- | Unified way of creating a new section in the log.
 logNewSection :: MonadLogger m => Text -> m ()
@@ -71,15 +75,28 @@ logNewSection s = $(logInfo) $ "== " <> s
 -- | The 'LoggingT' wrapper for ELynx. Prints a header and a footer, logs to
 -- 'stderr' if no file is provided. If a log file is provided, log to the file
 -- and to 'stderr'.
-eLynxWrapper :: String -> ELynx () -> ReaderT GlobalArguments IO ()
-eLynxWrapper header worker = do
+eLynxWrapper
+  :: (Eq a, Show a, Reproducible a, ToJSON a)
+  => String
+  -- XXX: It is bad that the local arguments have to be provided here, but
+  -- that's just how it is easiest for now.
+  -> a
+  -> ELynx ()
+  -> ReaderT GlobalArguments IO ()
+eLynxWrapper header rep worker = do
   a <- ask
   let lvl     = logLevel a
       rd      = forceReanalysis a
       logFile = (++ ".log") <$> outFileBaseName a
+      repFile = (++ ".elynx") <$> outFileBaseName a
   runELynxLoggingT lvl rd logFile $ do
     h <- liftIO $ logHeader header
     $(logInfo) $ pack h
+    case repFile of
+      Nothing -> do
+        $(logInfo) "No output file given."
+        $(logInfo) "ELynx file for reproducible runs has not been created."
+      Just f -> liftIO $ writeR f rep
     worker
     f <- liftIO logFooter
     $(logInfo) $ pack f
