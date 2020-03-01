@@ -110,33 +110,28 @@ distance a = do
       let n = length ts
       when (n > 1) (error "More than one tree found in master file.")
       $(logInfo) "Compute distances between all trees and master tree."
-      $(logInfo)
-        $  T.pack
-        $  "Trees are numbered from 0 to "
-        ++ show (n - 1)
-        ++ "."
       return $ Just (head ts)
   let tfps = argsInFiles a
-  (trees, names) <- if length tfps <= 1
-    then do
-      ts <- if null tfps
-        then do
-          $(logInfo) "Read trees from standard input."
-          liftIO $ parseIOWith nw
-        else do
-          let f = head tfps
-          $(logInfo) $ T.pack $ "Read trees from file: " <> f <> "."
-          liftIO $ parseFileWith nw f
-      let n = length ts
-      when (n < 1) (error "Not enough trees found in file.")
-      when (isNothing mtree) $ $(logInfo)
-        "Compute pairwise distances between trees in the same file."
-      $(logInfo)
-        $  T.pack
-        $  "Trees are numbered from 0 to "
-        ++ show (n - 1)
-        ++ "."
-      return (ts, take n (map show [0 :: Int ..]))
+  (trees, names) <- if null tfps then error "No tree input files given."
+    -- do
+    --   ts <- if null tfps
+    --     then do
+    --       $(logInfo) "Read trees from standard input."
+    --       liftIO $ parseIOWith nw
+    --     else do
+    --       let f = head tfps
+    --       $(logInfo) $ T.pack $ "Read trees from file: " <> f <> "."
+    --       liftIO $ parseFileWith nw f
+    --   let n = length ts
+    --   when (n < 1) (error "Not enough trees found in file.")
+    --   when (isNothing mtree) $ $(logInfo)
+    --     "Compute pairwise distances between trees in the same file."
+    --   $(logInfo)
+    --     $  T.pack
+    --     $  "Trees are numbered from 0 to "
+    --     ++ show (n - 1)
+    --     ++ "."
+    --   return (ts, take n (map show [0 :: Int ..]))
     else do
       $(logInfo) "Read trees from files."
       ts <- liftIO $ mapM (parseFileWith newick) tfps
