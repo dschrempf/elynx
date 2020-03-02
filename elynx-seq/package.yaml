@@ -29,6 +29,7 @@ ghc-options:
   # - -fllvm
 
 dependencies:
+  - aeson
   - async
   - base
   - bytestring

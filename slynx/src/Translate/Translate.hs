@@ -31,7 +31,7 @@ import           ELynx.Data.Sequence.Sequence
 import           ELynx.Data.Sequence.Translate
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Options            ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx )
 
 translateSeqs :: Int -> UniversalCode -> [Sequence] -> [Sequence]
 translateSeqs rf uc = map (translateSeq uc rf)

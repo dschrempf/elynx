@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Options
 Description :  TLynx general options
@@ -37,7 +39,7 @@ import           Examine.Options
 import           Shuffle.Options
 import           Simulate.Options
 
-import           ELynx.Tools.Options
+import           ELynx.Tools.Reproduction
 
 data CommandArguments =
   Distance DistanceArguments
@@ -47,6 +49,37 @@ data CommandArguments =
   | Compare CompareArguments
   | Connect ConnectArguments
   | Shuffle ShuffleArguments
+  deriving (Eq, Show, Generic)
+
+-- TODO: Is there no easier way?
+instance Reproducible CommandArguments where
+  inFiles (Distance a) = inFiles a
+  inFiles (Examine  a) = inFiles a
+  inFiles (Simulate a) = inFiles a
+  inFiles (Coalesce a) = inFiles a
+  inFiles (Compare  a) = inFiles a
+  inFiles (Connect  a) = inFiles a
+  inFiles (Shuffle  a) = inFiles a
+
+  getSeed (Distance a) = getSeed a
+  getSeed (Examine  a) = getSeed a
+  getSeed (Simulate a) = getSeed a
+  getSeed (Coalesce a) = getSeed a
+  getSeed (Compare  a) = getSeed a
+  getSeed (Connect  a) = getSeed a
+  getSeed (Shuffle  a) = getSeed a
+
+  setSeed (Distance a) s = Distance (setSeed a s)
+  setSeed (Examine  a) s = Examine (setSeed a s)
+  setSeed (Simulate a) s = Simulate (setSeed a s)
+  setSeed (Coalesce a) s = Coalesce (setSeed a s)
+  setSeed (Compare  a) s = Compare (setSeed a s)
+  setSeed (Connect  a) s = Connect (setSeed a s)
+  setSeed (Shuffle  a) s = Shuffle (setSeed a s)
+
+  parser _ = commandArguments
+
+instance ToJSON CommandArguments
 
 distanceDescription :: String
 distanceDescription = "Compute distances between many phylogenetic trees."

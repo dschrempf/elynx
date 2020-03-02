@@ -23,7 +23,6 @@ module ELynx.Tools.Logger
   )
 where
 
-import           Data.Aeson                     ( ToJSON )
 import           Control.Exception.Lifted       ( bracket )
 import           Control.Monad.Base             ( liftBase )
 import           Control.Monad.IO.Class         ( MonadIO
@@ -56,48 +55,72 @@ import           System.IO                      ( BufferMode(LineBuffering)
 import           System.Log.FastLogger          ( LogStr
                                                 , fromLogStr
                                                 )
+import           System.Random.MWC              ( createSystemRandom
+                                                , save
+                                                , fromSeed
+                                                )
 
-import           ELynx.Tools.Options            ( ELynx
+import           ELynx.Tools.Reproduction       ( Reproducible(..)
+                                                , writeR
+                                                , ToJSON
+                                                , toLogLevel
+                                                , ELynx
                                                 , Force
                                                 , GlobalArguments(..)
+                                                , Seed(..)
                                                 , logHeader
                                                 , logFooter
                                                 )
 import           ELynx.Tools.InputOutput        ( openFile' )
-import           ELynx.Tools.Reproduction       ( Reproducible
-                                                , writeR
-                                                )
 
 -- | Unified way of creating a new section in the log.
 logNewSection :: MonadLogger m => Text -> m ()
 logNewSection s = $(logInfo) $ "== " <> s
 
+-- TODO: THIS IS ALL UGLY.
+
 -- | The 'LoggingT' wrapper for ELynx. Prints a header and a footer, logs to
--- 'stderr' if no file is provided. If a log file is provided, log to the file
--- and to 'stderr'.
+-- 'stderr' if no file is provided. Initializes the seed if none is provided. If
+-- a log file is provided, log to the file and to 'stderr'.
 eLynxWrapper
-  :: (Eq a, Show a, Reproducible a, ToJSON a)
+  :: (Eq a, Show a, Reproducible a, ToJSON a, Reproducible b)
   => String
-  -- XXX: It is bad that the local arguments have to be provided here, but
-  -- that's just how it is easiest for now.
   -> a
-  -> ELynx ()
+  -> b
+  -> (b -> ELynx ())
   -> ReaderT GlobalArguments IO ()
-eLynxWrapper header rep worker = do
+eLynxWrapper header global local worker = do
   a <- ask
-  let lvl     = logLevel a
+  let lvl     = toLogLevel $ verbosity a
       rd      = forceReanalysis a
       logFile = (++ ".log") <$> outFileBaseName a
       repFile = (++ ".elynx") <$> outFileBaseName a
   runELynxLoggingT lvl rd logFile $ do
+    -- Initialize.
     h <- liftIO $ logHeader header
-    $(logInfo) $ pack h
+    $(logInfo) $ pack $ h ++ "\n"
+    -- Fix seed.
+    (global', local') <- case getSeed global of
+      Nothing     -> return (global, local)
+      Just Random -> do
+        -- XXX: Have to go via a generator here, since creation of seed is not
+        -- supported.
+        g <- liftIO createSystemRandom
+        s <- liftIO $ fromSeed <$> save g
+        $(logInfo) $ pack $ "Seed: random; set to " <> show s <> "."
+        return (setSeed global s, setSeed local s)
+      Just (Fixed s) -> do
+        $(logInfo) $ pack $ "Seed: " <> show s <> "."
+        return (global, local)
+    -- Write reproduction file.
     case repFile of
       Nothing -> do
         $(logInfo) "No output file given."
         $(logInfo) "ELynx file for reproducible runs has not been created."
-      Just f -> liftIO $ writeR f rep
-    worker
+      Just f -> liftIO $ writeR f global'
+    -- Run the worker with the fixed seed.
+    worker local'
+    -- Close.
     f <- liftIO logFooter
     $(logInfo) $ pack f
 

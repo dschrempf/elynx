@@ -55,7 +55,7 @@ import           ELynx.Tools.InputOutput        ( getOutFilePath
                                                 , parseFileWith
                                                 , outHandle
                                                 )
-import           ELynx.Tools.Options            ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx )
 
 treesOneFile
   :: Bool

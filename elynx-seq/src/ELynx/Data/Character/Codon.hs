@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  ELynx.Data.Character.Codon
 Description :  Codons are triplets of nucleotides
@@ -28,7 +30,9 @@ module ELynx.Data.Character.Codon
   )
 where
 
+import           Data.Aeson                     ( ToJSON )
 import           Data.List
+import           GHC.Generics                   ( Generic )
 import qualified Data.Map                      as M
 import qualified Data.Vector.Generic           as V
 
@@ -62,7 +66,9 @@ unsafeFromVec xs =
 
 -- | Universal codes.
 data UniversalCode = Standard | VertebrateMitochondrial
-  deriving (Show, Read, Eq, Ord, Enum, Bounded)
+  deriving (Show, Read, Eq, Ord, Enum, Bounded, Generic)
+
+instance ToJSON UniversalCode
 
 -- It is important that the map is lazy, because some keys have errors as values.
 mapFromLists :: Ord a => [a] -> [a] -> [a] -> [b] -> M.Map (Codon a) b

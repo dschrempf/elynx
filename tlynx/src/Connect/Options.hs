@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Connect.Options
 Description :  Options for the connect subcommand
@@ -20,12 +22,23 @@ where
 
 import           Options.Applicative
 
+import           ELynx.Tools.Reproduction
+
 -- | Arguments of connect command.
 data ConnectArguments = ConnectArguments
   { newickIqTreeFlag :: Bool
   , constraints      :: Maybe FilePath
   , inFileA          :: FilePath
   , inFileB          :: FilePath }
+  deriving (Eq, Show, Generic)
+
+instance Reproducible ConnectArguments where
+  inFiles a = [inFileA a, inFileB a]
+  getSeed _ = Nothing
+  setSeed a _ = a
+  parser _ = connectArguments
+
+instance ToJSON ConnectArguments
 
 -- | Parse arguments of connect command.
 connectArguments :: Parser ConnectArguments

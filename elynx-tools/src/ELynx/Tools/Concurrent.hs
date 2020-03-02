@@ -16,8 +16,7 @@ Creation date: Tue May  7 10:33:24 2019.
 module ELynx.Tools.Concurrent
   (
     -- * MWC
-    getNGen
-  , splitGen
+    splitGen
    -- * Parallel stuff
   , parComp
   , getChunks
@@ -28,20 +27,11 @@ where
 import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Monad
--- import qualified Control.Monad.Parallel      as P
 import           Control.Monad.Primitive
 import           Control.Parallel.Strategies
 import qualified Data.Vector                   as V
 import           Data.Word
 import           System.Random.MWC
-
--- import           ELynx.Tools.Definitions
-
--- | Get a number of generators, possibly with a fixed seed.
-getNGen :: Int -> Maybe [Word32] -> IO [GenIO]
-getNGen n ms = do
-  g <- maybe createSystemRandom (initialize . V.fromList) ms
-  splitGen n g
 
 -- | Split a generator.
 splitGen :: PrimMonad m => Int -> Gen (PrimState m) -> m [Gen (PrimState m)]

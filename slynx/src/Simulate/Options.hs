@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Simulate.Options
 Description :  ELynxSim argument parsing
@@ -45,10 +47,9 @@ where
 
 import           Data.List
 import           Data.String                    ( words )
-import           Data.Word
 import           Options.Applicative
 
-import           ELynx.Tools.Options
+import           ELynx.Tools.Reproduction
 
 -- | Number of gamma rate categories and alpha parameter.
 type GammaRateHeterogeneityParams = (Int, Double)
@@ -63,8 +64,17 @@ data SimulateArguments = SimulateArguments
   , argsMixtureWeights          :: Maybe [Double]
   , argsGammaParams             :: Maybe GammaRateHeterogeneityParams
   , argsLength                  :: Int
-  , argsMaybeSeed               :: Maybe [Word32]
+  , argsSeed                    :: Seed
   }
+  deriving (Eq, Show, Generic)
+
+instance Reproducible SimulateArguments where
+  inFiles = pure . argsTreeFile
+  getSeed = Just . argsSeed
+  setSeed a s = a { argsSeed = Fixed s }
+  parser _ = simulateArguments
+
+instance ToJSON SimulateArguments
 
 -- | Sub command parser.
 simulateArguments :: Parser SimulateArguments

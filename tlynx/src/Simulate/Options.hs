@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Simulate.Options
 Description :  Argument parser for seq-ana
@@ -21,10 +23,9 @@ module Simulate.Options
 where
 
 import           Data.List
-import           Data.Word
 import           Options.Applicative
 
-import           ELynx.Tools.Options
+import           ELynx.Tools.Reproduction
 
 -- | Arguments need to simulate phylogenetic trees using birth and death processes.
 data SimulateArguments = SimulateArguments
@@ -38,8 +39,17 @@ data SimulateArguments = SimulateArguments
   , argsRho           :: Double         -- ^ Smapling rate.
   , argsSubSample     :: Bool           -- ^ Perform actual sub-sampling.
   , argsSumStat       :: Bool           -- ^ Only print summary statistics?
-  , argsSeed          :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
+  , argsSeed          :: Seed           -- ^ Seed of NRG, random if 'Nothing'.
   }
+  deriving (Eq, Show, Generic)
+
+instance Reproducible SimulateArguments where
+  inFiles _ = []
+  getSeed = Just . argsSeed
+  setSeed a s = a { argsSeed = Fixed s }
+  parser _ = simulateArguments
+
+instance ToJSON SimulateArguments
 
 -- | Print useful information about the provided arguments.
 reportSimulateArguments :: SimulateArguments -> String
@@ -53,7 +63,7 @@ reportSimulateArguments a = intercalate
   , "Sampling probability: " ++ show (argsRho a)
   , "Perform sub-sampling: " ++ show (argsSubSample a)
   , "Summary statistics only: " ++ show (argsSumStat a)
-  , "Seed: " ++ sStr
+  , "Seed: " ++ show (argsSeed a)
   ]
  where
   hStr = case argsHeight a of
@@ -61,9 +71,6 @@ reportSimulateArguments a = intercalate
     Just h  -> show h ++ ", conditioned on " ++ if argsConditionMRCA a
       then "MRCA"
       else "origin"
-  sStr = case argsSeed a of
-    Nothing -> "Random"
-    Just i  -> show i
 
 -- | Command line parser.
 simulateArguments :: Parser SimulateArguments

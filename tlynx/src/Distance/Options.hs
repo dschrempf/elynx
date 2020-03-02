@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Distance.Options
 Description :  Options of tree-dist
@@ -33,7 +35,7 @@ import           Text.Megaparsec.Char           ( char
 import           Text.Megaparsec.Char.Lexer     ( float )
 import           Text.Printf
 
-import           ELynx.Tools.Options
+import           ELynx.Tools.Reproduction
 
 -- | Supported distance measures.
 data DistanceMeasure =
@@ -41,6 +43,9 @@ data DistanceMeasure =
   | IncompatibleSplit Double -- ^ Incompatible split distance; collapse nodes
                              -- with branch support below given value.
   | BranchScore              -- ^ Branch score distance.
+  deriving (Eq, Generic)
+
+instance ToJSON DistanceMeasure
 
 instance Show DistanceMeasure where
   show Symmetric             = "Symmetric"
@@ -57,6 +62,17 @@ data DistanceArguments = DistanceArguments
   , argsNewickIqTree      :: Bool
   , argsInFiles           :: [FilePath]
   }
+  deriving (Eq, Show, Generic)
+
+instance Reproducible DistanceArguments where
+  inFiles a = case argsMasterTreeFile a of
+    Nothing -> argsInFiles a
+    Just f  -> f : argsInFiles a
+  getSeed _ = Nothing
+  setSeed = const
+  parser _ = distanceArguments
+
+instance ToJSON DistanceArguments
 
 -- | COmmand line parser.
 distanceArguments :: Parser DistanceArguments

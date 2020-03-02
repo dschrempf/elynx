@@ -45,7 +45,7 @@ import           ELynx.Tools.InputOutput        ( outHandle
                                                 , parseFileWith
                                                 , getOutFilePath
                                                 )
-import           ELynx.Tools.Options            ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx )
 import           ELynx.Tools.Text               ( fromBs
                                                 , tShow
                                                 )

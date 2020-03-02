@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  ELynx.Data.Alphabet.Alphabet
 Description :  Alphabets store hereditary information
@@ -44,13 +46,17 @@ where
 
 import qualified Data.Set                      as S
 import           Prelude                 hiding ( all )
+import           Data.Aeson                     ( ToJSON )
+import           GHC.Generics                   ( Generic )
 
 import           ELynx.Data.Alphabet.Character
 
 -- | Available alphabets; for details see 'alphabetSpec'.
 data Alphabet = DNA | DNAX | DNAI
               | Protein | ProteinX | ProteinS | ProteinI
-              deriving (Show, Read, Eq, Ord, Enum, Bounded)
+              deriving (Show, Read, Eq, Ord, Enum, Bounded, Generic)
+
+instance ToJSON Alphabet
 
 -- | Verbose alphabet name.
 description :: Alphabet -> String

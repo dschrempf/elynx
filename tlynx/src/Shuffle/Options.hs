@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Shuffle.Options
 Description :  Options for the connect subcommand
@@ -18,17 +20,25 @@ module Shuffle.Options
   )
 where
 
-import           Data.Word
 import           Options.Applicative
 
-import           ELynx.Tools.Options
+import           ELynx.Tools.Reproduction
 
 -- | Arguments of shuffle command.
 data ShuffleArguments = ShuffleArguments
   { newickIqTreeFlag :: Bool
   , nReplicates      :: Int
   , inFile           :: FilePath
-  , argsSeed         :: Maybe [Word32] }
+  , argsSeed         :: Seed }
+  deriving (Eq, Show, Generic)
+
+instance Reproducible ShuffleArguments where
+  inFiles = pure . inFile
+  getSeed = Just . argsSeed
+  setSeed a s = a { argsSeed = Fixed s }
+  parser _ = shuffleArguments
+
+instance ToJSON ShuffleArguments
 
 -- | Parse arguments of shuffle command.
 shuffleArguments :: Parser ShuffleArguments

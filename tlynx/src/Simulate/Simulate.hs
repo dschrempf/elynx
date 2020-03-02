@@ -41,7 +41,9 @@ import qualified Data.Text                     as T
 import qualified Data.Text.Lazy                as LT
 import qualified Data.Text.Lazy.Encoding       as LT
 import           Data.Tree
-import           System.Random.MWC              ( GenIO )
+import           System.Random.MWC              ( GenIO
+                                                , initialize
+                                                )
 
 import           Simulate.Options
 
@@ -62,11 +64,13 @@ import           ELynx.Tools.InputOutput        ( getOutFilePath
                                                 , out
                                                 )
 import           ELynx.Tools.Logger
-import           ELynx.Tools.Options            ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Seed(..)
+                                                )
 
 -- | Simulate phylogenetic trees.
 simulate :: SimulateArguments -> ELynx ()
-simulate a@(SimulateArguments nTrees nLeaves height mrca lambda mu rho subS sumS seed)
+simulate a@(SimulateArguments nTrees nLeaves height mrca lambda mu rho subS sumS (Fixed s))
   = do
     when (isNothing height && mrca)
       $ error "Cannot condition on MRCA (-M) when height is not given (-H)."
@@ -75,7 +79,7 @@ simulate a@(SimulateArguments nTrees nLeaves height mrca lambda mu rho subS sumS
     $(logInfo) $ T.pack $ reportSimulateArguments a
     logNewSection "Simulation"
     $(logInfo) $ T.pack $ "Number of used cores: " <> show c
-    gs <- liftIO $ getNGen c seed
+    gs <- liftIO $ initialize s >>= \g -> splitGen c g
     let chunks   = getChunks c nTrees
         timeSpec = fmap (, mrca) height
     trs <- if subS
@@ -93,6 +97,7 @@ simulate a@(SimulateArguments nTrees nLeaves height mrca lambda mu rho subS sumS
     fn <- getOutFilePath ".tree"
     let res = L.unlines ls
     out "simulated trees" res fn
+simulate _ = error "simulate: seed not available; please contact maintainer."
 
 simulateNTreesConcurrently
   :: Int

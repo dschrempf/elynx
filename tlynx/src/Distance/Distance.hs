@@ -69,10 +69,9 @@ import           ELynx.Tools.ByteString         ( alignLeft
 import           ELynx.Tools.InputOutput        ( getOutFilePath
                                                 , outHandle
                                                 , parseFileWith
-                                                , parseIOWith
                                                 )
 import           ELynx.Tools.Logger
-import           ELynx.Tools.Options            ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx )
 
 median :: Ord a => [a] -> a
 median xs = sort xs !! l2 where l2 = length xs `div` 2
@@ -112,7 +111,8 @@ distance a = do
       $(logInfo) "Compute distances between all trees and master tree."
       return $ Just (head ts)
   let tfps = argsInFiles a
-  (trees, names) <- if null tfps then error "No tree input files given."
+  (trees, names) <- if null tfps
+    then error "No tree input files given."
     -- do
     --   ts <- if null tfps
     --     then do

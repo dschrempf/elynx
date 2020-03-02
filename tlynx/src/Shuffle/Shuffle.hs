@@ -48,10 +48,8 @@ import           Data.Tree                      ( Tree
                                                 , flatten
                                                 , rootLabel
                                                 )
-import qualified Data.Vector.Unboxed           as V
 import           System.IO                      ( hClose )
 import           System.Random.MWC              ( Gen
-                                                , createSystemRandom
                                                 , initialize
                                                 , uniformR
                                                 )
@@ -77,7 +75,9 @@ import           ELynx.Tools.InputOutput        ( outHandle
                                                 , parseFileWith
                                                 , getOutFilePath
                                                 )
-import           ELynx.Tools.Options            ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Seed(..)
+                                                )
 import           ELynx.Tools.Text               ( fromBs
                                                 , tShow
                                                 )
@@ -122,8 +122,9 @@ shuffleCmd a = do
   $(logDebug) "The coalescent times are: "
   $(logDebug) $ tShow cs
 
-  gen <- liftIO
-    $ maybe createSystemRandom (initialize . V.fromList) (argsSeed a)
+  gen <- case argsSeed a of
+    Random  -> error "Seed not available; please contact maintainer."
+    Fixed s -> liftIO $ initialize s
 
   ts <- liftIO $ shuffle (nReplicates a) (height t) cs ls gen
   liftIO $ L.hPutStr h $ L.unlines $ map toNewick ts

@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Examine.Options
 Description :  Tree analysis options
@@ -20,14 +22,25 @@ where
 
 import           Options.Applicative
 
+import           ELynx.Tools.Reproduction
+
 -- | Arguments needed to examine phylogenetic trees.
 data ExamineArguments = ExamineArguments
-  { argsInFile       :: Maybe FilePath
+  { argsInFile       :: FilePath
   , argsNewickIqTree :: Bool }
+  deriving (Eq, Show, Generic)
+
+instance Reproducible ExamineArguments where
+  inFiles = pure . argsInFile
+  getSeed _ = Nothing
+  setSeed = const
+  parser _ = examineArguments
+
+instance ToJSON ExamineArguments
 
 -- | Command line parser.
 examineArguments :: Parser ExamineArguments
-examineArguments = ExamineArguments <$> optional inFile <*> newickIqTree
+examineArguments = ExamineArguments <$> inFile <*> newickIqTree
 
 inFile :: Parser FilePath
 inFile =

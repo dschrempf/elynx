@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Examine.Options
 Description :  ELynxSeq argument parsing
@@ -30,18 +32,21 @@ data ExamineArguments = ExamineArguments
     { exAlphabet :: Alphabet
     , exInFile   :: FilePath
     , exPerSite  :: Bool }
+  deriving (Eq, Show, Generic)
 
 instance Reproducible ExamineArguments where
-  inFiles  = pure . exInFile
+  inFiles = pure . exInFile
+  getSeed _ = Nothing
+-- TODO: Probably use setSeed = error if seed is set here.
+  setSeed = const
   parser _ = examineArguments
+
+instance ToJSON ExamineArguments
 
 -- | Command line parser.
 examineArguments :: Parser ExamineArguments
 examineArguments =
-  ExamineArguments
-    <$> alphabetOpt
-    <*> filePathArg
-    <*> examinePerSiteOpt
+  ExamineArguments <$> alphabetOpt <*> filePathArg <*> examinePerSiteOpt
 
 examinePerSiteOpt :: Parser Bool
 examinePerSiteOpt =

@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  SubSample.Options
 Description :  ELynxSeq argument parsing
@@ -18,13 +20,12 @@ module SubSample.Options
   )
 where
 
-import           Data.Word
 import           Options.Applicative
 
 import           Tools
 
 import           ELynx.Data.Alphabet.Alphabet
-import           ELynx.Tools.Options
+import           ELynx.Tools.Reproduction
 
 -- | Data structure holding the Command line arguments.
 data SubSampleArguments = SubSampleArguments
@@ -32,7 +33,16 @@ data SubSampleArguments = SubSampleArguments
     , ssInFile      :: FilePath
     , ssNSites      :: Int
     , ssNAlignments :: Int
-    , ssMbSeed      :: Maybe [Word32] }
+    , ssMbSeed      :: Seed }
+  deriving (Eq, Show, Generic)
+
+instance Reproducible SubSampleArguments where
+  inFiles = pure . ssInFile
+  getSeed = Just . ssMbSeed
+  setSeed a s = a { ssMbSeed = Fixed s }
+  parser _ = subSampleArguments
+
+instance ToJSON SubSampleArguments
 
 -- | Sub command parser.
 subSampleArguments :: Parser SubSampleArguments

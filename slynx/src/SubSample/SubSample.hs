@@ -29,7 +29,6 @@ import qualified Data.Text                     as T
 import qualified Data.Text.Lazy                as LT
 import qualified Data.Text.Lazy.Builder        as LT
 import qualified Data.Text.Lazy.Builder.Int    as LT
-import qualified Data.Vector                   as V
 import           System.Random.MWC
 
 import           SubSample.Options
@@ -38,7 +37,7 @@ import           Tools
 import qualified ELynx.Data.Sequence.Alignment as M
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Options
+import           ELynx.Tools.Reproduction
 
 -- | Get a given number of output file names with provided suffix.
 --
@@ -55,7 +54,7 @@ getOutFilePaths file n suffix =
 
 -- | Sub sample sequences.
 subSampleCmd :: SubSampleArguments -> ELynx ()
-subSampleCmd (SubSampleArguments al inFile nSites nAlignments seed) = do
+subSampleCmd (SubSampleArguments al inFile nSites nAlignments (Fixed s)) = do
   $(logInfo) "Command: Sub sample from a multi sequence alignment."
   $(logInfo) $ T.pack $ "  Sample " <> show nSites <> " sites."
   $(logInfo)
@@ -64,7 +63,7 @@ subSampleCmd (SubSampleArguments al inFile nSites nAlignments seed) = do
     <> show nAlignments
     <> " multi sequence alignments."
   ss  <- readSeqs al inFile
-  gen <- liftIO $ maybe createSystemRandom (initialize . V.fromList) seed
+  gen <- liftIO $ initialize s
   let a = either error id (M.fromSequences ss)
   samples <- lift $ replicateM nAlignments $ M.randomSubSample nSites a gen
   let results = map (sequencesToFasta . M.toSequences) samples
@@ -73,4 +72,5 @@ subSampleCmd (SubSampleArguments al inFile nSites nAlignments seed) = do
     Nothing -> return $ repeat Nothing
     Just fn -> return $ Just <$> getOutFilePaths fn nAlignments "fasta"
   zipWithM_ (out "sub sampled multi sequence alignments") results outFilePaths
-
+subSampleCmd _ =
+  error "sbSampleCmd: seed not available; please contact maintainer."

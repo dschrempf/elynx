@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Compare.Options
 Description :  Options for the compare subcommand
@@ -20,6 +22,8 @@ where
 
 import           Options.Applicative
 
+import           ELynx.Tools.Reproduction
+
 -- | Arguments of compare command.
 data CompareArguments = CompareArguments
   { argsNormalize    :: Bool
@@ -27,6 +31,15 @@ data CompareArguments = CompareArguments
   , argsIntersect    :: Bool
   , argsNewickIqTree :: Bool
   , argsInFiles      :: [FilePath] }
+  deriving (Eq, Show, Generic)
+
+instance Reproducible CompareArguments where
+  inFiles = argsInFiles
+  getSeed _ = Nothing
+  setSeed a _ = a
+  parser _ = compareArguments
+
+instance ToJSON CompareArguments
 
 -- | Parse arguments of compare command.
 compareArguments :: Parser CompareArguments

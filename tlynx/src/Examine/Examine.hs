@@ -40,18 +40,16 @@ import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools.InputOutput        ( getOutFilePath
-                                                , parseFileOrIOWith
+                                                , parseFileWith
                                                 , outHandle
                                                 )
-import           ELynx.Tools.Options            ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx )
 
-readTrees :: Bool -> Maybe FilePath -> ELynx [Tree (PhyloLabel L.ByteString)]
-readTrees iqtree mfp = do
-  case mfp of
-    Nothing -> $(logInfo) "Read tree(s) from standard input."
-    Just fp -> $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
+readTrees :: Bool -> FilePath -> ELynx [Tree (PhyloLabel L.ByteString)]
+readTrees iqtree fp = do
+  $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
   let nw = if iqtree then manyNewickIqTree else manyNewick
-  liftIO $ parseFileOrIOWith nw mfp
+  liftIO $ parseFileWith nw fp
 
 examineTree :: (Measurable a, Named a) => Handle -> Tree a -> IO ()
 examineTree h t = do

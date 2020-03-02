@@ -53,7 +53,7 @@ import           System.IO
 import           System.Directory               ( doesFileExist )
 import           Text.Megaparsec
 
-import           ELynx.Tools.Options            ( ELynx
+import           ELynx.Tools.Reproduction       ( ELynx
                                                 , Force(..)
                                                 , outFileBaseName
                                                 , forceReanalysis
@@ -66,10 +66,13 @@ getOutFilePath ext = do
   return $ (++ ext) <$> ofbn
 
 checkFile :: Force -> FilePath -> IO ()
-checkFile (Force True)  _  = return ()
+checkFile (Force True ) _  = return ()
 checkFile (Force False) fp = doesFileExist fp >>= \case
   True ->
-    error $ "File exists: " <> fp <> ". Please use the --redo option to repeat an analysis."
+    error
+      $  "File exists: "
+      <> fp
+      <> ". Please use the --force option to repeat an analysis."
   False -> return ()
 
 -- | Open existing files only if 'Force' is true.

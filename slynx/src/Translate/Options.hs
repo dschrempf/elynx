@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Translate.Options
 Description :  ELynxSeq argument parsing
@@ -26,6 +28,7 @@ import           Tools
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.Character.Codon
 import           ELynx.Tools.Misc
+import           ELynx.Tools.Reproduction
 
 -- | Arguments needed to translate sequences.
 data TranslateArguments = TranslateArguments
@@ -33,6 +36,15 @@ data TranslateArguments = TranslateArguments
     , trInFile        :: FilePath
     , trReadingFrame  :: Int
     , trUniversalCode :: UniversalCode }
+  deriving (Eq, Show, Generic)
+
+instance Reproducible TranslateArguments where
+  inFiles = pure . trInFile
+  getSeed _ = Nothing
+  setSeed = const
+  parser _ = translateArguments
+
+instance ToJSON TranslateArguments
 
 -- | Command line parser.
 translateArguments :: Parser TranslateArguments

@@ -54,3 +54,4 @@
 /**/dist-newstyle/
 /.dir-locals.el
 /stack.yaml.lock
+/temp/

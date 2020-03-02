@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Coalesce.Options
 Description :  Argument parser for @slynx coalesce@
@@ -21,10 +23,9 @@ module Coalesce.Options
 where
 
 import           Data.List
-import           Data.Word
 import           Options.Applicative
 
-import           ELynx.Tools.Options
+import           ELynx.Tools.Reproduction
 
 -- | Arguments need to simulate phylogenetic trees using the coalescent process.
 data CoalesceArguments = CoalesceArguments
@@ -32,8 +33,17 @@ data CoalesceArguments = CoalesceArguments
   , argsNLeaves :: Int            -- ^ Number of leaves per tree.
   , argsRho     :: Maybe Double   -- ^ Perform random sub-sampling with given sampling rate.
   , argsSumStat :: Bool           -- ^ Only print summary statistics?
-  , argsSeed    :: Maybe [Word32] -- ^ Seed of NRG, random if 'Nothing'.
+  , argsSeed    :: Seed           -- ^ Seed of NRG, random if 'Nothing'.
   }
+  deriving (Eq, Show, Generic)
+
+instance Reproducible CoalesceArguments where
+  inFiles _ = []
+  getSeed = Just . argsSeed
+  setSeed a s = a { argsSeed = Fixed s }
+  parser _ = coalesceArguments
+
+instance ToJSON CoalesceArguments
 
 -- | Print useful information about the provided arguments.
 reportCoalesceArguments :: CoalesceArguments -> String
@@ -43,12 +53,9 @@ reportCoalesceArguments a = intercalate
   , "Number of leaves per tree: " ++ show (argsNLeaves a)
   , "Sub-sampling: " ++ ssStr
   , "Summary statistics only: " ++ show (argsSumStat a)
-  , "Seed: " ++ sStr
+  , "Seed: " ++ show (argsSeed a)
   ]
  where
-  sStr = case argsSeed a of
-    Nothing -> "Random"
-    Just i  -> show i
   ssStr = case argsRho a of
     Nothing -> "No"
     Just r  -> "Yes, with probability " <> show r

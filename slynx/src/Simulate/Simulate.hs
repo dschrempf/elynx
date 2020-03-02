@@ -70,7 +70,9 @@ import           ELynx.Simulate.MarkovProcessAlongTree
 import           ELynx.Tools.ByteString
 import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Options            ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Seed(..)
+                                                )
 import           ELynx.Tools.Misc
 
 -- Simulate a 'Alignment' for a given phylogenetic model,
@@ -220,11 +222,10 @@ simulateCmd a = do
   $(logInfo) "Simulate alignment."
   let alignmentLength = argsLength a
   $(logInfo) $ T.pack $ "Length: " <> show alignmentLength <> "."
-  let maybeSeed = argsMaybeSeed a
-  gen <- case maybeSeed of
-    Nothing -> $(logInfo) "Seed: random." >> liftIO createSystemRandom
-    Just s  -> $(logInfo) (T.pack ("Seed: " <> show s <> "."))
-      >> liftIO (initialize (V.fromList s))
+  gen <- case argsSeed a of
+    Random ->
+      error "simulateCmd: seed not available; please contact maintainer."
+    Fixed s -> liftIO $ initialize s
   alignment <- liftIO $ simulateAlignment phyloModel tree alignmentLength gen
   fn        <- getOutFilePath ".fasta"
   let output = (sequencesToFasta . A.toSequences) alignment

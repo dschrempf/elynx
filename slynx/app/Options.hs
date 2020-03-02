@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Options
 Description :  SLynx general options
@@ -37,9 +39,7 @@ import           SubSample.Options
 import           Translate.Options
 
 import           ELynx.Data.Alphabet.Alphabet
-import           ELynx.Tools.Options
--- TODO: Removed reproducibility stuff for now, have to work on that.
--- import           ELynx.Tools.Reproduction
+import           ELynx.Tools.Reproduction
 
 data CommandArguments =
   Concatenate ConcatenateArguments
@@ -49,9 +49,36 @@ data CommandArguments =
   | Simulate SimulateArguments
   | SubSample SubSampleArguments
   | Translate TranslateArguments
+  deriving (Eq, Show, Generic)
 
--- instance Reproducible CommandArguments where
---   inFiles (Concatenate a) = inFiles a
+instance Reproducible CommandArguments where
+  inFiles (Concatenate a) = inFiles a
+  inFiles (Examine     a) = inFiles a
+  inFiles (FilterRows  a) = inFiles a
+  inFiles (FilterCols  a) = inFiles a
+  inFiles (Simulate    a) = inFiles a
+  inFiles (SubSample   a) = inFiles a
+  inFiles (Translate   a) = inFiles a
+
+  getSeed (Concatenate a) = getSeed a
+  getSeed (Examine     a) = getSeed a
+  getSeed (FilterRows  a) = getSeed a
+  getSeed (FilterCols  a) = getSeed a
+  getSeed (Simulate    a) = getSeed a
+  getSeed (SubSample   a) = getSeed a
+  getSeed (Translate   a) = getSeed a
+
+  setSeed (Concatenate a) s = Concatenate $ setSeed a s
+  setSeed (Examine     a) s = Examine $ setSeed a s
+  setSeed (FilterRows  a) s = FilterRows $ setSeed a s
+  setSeed (FilterCols  a) s = FilterCols $ setSeed a s
+  setSeed (Simulate    a) s = Simulate $ setSeed a s
+  setSeed (SubSample   a) s = SubSample $ setSeed a s
+  setSeed (Translate   a) s = Translate $ setSeed a s
+
+  parser _ = commandArguments
+
+instance ToJSON CommandArguments
 
 concatenateDescription, examineDescription, filterRowsDescription, filterColumnsDescription, simulateDescription, subSampleDescription, translateDescription
   :: String

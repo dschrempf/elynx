@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Filter.Options
 Description :  ELynxSeq argument parsing
@@ -26,6 +28,7 @@ import           Options.Applicative
 import           Tools
 
 import           ELynx.Data.Alphabet.Alphabet
+import           ELynx.Tools.Reproduction
 
 -- | Arguments needed for filtering sequences.
 data FilterRowsArguments = FilterRowsArguments
@@ -34,12 +37,30 @@ data FilterRowsArguments = FilterRowsArguments
   , frLonger   :: Maybe Int
   , frShorter  :: Maybe Int
   , frStandard :: Bool }
+  deriving (Eq, Show, Generic)
+
+instance Reproducible FilterRowsArguments where
+  inFiles = pure . frInFile
+  getSeed _ = Nothing
+  setSeed = const
+  parser _ = filterRowsArguments
+
+instance ToJSON FilterRowsArguments
 
 -- | Arguments needed for filtering columns of a multi sequence alignment.
 data FilterColsArguments = FilterColsArguments
   { fcAlphabet :: Alphabet
   , fcInFile   :: FilePath
   , fcStandard :: Maybe Double }
+  deriving (Eq, Show, Generic)
+
+instance Reproducible FilterColsArguments where
+  inFiles = pure . fcInFile
+  getSeed _ = Nothing
+  setSeed = const
+  parser _ = filterColsArguments
+
+instance ToJSON FilterColsArguments
 
 -- | Command line parser.
 filterRowsArguments :: Parser FilterRowsArguments
@@ -71,10 +92,7 @@ filterStandardChars =
 -- | Command line parser.
 filterColsArguments :: Parser FilterColsArguments
 filterColsArguments =
-  FilterColsArguments
-    <$> alphabetOpt
-    <*> inFileArg
-    <*> filterStandardOpt
+  FilterColsArguments <$> alphabetOpt <*> inFileArg <*> filterStandardOpt
 
 filterStandardOpt :: Parser (Maybe Double)
 filterStandardOpt =

@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  Concatenate.Options
 Description :  ELynxSeq argument parsing
@@ -30,10 +32,15 @@ import           ELynx.Tools.Reproduction
 data ConcatenateArguments = ConcatenateArguments
     { ccAlphabet :: Alphabet
     , ccInFiles  :: [FilePath] }
+  deriving (Eq, Show, Generic)
 
 instance Reproducible ConcatenateArguments where
   inFiles = ccInFiles
+  getSeed _ = Nothing
+  setSeed = const
   parser _ = concatenateArguments
+
+instance ToJSON ConcatenateArguments
 
 -- | Command line parser.
 concatenateArguments :: Parser ConcatenateArguments
