@@ -17,8 +17,7 @@ Creation date: Tue Nov 19 15:07:09 2019.
 
 Use of standard input is not supported.
 
-TODO: Provide validate function (also store output hash and check, don't
-perform analysis).
+TODO: Amend validate: also store output hash and check, but perform analysis.
 
 TODO: Divide module, but was difficult.
 
@@ -364,9 +363,9 @@ checkFile fp h = do
       ]
 
 -- | Check if command line arguments and files check sums are matching.
-checkReproduction
+validate
   :: (Eq a, Show a, Reproducible a) => State a -> IO (Either String ())
-checkReproduction s = do
+validate s = do
   chA  <- checkArgs s
   chFs <- zipWithM checkFile (files s) (map B.pack $ checkSums s)
   let ch = sequence_ (chA : chFs)
@@ -374,7 +373,8 @@ checkReproduction s = do
     ("Failed validating the reproduction file.\n" ++)
     ch
 
--- | Read an ELynx reproduction file. Check consistency of arguments and input files.
+-- | Read and validate ELynx reproduction file. Check consistency of arguments
+-- and input files.
 readR
   :: forall a
    . (Eq a, Show a, Reproducible a, FromJSON a)
@@ -388,14 +388,14 @@ readR fp = do
       putStrLn "The following error was encountered."
       error err
     Right r -> do
-      ch <- checkReproduction r
+      ch <- validate r
       return $ either error (const r) ch
 
 -- | Helper function.
 hashFile :: FilePath -> IO B.ByteString
 hashFile f = encode . hash <$> B.readFile f
 
--- | Write an ELynx reproduction file. Check arguments.
+-- | Write an ELynx reproduction file.
 writeR :: (Eq a, Show a, Reproducible a, ToJSON a) => FilePath -> a -> IO ()
 writeR fp r = do
   pn <- getProgName
@@ -406,8 +406,4 @@ writeR fp r = do
       p   = argumentsParser $ parser r
       res = parse as p
       s   = State pn as res fs cs' r
-  -- XXX: Actually, it is only necessary to to checkArgs here. But let's just be safe.
-  ch <- checkReproduction s
-  case ch of
-    Left  e -> error e
-    Right _ -> void $ encodeFile fp s
+  void $ encodeFile fp s
