@@ -62,6 +62,7 @@ import           Data.Aeson                     ( FromJSON
 import           Control.Monad                  ( zipWithM
                                                 , void
                                                 )
+import           Data.ByteString.Base16         ( encode )
 import           Crypto.Hash.SHA256             ( hash )
 import           Data.Bifunctor                 ( first )
 import qualified Data.ByteString.Char8         as B
@@ -98,7 +99,7 @@ import           Text.Megaparsec                ( Parsec
 import           ELynx.Tools.Misc
 import           Paths_elynx_tools              ( version )
 
-import Debug.Trace (traceShow)
+import           Debug.Trace                    ( traceShow )
 
 -- | Logging transformer to be used with all executables.
 type ELynx = LoggingT (ReaderT GlobalArguments IO)
@@ -180,8 +181,7 @@ evoModSuiteFooter =
 
 argumentsParser :: Parser a -> Parser (Arguments a)
 argumentsParser p = helper <*> versionOpt <*> p'
- where
-  p'   = Arguments <$> globalArguments <*> p
+  where p' = Arguments <$> globalArguments <*> p
 
 -- | Parse arguments. Provide a global description, header, footer, and so on.
 -- Custom additional description (first argument) and footer (second argument)
@@ -190,8 +190,7 @@ parseArgumentsWith :: [String] -> [String] -> Parser a -> IO (Arguments a)
 parseArgumentsWith desc ftr p = execParser $ info
   (argumentsParser p)
   (fullDesc <> header hdr <> progDesc (unlines desc) <> footerDoc (Just ftr'))
-  where
-  ftr' = vsep $ map pretty ftr ++ evoModSuiteFooter
+  where ftr' = vsep $ map pretty ftr ++ evoModSuiteFooter
 
 -- | Verbosity levels.
 data Verbosity = Quiet | Warning | Info | Debug
@@ -335,34 +334,31 @@ instance FromJSON a => FromJSON (State a)
 
 parse :: Show a => [String] -> Parser a -> a
 parse s p = case getParseResult res of
-    Nothing -> traceShow res $ error $ "Could not parse command line arguments: " ++ show s
-    Just a  -> a
+  Nothing ->
+    traceShow res $ error $ "Could not parse command line arguments: " ++ show s
+  Just a -> a
   where res = execParserPure defaultPrefs (info p briefDesc) s
 
 -- Does the command line fit the provided command?
-checkArgs
-  :: (Eq a, Show a, Reproducible a) => State a -> IO (Either String ())
+checkArgs :: (Eq a, Show a, Reproducible a) => State a -> IO (Either String ())
 checkArgs s = do
   let r   = reproducible s
       p   = argumentsParser $ parser r
       as  = argsStr s
       res = parse as p
   return $ if res /= args s
-      then Left $ unlines
-        [ "Command line string and command arguments do not fit:"
-        , show as
-        , show r
-        ]
-      else Right ()
+    then Left $ unlines
+      ["Command line string and command arguments do not fit:", show as, show r]
+    else Right ()
 
--- Does the file match the checksum?
+-- Does the file match the base 16 checksum?
 checkFile :: FilePath -> B.ByteString -> IO (Either String ())
 checkFile fp h = do
   h' <- hashFile fp
   return $ if h' == h
     then Right ()
     else Left $ unlines
-      [ "SHA256 sum does not match for a file."
+      [ "SHA256 sum does not match for a file:"
       , fp ++ " has check sum " ++ B.unpack h'
       , "Stored check sum is " ++ B.unpack h
       ]
@@ -374,7 +370,9 @@ checkReproduction s = do
   chA  <- checkArgs s
   chFs <- zipWithM checkFile (files s) (map B.pack $ checkSums s)
   let ch = sequence_ (chA : chFs)
-  return $ first ("Failed validating the reproduction file.\n" ++) ch
+  return $ first
+    ("Failed validating the reproduction file.\n" ++)
+    ch
 
 -- | Read an ELynx reproduction file. Check consistency of arguments and input files.
 readR
@@ -395,12 +393,12 @@ readR fp = do
 
 -- | Helper function.
 hashFile :: FilePath -> IO B.ByteString
-hashFile f = hash <$> B.readFile f
+hashFile f = encode . hash <$> B.readFile f
 
 -- | Write an ELynx reproduction file. Check arguments.
 writeR :: (Eq a, Show a, Reproducible a, ToJSON a) => FilePath -> a -> IO ()
 writeR fp r = do
-  pn  <- getProgName
+  pn <- getProgName
   as <- getArgs
   let fs = inFiles r
   cs <- mapM hashFile fs
@@ -412,4 +410,4 @@ writeR fp r = do
   ch <- checkReproduction s
   case ch of
     Left  e -> error e
-    Right _ -> void $ encodeFile fp r
+    Right _ -> void $ encodeFile fp s

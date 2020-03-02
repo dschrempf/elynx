@@ -69,6 +69,7 @@ data SimulateArguments = SimulateArguments
   deriving (Eq, Show, Generic)
 
 instance Reproducible SimulateArguments where
+  -- TODO: Other files are missing, see above.
   inFiles = pure . argsTreeFile
   getSeed = Just . argsSeed
   setSeed a s = a { argsSeed = Fixed s }

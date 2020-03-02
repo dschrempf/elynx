@@ -30,6 +30,7 @@ dependencies:
   - aeson
   - async
   - base
+  - base16-bytestring
   - bytestring
   - containers
   - cryptohash-sha256
