@@ -59,10 +59,11 @@ normalize t = case mm of
 
 accept :: Double -> Maybe Double -> Bool
 accept _      Nothing  = True
-accept thresh (Just s) = s > thresh
+accept thresh (Just s) = s >= thresh
 
 -- | Collapse branches with support lower than given value. Note, branch length
--- is ignored at the moment. Continue collapsing until a fix point is reached.
+-- of collapsed branches is ignored at the moment. Continue collapsing until a
+-- fix point is reached.
 collapse :: (Show a, Eq a, BranchSupported a) => Double -> Tree a -> Tree a
 collapse th tr = if tr == tr' then tr else collapse th tr'
   where tr' = collapse' th tr

@@ -76,7 +76,7 @@ symmetricWith f t1 t2
   t1' = fmap f t1
   t2' = fmap f t2
 
--- | See 'symmetricWith', but with 'id' for comparisons.
+-- | See 'symmetricWith', but with 'getName' for comparisons.
 symmetric :: (Show a, Ord a, Named a) => Tree a -> Tree a -> Int
 symmetric = symmetricWith getName
 
@@ -139,7 +139,7 @@ incompatibleSplitsWith f t1 t2
   ms1 = ms t1
   ms2 = ms t2
 
--- | See 'incompatibleSplitsWith', use 'id' for comparisons.
+-- | See 'incompatibleSplitsWith', use 'getName' for comparisons.
 incompatibleSplits :: (Ord a, Named a) => Tree a -> Tree a -> Int
 incompatibleSplits = incompatibleSplitsWith getName
 
@@ -169,7 +169,7 @@ branchScoreWith f g t1 t2
   dBs       = M.map getSum $ M.unionWith (-) (bs t1) (bs t2)
   dsSquared = foldl' (\acc e -> acc + e * e) 0 dBs
 
--- | See 'branchScoreWith', use 'id' for comparisons.
+-- | See 'branchScoreWith', use 'getName' and 'getLen' for comparisons.
 branchScore :: (Ord a, Named a, Measurable a) => Tree a -> Tree a -> Double
 branchScore = branchScoreWith getName getLen
 

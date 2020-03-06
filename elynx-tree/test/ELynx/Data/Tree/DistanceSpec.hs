@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {- |
 Module      :  ELynx.Data.Tree.DistanceSpec
@@ -27,8 +28,10 @@ import           Test.QuickCheck.Instances.Containers
 
 import           ELynx.Data.Tree.Distance
 import           ELynx.Data.Tree.NamedTree
+import           ELynx.Data.Tree.BranchSupportTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Import.Tree.Newick
+-- import           ELynx.Export.Tree.Newick
 import           ELynx.Tools.Equality
 import           ELynx.Tools.InputOutput
 
@@ -184,6 +187,22 @@ bifurcatingIncomp = Node
   , Node ' ' [Node 'B' [], Node ' ' [Node 'D' [], Node 'E' []]]
   ]
 
+incSplitTree1a :: Tree (PhyloLabel L.ByteString)
+incSplitTree1a = parseByteStringWith "" oneNewickIqTree "((a,b)0.7,(c,d));"
+
+incSplitTree1b :: Tree (PhyloLabel L.ByteString)
+incSplitTree1b = parseByteStringWith "" oneNewickIqTree "((a,b)0.7,c,d);"
+
+incSplitTree2 :: Tree (PhyloLabel L.ByteString)
+incSplitTree2 = parseByteStringWith "" oneNewickIqTree "((a,c),(b,d));"
+
+incSplitTree3 :: Tree (PhyloLabel L.ByteString)
+incSplitTree3 = parseByteStringWith "" oneNewickIqTree "(((a,b)0.7,c),(d,e));"
+
+incSplitTree4 :: Tree (PhyloLabel L.ByteString)
+incSplitTree4 = parseByteStringWith "" oneNewickIqTree "(((a,c),b),(d,e));"
+
+
 spec :: Spec
 spec = do
   describe "symmetric" $ do
@@ -210,6 +229,12 @@ spec = do
       incompatibleSplits bifurcatingComp multifurcating `shouldBe` 0
       incompatibleSplits bifurcatingIncomp multifurcating `shouldBe` 2
       incompatibleSplits multifurcating bifurcatingIncomp `shouldBe` 2
+    it "calculates correct distances for sample trees with branch support" $ do
+      incompatibleSplits incSplitTree1a incSplitTree2 `shouldBe` 2
+      incompatibleSplits incSplitTree1b incSplitTree2 `shouldBe` 2
+      incompatibleSplits (collapse 0.71 incSplitTree1a) incSplitTree2 `shouldBe` 2
+      incompatibleSplits (collapse 0.71 incSplitTree1b) incSplitTree2 `shouldBe` 0
+      incompatibleSplits (collapse 0.71 incSplitTree3) incSplitTree4 `shouldBe` 0
     it "is zero for a collection of random trees"
       $ property
       $ prop_dist_same_tree
@@ -217,7 +242,6 @@ spec = do
             -> Tree (PhyloLabel Double)
             -> Int
           )
-
 
   describe "branchScore" $ do
     it "calculates correct distances for sample trees" $ do

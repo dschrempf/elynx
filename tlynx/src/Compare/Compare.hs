@@ -146,6 +146,9 @@ compareCmd a = do
   $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick t1'
   $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick t2'
   liftIO $ T.hPutStrLn outH $ formatD
+    "Incompatible split"
+    (T.pack $ show $ incompatibleSplits t1' t2')
+  liftIO $ T.hPutStrLn outH $ formatD
     "Incompatible split (0.10)"
     (T.pack $ show $ incompatibleSplits (collapse 0.1 t1') (collapse 0.1 t2'))
   liftIO $ T.hPutStrLn outH $ formatD

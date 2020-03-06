@@ -66,7 +66,7 @@ import           ELynx.Data.Tree.PhyloTree      ( PhyloLabel
                                                 )
 import           ELynx.Data.Tree.Tree           ( leaves )
 import           ELynx.Export.Tree.Newick       ( toNewick )
-import           ELynx.Import.Tree.Newick       ( oneNewick )
+import           ELynx.Import.Tree.Newick       ( oneNewick, oneNewickIqTree )
 import           ELynx.Simulate.PointProcess    ( PointProcess(PointProcess)
                                                 , toReconstructedTree
                                                 )
@@ -91,7 +91,8 @@ shuffleCmd a = do
   fn <- getOutFilePath ".tree"
   h  <- outHandle "results" fn
 
-  t  <- liftIO $ parseFileWith oneNewick (inFile a)
+  let oneNw = if newickIqTreeFlag a then oneNewickIqTree else oneNewick
+  t  <- liftIO $ parseFileWith oneNw (inFile a)
   $(logInfo) "Input tree:"
   $(logInfo) $ fromBs $ toNewick t
 

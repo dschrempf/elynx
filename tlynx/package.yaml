@@ -52,6 +52,7 @@ dependencies:
   - optparse-applicative
   - parallel
   - primitive
+  - scientific
   - QuickCheck
   - quickcheck-instances
   - statistics

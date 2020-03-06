@@ -24,6 +24,7 @@ where
 
 import           Data.List
 import           Data.Void
+import           Data.Scientific                ( toRealFloat )
 import           Options.Applicative
 import           Text.Megaparsec                ( Parsec
                                                 , eof
@@ -32,7 +33,7 @@ import           Text.Megaparsec                ( Parsec
 import           Text.Megaparsec.Char           ( char
                                                 , string
                                                 )
-import           Text.Megaparsec.Char.Lexer     ( float )
+import           Text.Megaparsec.Char.Lexer     ( scientific )
 import           Text.Printf
 
 import           ELynx.Tools.Reproduction
@@ -49,7 +50,7 @@ instance ToJSON DistanceMeasure
 
 instance Show DistanceMeasure where
   show Symmetric             = "Symmetric"
-  show (IncompatibleSplit c) = "Incompatible Split (" ++ printf "%.1f" c ++ ")"
+  show (IncompatibleSplit c) = "Incompatible Split (" ++ printf "%.2f" c ++ ")"
   show BranchScore           = "Branch Score"
 
 -- | Arguments needed to compute distance measures.
@@ -112,12 +113,12 @@ incompatibleSplit :: Parsec Void String DistanceMeasure
 incompatibleSplit = do
   _ <- string "incompatible-split"
   _ <- char '['
-  f <- float
+  f <- toRealFloat <$> scientific
   _ <- char ']'
   _ <- eof
-  if (0 < f) && (f < 1)
+  if (0 <= f) && (f <= 1)
     then pure $ IncompatibleSplit f
-    else error "Branch support has to be between 0 and 1."
+    else error "Branch support has to be in [0, 1]."
 
 branchScore :: Parsec Void String DistanceMeasure
 branchScore = do
