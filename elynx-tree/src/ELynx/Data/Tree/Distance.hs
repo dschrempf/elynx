@@ -88,7 +88,7 @@ countIncompatibilities bs ms = foldl'
   bs
 
 -- | Number of incompatible splits. Similar to 'symmetricWith' but all
--- bipartition induced by multifurcations are considered. For a detailed
+-- bipartitions induced by multifurcations are considered. For a detailed
 -- description of how the distance is calculated, see 'compatible'.
 --
 -- A multifurcation on a tree may (but not necessarily does) represent missing

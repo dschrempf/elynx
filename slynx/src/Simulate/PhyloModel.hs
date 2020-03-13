@@ -124,6 +124,8 @@ assembleSubstitutionModel
   -> Either String S.SubstitutionModel
 -- DNA models.
 assembleSubstitutionModel "JC" Nothing Nothing = Right jc
+assembleSubstitutionModel "F81" Nothing (Just d) =
+  Right $ assertLength d nNuc $ f81 d
 assembleSubstitutionModel "HKY" (Just [k]) (Just d) =
   Right $ assertLength d nNuc $ hky k d
 -- Protein models.
@@ -138,7 +140,7 @@ assembleSubstitutionModel "Poisson-Custom" Nothing (Just d) =
   Right $ assertLength d nAA $ poissonCustom Nothing d
 -- Ohterwisse, we cannot assemble the model.
 assembleSubstitutionModel n mps mf = Left $ unlines
-  [ "Cannot assemble substitution model. "
+  [ "Cannot assemble substitution model."
   , "Name: " ++ show n
   , "Parameters: " ++ show mps
   , "Stationary distribution: " ++ show mf

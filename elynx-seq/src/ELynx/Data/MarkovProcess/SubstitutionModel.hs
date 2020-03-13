@@ -75,7 +75,7 @@ rateMatrix sm = R.fromExchangeabilityMatrix (exchangeabilityMatrix sm)
 
 -- | Get scale of substitution model.
 totalRate :: SubstitutionModel -> Double
-totalRate sm = R.totalRate (stationaryDistribution sm) (rateMatrix sm)
+totalRate sm = R.totalRate (rateMatrix sm)
 
 -- | Create normalized 'SubstitutionModel'. See 'normalize'.
 substitutionModel
@@ -85,7 +85,9 @@ substitutionModel
   -> R.StationaryDistribution
   -> R.ExchangeabilityMatrix
   -> SubstitutionModel
-substitutionModel c n ps d e = normalize $ SubstitutionModel c n ps d e
+substitutionModel c n ps d e = if R.isValid d
+  then normalize $ SubstitutionModel c n ps d e
+  else error "Stationary distribution does not sum to 1.0."
 
 -- | Create UNNORMALIZED 'SubstitutionModel'. See 'substitutionModel'.
 unnormalized

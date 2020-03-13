@@ -20,7 +20,9 @@ module ELynx.Data.MarkovProcess.RateMatrix
   ( RateMatrix
   , ExchangeabilityMatrix
   , StationaryDistribution
+  , isValid
   , totalRate
+  , totalRateWith
   , normalize
   , normalizeWith
   , setDiagonal
@@ -48,9 +50,17 @@ type ExchangeabilityMatrix = Matrix R
 -- | Stationary distribution of a rate matrix.
 type StationaryDistribution = Vector R
 
+-- | True if distribution sums to 1.0.
+isValid :: StationaryDistribution -> Bool
+isValid d = norm_1 d `nearlyEq` 1.0
+
 -- | Get average number of substitutions per unit time.
-totalRate :: StationaryDistribution -> RateMatrix -> Double
-totalRate d m = norm_1 $ d <# matrixSetDiagToZero m
+totalRateWith :: StationaryDistribution -> RateMatrix -> Double
+totalRateWith d m = norm_1 $ d <# matrixSetDiagToZero m
+
+-- | Get average number of substitutions per unit time.
+totalRate :: RateMatrix -> Double
+totalRate m = totalRateWith (getStationaryDistribution m) m
 
 -- | Normalizes a Markov process generator such that one event happens per unit
 -- time. Calculates stationary distribution from rate matrix.
@@ -60,7 +70,7 @@ normalize m = normalizeWith (getStationaryDistribution m) m
 -- | Normalizes a Markov process generator such that one event happens per unit
 -- time. Stationary distribution has to be given.
 normalizeWith :: StationaryDistribution -> RateMatrix -> RateMatrix
-normalizeWith d m = scale (1.0 / totalRate d m) m
+normalizeWith d m = scale (1.0 / totalRateWith d m) m
 
 -- | Set the diagonal entries of a matrix such that the rows sum to 0.
 setDiagonal :: RateMatrix -> RateMatrix

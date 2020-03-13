@@ -15,10 +15,14 @@ Alphabet; DNA ~ Character.
 
 The order of nucleotides is A, C, G, T; see 'ELynx.Data.Character.Nucleotide'.
 
+For the different DNA substitution models, please see
+https://en.wikipedia.org/wiki/Models_of_DNA_evolution
+
 -}
 
 module ELynx.Data.MarkovProcess.Nucleotide
   ( jc
+  , f81
   , hky
   )
 where
@@ -78,6 +82,10 @@ jcExch = (n >< n)
 -- | JC substitution model.
 jc :: SubstitutionModel
 jc = substitutionModel DNA "JC" [] f jcExch where f = uniformVec n
+
+-- | F81 substitution model.
+f81 :: StationaryDistribution -> SubstitutionModel
+f81 f = substitutionModel DNA "F81" [] f jcExch
 
 hkyExch :: Double -> ExchangeabilityMatrix
 hkyExch k = (n >< n)
