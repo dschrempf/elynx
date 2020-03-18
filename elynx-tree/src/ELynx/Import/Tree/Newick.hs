@@ -123,7 +123,7 @@ decimalAsDouble :: Parser Double
 decimalAsDouble = fromIntegral <$> (decimal :: Parser Int)
 
 --------------------------------------------------------------------------------
--- IQ-TREE STUFF.
+-- IQ-TREE.
 
 -- | IQ-TREE stores the branch support as node names after the closing bracket of a forest.
 newickIqTree :: Parser (Tree (PhyloLabel L.ByteString))

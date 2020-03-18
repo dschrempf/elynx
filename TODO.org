@@ -13,11 +13,5 @@ I decided that there should not be any automatic code detection. Reaons:
 Keep an eye on [[https://github.com/phadej/splitmix][Splitmix]], a fast, splitable random number generator.
 
 * Easy
-Provide descriptions (or headers?) for all sub commands so that they show up in
-help.
-
 * Medium
 * Hard
-** TODO ELynx file
-Provide an internal =OutFileBaseName.elynx= file that stores all input files and
-commands so that the exact run can be replicated from this elynx file.
