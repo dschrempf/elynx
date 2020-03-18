@@ -77,19 +77,19 @@ import           ELynx.Tools.InputOutput        ( openFile' )
 logNewSection :: MonadLogger m => Text -> m ()
 logNewSection s = $(logInfo) $ "== " <> s
 
--- TODO: THIS IS ALL UGLY.
-
 -- | The 'LoggingT' wrapper for ELynx. Prints a header and a footer, logs to
 -- 'stderr' if no file is provided. Initializes the seed if none is provided. If
 -- a log file is provided, log to the file and to 'stderr'.
 eLynxWrapper
-  :: (Eq a, Show a, Reproducible a, ToJSON a, Reproducible b)
+  -- TODO: This is the new layout. All the sub-commands and options have to be amended.
+  -- TODO: Add a description to Reproducible, then the String arg can be left out.
+  :: (Eq a, Show a, Reproducible a, ToJSON a)
   => String
   -> a
-  -> b
-  -> (b -> ELynx ())
+  -> (a -> ELynx ())
   -> ReaderT GlobalArguments IO ()
-eLynxWrapper header global local worker = do
+eLynxWrapper header args worker = do
+  -- Global arguments.
   a <- ask
   let lvl     = toLogLevel $ verbosity a
       rd      = forceReanalysis a
@@ -100,26 +100,26 @@ eLynxWrapper header global local worker = do
     h <- liftIO $ logHeader header
     $(logInfo) $ pack $ h ++ "\n"
     -- Fix seed.
-    (global', local') <- case getSeed global of
-      Nothing     -> return (global, local)
+    args' <- case getSeed args of
+      Nothing     -> return args
       Just Random -> do
         -- XXX: Have to go via a generator here, since creation of seed is not
         -- supported.
         g <- liftIO createSystemRandom
         s <- liftIO $ fromSeed <$> save g
         $(logInfo) $ pack $ "Seed: random; set to " <> show s <> "."
-        return (setSeed global s, setSeed local s)
+        return $ setSeed args s
       Just (Fixed s) -> do
         $(logInfo) $ pack $ "Seed: " <> show s <> "."
-        return (global, local)
+        return args
     -- Write reproduction file.
     case repFile of
       Nothing -> do
         $(logInfo) "No output file given."
         $(logInfo) "ELynx file for reproducible runs has not been created."
-      Just f -> liftIO $ writeR f global'
+      Just f -> liftIO $ writeR f args'
     -- Run the worker with the fixed seed.
-    worker local'
+    worker args'
     -- Close.
     f <- liftIO logFooter
     $(logInfo) $ pack f
@@ -131,9 +131,10 @@ runELynxLoggingT
   -> Maybe FilePath
   -> LoggingT m a
   -> m a
-runELynxLoggingT lvl frc f = case f of
-  Nothing -> runELynxStderrLoggingT . filterLogger (\_ l -> l >= lvl)
-  Just fn -> runELynxFileLoggingT frc fn . filterLogger (\_ l -> l >= lvl)
+runELynxLoggingT lvl _ Nothing =
+  runELynxStderrLoggingT . filterLogger (\_ l -> l >= lvl)
+runELynxLoggingT lvl frc (Just fn) =
+  runELynxFileLoggingT frc fn . filterLogger (\_ l -> l >= lvl)
 
 runELynxFileLoggingT
   :: MonadBaseControl IO m => Force -> FilePath -> LoggingT m a -> m a
