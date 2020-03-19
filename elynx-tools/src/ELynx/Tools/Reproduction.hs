@@ -335,8 +335,6 @@ class Reproducible a where
 data State a = State
   { progName      :: String        -- ^ Program name.
   , argsStr       :: [String]      -- ^ Command line arguments without program name.
-  -- TODO: This should not be needed.
-  , args          :: Arguments a   -- ^ Full arguments.
   , files         :: [FilePath]    -- ^ File paths of in files.
   , checkSums     :: [String]      -- ^ SHA256 sums of in files.
   , reproducible  :: a             -- ^ Command argument.
@@ -357,12 +355,10 @@ parse s p = case getParseResult res of
 checkArgs :: forall a . (Eq a, Show a, Reproducible a) => State a -> IO (Either String ())
 checkArgs s = do
   let r   = reproducible s
-      -- TODO: This should not be wrapped again into argumentsparser, shouldn't it?
-      -- p   = argumentsParser $ parser @a
       p   = parser @a
       as  = argsStr s
       res = parse as p
-  return $ if res /= args s
+  return $ if res /= reproducible s
     then Left $ unlines
       ["Command line string and command arguments do not fit:", show as, show r]
     else Right ()
@@ -420,9 +416,5 @@ writeR fp r = do
   let fs = inFiles r
   cs <- mapM hashFile fs
   let cs' = map B.unpack cs
-      -- TODO: Check if this is correct. The parser should not be wrapped again, shouldn't it?
-      -- p   = argumentsParser $ parser @a
-      p   = parser @a
-      res = parse as p
-      s   = State pn as res fs cs' r
+      s   = State pn as fs cs' r
   void $ encodeFile fp s
