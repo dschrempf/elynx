@@ -87,7 +87,8 @@ logNewSection s = $(logInfo) $ "== " <> s
 -- 'stderr' if no file is provided. Initializes the seed if none is provided. If
 -- a log file is provided, log to the file and to 'stderr'.
 eLynxWrapper
-  :: forall a . (Eq a, Show a, Reproducible a, ToJSON a)
+  :: forall a
+   . (Eq a, Show a, Reproducible a, ToJSON a)
   => ELynx a ()
   -> Arguments a
   -> IO ()

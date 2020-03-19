@@ -170,5 +170,5 @@ outHandle name mfp = case mfp of
     return stdout
   Just fp -> do
     $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
-    frc <- forceReanalysis .global <$> ask
+    frc <- forceReanalysis . global <$> ask
     liftIO $ openFile' frc fp WriteMode

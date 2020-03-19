@@ -229,11 +229,11 @@ instance ToJSON a => ToJSON (Arguments a)
 instance FromJSON a => FromJSON (Arguments a)
 
 instance Reproducible a => Reproducible (Arguments a) where
-  inFiles                   = inFiles . local
-  getSeed                   = getSeed . local
+  inFiles = inFiles . local
+  getSeed = getSeed . local
   setSeed (Arguments g l) s = Arguments g $ setSeed l s
-  parser                    = argumentsParser (parser @a)
-  description               = description @a
+  parser      = argumentsParser (parser @a)
+  description = description @a
 
 -- | A set of global arguments used by all programs. The idea is to provide a
 -- common framework for shared arguments.
@@ -352,7 +352,11 @@ parse s p = case getParseResult res of
   where res = execParserPure defaultPrefs (info p briefDesc) s
 
 -- Does the command line fit the provided command?
-checkArgs :: forall a . (Eq a, Show a, Reproducible a) => State a -> IO (Either String ())
+checkArgs
+  :: forall a
+   . (Eq a, Show a, Reproducible a)
+  => State a
+  -> IO (Either String ())
 checkArgs s = do
   let r   = reproducible s
       p   = parser @a
@@ -376,15 +380,12 @@ checkFile fp h = do
       ]
 
 -- | Check if command line arguments and files check sums are matching.
-validate
-  :: (Eq a, Show a, Reproducible a) => State a -> IO (Either String ())
+validate :: (Eq a, Show a, Reproducible a) => State a -> IO (Either String ())
 validate s = do
   chA  <- checkArgs s
   chFs <- zipWithM checkFile (files s) (map B.pack $ checkSums s)
   let ch = sequence_ (chA : chFs)
-  return $ first
-    ("Failed validating the reproduction file.\n" ++)
-    ch
+  return $ first ("Failed validating the reproduction file.\n" ++) ch
 
 -- | Read and validate ELynx reproduction file. Check consistency of arguments
 -- and input files.
@@ -409,7 +410,12 @@ hashFile :: FilePath -> IO B.ByteString
 hashFile f = encode . hash <$> B.readFile f
 
 -- | Write an ELynx reproduction file.
-writeR :: forall a . (Eq a, Show a, Reproducible a, ToJSON a) => FilePath -> a -> IO ()
+writeR
+  :: forall a
+   . (Eq a, Show a, Reproducible a, ToJSON a)
+  => FilePath
+  -> a
+  -> IO ()
 writeR fp r = do
   pn <- getProgName
   as <- getArgs

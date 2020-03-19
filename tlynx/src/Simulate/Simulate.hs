@@ -66,7 +66,7 @@ import           ELynx.Tools.InputOutput        ( getOutFilePath
                                                 )
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Reproduction       ( ELynx
-                                                , Arguments (..)
+                                                , Arguments(..)
                                                 , Seed(..)
                                                 )
 
@@ -74,7 +74,9 @@ import           ELynx.Tools.Reproduction       ( ELynx
 simulate :: ELynx SimulateArguments ()
 simulate = do
   l <- local <$> ask
-  let SimulateArguments nTrees nLeaves height mrca lambda mu rho subS sumS (Fixed s) = l
+  let
+    SimulateArguments nTrees nLeaves height mrca lambda mu rho subS sumS (Fixed s)
+      = l
   -- error "simulate: seed not available; please contact maintainer."
   when (isNothing height && mrca)
     $ error "Cannot condition on MRCA (-M) when height is not given (-H)."

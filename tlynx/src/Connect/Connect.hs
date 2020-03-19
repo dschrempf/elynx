@@ -58,9 +58,9 @@ import           ELynx.Tools.Text               ( fromBs
 -- | Connect two trees honoring possible constraints. See 'connect'.
 connectCmd :: ELynx ConnectArguments ()
 connectCmd = do
-  lArgs    <- local <$> ask
-  fn   <- getOutFilePath ".out"
-  outH <- outHandle "results" fn
+  lArgs <- local <$> ask
+  fn    <- getOutFilePath ".out"
+  outH  <- outHandle "results" fn
 
   -- Do we have constraints or not?
   let cs = constraints lArgs

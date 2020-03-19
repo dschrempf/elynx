@@ -41,7 +41,7 @@ translateSeqs rf uc = map (translateSeq uc rf)
 
 -- | Translate sequences.
 translateCmd :: ELynx TranslateArguments ()
-translateCmd  = do
+translateCmd = do
   (TranslateArguments al inFile rf uc) <- local <$> ask
   $(logInfo) "Command: Translate sequences to amino acids."
   $(logInfo) $ T.pack $ "  Universal code: " <> show uc <> "."

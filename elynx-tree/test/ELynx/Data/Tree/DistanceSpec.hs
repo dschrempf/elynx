@@ -232,9 +232,12 @@ spec = do
     it "calculates correct distances for sample trees with branch support" $ do
       incompatibleSplits incSplitTree1a incSplitTree2 `shouldBe` 2
       incompatibleSplits incSplitTree1b incSplitTree2 `shouldBe` 2
-      incompatibleSplits (collapse 0.71 incSplitTree1a) incSplitTree2 `shouldBe` 2
-      incompatibleSplits (collapse 0.71 incSplitTree1b) incSplitTree2 `shouldBe` 0
-      incompatibleSplits (collapse 0.71 incSplitTree3) incSplitTree4 `shouldBe` 0
+      incompatibleSplits (collapse 0.71 incSplitTree1a) incSplitTree2
+        `shouldBe` 2
+      incompatibleSplits (collapse 0.71 incSplitTree1b) incSplitTree2
+        `shouldBe` 0
+      incompatibleSplits (collapse 0.71 incSplitTree3) incSplitTree4
+        `shouldBe` 0
     it "is zero for a collection of random trees"
       $ property
       $ prop_dist_same_tree

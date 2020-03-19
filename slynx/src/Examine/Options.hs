@@ -37,7 +37,7 @@ data ExamineArguments = ExamineArguments
 instance Reproducible ExamineArguments where
   inFiles = pure . exInFile
   getSeed _ = Nothing
-  -- XXX: Probably throw error when seed is set.
+-- XXX: Probably throw error when seed is set.
   setSeed = const
   parser  = examineArguments
   description
