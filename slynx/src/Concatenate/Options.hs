@@ -39,7 +39,7 @@ instance Reproducible ConcatenateArguments where
   getSeed _ = Nothing
   setSeed    = const
   parser     = concatenateArguments
-  progHeader = "Concatenate sequences found in input files."
+  description = "Concatenate sequences found in input files."
 
 instance ToJSON ConcatenateArguments
 

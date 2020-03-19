@@ -48,43 +48,43 @@ data CommandArguments =
 distanceCommand :: Mod CommandFields CommandArguments
 distanceCommand = command "distance" $ info
   (Distance <$> distanceArguments)
-  (fullDesc <> progDesc (progHeader @DistanceArguments) <> footerDoc
+  (fullDesc <> progDesc (description @DistanceArguments) <> footerDoc
     (Just $ pretty distanceFooter)
   )
 
 examineCommand :: Mod CommandFields CommandArguments
 examineCommand =
   command "examine" $ info (Examine <$> examineArguments) $ progDesc
-    (progHeader @ExamineArguments)
+    (description @ExamineArguments)
 
 simulateCommand :: Mod CommandFields CommandArguments
 simulateCommand = command "simulate" $ info
   (Simulate <$> simulateArguments)
-  (fullDesc <> progDesc (progHeader @SimulateArguments) <> footerDoc
+  (fullDesc <> progDesc (description @SimulateArguments) <> footerDoc
     (Just $ pretty simulateFooter)
   )
 
 coalesceCommand :: Mod CommandFields CommandArguments
 coalesceCommand = command "coalesce" $ info
   (Coalesce <$> coalesceArguments)
-  (fullDesc <> progDesc (progHeader @CoalesceArguments) <> footerDoc
+  (fullDesc <> progDesc (description @CoalesceArguments) <> footerDoc
     (Just $ pretty coalesceFooter)
   )
 
 compareCommand :: Mod CommandFields CommandArguments
 compareCommand =
   command "compare" $ info (Compare <$> compareArguments) $ progDesc
-    (progHeader @CompareArguments)
+    (description @CompareArguments)
 
 connectCommand :: Mod CommandFields CommandArguments
 connectCommand =
   command "connect" $ info (Connect <$> connectArguments) $ progDesc
-    (progHeader @ConnectArguments)
+    (description @ConnectArguments)
 
 shuffleCommand :: Mod CommandFields CommandArguments
 shuffleCommand =
   command "shuffle" $ info (Shuffle <$> shuffleArguments) $ progDesc
-    (progHeader @ShuffleArguments)
+    (description @ShuffleArguments)
 
 commandArguments :: Parser CommandArguments
 commandArguments =

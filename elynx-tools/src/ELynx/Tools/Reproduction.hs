@@ -233,7 +233,7 @@ instance Reproducible a => Reproducible (Arguments a) where
   getSeed                   = getSeed . local
   setSeed (Arguments g l) s = Arguments g $ setSeed l s
   parser                    = argumentsParser (parser @a)
-  progHeader                = progHeader @a
+  description               = description @a
 
 -- | A set of global arguments used by all programs. The idea is to provide a
 -- common framework for shared arguments.
@@ -328,7 +328,7 @@ class Reproducible a where
   getSeed    :: a -> Maybe Seed
   setSeed    :: a -> Vector Word32 -> a
   parser     :: Parser a
-  progHeader :: String
+  description :: String
 
 -- | Necessary information for a reproducible run. Notably, the input files are
 -- checked for consistency!

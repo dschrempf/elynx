@@ -35,7 +35,7 @@ instance Reproducible ExamineArguments where
   getSeed _ = Nothing
   setSeed = const
   parser = examineArguments
-  progHeader = "Compute summary statistics of phylogenetic trees."
+  description = "Compute summary statistics of phylogenetic trees."
 
 instance ToJSON ExamineArguments
 

@@ -37,7 +37,7 @@ instance Reproducible ShuffleArguments where
   getSeed = Just . argsSeed
   setSeed a s = a { argsSeed = Fixed s }
   parser = shuffleArguments
-  progHeader
+  description
     = "Shuffle a phylogenetic tree (keep coalescent times, but shuffle topology and leaves)."
 
 instance ToJSON ShuffleArguments

@@ -43,7 +43,7 @@ instance Reproducible TranslateArguments where
   getSeed _ = Nothing
   setSeed = const
   parser = translateArguments
-  progHeader = "Translate from DNA to Protein or DNAX to ProteinX."
+  description = "Translate from DNA to Protein or DNAX to ProteinX."
 
 instance ToJSON TranslateArguments
 

@@ -41,7 +41,7 @@ instance Reproducible SubSampleArguments where
   getSeed = Just . ssMbSeed
   setSeed a s = a { ssMbSeed = Fixed s }
   parser = subSampleArguments
-  progHeader = "Sub-sample columns from multi sequence alignments."
+  description = "Sub-sample columns from multi sequence alignments."
 
 instance ToJSON SubSampleArguments
 

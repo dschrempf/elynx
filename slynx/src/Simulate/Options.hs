@@ -74,7 +74,7 @@ instance Reproducible SimulateArguments where
   getSeed = Just . argsSeed
   setSeed a s = a { argsSeed = Fixed s }
   parser = simulateArguments
-  progHeader = "Simulate multi sequence alignments."
+  description = "Simulate multi sequence alignments."
 
 instance ToJSON SimulateArguments
 

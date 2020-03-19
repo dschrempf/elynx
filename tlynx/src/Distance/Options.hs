@@ -72,7 +72,7 @@ instance Reproducible DistanceArguments where
   getSeed _ = Nothing
   setSeed    = const
   parser     = distanceArguments
-  progHeader = "Compute distances between many phylogenetic trees."
+  description = "Compute distances between many phylogenetic trees."
 
 instance ToJSON DistanceArguments
 

@@ -38,7 +38,7 @@ instance Reproducible CompareArguments where
   getSeed _ = Nothing
   setSeed a _ = a
   parser = compareArguments
-  progHeader
+  description
     = "Compare two phylogenetic trees (compute distances and branch-wise differences)."
 
 instance ToJSON CompareArguments

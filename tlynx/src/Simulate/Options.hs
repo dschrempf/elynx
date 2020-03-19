@@ -48,7 +48,7 @@ instance Reproducible SimulateArguments where
   getSeed = Just . argsSeed
   setSeed a s = a { argsSeed = Fixed s }
   parser = simulateArguments
-  progHeader
+  description
     = "Simulate phylogenetic trees using birth and death processes (see also the 'coalesce' command for simulations using the coalescent process)."
 
 instance ToJSON SimulateArguments

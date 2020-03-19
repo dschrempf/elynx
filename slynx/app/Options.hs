@@ -52,28 +52,28 @@ data CommandArguments =
 concatenateCommand :: Mod CommandFields CommandArguments
 concatenateCommand =
   command "concatenate" $ info (Concatenate <$> concatenateArguments) $ progDesc
-    (progHeader @ConcatenateArguments)
+    (description @ConcatenateArguments)
 
 examineCommand :: Mod CommandFields CommandArguments
 examineCommand = command "examine" $ info
   (Examine <$> examineArguments)
-  (fullDesc <> progDesc (progHeader @ExamineArguments))
+  (fullDesc <> progDesc (description @ExamineArguments))
 
 filterRowsCommand :: Mod CommandFields CommandArguments
 filterRowsCommand =
   command "filter-rows" $ info (FilterRows <$> filterRowsArguments) $ progDesc
-    (progHeader @FilterRowsArguments)
+    (description @FilterRowsArguments)
 
 filterColumnsCommand :: Mod CommandFields CommandArguments
 filterColumnsCommand =
   command "filter-columns"
     $ info (FilterCols <$> filterColsArguments)
-    $ progDesc (progHeader @FilterColsArguments)
+    $ progDesc (description @FilterColsArguments)
 
 simulateCommand :: Mod CommandFields CommandArguments
 simulateCommand = command "simulate" $ info
   (Simulate <$> simulateArguments)
-  (fullDesc <> progDesc (progHeader @SimulateArguments) <> footerDoc
+  (fullDesc <> progDesc (description @SimulateArguments) <> footerDoc
     (Just $ pretty simulateFooter)
   )
 
@@ -81,7 +81,7 @@ subSampleCommand :: Mod CommandFields CommandArguments
 subSampleCommand = command "sub-sample" $ info
   (SubSample <$> subSampleArguments)
   (  fullDesc
-  <> progDesc (progHeader @SubSampleArguments)
+  <> progDesc (description @SubSampleArguments)
   <> footer
        "Create a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment."
   )
@@ -89,7 +89,7 @@ subSampleCommand = command "sub-sample" $ info
 translateCommand :: Mod CommandFields CommandArguments
 translateCommand =
   command "translate" $ info (Translate <$> translateArguments) $ progDesc
-    (progHeader @TranslateArguments)
+    (description @TranslateArguments)
 
 commandArguments :: Parser CommandArguments
 commandArguments =
@@ -113,4 +113,4 @@ ftr = ["File formats:"] ++ fs ++ ["", "Alphabet types:"] ++ as
  where
   toListItem = ("  - " ++)
   fs         = map toListItem ["FASTA"]
-  as         = map (toListItem . description) [(minBound :: Alphabet) ..]
+  as         = map (toListItem . describe) [(minBound :: Alphabet) ..]
