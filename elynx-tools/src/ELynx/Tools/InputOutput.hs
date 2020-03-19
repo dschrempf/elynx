@@ -39,7 +39,6 @@ import           Codec.Compression.GZip         ( compress
                                                 , decompress
                                                 )
 import           Control.Monad.Trans.Reader     ( ask )
-import           Control.Monad.Trans.Class      ( lift )
 import           Control.DeepSeq                ( force )
 import           Control.Exception              ( evaluate )
 import           Control.Monad                  ( (<=<) )
@@ -55,14 +54,15 @@ import           Text.Megaparsec
 
 import           ELynx.Tools.Reproduction       ( ELynx
                                                 , Force(..)
+                                                , Arguments(..)
                                                 , outFileBaseName
                                                 , forceReanalysis
                                                 )
 
 -- | Get out file path with extension.
-getOutFilePath :: String -> ELynx (Maybe FilePath)
+getOutFilePath :: String -> ELynx a (Maybe FilePath)
 getOutFilePath ext = do
-  ofbn <- outFileBaseName <$> lift ask
+  ofbn <- outFileBaseName . global <$> ask
   return $ (++ ext) <$> ofbn
 
 checkFile :: Force -> FilePath -> IO ()
@@ -151,24 +151,24 @@ parseByteStringWith s p l = case parse p s l of
 
 -- | Write a result with a given name to file or standard output. Supports
 -- compression.
-out :: String -> L.ByteString -> Maybe FilePath -> ELynx ()
+out :: String -> L.ByteString -> Maybe FilePath -> ELynx a ()
 out name res mfp = case mfp of
   Nothing -> do
     $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
     liftIO $ L.putStr res
   Just fp -> do
     $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
-    frc <- forceReanalysis <$> lift ask
+    frc <- forceReanalysis . global <$> ask
     liftIO $ writeGZFile frc fp res
 
 -- | Get an output handle, does not support compression. The handle has to be
 -- closed after use!
-outHandle :: String -> Maybe FilePath -> ELynx Handle
+outHandle :: String -> Maybe FilePath -> ELynx a Handle
 outHandle name mfp = case mfp of
   Nothing -> do
     $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
     return stdout
   Just fp -> do
     $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
-    frc <- forceReanalysis <$> lift ask
+    frc <- forceReanalysis .global <$> ask
     liftIO $ openFile' frc fp WriteMode

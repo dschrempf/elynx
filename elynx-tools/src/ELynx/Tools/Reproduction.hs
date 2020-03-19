@@ -17,9 +17,11 @@ Creation date: Tue Nov 19 15:07:09 2019.
 
 Use of standard input is not supported.
 
-TODO: Amend validate: also store output hash and check, but perform analysis.
+TODO: Also store output hash.
 
-TODO: Divide module, but was difficult.
+TODO: Split validate: (1) check input files; (2) perform analysis and check output hash.
+
+TODO: Divide module.
 
 -}
 
@@ -101,7 +103,7 @@ import           Paths_elynx_tools              ( version )
 import           Debug.Trace                    ( traceShow )
 
 -- | Logging transformer to be used with all executables.
-type ELynx = LoggingT (ReaderT GlobalArguments IO)
+type ELynx a = ReaderT (Arguments a) (LoggingT IO)
 
 -- Be careful; it is necessary to synchronize the version numbers across packages.
 versionString :: String
@@ -224,6 +226,13 @@ instance ToJSON a => ToJSON (Arguments a)
 
 instance FromJSON a => FromJSON (Arguments a)
 
+instance Reproducible a => Reproducible (Arguments a) where
+  inFiles                   = inFiles . local
+  getSeed                   = getSeed . local
+  setSeed (Arguments g l) s = Arguments g $ setSeed l s
+  parser  (Arguments _ l)   = argumentsParser (parser l)
+  progHeader                = progHeader . local
+
 -- | A set of global arguments used by all programs. The idea is to provide a
 -- common framework for shared arguments.
 --
@@ -308,13 +317,16 @@ fillParagraph = fillSep . map text . words
 
 -- | Reproducible commands have
 --   - a set of input files to be checked for consistency,
---   - maybe standard input to be checked for consistency,
+--   - a function to get the seed, if available
+--   - a function to set the seed, if applicable
 --   - a parser to read the command line.
+--   - a nice program header
 class Reproducible a where
-  inFiles :: a -> [FilePath]
-  getSeed :: a -> Maybe Seed
-  setSeed :: a -> Vector Word32 -> a
-  parser  :: a -> Parser a
+  inFiles    :: a -> [FilePath]
+  getSeed    :: a -> Maybe Seed
+  setSeed    :: a -> Vector Word32 -> a
+  parser     :: a -> Parser a
+  progHeader :: a -> String
 
 -- | Necessary information for a reproducible run. Notably, the input files are
 -- checked for consistency!

@@ -21,6 +21,7 @@ module Concatenate.Concatenate
 where
 
 import           Control.Monad.Logger
+import           Control.Monad.Trans.Reader     ( ask )
 
 import           Concatenate.Options
 import           Tools
@@ -28,11 +29,14 @@ import           Tools
 import qualified ELynx.Data.Sequence.Sequence  as S
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Reproduction       ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Arguments(..)
+                                                )
 
 -- | Concatenate sequences.
-concatenateCmd :: ConcatenateArguments -> ELynx ()
-concatenateCmd (ConcatenateArguments al fps) = do
+concatenateCmd :: ELynx ConcatenateArguments ()
+concatenateCmd = do
+  (ConcatenateArguments al fps) <- local <$> ask
   $(logInfo) "Command: Concatenate sequences."
   sss <- mapM (readSeqs al) fps
   let result = sequencesToFasta $ S.concatSequences sss

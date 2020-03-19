@@ -32,10 +32,10 @@ main :: IO ()
 main = do
   Arguments g c <- parseArguments
   case c of
-    Distance a -> runReaderT (eLynxWrapper distanceDescription c a distance) g
-    Examine  a -> runReaderT (eLynxWrapper examineDescription c a examine) g
-    Simulate a -> runReaderT (eLynxWrapper simulateDescription c a simulate) g
-    Coalesce a -> runReaderT (eLynxWrapper coalesceDescription c a coalesce) g
-    Compare  a -> runReaderT (eLynxWrapper compareDescription c a compareCmd) g
-    Connect  a -> runReaderT (eLynxWrapper connectDescription c a connectCmd) g
-    Shuffle  a -> runReaderT (eLynxWrapper shuffleDescription c a shuffleCmd) g
+    Distance a -> eLynxWrapper distance (Arguments g a)
+    Examine  a -> eLynxWrapper examine (Arguments g a)
+    Simulate a -> eLynxWrapper simulate (Arguments g a)
+    Coalesce a -> eLynxWrapper coalesce (Arguments g a)
+    Compare  a -> eLynxWrapper compareCmd (Arguments g a)
+    Connect  a -> eLynxWrapper connectCmd (Arguments g a)
+    Shuffle  a -> eLynxWrapper shuffleCmd (Arguments g a)

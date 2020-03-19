@@ -38,9 +38,7 @@ import           Control.Monad.Logger           ( Loc
                                                 , runLoggingT
                                                 )
 import           Control.Monad.Trans.Control    ( MonadBaseControl )
-import           Control.Monad.Trans.Reader     ( ReaderT
-                                                , ask
-                                                )
+import           Control.Monad.Trans.Reader     ( ReaderT(runReaderT) )
 import qualified Data.ByteString.Char8         as B
 import           Data.Text                      ( Text
                                                 , pack
@@ -65,6 +63,7 @@ import           ELynx.Tools.Reproduction       ( Reproducible(..)
                                                 , ToJSON
                                                 , toLogLevel
                                                 , ELynx
+                                                , Arguments(..)
                                                 , Force
                                                 , GlobalArguments(..)
                                                 , Seed(..)
@@ -77,41 +76,45 @@ import           ELynx.Tools.InputOutput        ( openFile' )
 logNewSection :: MonadLogger m => Text -> m ()
 logNewSection s = $(logInfo) $ "== " <> s
 
+-- TODO: This is the new layout. All the sub-commands and options have to be
+-- amended; the ELynx data has to be amended.
+
+-- TODO: Add a description to Reproducible, then the String arg can be left out.
+
 -- | The 'LoggingT' wrapper for ELynx. Prints a header and a footer, logs to
 -- 'stderr' if no file is provided. Initializes the seed if none is provided. If
 -- a log file is provided, log to the file and to 'stderr'.
 eLynxWrapper
-  -- TODO: This is the new layout. All the sub-commands and options have to be amended.
-  -- TODO: Add a description to Reproducible, then the String arg can be left out.
   :: (Eq a, Show a, Reproducible a, ToJSON a)
-  => String
-  -> a
-  -> (a -> ELynx ())
-  -> ReaderT GlobalArguments IO ()
-eLynxWrapper header args worker = do
-  -- Global arguments.
-  a <- ask
-  let lvl     = toLogLevel $ verbosity a
-      rd      = forceReanalysis a
-      logFile = (++ ".log") <$> outFileBaseName a
-      repFile = (++ ".elynx") <$> outFileBaseName a
+  => ELynx a ()
+  -> Arguments a
+  -> IO ()
+eLynxWrapper worker args = do
+  -- Arguments.
+  let gArgs = global args
+      lArgs = local args
+  let lvl     = toLogLevel $ verbosity gArgs
+      rd      = forceReanalysis gArgs
+      logFile = (++ ".log") <$> outFileBaseName gArgs
+      repFile = (++ ".elynx") <$> outFileBaseName gArgs
   runELynxLoggingT lvl rd logFile $ do
     -- Initialize.
-    h <- liftIO $ logHeader header
+    h <- liftIO $ logHeader (progHeader lArgs)
     $(logInfo) $ pack $ h ++ "\n"
     -- Fix seed.
-    args' <- case getSeed args of
-      Nothing     -> return args
+    lArgs' <- case getSeed lArgs of
+      Nothing     -> return lArgs
       Just Random -> do
         -- XXX: Have to go via a generator here, since creation of seed is not
         -- supported.
         g <- liftIO createSystemRandom
         s <- liftIO $ fromSeed <$> save g
         $(logInfo) $ pack $ "Seed: random; set to " <> show s <> "."
-        return $ setSeed args s
+        return $ setSeed lArgs s
       Just (Fixed s) -> do
         $(logInfo) $ pack $ "Seed: " <> show s <> "."
-        return args
+        return lArgs
+    let args' = Arguments gArgs lArgs'
     -- Write reproduction file.
     case repFile of
       Nothing -> do
@@ -119,7 +122,7 @@ eLynxWrapper header args worker = do
         $(logInfo) "ELynx file for reproducible runs has not been created."
       Just f -> liftIO $ writeR f args'
     -- Run the worker with the fixed seed.
-    worker args'
+    runReaderT worker args'
     -- Close.
     f <- liftIO logFooter
     $(logInfo) $ pack f

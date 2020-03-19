@@ -29,6 +29,7 @@ import           Control.Monad                  ( unless
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Reader     ( ask )
 import qualified Data.ByteString.Lazy          as L
 import qualified Data.ByteString.Lazy.Char8    as LC
 import           Data.Maybe
@@ -71,6 +72,7 @@ import           ELynx.Tools.ByteString
 import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Arguments(..)
                                                 , Seed(..)
                                                 )
 import           ELynx.Tools.Misc
@@ -130,7 +132,7 @@ summarizeEDMComponents cs =
 -- XXX. Maybe provide human readable model file. But then, why is this
 -- necessary. A human readable summary is reported anyways, and for Protein
 -- models the exchangeabilities are too many.
-reportModel :: P.PhyloModel -> ELynx ()
+reportModel :: P.PhyloModel -> ELynx SimulateArguments ()
 reportModel m = do
   fn <- getOutFilePath ".model.gz"
   case fn of
@@ -141,17 +143,18 @@ reportModel m = do
       out "model definition (machine readable)" (bShow m <> "\n") (Just fn')
 
 -- | Simulate sequences.
-simulateCmd :: SimulateArguments -> ELynx ()
-simulateCmd a = do
-  let treeFile = argsTreeFile a
+simulateCmd :: ELynx SimulateArguments ()
+simulateCmd = do
+  l <- local <$> ask
+  let treeFile = argsTreeFile l
 
   $(logInfo) ""
   $(logInfo) $ T.pack $ "Read tree from file '" ++ treeFile ++ "'."
   tree <- liftIO $ parseFileWith newick treeFile
   $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarize tree
 
-  let edmFile       = argsEDMFile a
-  let sProfileFiles = argsSiteprofilesFiles a
+  let edmFile       = argsEDMFile l
+  let sProfileFiles = argsSiteprofilesFiles l
   $(logInfo) ""
   $(logDebug) "Read EDM file or siteprofile files."
   when (isJust edmFile && isJust sProfileFiles)
@@ -181,15 +184,15 @@ simulateCmd a = do
   let edmCsOrSiteprofiles = edmCs <|> sProfiles
 
   $(logInfo) "Read model string."
-  let ms                = argsSubstitutionModelString a
-      mm                = argsMixtureModelString a
-      mws               = argsMixtureWeights a
+  let ms                = argsSubstitutionModelString l
+      mm                = argsMixtureModelString l
+      mws               = argsMixtureWeights l
       eitherPhyloModel' = getPhyloModel ms mm mws edmCsOrSiteprofiles
   phyloModel' <- case eitherPhyloModel' of
     Left  err -> lift $ error err
     Right pm  -> return pm
 
-  let maybeGammaParams = argsGammaParams a
+  let maybeGammaParams = argsGammaParams l
   phyloModel <- case maybeGammaParams of
     Nothing -> do
       $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ LC.unlines $ P.summarize
@@ -220,9 +223,9 @@ simulateCmd a = do
     )
 
   $(logInfo) "Simulate alignment."
-  let alignmentLength = argsLength a
+  let alignmentLength = argsLength l
   $(logInfo) $ T.pack $ "Length: " <> show alignmentLength <> "."
-  gen <- case argsSeed a of
+  gen <- case argsSeed l of
     Random ->
       error "simulateCmd: seed not available; please contact maintainer."
     Fixed s -> liftIO $ initialize s

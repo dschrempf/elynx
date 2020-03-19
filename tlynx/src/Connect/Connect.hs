@@ -22,6 +22,7 @@ where
 
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
+import           Control.Monad.Trans.Reader     ( ask )
 import qualified Data.ByteString.Lazy.Char8    as L
 import qualified Data.Set                      as S
 import           Data.Tree
@@ -47,22 +48,25 @@ import           ELynx.Tools.InputOutput        ( outHandle
                                                 , parseFileWith
                                                 , getOutFilePath
                                                 )
-import           ELynx.Tools.Reproduction       ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Arguments(..)
+                                                )
 import           ELynx.Tools.Text               ( fromBs
                                                 , tShow
                                                 )
 
 -- | Connect two trees honoring possible constraints. See 'connect'.
-connectCmd :: ConnectArguments -> ELynx ()
-connectCmd a = do
+connectCmd :: ELynx ConnectArguments ()
+connectCmd = do
+  lArgs    <- local <$> ask
   fn   <- getOutFilePath ".out"
   outH <- outHandle "results" fn
 
   -- Do we have constraints or not?
-  let cs = constraints a
-      l  = inFileA a
-      r  = inFileB a
-      iq = newickIqTreeFlag  a
+  let cs = constraints lArgs
+      l  = inFileA lArgs
+      r  = inFileB lArgs
+      iq = newickIqTreeFlag lArgs
   case cs of
     Nothing -> connectOnly iq outH l r
     Just c  -> connectAndFilter iq outH c l r
@@ -91,6 +95,7 @@ parseTrees
   -> FilePath
   -> FilePath
   -> ELynx
+       ConnectArguments
        (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
 parseTrees iqt l r = do
   let oneNw = if iqt then oneNewickIqTree else oneNewick
@@ -102,14 +107,21 @@ parseTrees iqt l r = do
   $(logInfo) $ fromBs $ toNewick tr
   return (tl, tr)
 
-connectOnly :: Bool -> Handle -> FilePath -> FilePath -> ELynx ()
+connectOnly
+  :: Bool -> Handle -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectOnly iq h l r = do
   (tl, tr) <- parseTrees iq l r
   let ts = connectTrees tl tr
   $(logInfo) $ "Connected trees: " <> tShow (length ts)
   liftIO $ L.hPutStr h $ L.unlines $ map toNewick ts
 
-connectAndFilter :: Bool -> Handle -> FilePath -> FilePath -> FilePath -> ELynx ()
+connectAndFilter
+  :: Bool
+  -> Handle
+  -> FilePath
+  -> FilePath
+  -> FilePath
+  -> ELynx ConnectArguments ()
 connectAndFilter iq h c l r = do
   let manyNw = if iq then manyNewickIqTree else manyNewick
   cts <- liftIO $ parseFileWith manyNw c

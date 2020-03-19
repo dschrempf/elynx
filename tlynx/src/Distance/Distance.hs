@@ -30,6 +30,7 @@ import           Control.Monad.Logger           ( logDebug
                                                 , logInfo
                                                 )
 import           Control.Monad.Trans.Class      ( lift )
+import           Control.Monad.Trans.Reader     ( ask )
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.List                      ( length
                                                 , sort
@@ -72,7 +73,9 @@ import           ELynx.Tools.InputOutput        ( getOutFilePath
                                                 , parseFileWith
                                                 )
 import           ELynx.Tools.Logger
-import           ELynx.Tools.Reproduction       ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Arguments(..)
+                                                )
 
 median :: Ord a => [a] -> a
 median xs = sort xs !! l2 where l2 = length xs `div` 2
@@ -95,15 +98,16 @@ showTriplet n m args (i, j, d) = i' <> j' <> d'
   d' = alignRight (m + 2) $ L.pack (printf pf d)
 
 -- | Compute distance functions between phylogenetic trees.
-distance :: DistanceArguments -> ELynx ()
-distance a = do
-  let oneNw  = if argsNewickIqTree a then oneNewickIqTree else oneNewick
-      manyNw = if argsNewickIqTree a then manyNewickIqTree else manyNewick
+distance :: ELynx DistanceArguments ()
+distance = do
+  l <- local <$> ask
+  let oneNw  = if argsNewickIqTree l then oneNewickIqTree else oneNewick
+      manyNw = if argsNewickIqTree l then manyNewickIqTree else manyNewick
   -- Determine output handle (stdout or file).
   outF <- getOutFilePath ".out"
   outH <- outHandle "results" outF
   -- Master tree (in case it is given).
-  let mname = argsMasterTreeFile a
+  let mname = argsMasterTreeFile l
   mtree <- case mname of
     Nothing -> return Nothing
     Just f  -> do
@@ -111,7 +115,7 @@ distance a = do
       t <- liftIO $ parseFileWith oneNw f
       $(logInfo) "Compute distances between all trees and master tree."
       return $ Just t
-  let tfps = argsInFiles a
+  let tfps = argsInFiles l
   (trees, names) <- case tfps of
     []   -> error "No tree input files given."
     [tf] -> do
@@ -138,8 +142,8 @@ distance a = do
     Just f  -> logNewSection $ T.pack $ "Write results to file " <> f <> "."
 
   -- Set the distance measure.
-  let dist = argsDistance a
-  case argsDistance a of
+  let dist = argsDistance l
+  case argsDistance l of
     Symmetric -> $(logInfo) "Use symmetric (Robinson-Foulds) distance."
     IncompatibleSplit val -> do
       $(logInfo) "Use incompatible split distance."
@@ -159,9 +163,9 @@ distance a = do
           \t1 t2 -> fromIntegral $ incompatibleSplits t1 t2
         BranchScore -> branchScore
   -- Possibly intersect trees before distance calculation.
-  when (argsIntersect a)
+  when (argsIntersect l)
     $ $(logInfo) "Intersect trees before calculation of distances."
-  let distanceMeasure = if argsIntersect a
+  let distanceMeasure = if argsIntersect l
         then
           (\t1 t2 ->
             let [t1', t2'] = intersectWith getName M.extend [t1, t2]
@@ -170,9 +174,9 @@ distance a = do
         else distanceMeasure'
 
   -- Possibly normalize trees.
-  when (argsNormalize a)
+  when (argsNormalize l)
     $ $(logInfo) "Normalize trees before calculation of distances."
-  let normalizeF = if argsNormalize a then normalize else id
+  let normalizeF = if argsNormalize l then normalize else id
 
   -- Possibly collapse unsupported nodes.
   let collapseF = case dist of
@@ -210,7 +214,7 @@ distance a = do
   -- L.putStrLn $ L.unlines $ map toNewick tsC
 
   lift $ unless
-    (argsSummaryStatistics a)
+    (argsSummaryStatistics l)
     (do
       let n = maximum $ 6 : map length names
           m = length $ show dist

@@ -32,6 +32,7 @@ import           Control.Monad.IO.Class         ( liftIO )
 import           Control.Monad.Logger           ( logDebug
                                                 , logInfo
                                                 )
+import           Control.Monad.Trans.Reader     ( ask )
 import           Control.Monad.Primitive        ( PrimMonad
                                                 , PrimState
                                                 )
@@ -66,7 +67,9 @@ import           ELynx.Data.Tree.PhyloTree      ( PhyloLabel
                                                 )
 import           ELynx.Data.Tree.Tree           ( leaves )
 import           ELynx.Export.Tree.Newick       ( toNewick )
-import           ELynx.Import.Tree.Newick       ( oneNewick, oneNewickIqTree )
+import           ELynx.Import.Tree.Newick       ( oneNewick
+                                                , oneNewickIqTree
+                                                )
 import           ELynx.Simulate.PointProcess    ( PointProcess(PointProcess)
                                                 , toReconstructedTree
                                                 )
@@ -76,6 +79,7 @@ import           ELynx.Tools.InputOutput        ( outHandle
                                                 , getOutFilePath
                                                 )
 import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Arguments(..)
                                                 , Seed(..)
                                                 )
 import           ELynx.Tools.Text               ( fromBs
@@ -86,13 +90,14 @@ import           ELynx.Tools.Text               ( fromBs
 -- shuffle them. Connect the shuffled leaves with the shuffled coalescent times.
 -- The shuffled tree has a new topology while keeping the same set of coalescent
 -- times and leaves.
-shuffleCmd :: ShuffleArguments -> ELynx ()
-shuffleCmd a = do
+shuffleCmd :: ELynx ShuffleArguments ()
+shuffleCmd = do
+  l  <- local <$> ask
   fn <- getOutFilePath ".tree"
   h  <- outHandle "results" fn
 
-  let oneNw = if newickIqTreeFlag a then oneNewickIqTree else oneNewick
-  t  <- liftIO $ parseFileWith oneNw (inFile a)
+  let oneNw = if newickIqTreeFlag l then oneNewickIqTree else oneNewick
+  t <- liftIO $ parseFileWith oneNw (inFile l)
   $(logInfo) "Input tree:"
   $(logInfo) $ fromBs $ toNewick t
 
@@ -123,11 +128,11 @@ shuffleCmd a = do
   $(logDebug) "The coalescent times are: "
   $(logDebug) $ tShow cs
 
-  gen <- case argsSeed a of
+  gen <- case argsSeed l of
     Random  -> error "Seed not available; please contact maintainer."
     Fixed s -> liftIO $ initialize s
 
-  ts <- liftIO $ shuffle (nReplicates a) (height t) cs ls gen
+  ts <- liftIO $ shuffle (nReplicates l) (height t) cs ls gen
   liftIO $ L.hPutStr h $ L.unlines $ map toNewick ts
 
   liftIO $ hClose h

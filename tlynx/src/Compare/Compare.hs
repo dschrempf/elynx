@@ -23,6 +23,7 @@ where
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
+import           Control.Monad.Trans.Reader     ( ask )
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.List                      ( intercalate )
 import qualified Data.Map                      as M
@@ -55,12 +56,15 @@ import           ELynx.Tools.InputOutput        ( getOutFilePath
                                                 , parseFileWith
                                                 , outHandle
                                                 )
-import           ELynx.Tools.Reproduction       ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Arguments(..)
+                                                )
 
 treesOneFile
   :: Bool
   -> FilePath
   -> ELynx
+       CompareArguments
        (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
 treesOneFile iqtree tf = do
   let nw = if iqtree then manyNewickIqTree else manyNewick
@@ -77,6 +81,7 @@ treesTwoFiles
   -> FilePath
   -> FilePath
   -> ELynx
+       CompareArguments
        (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
 treesTwoFiles iqtree tf1 tf2 = do
   let nw = if iqtree then oneNewickIqTree else oneNewick
@@ -87,19 +92,20 @@ treesTwoFiles iqtree tf1 tf2 = do
   return (t1, t2)
 
 -- | More detailed comparison of two trees.
-compareCmd :: CompareArguments -> ELynx ()
-compareCmd a = do
+compareCmd :: ELynx CompareArguments ()
+compareCmd = do
+  l     <- local <$> ask
   -- Determine output handle (stdout or file).
   outFn <- getOutFilePath ".out"
   outH  <- outHandle "results" outFn
 
   -- Read input.
-  let inFiles = argsInFiles a
+  let inFiles = argsInFiles l
       nFiles  = length inFiles
   (tr1, tr2) <- case nFiles of
-    1 -> treesOneFile (argsNewickIqTree a) (head inFiles)
+    1 -> treesOneFile (argsNewickIqTree l) (head inFiles)
     2 ->
-      treesTwoFiles (argsNewickIqTree a) (head inFiles) (head . tail $ inFiles)
+      treesTwoFiles (argsNewickIqTree l) (head inFiles) (head . tail $ inFiles)
     _ ->
       error
         "Need two input files with one tree each or one input file with two trees."
@@ -111,7 +117,7 @@ compareCmd a = do
   liftIO $ hPutStrLn outH ""
 
   -- Intersect trees.
-  (t1, t2) <- if argsIntersect a
+  (t1, t2) <- if argsIntersect l
     then do
       let [x, y] = intersectWith getName extend [tr1, tr2]
       liftIO $ hPutStrLn outH "Intersected trees are:"
@@ -170,7 +176,7 @@ compareCmd a = do
 
   -- Bipartitions.
   when
-    (argsBipartitions a)
+    (argsBipartitions l)
     (do
       let bp1     = bipartitions (fmap getName t1)
           bp2     = bipartitions (fmap getName t2)

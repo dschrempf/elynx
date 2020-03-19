@@ -23,6 +23,7 @@ where
 
 import           Control.Monad                  ( when )
 import           Control.Monad.Logger
+import           Control.Monad.Trans.Reader     ( ask )
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.Maybe                     ( fromMaybe )
 import qualified Data.Text                     as T
@@ -34,8 +35,10 @@ import qualified ELynx.Data.Sequence.Alignment as M
 import qualified ELynx.Data.Sequence.Sequence  as S
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Logger
 import           ELynx.Tools.Misc
+import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Arguments(..)
+                                                )
 
 filterRows :: Maybe Int -> Maybe Int -> Bool -> [S.Sequence] -> L.ByteString
 filterRows ml ms std ss = sequencesToFasta $ compose filters ss
@@ -45,8 +48,9 @@ filterRows ml ms std ss = sequencesToFasta $ compose filters ss
   filters = if std then S.filterStandard : filters' else filters'
 
 -- | Filter sequences.
-filterRowsCmd :: FilterRowsArguments -> ELynx ()
-filterRowsCmd (FilterRowsArguments al inFile long short std) = do
+filterRowsCmd :: ELynx FilterRowsArguments ()
+filterRowsCmd = do
+  (FilterRowsArguments al inFile long short std) <- local <$> ask
   $(logInfo) "Command: Filter sequences of a list of sequences."
   maybe
     (return ())
@@ -75,8 +79,9 @@ filterCols ms ss = sequencesToFasta . M.toSequences $ compose filters a
   filters = map (fromMaybe id) [M.filterColsStd <$> ms]
 
 -- | Filter columns.
-filterColsCmd :: FilterColsArguments -> ELynx ()
-filterColsCmd (FilterColsArguments al inFile standard) = do
+filterColsCmd :: ELynx FilterColsArguments ()
+filterColsCmd = do
+  (FilterColsArguments al inFile standard) <- local <$> ask
   $(logInfo) "Command: Filter columns of a multi sequence alignment."
   case standard of
     Nothing -> return ()

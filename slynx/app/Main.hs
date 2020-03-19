@@ -31,15 +31,10 @@ main :: IO ()
 main = do
   (Arguments g c) <- parseArguments
   case c of
-    Concatenate a ->
-      runReaderT (eLynxWrapper concatenateDescription c a concatenateCmd) g
-    Examine a -> runReaderT (eLynxWrapper examineDescription c a examineCmd) g
-    FilterRows a ->
-      runReaderT (eLynxWrapper filterRowsDescription c a filterRowsCmd) g
-    FilterCols a ->
-      runReaderT (eLynxWrapper filterColumnsDescription c a filterColsCmd) g
-    Simulate a -> runReaderT (eLynxWrapper simulateDescription c a simulateCmd) g
-    SubSample a ->
-      runReaderT (eLynxWrapper subSampleDescription c a subSampleCmd) g
-    Translate a ->
-      runReaderT (eLynxWrapper translateDescription c a translateCmd) g
+    Concatenate a -> eLynxWrapper concatenateCmd (Arguments g a)
+    Examine     a -> eLynxWrapper examineCmd (Arguments g a)
+    FilterRows  a -> eLynxWrapper filterRowsCmd (Arguments g a)
+    FilterCols  a -> eLynxWrapper filterColsCmd (Arguments g a)
+    Simulate    a -> eLynxWrapper simulateCmd (Arguments g a)
+    SubSample   a -> eLynxWrapper subSampleCmd (Arguments g a)
+    Translate   a -> eLynxWrapper translateCmd (Arguments g a)

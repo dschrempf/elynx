@@ -23,8 +23,7 @@ where
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Logger
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader
+import           Control.Monad.Trans.Reader     ( ask )
 import qualified Data.Text                     as T
 import qualified Data.Text.Lazy                as LT
 import qualified Data.Text.Lazy.Builder        as LT
@@ -37,7 +36,11 @@ import           Tools
 import qualified ELynx.Data.Sequence.Alignment as M
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Arguments(..)
+                                                , GlobalArguments(..)
+                                                , Seed(..)
+                                                )
 
 -- | Get a given number of output file names with provided suffix.
 --
@@ -53,8 +56,9 @@ getOutFilePaths file n suffix =
     $ T.justifyRight nDigits '0' (LT.toStrict $ LT.toLazyText $ LT.decimal i)
 
 -- | Sub sample sequences.
-subSampleCmd :: SubSampleArguments -> ELynx ()
-subSampleCmd (SubSampleArguments al inFile nSites nAlignments (Fixed s)) = do
+subSampleCmd :: ELynx SubSampleArguments ()
+subSampleCmd = do
+  (SubSampleArguments al inFile nSites nAlignments (Fixed s)) <- local <$> ask
   $(logInfo) "Command: Sub sample from a multi sequence alignment."
   $(logInfo) $ T.pack $ "  Sample " <> show nSites <> " sites."
   $(logInfo)
@@ -65,12 +69,10 @@ subSampleCmd (SubSampleArguments al inFile nSites nAlignments (Fixed s)) = do
   ss  <- readSeqs al inFile
   gen <- liftIO $ initialize s
   let a = either error id (M.fromSequences ss)
-  samples <- lift $ replicateM nAlignments $ M.randomSubSample nSites a gen
+  samples <- liftIO $ replicateM nAlignments $ M.randomSubSample nSites a gen
   let results = map (sequencesToFasta . M.toSequences) samples
-  bn           <- outFileBaseName <$> lift ask
+  bn           <- outFileBaseName . global <$> ask
   outFilePaths <- case bn of
     Nothing -> return $ repeat Nothing
     Just fn -> return $ Just <$> getOutFilePaths fn nAlignments "fasta"
   zipWithM_ (out "sub sampled multi sequence alignments") results outFilePaths
-subSampleCmd _ =
-  error "sbSampleCmd: seed not available; please contact maintainer."

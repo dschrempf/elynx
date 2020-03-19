@@ -22,6 +22,7 @@ module Examine.Examine
 where
 
 import           Control.Monad.Logger
+import           Control.Monad.Trans.Reader     ( ask )
 import qualified Data.ByteString.Lazy.Char8    as L
 import qualified Data.Set                      as S
 import           Text.Printf
@@ -34,7 +35,9 @@ import qualified ELynx.Data.Alphabet.Character as C
 import qualified ELynx.Data.Sequence.Alignment as M
 import qualified ELynx.Data.Sequence.Sequence  as Seq
 import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Reproduction       ( ELynx )
+import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Arguments(..)
+                                                )
 
 examineAlignment :: Bool -> M.Alignment -> L.ByteString
 examineAlignment perSiteFlag a =
@@ -111,8 +114,9 @@ examine perSiteFlag ss =
     Right a -> L.pack "\n" <> examineAlignment perSiteFlag a
 
 -- | Examine sequences.
-examineCmd :: ExamineArguments -> ELynx ()
-examineCmd (ExamineArguments al inFile perSiteFlag) = do
+examineCmd :: ELynx ExamineArguments ()
+examineCmd = do
+  (ExamineArguments al inFile perSiteFlag) <- local <$> ask
   $(logInfo) "Command: Examine sequences."
   ss <- readSeqs al inFile
   let result = examine perSiteFlag ss

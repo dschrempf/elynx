@@ -27,6 +27,7 @@ module Simulate.Simulate
   ( simulate
   )
 where
+import           Control.Monad.Trans.Reader     ( ask )
 import           Control.Concurrent             ( getNumCapabilities )
 import           Control.Concurrent.Async.Lifted.Safe
                                                 ( mapConcurrently )
@@ -65,39 +66,41 @@ import           ELynx.Tools.InputOutput        ( getOutFilePath
                                                 )
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Reproduction       ( ELynx
+                                                , Arguments (..)
                                                 , Seed(..)
                                                 )
 
 -- | Simulate phylogenetic trees.
-simulate :: SimulateArguments -> ELynx ()
-simulate a@(SimulateArguments nTrees nLeaves height mrca lambda mu rho subS sumS (Fixed s))
-  = do
-    when (isNothing height && mrca)
-      $ error "Cannot condition on MRCA (-M) when height is not given (-H)."
-    c <- liftIO getNumCapabilities
-    logNewSection "Arguments"
-    $(logInfo) $ T.pack $ reportSimulateArguments a
-    logNewSection "Simulation"
-    $(logInfo) $ T.pack $ "Number of used cores: " <> show c
-    gs <- liftIO $ initialize s >>= \g -> splitGen c g
-    let chunks   = getChunks c nTrees
-        timeSpec = fmap (, mrca) height
-    trs <- if subS
-      then simulateAndSubSampleNTreesConcurrently nLeaves
-                                                  lambda
-                                                  mu
-                                                  rho
-                                                  timeSpec
-                                                  chunks
-                                                  gs
-      else simulateNTreesConcurrently nLeaves lambda mu rho timeSpec chunks gs
-    let ls = if sumS
-          then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
-          else parMap rpar toNewick trs
-    fn <- getOutFilePath ".tree"
-    let res = L.unlines ls
-    out "simulated trees" res fn
-simulate _ = error "simulate: seed not available; please contact maintainer."
+simulate :: ELynx SimulateArguments ()
+simulate = do
+  l <- local <$> ask
+  let SimulateArguments nTrees nLeaves height mrca lambda mu rho subS sumS (Fixed s) = l
+  -- error "simulate: seed not available; please contact maintainer."
+  when (isNothing height && mrca)
+    $ error "Cannot condition on MRCA (-M) when height is not given (-H)."
+  c <- liftIO getNumCapabilities
+  logNewSection "Arguments"
+  $(logInfo) $ T.pack $ reportSimulateArguments l
+  logNewSection "Simulation"
+  $(logInfo) $ T.pack $ "Number of used cores: " <> show c
+  gs <- liftIO $ initialize s >>= \gen -> splitGen c gen
+  let chunks   = getChunks c nTrees
+      timeSpec = fmap (, mrca) height
+  trs <- if subS
+    then simulateAndSubSampleNTreesConcurrently nLeaves
+                                                lambda
+                                                mu
+                                                rho
+                                                timeSpec
+                                                chunks
+                                                gs
+    else simulateNTreesConcurrently nLeaves lambda mu rho timeSpec chunks gs
+  let ls = if sumS
+        then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
+        else parMap rpar toNewick trs
+  fn <- getOutFilePath ".tree"
+  let res = L.unlines ls
+  out "simulated trees" res fn
 
 simulateNTreesConcurrently
   :: Int
@@ -107,7 +110,7 @@ simulateNTreesConcurrently
   -> TimeSpec
   -> [Int]
   -> [GenIO]
-  -> ELynx [Tree (PhyloLabel Int)]
+  -> ELynx SimulateArguments [Tree (PhyloLabel Int)]
 simulateNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
   let l' = l * r
       m' = m - l * (1.0 - r)
@@ -124,7 +127,7 @@ simulateAndSubSampleNTreesConcurrently
   -> TimeSpec
   -> [Int]
   -> [GenIO]
-  -> ELynx [Tree (PhyloLabel Int)]
+  -> ELynx SimulateArguments [Tree (PhyloLabel Int)]
 simulateAndSubSampleNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
   let nLeavesBigTree = (round $ fromIntegral nLeaves / r) :: Int
   logNewSection
