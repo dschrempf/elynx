@@ -14,8 +14,6 @@ Creation date: Thu Sep  5 21:53:07 2019.
 
 module Main where
 
-import           Control.Monad.Trans.Reader
-
 import           Options
 
 import           Coalesce.Coalesce

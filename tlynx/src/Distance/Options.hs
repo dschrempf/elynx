@@ -70,8 +70,9 @@ instance Reproducible DistanceArguments where
     Nothing -> argsInFiles a
     Just f  -> f : argsInFiles a
   getSeed _ = Nothing
-  setSeed = const
-  parser _ = distanceArguments
+  setSeed    = const
+  parser     = distanceArguments
+  progHeader = "Compute distances between many phylogenetic trees."
 
 instance ToJSON DistanceArguments
 

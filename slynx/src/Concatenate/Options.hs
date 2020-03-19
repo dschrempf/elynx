@@ -37,8 +37,9 @@ data ConcatenateArguments = ConcatenateArguments
 instance Reproducible ConcatenateArguments where
   inFiles = ccInFiles
   getSeed _ = Nothing
-  setSeed = const
-  parser _ = concatenateArguments
+  setSeed    = const
+  parser     = concatenateArguments
+  progHeader = "Concatenate sequences found in input files."
 
 instance ToJSON ConcatenateArguments
 

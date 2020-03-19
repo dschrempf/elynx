@@ -37,9 +37,11 @@ data ExamineArguments = ExamineArguments
 instance Reproducible ExamineArguments where
   inFiles = pure . exInFile
   getSeed _ = Nothing
--- TODO: Probably use setSeed = error if seed is set here.
+  -- XXX: Probably throw error when seed is set.
   setSeed = const
-  parser _ = examineArguments
+  parser  = examineArguments
+  progHeader
+    = "Examine sequences. If data is a multi sequence alignment, additionally analyze columns."
 
 instance ToJSON ExamineArguments
 

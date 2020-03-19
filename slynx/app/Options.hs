@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TypeApplications #-}
 
 {- |
 Module      :  Options
@@ -18,13 +19,6 @@ module Options
   ( Arguments(..)
   , CommandArguments(..)
   , parseArguments
-  , concatenateDescription
-  , examineDescription
-  , filterRowsDescription
-  , filterColumnsDescription
-  , simulateDescription
-  , subSampleDescription
-  , translateDescription
   )
 where
 
@@ -51,71 +45,35 @@ data CommandArguments =
   | Translate TranslateArguments
   deriving (Eq, Show, Generic)
 
-instance Reproducible CommandArguments where
-  inFiles (Concatenate a) = inFiles a
-  inFiles (Examine     a) = inFiles a
-  inFiles (FilterRows  a) = inFiles a
-  inFiles (FilterCols  a) = inFiles a
-  inFiles (Simulate    a) = inFiles a
-  inFiles (SubSample   a) = inFiles a
-  inFiles (Translate   a) = inFiles a
-
-  getSeed (Concatenate a) = getSeed a
-  getSeed (Examine     a) = getSeed a
-  getSeed (FilterRows  a) = getSeed a
-  getSeed (FilterCols  a) = getSeed a
-  getSeed (Simulate    a) = getSeed a
-  getSeed (SubSample   a) = getSeed a
-  getSeed (Translate   a) = getSeed a
-
-  setSeed (Concatenate a) s = Concatenate $ setSeed a s
-  setSeed (Examine     a) s = Examine $ setSeed a s
-  setSeed (FilterRows  a) s = FilterRows $ setSeed a s
-  setSeed (FilterCols  a) s = FilterCols $ setSeed a s
-  setSeed (Simulate    a) s = Simulate $ setSeed a s
-  setSeed (SubSample   a) s = SubSample $ setSeed a s
-  setSeed (Translate   a) s = Translate $ setSeed a s
-
-  parser _ = commandArguments
-
-instance ToJSON CommandArguments
-
-concatenateDescription, examineDescription, filterRowsDescription, filterColumnsDescription, simulateDescription, subSampleDescription, translateDescription
-  :: String
-concatenateDescription = "Concatenate sequences found in input files."
-examineDescription =
-  "Examine sequences. If data is a multi sequence alignment, additionally analyze columns."
-filterRowsDescription = "Filter rows (or sequences) found in input files."
-filterColumnsDescription = "Filter columns of multi-sequence alignments."
-simulateDescription = "Simulate multi sequence alignments."
-subSampleDescription = "Sub-sample columns from multi sequence alignments."
-translateDescription = "Translate from DNA to Protein or DNAX to ProteinX."
+-- TODO: This could be simplified.
+-- createCommand :: Mod CommandFields a
+-- createCommand = command (name @a) $ info (and so on)
 
 concatenateCommand :: Mod CommandFields CommandArguments
 concatenateCommand =
   command "concatenate" $ info (Concatenate <$> concatenateArguments) $ progDesc
-    concatenateDescription
+    (progHeader @ConcatenateArguments)
 
 examineCommand :: Mod CommandFields CommandArguments
 examineCommand = command "examine" $ info
   (Examine <$> examineArguments)
-  (fullDesc <> progDesc examineDescription)
+  (fullDesc <> progDesc (progHeader @ExamineArguments))
 
 filterRowsCommand :: Mod CommandFields CommandArguments
 filterRowsCommand =
   command "filter-rows" $ info (FilterRows <$> filterRowsArguments) $ progDesc
-    filterRowsDescription
+    (progHeader @FilterRowsArguments)
 
 filterColumnsCommand :: Mod CommandFields CommandArguments
 filterColumnsCommand =
   command "filter-columns"
     $ info (FilterCols <$> filterColsArguments)
-    $ progDesc filterColumnsDescription
+    $ progDesc (progHeader @FilterColsArguments)
 
 simulateCommand :: Mod CommandFields CommandArguments
 simulateCommand = command "simulate" $ info
   (Simulate <$> simulateArguments)
-  (fullDesc <> progDesc simulateDescription <> footerDoc
+  (fullDesc <> progDesc (progHeader @SimulateArguments) <> footerDoc
     (Just $ pretty simulateFooter)
   )
 
@@ -123,7 +81,7 @@ subSampleCommand :: Mod CommandFields CommandArguments
 subSampleCommand = command "sub-sample" $ info
   (SubSample <$> subSampleArguments)
   (  fullDesc
-  <> progDesc subSampleDescription
+  <> progDesc (progHeader @SubSampleArguments)
   <> footer
        "Create a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment."
   )
@@ -131,7 +89,7 @@ subSampleCommand = command "sub-sample" $ info
 translateCommand :: Mod CommandFields CommandArguments
 translateCommand =
   command "translate" $ info (Translate <$> translateArguments) $ progDesc
-    translateDescription
+    (progHeader @TranslateArguments)
 
 commandArguments :: Parser CommandArguments
 commandArguments =

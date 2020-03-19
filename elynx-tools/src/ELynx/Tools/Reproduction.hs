@@ -2,6 +2,8 @@
 {-# LANGUAGE DeriveGeneric       #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE TypeApplications #-}
 
 {- |
 Module      :  ELynx.Tools.Reproduction
@@ -230,8 +232,8 @@ instance Reproducible a => Reproducible (Arguments a) where
   inFiles                   = inFiles . local
   getSeed                   = getSeed . local
   setSeed (Arguments g l) s = Arguments g $ setSeed l s
-  parser  (Arguments _ l)   = argumentsParser (parser l)
-  progHeader                = progHeader . local
+  parser                    = argumentsParser (parser @a)
+  progHeader                = progHeader @a
 
 -- | A set of global arguments used by all programs. The idea is to provide a
 -- common framework for shared arguments.
@@ -325,14 +327,15 @@ class Reproducible a where
   inFiles    :: a -> [FilePath]
   getSeed    :: a -> Maybe Seed
   setSeed    :: a -> Vector Word32 -> a
-  parser     :: a -> Parser a
-  progHeader :: a -> String
+  parser     :: Parser a
+  progHeader :: String
 
 -- | Necessary information for a reproducible run. Notably, the input files are
 -- checked for consistency!
 data State a = State
   { progName      :: String        -- ^ Program name.
   , argsStr       :: [String]      -- ^ Command line arguments without program name.
+  -- TODO: This should not be needed.
   , args          :: Arguments a   -- ^ Full arguments.
   , files         :: [FilePath]    -- ^ File paths of in files.
   , checkSums     :: [String]      -- ^ SHA256 sums of in files.
@@ -351,10 +354,12 @@ parse s p = case getParseResult res of
   where res = execParserPure defaultPrefs (info p briefDesc) s
 
 -- Does the command line fit the provided command?
-checkArgs :: (Eq a, Show a, Reproducible a) => State a -> IO (Either String ())
+checkArgs :: forall a . (Eq a, Show a, Reproducible a) => State a -> IO (Either String ())
 checkArgs s = do
   let r   = reproducible s
-      p   = argumentsParser $ parser r
+      -- TODO: This should not be wrapped again into argumentsparser, shouldn't it?
+      -- p   = argumentsParser $ parser @a
+      p   = parser @a
       as  = argsStr s
       res = parse as p
   return $ if res /= args s
@@ -408,14 +413,16 @@ hashFile :: FilePath -> IO B.ByteString
 hashFile f = encode . hash <$> B.readFile f
 
 -- | Write an ELynx reproduction file.
-writeR :: (Eq a, Show a, Reproducible a, ToJSON a) => FilePath -> a -> IO ()
+writeR :: forall a . (Eq a, Show a, Reproducible a, ToJSON a) => FilePath -> a -> IO ()
 writeR fp r = do
   pn <- getProgName
   as <- getArgs
   let fs = inFiles r
   cs <- mapM hashFile fs
   let cs' = map B.unpack cs
-      p   = argumentsParser $ parser r
+      -- TODO: Check if this is correct. The parser should not be wrapped again, shouldn't it?
+      -- p   = argumentsParser $ parser @a
+      p   = parser @a
       res = parse as p
       s   = State pn as res fs cs' r
   void $ encodeFile fp s

@@ -34,7 +34,8 @@ instance Reproducible ExamineArguments where
   inFiles = pure . argsInFile
   getSeed _ = Nothing
   setSeed = const
-  parser _ = examineArguments
+  parser = examineArguments
+  progHeader = "Compute summary statistics of phylogenetic trees."
 
 instance ToJSON ExamineArguments
 

@@ -1,6 +1,8 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {- |
 Module      :  ELynx.Tools.Logger
@@ -85,7 +87,7 @@ logNewSection s = $(logInfo) $ "== " <> s
 -- 'stderr' if no file is provided. Initializes the seed if none is provided. If
 -- a log file is provided, log to the file and to 'stderr'.
 eLynxWrapper
-  :: (Eq a, Show a, Reproducible a, ToJSON a)
+  :: forall a . (Eq a, Show a, Reproducible a, ToJSON a)
   => ELynx a ()
   -> Arguments a
   -> IO ()
@@ -99,7 +101,7 @@ eLynxWrapper worker args = do
       repFile = (++ ".elynx") <$> outFileBaseName gArgs
   runELynxLoggingT lvl rd logFile $ do
     -- Initialize.
-    h <- liftIO $ logHeader (progHeader lArgs)
+    h <- liftIO $ logHeader (progHeader @a)
     $(logInfo) $ pack $ h ++ "\n"
     -- Fix seed.
     lArgs' <- case getSeed lArgs of

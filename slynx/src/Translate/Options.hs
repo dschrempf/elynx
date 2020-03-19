@@ -42,7 +42,8 @@ instance Reproducible TranslateArguments where
   inFiles = pure . trInFile
   getSeed _ = Nothing
   setSeed = const
-  parser _ = translateArguments
+  parser = translateArguments
+  progHeader = "Translate from DNA to Protein or DNAX to ProteinX."
 
 instance ToJSON TranslateArguments
 
