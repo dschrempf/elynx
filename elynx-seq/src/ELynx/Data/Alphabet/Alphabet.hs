@@ -35,7 +35,7 @@ module ELynx.Data.Alphabet.Alphabet
   ( Alphabet(..)
   , AlphabetSpec(..)
   , alphabetSpec
-  , describe
+  , alphabetDescription
   , isStd
   , isGap
   , isUnknown
@@ -59,15 +59,15 @@ data Alphabet = DNA | DNAX | DNAI
 instance ToJSON Alphabet
 
 -- | Verbose alphabet name.
-describe :: Alphabet -> String
-describe DNA      = "DNA (nucleotides)"
-describe DNAX     = "DNAX (nucleotides; including gaps)"
-describe DNAI     = "DNAI (nucleotides; including gaps, and IUPAC codes)"
-describe Protein  = "Protein (amino acids)"
-describe ProteinX = "ProteinX (amino acids; including gaps)"
-describe ProteinS =
+alphabetDescription :: Alphabet -> String
+alphabetDescription DNA      = "DNA (nucleotides)"
+alphabetDescription DNAX     = "DNAX (nucleotides; including gaps)"
+alphabetDescription DNAI     = "DNAI (nucleotides; including gaps, and IUPAC codes)"
+alphabetDescription Protein  = "Protein (amino acids)"
+alphabetDescription ProteinX = "ProteinX (amino acids; including gaps)"
+alphabetDescription ProteinS =
   "ProteinS (amino acids; including gaps, and translation stops)"
-describe ProteinI =
+alphabetDescription ProteinI =
   "ProteinI (amino acids; including gaps, translation stops, and IUPAC codes)"
 
 -- | Alphabet specification. 'S.Set' is used because it provides fast lookups.

@@ -120,7 +120,7 @@ header :: Alignment -> L.ByteString
 header a =
   L.unlines
     $  [ L.pack "Multi sequence alignment."
-       , L.pack $ "Code: " ++ A.describe (alphabet a) ++ "."
+       , L.pack $ "Code: " ++ A.alphabetDescription (alphabet a) ++ "."
        , L.pack $ "Length: " ++ show (length a) ++ "."
        ]
     ++ reportLengthSummary

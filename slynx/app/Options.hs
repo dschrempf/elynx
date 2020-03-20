@@ -113,4 +113,4 @@ ftr = ["File formats:"] ++ fs ++ ["", "Alphabet types:"] ++ as
  where
   toListItem = ("  - " ++)
   fs         = map toListItem ["FASTA"]
-  as         = map (toListItem . describe) [(minBound :: Alphabet) ..]
+  as         = map (toListItem . alphabetDescription) [(minBound :: Alphabet) ..]
