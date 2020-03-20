@@ -261,7 +261,7 @@ createSubCommand
   :: forall a b . Reproducible a => (a -> b) -> Mod CommandFields b
 createSubCommand f = command (cmdName @a) $ info
   (f <$> parser @a)
-  (fullDesc <> progDesc (cmdDesc @a) <> footerDoc (Just $ pretty $ cmdFtr @a))
+  (fullDesc <> progDesc (cmdDesc @a) <> footerDoc (pretty <$> cmdFtr @a))
 
 -- | Boolean option; be verbose; default NO.
 verbosityOpt :: Parser Verbosity
