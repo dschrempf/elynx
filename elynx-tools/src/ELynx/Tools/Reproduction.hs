@@ -40,6 +40,7 @@ module ELynx.Tools.Reproduction
   , Arguments(..)
   , GlobalArguments(..)
   , globalArguments
+  , createSubCommand
   , Seed(..)
   , seedOpt
     -- * Options meta
@@ -232,8 +233,10 @@ instance Reproducible a => Reproducible (Arguments a) where
   inFiles = inFiles . local
   getSeed = getSeed . local
   setSeed (Arguments g l) s = Arguments g $ setSeed l s
-  parser      = argumentsParser (parser @a)
-  description = description @a
+  parser  = argumentsParser (parser @a)
+  cmdName = cmdName @a
+  cmdDesc = cmdDesc @a
+  cmdFtr  = cmdFtr @a
 
 -- | A set of global arguments used by all programs. The idea is to provide a
 -- common framework for shared arguments.
@@ -252,6 +255,13 @@ instance FromJSON GlobalArguments
 globalArguments :: Parser GlobalArguments
 globalArguments =
   GlobalArguments <$> verbosityOpt <*> optional outFileBaseNameOpt <*> redoOpt
+
+-- | Create a sub command; convenience function.
+createSubCommand
+  :: forall a b . Reproducible a => (a -> b) -> Mod CommandFields b
+createSubCommand f = command (cmdName @a) $ info
+  (f <$> parser @a)
+  (fullDesc <> progDesc (cmdDesc @a) <> footerDoc (Just $ pretty $ cmdFtr @a))
 
 -- | Boolean option; be verbose; default NO.
 verbosityOpt :: Parser Verbosity
@@ -319,16 +329,19 @@ fillParagraph = fillSep . map text . words
 
 -- | Reproducible commands have
 --   - a set of input files to be checked for consistency,
---   - a function to get the seed, if available
---   - a function to set the seed, if applicable
---   - a parser to read the command line.
---   - a nice program header
+--   - a function to get the seed, if available,
+--   - a function to set the seed, if applicable,
+--   - a parser to read the command line,
+--   - a nice program name, description, and footer.
 class Reproducible a where
-  inFiles    :: a -> [FilePath]
-  getSeed    :: a -> Maybe Seed
-  setSeed    :: a -> Vector Word32 -> a
-  parser     :: Parser a
-  description :: String
+  inFiles :: a -> [FilePath]
+  getSeed :: a -> Maybe Seed
+  setSeed :: a -> Vector Word32 -> a
+  parser  :: Parser a
+  cmdName :: String
+  cmdDesc :: String
+  cmdFtr  :: Maybe String
+  cmdFtr = Nothing
 
 -- | Necessary information for a reproducible run. Notably, the input files are
 -- checked for consistency!

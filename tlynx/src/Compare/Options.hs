@@ -37,8 +37,9 @@ instance Reproducible CompareArguments where
   inFiles = argsInFiles
   getSeed _ = Nothing
   setSeed a _ = a
-  parser = compareArguments
-  description
+  parser  = compareArguments
+  cmdName = "compare"
+  cmdDesc
     = "Compare two phylogenetic trees (compute distances and branch-wise differences)."
 
 instance ToJSON CompareArguments

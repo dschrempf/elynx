@@ -102,7 +102,7 @@ eLynxWrapper worker args = do
       repFile = (++ ".elynx") <$> outFileBaseName gArgs
   runELynxLoggingT lvl rd logFile $ do
     -- Initialize.
-    h <- liftIO $ logHeader (description @a)
+    h <- liftIO $ logHeader (cmdDesc @a)
     $(logInfo) $ pack $ h ++ "\n"
     -- Fix seed.
     lArgs' <- case getSeed lArgs of

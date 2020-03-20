@@ -42,8 +42,10 @@ instance Reproducible CoalesceArguments where
   getSeed = Just . argsSeed
   setSeed a s = a { argsSeed = Fixed s }
   parser = coalesceArguments
-  description
+  cmdName = "coalesce"
+  cmdDesc
     = "Simulate phylogenetic trees using the coalescent processes (see also the 'simulate' command for simulations using the birth and death process)."
+  cmdFtr = Just coalesceFooter
 
 instance ToJSON CoalesceArguments
 

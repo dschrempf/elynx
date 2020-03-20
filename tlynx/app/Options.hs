@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TypeApplications #-}
 
 {- |
 Module      :  Options
@@ -23,7 +22,6 @@ module Options
 where
 
 import           Options.Applicative
-import           Options.Applicative.Help.Pretty
 
 import           Coalesce.Options
 import           Compare.Options
@@ -36,66 +34,46 @@ import           Simulate.Options
 import           ELynx.Tools.Reproduction
 
 data CommandArguments =
-  Distance DistanceArguments
-  | Examine ExamineArguments
-  | Simulate SimulateArguments
-  | Coalesce CoalesceArguments
+  Coalesce CoalesceArguments
   | Compare CompareArguments
   | Connect ConnectArguments
+  | Distance DistanceArguments
+  | Examine ExamineArguments
   | Shuffle ShuffleArguments
+  | Simulate SimulateArguments
   deriving (Eq, Show, Generic)
 
-distanceCommand :: Mod CommandFields CommandArguments
-distanceCommand = command "distance" $ info
-  (Distance <$> distanceArguments)
-  (fullDesc <> progDesc (description @DistanceArguments) <> footerDoc
-    (Just $ pretty distanceFooter)
-  )
-
-examineCommand :: Mod CommandFields CommandArguments
-examineCommand =
-  command "examine" $ info (Examine <$> examineArguments) $ progDesc
-    (description @ExamineArguments)
-
-simulateCommand :: Mod CommandFields CommandArguments
-simulateCommand = command "simulate" $ info
-  (Simulate <$> simulateArguments)
-  (fullDesc <> progDesc (description @SimulateArguments) <> footerDoc
-    (Just $ pretty simulateFooter)
-  )
-
 coalesceCommand :: Mod CommandFields CommandArguments
-coalesceCommand = command "coalesce" $ info
-  (Coalesce <$> coalesceArguments)
-  (fullDesc <> progDesc (description @CoalesceArguments) <> footerDoc
-    (Just $ pretty coalesceFooter)
-  )
+coalesceCommand = createSubCommand Coalesce
 
 compareCommand :: Mod CommandFields CommandArguments
-compareCommand =
-  command "compare" $ info (Compare <$> compareArguments) $ progDesc
-    (description @CompareArguments)
+compareCommand = createSubCommand Compare
 
 connectCommand :: Mod CommandFields CommandArguments
-connectCommand =
-  command "connect" $ info (Connect <$> connectArguments) $ progDesc
-    (description @ConnectArguments)
+connectCommand = createSubCommand Connect
+
+distanceCommand :: Mod CommandFields CommandArguments
+distanceCommand = createSubCommand Distance
+
+examineCommand :: Mod CommandFields CommandArguments
+examineCommand = createSubCommand Examine
 
 shuffleCommand :: Mod CommandFields CommandArguments
-shuffleCommand =
-  command "shuffle" $ info (Shuffle <$> shuffleArguments) $ progDesc
-    (description @ShuffleArguments)
+shuffleCommand = createSubCommand Shuffle
+
+simulateCommand :: Mod CommandFields CommandArguments
+simulateCommand = createSubCommand Simulate
 
 commandArguments :: Parser CommandArguments
 commandArguments =
   hsubparser
-    $  distanceCommand
-    <> examineCommand
-    <> simulateCommand
-    <> coalesceCommand
+    $ coalesceCommand
     <> compareCommand
     <> connectCommand
+    <> distanceCommand
+    <> examineCommand
     <> shuffleCommand
+    <> simulateCommand
 
 parseArguments :: IO (Arguments CommandArguments)
 parseArguments = parseArgumentsWith desc ftr commandArguments

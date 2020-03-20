@@ -36,8 +36,9 @@ instance Reproducible ConnectArguments where
   inFiles a = [inFileA a, inFileB a]
   getSeed _ = Nothing
   setSeed a _ = a
-  parser = connectArguments
-  description
+  parser  = connectArguments
+  cmdName = "connect"
+  cmdDesc
     = "Connect two phylogenetic trees in all ways (possibly honoring constraints)."
 
 instance ToJSON ConnectArguments

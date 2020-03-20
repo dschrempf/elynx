@@ -44,7 +44,8 @@ instance Reproducible FilterRowsArguments where
   getSeed _ = Nothing
   setSeed     = const
   parser      = filterRowsArguments
-  description = "Filter rows (or sequences) found in input files."
+  cmdName = "filter-rows"
+  cmdDesc = "Filter rows (or sequences) found in input files."
 
 instance ToJSON FilterRowsArguments
 
@@ -60,7 +61,8 @@ instance Reproducible FilterColsArguments where
   getSeed _ = Nothing
   setSeed     = const
   parser      = filterColsArguments
-  description = "Filter columns of multi sequence alignments."
+  cmdName = "filter-columns"
+  cmdDesc = "Filter columns of multi sequence alignments."
 
 instance ToJSON FilterColsArguments
 

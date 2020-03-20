@@ -40,7 +40,8 @@ instance Reproducible ExamineArguments where
 -- XXX: Probably throw error when seed is set.
   setSeed = const
   parser  = examineArguments
-  description
+  cmdName = "examine"
+  cmdDesc
     = "Examine sequences. If data is a multi sequence alignment, additionally analyze columns."
 
 instance ToJSON ExamineArguments

@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TypeApplications #-}
 
 {- |
 Module      :  Options
@@ -23,7 +22,6 @@ module Options
 where
 
 import           Options.Applicative
-import           Options.Applicative.Help.Pretty
 
 import           Concatenate.Options
 import           Examine.Options
@@ -38,66 +36,41 @@ import           ELynx.Tools.Reproduction
 data CommandArguments =
   Concatenate ConcatenateArguments
   | Examine ExamineArguments
-  | FilterRows FilterRowsArguments
   | FilterCols FilterColsArguments
+  | FilterRows FilterRowsArguments
   | Simulate SimulateArguments
   | SubSample SubSampleArguments
   | Translate TranslateArguments
   deriving (Eq, Show, Generic)
 
--- TODO: This could be simplified.
--- createCommand :: Mod CommandFields a
--- createCommand = command (name @a) $ info (and so on)
-
 concatenateCommand :: Mod CommandFields CommandArguments
-concatenateCommand =
-  command "concatenate" $ info (Concatenate <$> concatenateArguments) $ progDesc
-    (description @ConcatenateArguments)
+concatenateCommand = createSubCommand Concatenate
 
 examineCommand :: Mod CommandFields CommandArguments
-examineCommand = command "examine" $ info
-  (Examine <$> examineArguments)
-  (fullDesc <> progDesc (description @ExamineArguments))
-
-filterRowsCommand :: Mod CommandFields CommandArguments
-filterRowsCommand =
-  command "filter-rows" $ info (FilterRows <$> filterRowsArguments) $ progDesc
-    (description @FilterRowsArguments)
+examineCommand = createSubCommand Examine
 
 filterColumnsCommand :: Mod CommandFields CommandArguments
-filterColumnsCommand =
-  command "filter-columns"
-    $ info (FilterCols <$> filterColsArguments)
-    $ progDesc (description @FilterColsArguments)
+filterColumnsCommand = createSubCommand FilterCols
+
+filterRowsCommand :: Mod CommandFields CommandArguments
+filterRowsCommand = createSubCommand FilterRows
 
 simulateCommand :: Mod CommandFields CommandArguments
-simulateCommand = command "simulate" $ info
-  (Simulate <$> simulateArguments)
-  (fullDesc <> progDesc (description @SimulateArguments) <> footerDoc
-    (Just $ pretty simulateFooter)
-  )
+simulateCommand = createSubCommand Simulate
 
 subSampleCommand :: Mod CommandFields CommandArguments
-subSampleCommand = command "sub-sample" $ info
-  (SubSample <$> subSampleArguments)
-  (  fullDesc
-  <> progDesc (description @SubSampleArguments)
-  <> footer
-       "Create a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment."
-  )
+subSampleCommand = createSubCommand SubSample
 
 translateCommand :: Mod CommandFields CommandArguments
-translateCommand =
-  command "translate" $ info (Translate <$> translateArguments) $ progDesc
-    (description @TranslateArguments)
+translateCommand = createSubCommand Translate
 
 commandArguments :: Parser CommandArguments
 commandArguments =
   hsubparser
     $  concatenateCommand
     <> examineCommand
-    <> filterRowsCommand
     <> filterColumnsCommand
+    <> filterRowsCommand
     <> simulateCommand
     <> subSampleCommand
     <> translateCommand

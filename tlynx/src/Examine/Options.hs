@@ -35,7 +35,8 @@ instance Reproducible ExamineArguments where
   getSeed _ = Nothing
   setSeed     = const
   parser      = examineArguments
-  description = "Compute summary statistics of phylogenetic trees."
+  cmdName = "examine"
+  cmdDesc = "Compute summary statistics of phylogenetic trees."
 
 instance ToJSON ExamineArguments
 
