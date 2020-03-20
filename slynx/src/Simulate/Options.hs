@@ -45,6 +45,9 @@ module Simulate.Options
   )
 where
 
+import           Data.Maybe                     ( maybeToList
+                                                , fromMaybe
+                                                )
 import           Data.List
 import           Data.String                    ( words )
 import           Options.Applicative
@@ -69,8 +72,10 @@ data SimulateArguments = SimulateArguments
   deriving (Eq, Show, Generic)
 
 instance Reproducible SimulateArguments where
-  -- TODO: Other files are missing, see above.
-  inFiles = pure . argsTreeFile
+  inFiles a =
+    argsTreeFile a
+      : (maybeToList (argsEDMFile a) ++ fromMaybe [] (argsSiteprofilesFiles a))
+  outSuffixes _ = [".model.gz", ".fasta"]
   getSeed = Just . argsSeed
   setSeed a s = a { argsSeed = Fixed s }
   parser  = simulateArguments

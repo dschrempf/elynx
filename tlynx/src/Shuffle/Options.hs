@@ -34,6 +34,7 @@ data ShuffleArguments = ShuffleArguments
 
 instance Reproducible ShuffleArguments where
   inFiles = pure . inFile
+  outSuffixes _ = [".tree"]
   getSeed = Just . argsSeed
   setSeed a s = a { argsSeed = Fixed s }
   parser  = shuffleArguments

@@ -118,8 +118,8 @@ copyrightString = "Developed by Dominik Schrempf."
 compilationString :: String
 compilationString = "Compiled on "
                     ++ $(stringE =<< runIO
-                         ( formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z."
-                           `fmap` Data.Time.getCurrentTime ))
+                          ( formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z."
+                            `fmap` Data.Time.getCurrentTime ))
 
 -- A short header to be used in executables. 'unlines' doesn't work here because
 -- it adds an additional newline at the end.
@@ -230,8 +230,9 @@ instance ToJSON a => ToJSON (Arguments a)
 instance FromJSON a => FromJSON (Arguments a)
 
 instance Reproducible a => Reproducible (Arguments a) where
-  inFiles = inFiles . local
-  getSeed = getSeed . local
+  inFiles     = inFiles . local
+  outSuffixes = outSuffixes . local
+  getSeed     = getSeed . local
   setSeed (Arguments g l) s = Arguments g $ setSeed l s
   parser  = argumentsParser (parser @a)
   cmdName = cmdName @a
@@ -329,18 +330,20 @@ fillParagraph = fillSep . map text . words
 
 -- | Reproducible commands have
 --   - a set of input files to be checked for consistency,
+--   - a set of output suffixes which define output files to be checked for consistency,
 --   - a function to get the seed, if available,
 --   - a function to set the seed, if applicable,
 --   - a parser to read the command line,
 --   - a nice program name, description, and footer.
 class Reproducible a where
-  inFiles :: a -> [FilePath]
-  getSeed :: a -> Maybe Seed
-  setSeed :: a -> Vector Word32 -> a
-  parser  :: Parser a
-  cmdName :: String
-  cmdDesc :: String
-  cmdFtr  :: Maybe String
+  inFiles  :: a -> [FilePath]
+  outSuffixes :: a -> [String]
+  getSeed  :: a -> Maybe Seed
+  setSeed  :: a -> Vector Word32 -> a
+  parser   :: Parser a
+  cmdName  :: String
+  cmdDesc  :: String
+  cmdFtr   :: Maybe String
   cmdFtr = Nothing
 
 -- | Necessary information for a reproducible run. Notably, the input files are
@@ -348,8 +351,8 @@ class Reproducible a where
 data State a = State
   { progName      :: String        -- ^ Program name.
   , argsStr       :: [String]      -- ^ Command line arguments without program name.
-  , files         :: [FilePath]    -- ^ File paths of in files.
-  , checkSums     :: [String]      -- ^ SHA256 sums of in files.
+  , files         :: [FilePath]    -- ^ File paths of used files.
+  , checkSums     :: [String]      -- ^ SHA256 sums of used files.
   , reproducible  :: a             -- ^ Command argument.
   } deriving (Generic)
 
@@ -426,14 +429,15 @@ hashFile f = encode . hash <$> B.readFile f
 writeR
   :: forall a
    . (Eq a, Show a, Reproducible a, ToJSON a)
-  => FilePath
+  => String
   -> a
   -> IO ()
-writeR fp r = do
+writeR bn r = do
   pn <- getProgName
   as <- getArgs
-  let fs = inFiles r
+  let outFs = map (bn ++) (outSuffixes r)
+  let fs = inFiles r ++ outFs
   cs <- mapM hashFile fs
   let cs' = map B.unpack cs
       s   = State pn as fs cs' r
-  void $ encodeFile fp s
+  void $ encodeFile (bn ++ ".elynx") s

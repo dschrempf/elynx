@@ -32,9 +32,10 @@ data ExamineArguments = ExamineArguments
 
 instance Reproducible ExamineArguments where
   inFiles = pure . argsInFile
+  outSuffixes _ = [".out"]
   getSeed _ = Nothing
-  setSeed     = const
-  parser      = examineArguments
+  setSeed = const
+  parser  = examineArguments
   cmdName = "examine"
   cmdDesc = "Compute summary statistics of phylogenetic trees."
 

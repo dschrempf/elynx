@@ -34,6 +34,7 @@ data ConnectArguments = ConnectArguments
 
 instance Reproducible ConnectArguments where
   inFiles a = [inFileA a, inFileB a]
+  outSuffixes _ = [".out"]
   getSeed _ = Nothing
   setSeed a _ = a
   parser  = connectArguments

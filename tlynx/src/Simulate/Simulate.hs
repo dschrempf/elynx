@@ -61,9 +61,7 @@ import           ELynx.Simulate.PointProcess    ( TimeSpec
                                                 , simulateReconstructedTree
                                                 )
 import           ELynx.Tools.Concurrent
-import           ELynx.Tools.InputOutput        ( getOutFilePath
-                                                , out
-                                                )
+import           ELynx.Tools.InputOutput        ( out )
 import           ELynx.Tools.Logger
 import           ELynx.Tools.Reproduction       ( ELynx
                                                 , Arguments(..)
@@ -100,9 +98,8 @@ simulate = do
   let ls = if sumS
         then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
         else parMap rpar toNewick trs
-  fn <- getOutFilePath ".tree"
   let res = L.unlines ls
-  out "simulated trees" res fn
+  out "simulated trees" res ".tree"
 
 simulateNTreesConcurrently
   :: Int

@@ -17,10 +17,15 @@ Creation date: Sun Oct  7 17:29:45 2018.
 module SubSample.Options
   ( SubSampleArguments(..)
   , subSampleArguments
+  , getOutSuffixes
   )
 where
 
 import           Options.Applicative
+import qualified Data.Text                     as T
+import qualified Data.Text.Lazy                as LT
+import qualified Data.Text.Lazy.Builder        as LT
+import qualified Data.Text.Lazy.Builder.Int    as LT
 
 import           Tools
 
@@ -36,15 +41,31 @@ data SubSampleArguments = SubSampleArguments
     , ssMbSeed      :: Seed }
   deriving (Eq, Show, Generic)
 
+-- | Get a given number of output file suffixes.
+--
+-- > getOutSuffixes 11 "fasta"
+--
+-- Will result in @.00.fasta@ up to @.10.fasta@.
+getOutSuffixes :: Int -> String -> [String]
+getOutSuffixes n suffix =
+  [ "." ++ digitStr i ++ "." ++ suffix | i <- [0 .. n - 1] ]
+ where
+  nDigits = ceiling $ logBase (10 :: Double) (fromIntegral n)
+  digitStr i = T.unpack
+    $ T.justifyRight nDigits '0' (LT.toStrict $ LT.toLazyText $ LT.decimal i)
+
+
 instance Reproducible SubSampleArguments where
   inFiles = pure . ssInFile
+  outSuffixes a = getOutSuffixes (ssNAlignments a) "fasta"
   getSeed = Just . ssMbSeed
   setSeed a s = a { ssMbSeed = Fixed s }
   parser  = subSampleArguments
   cmdName = "sub-sample"
   cmdDesc = "Sub-sample columns from multi sequence alignments."
-  cmdFtr
-    = Just "Create a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment."
+  cmdFtr =
+    Just
+      "Create a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment."
 
 instance ToJSON SubSampleArguments
 

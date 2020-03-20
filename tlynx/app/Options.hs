@@ -67,7 +67,7 @@ simulateCommand = createSubCommand Simulate
 commandArguments :: Parser CommandArguments
 commandArguments =
   hsubparser
-    $ coalesceCommand
+    $  coalesceCommand
     <> compareCommand
     <> connectCommand
     <> distanceCommand

@@ -40,8 +40,7 @@ import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree
 import           ELynx.Import.Tree.Newick
-import           ELynx.Tools.InputOutput        ( getOutFilePath
-                                                , parseFileWith
+import           ELynx.Tools.InputOutput        ( parseFileWith
                                                 , outHandle
                                                 )
 import           ELynx.Tools.Reproduction       ( ELynx
@@ -70,6 +69,5 @@ examine = do
   let inFn   = argsInFile l
       iqtree = argsNewickIqTree l
   trs  <- readTrees iqtree inFn
-  fn   <- getOutFilePath ".out"
-  outH <- outHandle "results" fn
+  outH <- outHandle "results" ".out"
   liftIO $ mapM_ (examineTree outH) trs

@@ -35,6 +35,10 @@ data CompareArguments = CompareArguments
 
 instance Reproducible CompareArguments where
   inFiles = argsInFiles
+-- XXX: The plots are not checked with the ELynx file, because they are not
+-- always created and this is hard with the actual setup.
+  outSuffixes _ = [".out"]
+-- outSuffixes a = ".out" : if argsBipartitions a then [".eps", ".pdf"] else []
   getSeed _ = Nothing
   setSeed a _ = a
   parser  = compareArguments

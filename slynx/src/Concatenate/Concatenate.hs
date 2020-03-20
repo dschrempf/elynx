@@ -40,5 +40,4 @@ concatenateCmd = do
   $(logInfo) "Command: Concatenate sequences."
   sss <- mapM (readSeqs al) fps
   let result = sequencesToFasta $ S.concatSequences sss
-  fn <- getOutFilePath ".fasta"
-  out "concatenated multi sequence alignment " result fn
+  out "concatenated multi sequence alignment " result ".fasta"

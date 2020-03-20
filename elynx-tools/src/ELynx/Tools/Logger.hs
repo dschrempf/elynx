@@ -98,10 +98,10 @@ eLynxWrapper worker args = do
       lArgs = local args
   let lvl     = toLogLevel $ verbosity gArgs
       rd      = forceReanalysis gArgs
-      logFile = (++ ".log") <$> outFileBaseName gArgs
-      repFile = (++ ".elynx") <$> outFileBaseName gArgs
+      outBn   = outFileBaseName gArgs
+      logFile = (++ ".log") <$> outBn
   runELynxLoggingT lvl rd logFile $ do
-    -- Initialize.
+    -- Header.
     h <- liftIO $ logHeader (cmdDesc @a)
     $(logInfo) $ pack $ h ++ "\n"
     -- Fix seed.
@@ -118,17 +118,17 @@ eLynxWrapper worker args = do
         $(logInfo) $ pack $ "Seed: " <> show s <> "."
         return lArgs
     let args' = Arguments gArgs lArgs'
-    -- Write reproduction file.
-    case repFile of
-      Nothing -> do
-        $(logInfo) "No output file given."
-        $(logInfo) "ELynx file for reproducible runs has not been created."
-      Just f -> liftIO $ writeR f args'
     -- Run the worker with the fixed seed.
     runReaderT worker args'
-    -- Close.
-    f <- liftIO logFooter
-    $(logInfo) $ pack f
+    -- Reproduction file.
+    case outBn of
+      Nothing -> do
+        $(logInfo) "No output file given."
+        $(logInfo) "ELynx file for reproducible runs is not created."
+      Just bn -> liftIO $ writeR bn args'
+    -- Footer.
+    ftr <- liftIO logFooter
+    $(logInfo) $ pack ftr
 
 runELynxLoggingT
   :: (MonadBaseControl IO m, MonadIO m)

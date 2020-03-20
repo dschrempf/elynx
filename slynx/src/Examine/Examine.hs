@@ -120,5 +120,4 @@ examineCmd = do
   $(logInfo) "Command: Examine sequences."
   ss <- readSeqs al inFile
   let result = examine perSiteFlag ss
-  fn <- getOutFilePath ".out"
-  out "result of examination" result fn
+  out "result of examination" result ".out"

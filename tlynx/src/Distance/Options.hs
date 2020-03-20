@@ -69,6 +69,7 @@ instance Reproducible DistanceArguments where
   inFiles a = case argsMasterTreeFile a of
     Nothing -> argsInFiles a
     Just f  -> f : argsInFiles a
+  outSuffixes _ = [".out"]
   getSeed _ = Nothing
   setSeed = const
   parser  = distanceArguments

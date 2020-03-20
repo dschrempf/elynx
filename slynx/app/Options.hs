@@ -85,5 +85,5 @@ ftr :: [String]
 ftr = ["File formats:"] ++ fs ++ ["", "Alphabet types:"] ++ as
  where
   toListItem = ("  - " ++)
-  fs         = map toListItem ["FASTA"]
-  as         = map (toListItem . alphabetDescription) [(minBound :: Alphabet) ..]
+  fs = map toListItem ["FASTA"]
+  as = map (toListItem . alphabetDescription) [(minBound :: Alphabet) ..]

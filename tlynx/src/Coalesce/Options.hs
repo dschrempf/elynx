@@ -39,9 +39,10 @@ data CoalesceArguments = CoalesceArguments
 
 instance Reproducible CoalesceArguments where
   inFiles _ = []
+  outSuffixes _ = [".tree"]
   getSeed = Just . argsSeed
   setSeed a s = a { argsSeed = Fixed s }
-  parser = coalesceArguments
+  parser  = coalesceArguments
   cmdName = "coalesce"
   cmdDesc
     = "Simulate phylogenetic trees using the coalescent processes (see also the 'simulate' command for simulations using the birth and death process)."

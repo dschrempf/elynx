@@ -41,9 +41,10 @@ data FilterRowsArguments = FilterRowsArguments
 
 instance Reproducible FilterRowsArguments where
   inFiles = pure . frInFile
+  outSuffixes _ = [".fasta"]
   getSeed _ = Nothing
-  setSeed     = const
-  parser      = filterRowsArguments
+  setSeed = const
+  parser  = filterRowsArguments
   cmdName = "filter-rows"
   cmdDesc = "Filter rows (or sequences) found in input files."
 
@@ -58,9 +59,10 @@ data FilterColsArguments = FilterColsArguments
 
 instance Reproducible FilterColsArguments where
   inFiles = pure . fcInFile
+  outSuffixes _ = [".fasta"]
   getSeed _ = Nothing
-  setSeed     = const
-  parser      = filterColsArguments
+  setSeed = const
+  parser  = filterColsArguments
   cmdName = "filter-columns"
   cmdDesc = "Filter columns of multi sequence alignments."
 

@@ -46,7 +46,6 @@ import           ELynx.Import.Tree.Newick       ( manyNewick
                                                 )
 import           ELynx.Tools.InputOutput        ( outHandle
                                                 , parseFileWith
-                                                , getOutFilePath
                                                 )
 import           ELynx.Tools.Reproduction       ( ELynx
                                                 , Arguments(..)
@@ -59,8 +58,7 @@ import           ELynx.Tools.Text               ( fromBs
 connectCmd :: ELynx ConnectArguments ()
 connectCmd = do
   lArgs <- local <$> ask
-  fn    <- getOutFilePath ".out"
-  outH  <- outHandle "results" fn
+  outH  <- outHandle "results" ".out"
 
   -- Do we have constraints or not?
   let cs = constraints lArgs

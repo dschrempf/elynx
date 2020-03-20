@@ -68,11 +68,9 @@ import           ELynx.Tools.ByteString         ( alignLeft
                                                 , alignRight
                                                 )
 import           ELynx.Tools.Text               ( tShow )
-import           ELynx.Tools.InputOutput        ( getOutFilePath
-                                                , outHandle
+import           ELynx.Tools.InputOutput        ( outHandle
                                                 , parseFileWith
                                                 )
-import           ELynx.Tools.Logger
 import           ELynx.Tools.Reproduction       ( ELynx
                                                 , Arguments(..)
                                                 )
@@ -104,8 +102,7 @@ distance = do
   let oneNw  = if argsNewickIqTree l then oneNewickIqTree else oneNewick
       manyNw = if argsNewickIqTree l then manyNewickIqTree else manyNewick
   -- Determine output handle (stdout or file).
-  outF <- getOutFilePath ".out"
-  outH <- outHandle "results" outF
+  outH <- outHandle "results" ".out"
   -- Master tree (in case it is given).
   let mname = argsMasterTreeFile l
   mtree <- case mname of
@@ -137,9 +134,6 @@ distance = do
   --   "Compute pairwise distances between trees from different files."
   $(logDebug) "The trees are:"
   $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees
-  case outF of
-    Nothing -> logNewSection "Write results to standard output."
-    Just f  -> logNewSection $ T.pack $ "Write results to file " <> f <> "."
 
   -- Set the distance measure.
   let dist = argsDistance l

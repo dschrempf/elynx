@@ -73,6 +73,7 @@ import           ELynx.Tools.Concurrent
 import           ELynx.Tools.InputOutput
 import           ELynx.Tools.Reproduction       ( ELynx
                                                 , Arguments(..)
+                                                , GlobalArguments(..)
                                                 , Seed(..)
                                                 )
 import           ELynx.Tools.Misc
@@ -134,13 +135,13 @@ summarizeEDMComponents cs =
 -- models the exchangeabilities are too many.
 reportModel :: P.PhyloModel -> ELynx SimulateArguments ()
 reportModel m = do
-  fn <- getOutFilePath ".model.gz"
-  case fn of
+  bn <- outFileBaseName . global <$> ask
+  case bn of
     Nothing ->
       $(logInfo)
         "No output file provided; omit writing machine-readable phylogenetic model."
-    Just fn' ->
-      out "model definition (machine readable)" (bShow m <> "\n") (Just fn')
+    Just _ ->
+      out "model definition (machine readable)" (bShow m <> "\n") ".model.gz"
 
 -- | Simulate sequences.
 simulateCmd :: ELynx SimulateArguments ()
@@ -230,7 +231,6 @@ simulateCmd = do
       error "simulateCmd: seed not available; please contact maintainer."
     Fixed s -> liftIO $ initialize s
   alignment <- liftIO $ simulateAlignment phyloModel tree alignmentLength gen
-  fn        <- getOutFilePath ".fasta"
   let output = (sequencesToFasta . A.toSequences) alignment
   $(logInfo) ""
-  out "simulated multi sequence alignment" output fn
+  out "simulated multi sequence alignment" output ".fasta"

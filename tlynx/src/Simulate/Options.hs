@@ -45,6 +45,7 @@ data SimulateArguments = SimulateArguments
 
 instance Reproducible SimulateArguments where
   inFiles _ = []
+  outSuffixes _ = [".tree"]
   getSeed = Just . argsSeed
   setSeed a s = a { argsSeed = Fixed s }
   parser  = simulateArguments

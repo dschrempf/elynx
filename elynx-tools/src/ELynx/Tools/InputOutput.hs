@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
 {- |
 Module      :  ELynx.Tools.InputOutput
@@ -57,13 +59,21 @@ import           ELynx.Tools.Reproduction       ( ELynx
                                                 , Arguments(..)
                                                 , outFileBaseName
                                                 , forceReanalysis
+                                                , Reproducible(..)
                                                 )
 
 -- | Get out file path with extension.
-getOutFilePath :: String -> ELynx a (Maybe FilePath)
+getOutFilePath
+  :: forall a . Reproducible a => String -> ELynx a (Maybe FilePath)
 getOutFilePath ext = do
-  ofbn <- outFileBaseName . global <$> ask
-  return $ (++ ext) <$> ofbn
+  a <- ask
+  let bn   = outFileBaseName . global $ a
+      sfxs = outSuffixes a
+  if ext `elem` sfxs
+    then return $ (++ ext) <$> bn
+    else
+      error
+        "getOutFilePath: out file suffix not registered. Please contact maintainer."
 
 checkFile :: Force -> FilePath -> IO ()
 checkFile (Force True ) _  = return ()
@@ -149,26 +159,30 @@ parseByteStringWith s p l = case parse p s l of
   Left  err -> error $ errorBundlePretty err
   Right val -> val
 
--- | Write a result with a given name to file or standard output. Supports
--- compression.
-out :: String -> L.ByteString -> Maybe FilePath -> ELynx a ()
-out name res mfp = case mfp of
-  Nothing -> do
-    $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
-    liftIO $ L.putStr res
-  Just fp -> do
-    $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
-    frc <- forceReanalysis . global <$> ask
-    liftIO $ writeGZFile frc fp res
+-- | Write a result with a given name to file with given extension or standard
+-- output. Supports compression.
+out :: Reproducible a => String -> L.ByteString -> String -> ELynx a ()
+out name res ext = do
+  mfp <- getOutFilePath ext
+  case mfp of
+    Nothing -> do
+      $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
+      liftIO $ L.putStr res
+    Just fp -> do
+      $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
+      frc <- forceReanalysis . global <$> ask
+      liftIO $ writeGZFile frc fp res
 
 -- | Get an output handle, does not support compression. The handle has to be
 -- closed after use!
-outHandle :: String -> Maybe FilePath -> ELynx a Handle
-outHandle name mfp = case mfp of
-  Nothing -> do
-    $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
-    return stdout
-  Just fp -> do
-    $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
-    frc <- forceReanalysis . global <$> ask
-    liftIO $ openFile' frc fp WriteMode
+outHandle :: Reproducible a => String -> String -> ELynx a Handle
+outHandle name ext = do
+  mfp <- getOutFilePath ext
+  case mfp of
+    Nothing -> do
+      $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
+      return stdout
+    Just fp -> do
+      $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
+      frc <- forceReanalysis . global <$> ask
+      liftIO $ openFile' frc fp WriteMode

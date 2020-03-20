@@ -49,5 +49,4 @@ translateCmd = do
   $(logInfo) ""
   ss <- readSeqs al inFile
   let result = sequencesToFasta $ translateSeqs rf uc ss
-  fn <- getOutFilePath ".fasta"
-  out "translated sequences" result fn
+  out "translated sequences" result "fasta"

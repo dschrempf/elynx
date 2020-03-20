@@ -36,6 +36,7 @@ data ExamineArguments = ExamineArguments
 
 instance Reproducible ExamineArguments where
   inFiles = pure . exInFile
+  outSuffixes _ = [".out"]
   getSeed _ = Nothing
 -- XXX: Probably throw error when seed is set.
   setSeed = const

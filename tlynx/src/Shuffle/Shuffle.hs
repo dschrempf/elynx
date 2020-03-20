@@ -76,7 +76,6 @@ import           ELynx.Simulate.PointProcess    ( PointProcess(PointProcess)
 import           ELynx.Tools.Definitions        ( eps )
 import           ELynx.Tools.InputOutput        ( outHandle
                                                 , parseFileWith
-                                                , getOutFilePath
                                                 )
 import           ELynx.Tools.Reproduction       ( ELynx
                                                 , Arguments(..)
@@ -92,9 +91,8 @@ import           ELynx.Tools.Text               ( fromBs
 -- times and leaves.
 shuffleCmd :: ELynx ShuffleArguments ()
 shuffleCmd = do
-  l  <- local <$> ask
-  fn <- getOutFilePath ".tree"
-  h  <- outHandle "results" fn
+  l <- local <$> ask
+  h <- outHandle "results" ".tree"
 
   let oneNw = if newickIqTreeFlag l then oneNewickIqTree else oneNewick
   t <- liftIO $ parseFileWith oneNw (inFile l)

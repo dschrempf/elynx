@@ -52,12 +52,12 @@ import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree           ( intersectWith )
 import           ELynx.Export.Tree.Newick       ( toNewick )
 import           ELynx.Import.Tree.Newick
-import           ELynx.Tools.InputOutput        ( getOutFilePath
-                                                , parseFileWith
+import           ELynx.Tools.InputOutput        ( parseFileWith
                                                 , outHandle
                                                 )
 import           ELynx.Tools.Reproduction       ( ELynx
                                                 , Arguments(..)
+                                                , GlobalArguments(..)
                                                 )
 
 treesOneFile
@@ -94,10 +94,9 @@ treesTwoFiles iqtree tf1 tf2 = do
 -- | More detailed comparison of two trees.
 compareCmd :: ELynx CompareArguments ()
 compareCmd = do
-  l     <- local <$> ask
+  l    <- local <$> ask
   -- Determine output handle (stdout or file).
-  outFn <- getOutFilePath ".out"
-  outH  <- outHandle "results" outFn
+  outH <- outHandle "results" ".out"
 
   -- Read input.
   let inFiles = argsInFiles l
@@ -227,7 +226,10 @@ compareCmd = do
             . getCommonBpStr L.unpack bpToBrLen1 bpToBrLen2
             )
 
-          case outFn of
+          -- XXX: This circumvents the extension checking, and hash creation for
+          -- elynx files.
+          bn <- outFileBaseName . global <$> ask
+          case bn of
             Nothing ->
               $(logInfo) "No output file name provided. Do not generate plots."
             Just fn -> do

@@ -40,9 +40,10 @@ data TranslateArguments = TranslateArguments
 
 instance Reproducible TranslateArguments where
   inFiles = pure . trInFile
+  outSuffixes _ = [".fasta"]
   getSeed _ = Nothing
-  setSeed     = const
-  parser      = translateArguments
+  setSeed = const
+  parser  = translateArguments
   cmdName = "translate"
   cmdDesc = "Translate from DNA to Protein or DNAX to ProteinX."
 

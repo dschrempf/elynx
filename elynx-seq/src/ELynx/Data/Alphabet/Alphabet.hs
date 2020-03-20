@@ -60,9 +60,10 @@ instance ToJSON Alphabet
 
 -- | Verbose alphabet name.
 alphabetDescription :: Alphabet -> String
-alphabetDescription DNA      = "DNA (nucleotides)"
-alphabetDescription DNAX     = "DNAX (nucleotides; including gaps)"
-alphabetDescription DNAI     = "DNAI (nucleotides; including gaps, and IUPAC codes)"
+alphabetDescription DNA  = "DNA (nucleotides)"
+alphabetDescription DNAX = "DNAX (nucleotides; including gaps)"
+alphabetDescription DNAI =
+  "DNAI (nucleotides; including gaps, and IUPAC codes)"
 alphabetDescription Protein  = "Protein (amino acids)"
 alphabetDescription ProteinX = "ProteinX (amino acids; including gaps)"
 alphabetDescription ProteinS =

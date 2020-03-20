@@ -36,9 +36,10 @@ data ConcatenateArguments = ConcatenateArguments
 
 instance Reproducible ConcatenateArguments where
   inFiles = ccInFiles
+  outSuffixes _ = [".fasta"]
   getSeed _ = Nothing
-  setSeed     = const
-  parser      = concatenateArguments
+  setSeed = const
+  parser  = concatenateArguments
   cmdName = "concatenate"
   cmdDesc = "Concatenate sequences found in input files."
 

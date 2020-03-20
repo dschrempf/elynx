@@ -69,8 +69,7 @@ filterRowsCmd = do
         "  Keep sequences containing at least one standard (i.e., non-IUPAC) character."
   ss <- readSeqs al inFile
   let result = filterRows long short std ss
-  fn <- getOutFilePath ".fasta"
-  out "filtered sequences" result fn
+  out "filtered sequences" result ".fasta"
 
 filterCols :: Maybe Double -> [S.Sequence] -> L.ByteString
 filterCols ms ss = sequencesToFasta . M.toSequences $ compose filters a
@@ -93,5 +92,4 @@ filterColsCmd = do
         ++ "."
   ss <- readSeqs al inFile
   let result = filterCols standard ss
-  fn <- getOutFilePath ".fasta"
-  out "filtered sequences" result fn
+  out "filtered sequences" result ".fasta"
