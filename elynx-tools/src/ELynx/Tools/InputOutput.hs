@@ -20,14 +20,14 @@ Tools involving input, output, and parsing.
 -}
 
 module ELynx.Tools.InputOutput
-  ( -- * Input, output.
+  ( -- * Input, output
     getOutFilePath
   , openFile'
   , readGZFile
   , writeGZFile
   , out
   , outHandle
-    -- * Parsing.
+    -- * Parsing
   , runParserOnFile
   , parseFileWith
   , parseIOWith

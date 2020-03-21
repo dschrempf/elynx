@@ -64,14 +64,12 @@ import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree           ( intersectWith )
 import           ELynx.Export.Tree.Newick
 import           ELynx.Import.Tree.Newick
-import           ELynx.Tools.ByteString         ( alignLeft
+import           ELynx.Tools                    ( alignLeft
                                                 , alignRight
-                                                )
-import           ELynx.Tools.Text               ( tShow )
-import           ELynx.Tools.InputOutput        ( outHandle
+                                                , tShow
+                                                , outHandle
                                                 , parseFileWith
-                                                )
-import           ELynx.Tools.Reproduction       ( ELynx
+                                                , ELynx
                                                 , Arguments(..)
                                                 )
 

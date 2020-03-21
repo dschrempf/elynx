@@ -29,9 +29,7 @@ import qualified Data.Vector.Unboxed           as V
 
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.Alphabet.Character
-import           ELynx.Tools.Definitions
-import           ELynx.Tools.Numeric
-import           ELynx.Tools.Vector
+import           ELynx.Tools
 
 -- | Entropy of vector.
 entropy :: V.Vector Double -> Double

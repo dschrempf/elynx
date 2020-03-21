@@ -22,7 +22,7 @@ where
 
 import           Options.Applicative
 
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools
 
 -- | Arguments of shuffle command.
 data ShuffleArguments = ShuffleArguments

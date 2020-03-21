@@ -14,7 +14,8 @@ Equality tests.
 -}
 
 module ELynx.Tools.Equality
-  ( allEqual
+  ( -- * Equality
+    allEqual
   , allNearlyEqualWith
   , allNearlyEqual
   , nearlyEqWith

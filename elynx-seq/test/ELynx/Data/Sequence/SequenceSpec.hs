@@ -22,7 +22,7 @@ import           Test.Hspec
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.Sequence.Sequence
 import           ELynx.Import.Sequence.Fasta
-import           ELynx.Tools.InputOutput
+import           ELynx.Tools
 import           Files
 
 longestSequenceInFileBS :: L.ByteString

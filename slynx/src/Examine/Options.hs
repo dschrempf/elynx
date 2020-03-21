@@ -25,7 +25,7 @@ import           Options.Applicative
 import           Tools
 
 import           ELynx.Data.Alphabet.Alphabet
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools
 
 -- | Arguments needed to examine sequences.
 data ExamineArguments = ExamineArguments

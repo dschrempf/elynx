@@ -17,7 +17,7 @@ module ELynx.Tools.Concurrent
   (
     -- * MWC
     splitGen
-   -- * Parallel stuff
+    -- * Parallel stuff
   , parComp
   , getChunks
   , parMapChunk

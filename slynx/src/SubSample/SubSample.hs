@@ -32,11 +32,7 @@ import           Tools
 
 import qualified ELynx.Data.Sequence.Alignment as M
 import           ELynx.Export.Sequence.Fasta
-import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Reproduction       ( ELynx
-                                                , Arguments(..)
-                                                , Seed(..)
-                                                )
+import           ELynx.Tools
 
 -- | Sub sample sequences.
 subSampleCmd :: ELynx SubSampleArguments ()

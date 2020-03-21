@@ -13,7 +13,8 @@ Creation date: Fri Jan 25 17:17:41 2019.
 -}
 
 module ELynx.Tools.Definitions
-  ( eps
+  ( -- * Definitions
+    eps
   , precision
   , chunksize
   )

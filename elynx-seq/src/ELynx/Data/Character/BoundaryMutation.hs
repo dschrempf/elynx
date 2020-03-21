@@ -42,7 +42,7 @@ import qualified Data.ByteString.Lazy.Char8    as L
 import           Numeric.SpecFunctions          ( choose )
 
 import           ELynx.Data.Character.Nucleotide
-import           ELynx.Tools.Misc
+import           ELynx.Tools
 
 -- | Alleles are just nucleotides at the moment. However, I want to keep the
 -- code such that it can be extended easily to codons or amino acids.

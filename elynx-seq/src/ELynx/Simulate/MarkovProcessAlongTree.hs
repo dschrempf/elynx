@@ -40,7 +40,7 @@ import           System.Random.MWC.Distributions
 import           ELynx.Data.MarkovProcess.RateMatrix
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Simulate.MarkovProcess
-import           ELynx.Tools.Concurrent
+import           ELynx.Tools
 
 toProbTree :: (Measurable a) => RateMatrix -> Tree a -> Tree ProbMatrix
 toProbTree q = fmap (probMatrix q . getLen)

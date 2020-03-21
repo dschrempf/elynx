@@ -52,7 +52,7 @@ import           Data.List
 import           Data.String                    ( words )
 import           Options.Applicative
 
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools
 
 -- | Number of gamma rate categories and alpha parameter.
 type GammaRateHeterogeneityParams = (Int, Double)

@@ -39,7 +39,7 @@ import           Text.Megaparsec.Byte
 import           ELynx.Data.Alphabet.Alphabet  as A
 import           ELynx.Data.Alphabet.Character
 import           ELynx.Data.Sequence.Sequence
-import           ELynx.Tools.ByteString         ( c2w )
+import           ELynx.Tools
 
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString

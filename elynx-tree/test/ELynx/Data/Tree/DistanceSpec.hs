@@ -31,9 +31,7 @@ import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.BranchSupportTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Import.Tree.Newick
--- import           ELynx.Export.Tree.Newick
-import           ELynx.Tools.Equality
-import           ELynx.Tools.InputOutput
+import           ELynx.Tools
 
 treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"

@@ -32,7 +32,7 @@ import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.Sequence.Sequence
 import           ELynx.Import.Sequence.Fasta
                                          hiding ( Parser )
-import           ELynx.Tools.InputOutput
+import           ELynx.Tools
 
 -- -- | Read sequences of given alphabet from file or standard input.
 -- readSeqs

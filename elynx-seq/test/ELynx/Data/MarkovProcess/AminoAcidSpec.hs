@@ -24,8 +24,7 @@ import qualified ELynx.Data.MarkovProcess.RateMatrix
                                                as R
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel
                                                as S
-import           ELynx.Tools.Equality
-import           ELynx.Tools.Vector
+import           ELynx.Tools
 
 statDistLGPython :: R.StationaryDistribution
 statDistLGPython = normalizeSumVec 1.0 $ fromList

@@ -60,8 +60,7 @@ import qualified Text.Printf                   as P
 import qualified ELynx.Data.Alphabet.Alphabet  as A
 import           ELynx.Data.Alphabet.Character
 import           ELynx.Data.Sequence.Defaults
-import           ELynx.Tools.ByteString
-import           ELynx.Tools.Equality
+import           ELynx.Tools
 
 -- | For now, 'Name's are just 'L.ByteString's.
 type Name = L.ByteString

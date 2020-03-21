@@ -39,7 +39,7 @@ import           Data.Foldable
 import           Data.Tree
 
 import           ELynx.Data.Tree.Tree
-import           ELynx.Tools.Equality           ( allNearlyEqual )
+import           ELynx.Tools
 
 -- | A 'Node' label with measurable and modifiable branch length to the parent.
 class Measurable a where

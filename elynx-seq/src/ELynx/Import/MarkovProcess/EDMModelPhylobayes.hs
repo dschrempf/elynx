@@ -28,7 +28,7 @@ import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
 import           ELynx.Data.MarkovProcess.EDMModel
-import           ELynx.Tools.ByteString         ( c2w )
+import           ELynx.Tools
 
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString

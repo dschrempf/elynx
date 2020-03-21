@@ -19,7 +19,8 @@ Creation date: Fri Sep  6 14:43:19 2019.
 -}
 
 module ELynx.Tools.Logger
-  ( logNewSection
+  ( -- * Logger
+    logNewSection
   , eLynxWrapper
   )
 where

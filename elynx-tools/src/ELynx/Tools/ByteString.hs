@@ -15,7 +15,7 @@ indispensable tools for ByteString handling :).
 
 module ELynx.Tools.ByteString
   (
-    -- * ByteString handling.
+    -- * ByteString handling
     alignRightWith
   , alignRight
   , alignLeftWith

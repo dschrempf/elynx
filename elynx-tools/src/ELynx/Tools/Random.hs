@@ -15,7 +15,8 @@ Creation date: Tue May  7 11:22:12 2019.
 -}
 
 module ELynx.Tools.Random
-  ( sample
+  ( -- * Random
+    sample
   )
 where
 

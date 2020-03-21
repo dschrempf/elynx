@@ -19,7 +19,7 @@ import           Data.Tree
 import           ELynx.Data.Tree.Bipartition
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Import.Tree.Newick
-import           ELynx.Tools.InputOutput
+import           ELynx.Tools
 
 treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"

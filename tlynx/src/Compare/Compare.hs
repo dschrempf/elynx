@@ -52,10 +52,9 @@ import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree           ( intersectWith )
 import           ELynx.Export.Tree.Newick       ( toNewick )
 import           ELynx.Import.Tree.Newick
-import           ELynx.Tools.InputOutput        ( parseFileWith
+import           ELynx.Tools                    ( parseFileWith
                                                 , outHandle
-                                                )
-import           ELynx.Tools.Reproduction       ( ELynx
+                                                , ELynx
                                                 , Arguments(..)
                                                 , GlobalArguments(..)
                                                 )

@@ -14,7 +14,8 @@ Numerical functions.
 -}
 
 module ELynx.Tools.Numeric
-  ( harmonic
+  ( -- * Numeric
+    harmonic
   , xLogX
   , roundN
   )

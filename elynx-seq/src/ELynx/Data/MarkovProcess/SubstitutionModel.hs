@@ -44,9 +44,7 @@ import qualified Numeric.LinearAlgebra         as LinAlg
 import           ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.MarkovProcess.RateMatrix
                                                as R
-import           ELynx.Tools.Definitions
-import           ELynx.Tools.LinearAlgebra
-import           ELynx.Tools.Numeric
+import           ELynx.Tools
 
 -- | Name of substitution model; abstracted and subject to change.
 type Name = String

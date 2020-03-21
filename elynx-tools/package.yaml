@@ -64,3 +64,4 @@ dependencies:
 
 library:
   source-dirs: src
+  exposed-modules: ELynx.Tools

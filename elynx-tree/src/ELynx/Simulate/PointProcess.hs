@@ -48,8 +48,7 @@ import           ELynx.Distribution.BirthDeathNearlyCritical
 import           ELynx.Distribution.TimeOfOrigin
 import           ELynx.Distribution.TimeOfOriginNearCritical
 import           ELynx.Distribution.Types
-import           ELynx.Tools.Equality
-import           ELynx.Tools.List
+import           ELynx.Tools
 
 epsNearCriticalPointProcess :: Double
 epsNearCriticalPointProcess = 1e-5
@@ -137,15 +136,15 @@ simulate n (Just (t, c)) l m g
     return $ PointProcess [0 .. (n - 1)] vs t
   | (m =~= l) && c = do
     !vs <- replicateM (n - 2) (D.genContVar (BDCD t l) g)
-    vs' <- randomInsert t vs g
+    vs' <- randomInsertList t vs g
     return $ PointProcess [0 .. (n - 1)] vs' t
   | (abs (m - l) <= epsNearCriticalPointProcess) && c = do
     !vs <- replicateM (n - 2) (D.genContVar (BDNCD t l m) g)
-    vs' <- randomInsert t vs g
+    vs' <- randomInsertList t vs g
     return $ PointProcess [0 .. (n - 1)] vs' t
   | c = do
     !vs <- replicateM (n - 2) (D.genContVar (BDD t l m) g)
-    vs' <- randomInsert t vs g
+    vs' <- randomInsertList t vs g
     return $ PointProcess [0 .. (n - 1)] vs' t
   | otherwise = error "simulate: Fell through guard, this should never happen."
 
@@ -154,7 +153,7 @@ simulate n (Just (t, c)) l m g
 sort :: (Ord b) => PointProcess a b -> ([b], [Int])
 sort (PointProcess _ vs _) = (vsSorted, isSorted)
  where
-  vsIsSorted = sortWithIndices vs
+  vsIsSorted = sortListWithIndices vs
   vsSorted   = map fst vsIsSorted
   isSorted   = flattenIndices $ map snd vsIsSorted
 

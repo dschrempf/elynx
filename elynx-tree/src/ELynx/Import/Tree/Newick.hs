@@ -48,7 +48,7 @@ import           Text.Megaparsec.Byte.Lexer     ( decimal
                                                 )
 
 import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Tools.ByteString         ( c2w )
+import           ELynx.Tools
 
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString

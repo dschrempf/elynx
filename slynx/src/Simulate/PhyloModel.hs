@@ -41,9 +41,7 @@ import qualified ELynx.Data.MarkovProcess.SubstitutionModel
                                                as S
 import           ELynx.Import.MarkovProcess.EDMModelPhylobayes
                                                 ( EDMComponent )
-import           ELynx.Tools.ByteString
-import           ELynx.Tools.Equality
-import           ELynx.Tools.InputOutput
+import           ELynx.Tools
 
 type Parser = Parsec Void L.ByteString
 

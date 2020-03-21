@@ -23,7 +23,7 @@ import           Simulate.Simulate
 import           SubSample.SubSample
 import           Translate.Translate
 
-import           ELynx.Tools.Logger
+import           ELynx.Tools
 
 main :: IO ()
 main = do

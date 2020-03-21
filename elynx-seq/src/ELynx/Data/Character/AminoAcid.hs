@@ -55,9 +55,7 @@ import           Data.Word8
 
 import qualified ELynx.Data.Character.Character
                                                as C
-import           ELynx.Tools.ByteString         ( c2w
-                                                , w2c
-                                                )
+import           ELynx.Tools
 
 -- | Amino acids.
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y

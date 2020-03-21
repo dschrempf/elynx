@@ -35,9 +35,7 @@ import           Data.Word8
 
 import qualified ELynx.Data.Character.Character
                                                as C
-import           ELynx.Tools.ByteString         ( c2w
-                                                , w2c
-                                                )
+import           ELynx.Tools
 
 -- | Alphabet characters; abstracted so that representation can be changed at
 -- some point.

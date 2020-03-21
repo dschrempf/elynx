@@ -32,7 +32,7 @@ import           Numeric.LinearAlgebra   hiding ( normalize )
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.MarkovProcess.RateMatrix
 import           ELynx.Data.MarkovProcess.SubstitutionModel
-import           ELynx.Tools.Vector
+import           ELynx.Tools
 
 -- XXX: Another idea of structuring the code. This would probably be cleaner in
 -- the long run.

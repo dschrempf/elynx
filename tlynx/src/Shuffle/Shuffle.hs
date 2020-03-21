@@ -73,17 +73,7 @@ import           ELynx.Import.Tree.Newick       ( oneNewick
 import           ELynx.Simulate.PointProcess    ( PointProcess(PointProcess)
                                                 , toReconstructedTree
                                                 )
-import           ELynx.Tools.Definitions        ( eps )
-import           ELynx.Tools.InputOutput        ( outHandle
-                                                , parseFileWith
-                                                )
-import           ELynx.Tools.Reproduction       ( ELynx
-                                                , Arguments(..)
-                                                , Seed(..)
-                                                )
-import           ELynx.Tools.Text               ( fromBs
-                                                , tShow
-                                                )
+import           ELynx.Tools
 
 -- | Shuffle a tree. Get all coalescent times, shuffle them. Get all leaves,
 -- shuffle them. Connect the shuffled leaves with the shuffled coalescent times.

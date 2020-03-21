@@ -22,7 +22,7 @@ where
 
 import           Options.Applicative
 
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools
 
 -- | Arguments of compare command.
 data CompareArguments = CompareArguments

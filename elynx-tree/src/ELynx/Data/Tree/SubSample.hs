@@ -26,7 +26,7 @@ import           Data.Tree
 import           System.Random.MWC
 
 import           ELynx.Data.Tree.Tree           ( subTree )
-import           ELynx.Tools.Random
+import           ELynx.Tools
 
 -- | Extract a random subtree with @N@ leaves of a tree with @M@ leaves, where
 -- @M>N@ (otherwise error). The complete list of leaves (names are assumed to be

@@ -35,9 +35,7 @@ where
 import           Numeric.LinearAlgebra   hiding ( normalize )
 import           Prelude                 hiding ( (<>) )
 
-import           ELynx.Tools.Equality
-import           ELynx.Tools.LinearAlgebra
-import           ELynx.Tools.Vector
+import           ELynx.Tools
 
 -- | A rate matrix is just a real matrix.
 type RateMatrix = Matrix R

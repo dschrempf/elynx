@@ -15,7 +15,7 @@ Tools for matrices from 'Numeric.LinearAlgebra'.
 
 module ELynx.Tools.LinearAlgebra
   (
-    -- * Matrices.
+    -- * Linear Algebra
     matrixSeparateSymSkew
   , matrixSetDiagToZero
   , dispv

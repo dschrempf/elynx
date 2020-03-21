@@ -22,7 +22,7 @@ import           Test.Hspec
 import           ELynx.Data.MarkovProcess.Nucleotide
 import           ELynx.Data.MarkovProcess.RateMatrix
 import           ELynx.Data.MarkovProcess.SubstitutionModel
-import           ELynx.Tools.Equality           ( nearlyEqVec )
+import           ELynx.Tools
 
 stationaryDist :: StationaryDistribution
 stationaryDist = fromList [0.2, 0.3, 0.3, 0.2]

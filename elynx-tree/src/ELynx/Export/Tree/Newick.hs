@@ -18,22 +18,17 @@ See nomenclature in 'ELynx.Data.Tree.Tree'.
 
 module ELynx.Export.Tree.Newick
   ( toNewick
-  -- , toNewickPhyloIntTree
-  -- , toNewickPhyloByteStringTree
   )
 where
 
 import qualified Data.ByteString.Lazy.Builder  as L
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.List                      ( intersperse )
--- import           Data.Maybe
 import           Data.Tree
 
--- import           ELynx.Data.Tree.BranchSupportTree
--- import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Tools.ByteString         ( c2w )
+import           ELynx.Tools
 
 -- | General conversion of a tree into a Newick 'L.Bytestring'. Use provided
 -- functions to extract node labels and branch lengths builder objects. See also

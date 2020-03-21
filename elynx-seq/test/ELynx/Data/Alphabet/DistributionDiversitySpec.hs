@@ -20,7 +20,7 @@ import qualified Data.Vector.Unboxed           as V
 import           Test.Hspec
 
 import           ELynx.Data.Alphabet.DistributionDiversity
-import           ELynx.Tools.Equality
+import           ELynx.Tools
 
 testArr1 :: V.Vector Double
 testArr1 = V.replicate 20 0.0

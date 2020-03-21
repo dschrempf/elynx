@@ -54,9 +54,7 @@ import           ELynx.Import.Tree.Newick       ( manyNewick
                                                 , newick
                                                 , oneNewick
                                                 )
-import           ELynx.Tools.InputOutput        ( parseByteStringWith
-                                                , parseFileWith
-                                                )
+import           ELynx.Tools
 
 node :: Int -> Tree Int
 node n = Node n []

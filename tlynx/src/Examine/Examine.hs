@@ -40,12 +40,7 @@ import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Data.Tree.Tree
 import           ELynx.Import.Tree.Newick
-import           ELynx.Tools.InputOutput        ( parseFileWith
-                                                , outHandle
-                                                )
-import           ELynx.Tools.Reproduction       ( ELynx
-                                                , Arguments(..)
-                                                )
+import           ELynx.Tools
 
 readTrees
   :: Bool -> FilePath -> ELynx ExamineArguments [Tree (PhyloLabel L.ByteString)]

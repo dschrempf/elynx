@@ -25,7 +25,7 @@ where
 import           Data.List
 import           Options.Applicative
 
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools
 
 -- | Arguments need to simulate phylogenetic trees using birth and death processes.
 data SimulateArguments = SimulateArguments

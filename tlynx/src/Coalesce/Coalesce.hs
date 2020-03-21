@@ -49,13 +49,7 @@ import           ELynx.Data.Tree.Tree
 import           ELynx.Export.Tree.Newick       ( toNewick )
 import           ELynx.Simulate.Coalescent      ( simulate )
 
-import           ELynx.Tools.Concurrent
-import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Logger
-import           ELynx.Tools.Reproduction       ( ELynx
-                                                , Arguments(..)
-                                                , Seed(Fixed)
-                                                )
+import           ELynx.Tools
 
 -- | Simulate phylogenetic trees.
 coalesce :: ELynx CoalesceArguments ()

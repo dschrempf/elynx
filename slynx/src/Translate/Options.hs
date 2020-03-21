@@ -27,8 +27,7 @@ import           Tools
 
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.Character.Codon
-import           ELynx.Tools.Misc
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools
 
 -- | Arguments needed to translate sequences.
 data TranslateArguments = TranslateArguments

@@ -36,7 +36,7 @@ import           Text.Megaparsec.Char           ( char
 import           Text.Megaparsec.Char.Lexer     ( scientific )
 import           Text.Printf
 
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools
 
 -- | Supported distance measures.
 data DistanceMeasure =

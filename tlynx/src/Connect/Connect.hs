@@ -44,13 +44,11 @@ import           ELynx.Import.Tree.Newick       ( manyNewick
                                                 , oneNewick
                                                 , oneNewickIqTree
                                                 )
-import           ELynx.Tools.InputOutput        ( outHandle
+import           ELynx.Tools                    ( outHandle
                                                 , parseFileWith
-                                                )
-import           ELynx.Tools.Reproduction       ( ELynx
+                                                , ELynx
                                                 , Arguments(..)
-                                                )
-import           ELynx.Tools.Text               ( fromBs
+                                                , fromBs
                                                 , tShow
                                                 )
 

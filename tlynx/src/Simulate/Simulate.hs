@@ -60,13 +60,7 @@ import           ELynx.Simulate.PointProcess    ( TimeSpec
                                                 , simulateNReconstructedTrees
                                                 , simulateReconstructedTree
                                                 )
-import           ELynx.Tools.Concurrent
-import           ELynx.Tools.InputOutput        ( out )
-import           ELynx.Tools.Logger
-import           ELynx.Tools.Reproduction       ( ELynx
-                                                , Arguments(..)
-                                                , Seed(..)
-                                                )
+import           ELynx.Tools
 
 -- | Simulate phylogenetic trees.
 simulate :: ELynx SimulateArguments ()

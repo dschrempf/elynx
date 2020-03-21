@@ -34,10 +34,7 @@ import qualified Data.Set                      as S
 import           Data.Vector.Unboxed.Base       ( Unbox )
 import           Data.Word8                     ( Word8 )
 
-import           ELynx.Tools.ByteString         ( c2w
-                                                , w2c
-                                                )
-
+import           ELynx.Tools
 
 -- XXX: Remove name clash with ELynx.Data.Alphabet.Alphabet.Character?
 -- | A set of characters forms an 'ELynx.Data.Alphabet.Alphabet'. At the

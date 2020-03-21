@@ -23,7 +23,7 @@ import           ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.Alphabet.Character as C
 import           ELynx.Data.Character.Codon
 import           ELynx.Data.Sequence.Sequence
-import           ELynx.Tools.Vector
+import           ELynx.Tools
 
 -- | Translate a sequence from 'DNA' or 'DNAX' to 'ProteinS'.
 translateSeq :: UniversalCode -> Int -> Sequence -> Sequence
@@ -46,5 +46,5 @@ translateVecWith f rf cs
   | rf < 0    = error "translateVecWith: reading frame is negative."
   | otherwise = aas
  where
-  codons = map unsafeFromVec $ chop 3 $ V.drop rf cs
+  codons = map unsafeFromVec $ chopVec 3 $ V.drop rf cs
   aas    = V.fromList $ map f codons

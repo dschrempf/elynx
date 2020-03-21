@@ -14,12 +14,13 @@ Tools for vectors from 'Data.Vector.Generic'.
 -}
 
 module ELynx.Tools.Vector
-  ( sumVec
+  ( -- * Vectors
+    sumVec
   , normalizeSumVec
   , uniformVec
   , meanVec
-  , chop
-  , randomInsert
+  , chopVec
+  , randomInsertVec
   )
 where
 
@@ -48,14 +49,14 @@ meanVec v = sumVec v / fromIntegral (V.length v)
 
 -- | Chop list into chunks of given length. If the last chop is shorter than
 -- length, it is dropped.
-chop :: V.Vector v a => Int -> v a -> [v a]
-chop n xs | V.length xs < n = []
-          | otherwise       = V.take n xs : chop n (V.drop n xs)
+chopVec :: V.Vector v a => Int -> v a -> [v a]
+chopVec n xs | V.length xs < n = []
+             | otherwise       = V.take n xs : chopVec n (V.drop n xs)
 
 -- | Insert element into random position of vector.
-randomInsert
+randomInsertVec
   :: (PrimMonad m, V.Vector v a) => a -> v a -> Gen (PrimState m) -> m (v a)
-randomInsert e v g = do
+randomInsertVec e v g = do
   let l = V.length v
   i <- uniformR (0, l) g
   return $ V.take i v V.++ V.singleton e V.++ V.drop i v

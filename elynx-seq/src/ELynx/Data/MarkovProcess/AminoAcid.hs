@@ -36,9 +36,7 @@ import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.MarkovProcess.RateMatrix
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel
                                                as S
-import           ELynx.Tools.ByteString         ( c2w )
-import           ELynx.Tools.LinearAlgebra
-import           ELynx.Tools.Vector
+import           ELynx.Tools
 
 n :: Int
 n = 20

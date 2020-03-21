@@ -13,8 +13,9 @@ Creation date: Thu May  2 18:57:39 2019.
 -}
 
 module ELynx.Tools.List
-  ( sortWithIndices
-  , randomInsert
+  ( -- * Lists
+    sortListWithIndices
+  , randomInsertList
   )
 where
 
@@ -24,12 +25,12 @@ import           Data.List
 import           System.Random.MWC
 
 -- | Sort a list and also return original indices.
-sortWithIndices :: Ord a => [a] -> [(a, Int)]
-sortWithIndices xs = sortBy (compare `on` fst) $ zip xs ([0 ..] :: [Int])
+sortListWithIndices :: Ord a => [a] -> [(a, Int)]
+sortListWithIndices xs = sortBy (compare `on` fst) $ zip xs ([0 ..] :: [Int])
 
 -- | Insert element into random position of list.
-randomInsert :: PrimMonad m => a -> [a] -> Gen (PrimState m) -> m [a]
-randomInsert e v g = do
+randomInsertList :: PrimMonad m => a -> [a] -> Gen (PrimState m) -> m [a]
+randomInsertList e v g = do
   let l = length v
   i <- uniformR (0, l) g
   return $ take i v ++ [e] ++ drop i v

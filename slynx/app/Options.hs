@@ -31,7 +31,7 @@ import           SubSample.Options
 import           Translate.Options
 
 import           ELynx.Data.Alphabet.Alphabet
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools
 
 data CommandArguments =
   Concatenate ConcatenateArguments

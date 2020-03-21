@@ -24,9 +24,8 @@ TODO: Split validate: (1) check input files; (2) perform analysis and check outp
 -}
 
 module ELynx.Tools.Reproduction
-  ( ELynx
-    -- * Log file
-  , logHeader
+  ( -- * Log file
+    logHeader
   , logFooter
     -- * Options
   , Verbosity(..)
@@ -39,6 +38,7 @@ module ELynx.Tools.Reproduction
   , Arguments(..)
   , parseArgumentsWith
   -- * Reproduction
+  , ELynx
   , Reproducible(..)
   , Reproduction(..)
   , readR
@@ -98,9 +98,6 @@ import           ELynx.Tools.Misc
 import           Paths_elynx_tools              ( version )
 
 import           Debug.Trace                    ( traceShow )
-
--- | Logging transformer to be used with all executables.
-type ELynx a = ReaderT (Arguments a) (LoggingT IO)
 
 -- Be careful; it is necessary to synchronize the version numbers across packages.
 versionString :: String
@@ -299,6 +296,9 @@ parseArgumentsWith desc ftr p = execParser $ info
   (argumentsParser p)
   (fullDesc <> header hdr <> progDesc (unlines desc) <> footerDoc (Just ftr'))
   where ftr' = vsep $ map pretty ftr ++ evoModSuiteFooter
+
+-- | Logging transformer to be used with all executables.
+type ELynx a = ReaderT (Arguments a) (LoggingT IO)
 
 -- | Reproducible commands have
 --   - a set of input files to be checked for consistency,

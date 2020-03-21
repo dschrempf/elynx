@@ -68,15 +68,7 @@ import           ELynx.Import.Tree.Newick
                                          hiding ( name )
 import           ELynx.Simulate.MarkovProcessAlongTree
 
-import           ELynx.Tools.ByteString
-import           ELynx.Tools.Concurrent
-import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Reproduction       ( ELynx
-                                                , Arguments(..)
-                                                , GlobalArguments(..)
-                                                , Seed(..)
-                                                )
-import           ELynx.Tools.Misc
+import           ELynx.Tools
 
 -- Simulate a 'Alignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.

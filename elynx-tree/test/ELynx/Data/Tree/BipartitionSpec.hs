@@ -29,7 +29,7 @@ import           ELynx.Data.Tree.Bipartition
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Import.Tree.Newick
-import           ELynx.Tools.InputOutput
+import           ELynx.Tools
 
 sfrom :: [L.ByteString] -> S.Set L.ByteString
 sfrom = S.fromList

@@ -22,7 +22,7 @@ where
 
 import           Options.Applicative
 
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools
 
 -- | Arguments of connect command.
 data ConnectArguments = ConnectArguments

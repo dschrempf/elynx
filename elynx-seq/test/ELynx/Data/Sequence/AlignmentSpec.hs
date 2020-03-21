@@ -24,7 +24,7 @@ import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.Alphabet.Character
 import           ELynx.Data.Sequence.Alignment
 import           ELynx.Import.Sequence.Fasta
-import           ELynx.Tools.InputOutput
+import           ELynx.Tools
 import           Files
 
 ssData :: M.Matrix Character

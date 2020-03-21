@@ -17,12 +17,13 @@ module ELynx.Import.Sequence.FastaSpec
 where
 
 import           Data.Either
+import           Test.Hspec
+
 import           ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.Sequence.Alignment as M
 import           ELynx.Import.Sequence.Fasta
-import           ELynx.Tools.InputOutput
+import           ELynx.Tools
 import           Files
-import           Test.Hspec
 
 spec :: Spec
 spec = describe "fastaFileAlignment" $ do

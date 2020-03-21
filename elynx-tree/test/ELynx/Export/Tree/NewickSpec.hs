@@ -27,7 +27,7 @@ import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
 import           ELynx.Export.Tree.Newick
 import           ELynx.Import.Tree.Newick
-import           ELynx.Tools.InputOutput
+import           ELynx.Tools
 
 samplePhyloByteStringTree :: Tree (PhyloLabel L.ByteString)
 samplePhyloByteStringTree =

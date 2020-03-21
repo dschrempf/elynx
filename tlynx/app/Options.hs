@@ -31,7 +31,7 @@ import           Examine.Options
 import           Shuffle.Options
 import           Simulate.Options
 
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools
 
 data CommandArguments =
   Coalesce CoalesceArguments

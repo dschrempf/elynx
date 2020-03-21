@@ -65,9 +65,7 @@ import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.Maybe                     ( fromMaybe )
 
 import           ELynx.Data.Character.BoundaryMutation
-import           ELynx.Tools.ByteString         ( alignLeft
-                                                , alignRight
-                                                )
+import           ELynx.Tools
 
 -- | The number of sites that will be printed.
 type NSites = Int

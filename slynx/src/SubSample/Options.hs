@@ -30,7 +30,7 @@ import qualified Data.Text.Lazy.Builder.Int    as LT
 import           Tools
 
 import           ELynx.Data.Alphabet.Alphabet
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools
 
 -- | Data structure holding the Command line arguments.
 data SubSampleArguments = SubSampleArguments

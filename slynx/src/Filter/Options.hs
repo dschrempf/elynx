@@ -28,7 +28,7 @@ import           Options.Applicative
 import           Tools
 
 import           ELynx.Data.Alphabet.Alphabet
-import           ELynx.Tools.Reproduction
+import           ELynx.Tools
 
 -- | Arguments needed for filtering sequences.
 data FilterRowsArguments = FilterRowsArguments

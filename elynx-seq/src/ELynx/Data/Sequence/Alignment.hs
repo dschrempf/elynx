@@ -65,10 +65,7 @@ import qualified ELynx.Data.Alphabet.DistributionDiversity
                                                as D
 import           ELynx.Data.Sequence.Defaults
 import qualified ELynx.Data.Sequence.Sequence  as S
-import           ELynx.Tools.Concurrent
-import           ELynx.Tools.Definitions
-import           ELynx.Tools.Equality
-import           ELynx.Tools.Matrix
+import           ELynx.Tools
 
 -- | A collection of sequences.
 data Alignment = Alignment

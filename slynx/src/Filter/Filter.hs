@@ -34,11 +34,7 @@ import           Tools
 import qualified ELynx.Data.Sequence.Alignment as M
 import qualified ELynx.Data.Sequence.Sequence  as S
 import           ELynx.Export.Sequence.Fasta
-import           ELynx.Tools.InputOutput
-import           ELynx.Tools.Misc
-import           ELynx.Tools.Reproduction       ( ELynx
-                                                , Arguments(..)
-                                                )
+import           ELynx.Tools
 
 filterRows :: Maybe Int -> Maybe Int -> Bool -> [S.Sequence] -> L.ByteString
 filterRows ml ms std ss = sequencesToFasta $ compose filters ss

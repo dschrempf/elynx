@@ -14,7 +14,8 @@ Tools for matrices from 'Numeric.LinearAlgebra'.
 -}
 
 module ELynx.Tools.Matrix
-  ( fMapRowSeq
+  ( -- * Matrices
+    fMapRowSeq
   , fMapRowPar
   , fMapRowParChunk
   , fMapColSeq

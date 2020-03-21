@@ -45,7 +45,7 @@ import qualified Data.ByteString.Lazy.Char8    as L
 import           ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel
                                                as S
-import           ELynx.Tools.Equality           ( allEqual )
+import           ELynx.Tools
 
 -- | Mixture model component weight.
 type Weight = Double

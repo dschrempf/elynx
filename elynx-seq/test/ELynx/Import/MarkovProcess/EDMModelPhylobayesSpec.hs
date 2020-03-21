@@ -20,7 +20,7 @@ import           Numeric.LinearAlgebra          ( fromList )
 import           Test.Hspec
 
 import           ELynx.Import.MarkovProcess.EDMModelPhylobayes
-import           ELynx.Tools.InputOutput        ( parseFileWith )
+import           ELynx.Tools
 import           Files                          ( componentsFilePhylobayes )
 
 testComponents :: [EDMComponent]

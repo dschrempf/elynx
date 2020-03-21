@@ -24,7 +24,7 @@ import           Examine.Examine
 import           Shuffle.Shuffle
 import           Simulate.Simulate
 
-import           ELynx.Tools.Logger
+import           ELynx.Tools
 
 main :: IO ()
 main = do
