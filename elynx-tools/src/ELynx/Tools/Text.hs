@@ -14,7 +14,7 @@ indispensable tools for ByteString handling :).
 -}
 
 module ELynx.Tools.Text
-  ( -- * Text handling.
+  ( -- * Text handling
     tShow
   , fromBs
   )

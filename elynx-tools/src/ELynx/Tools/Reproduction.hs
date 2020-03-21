@@ -43,10 +43,10 @@ module ELynx.Tools.Reproduction
   , Reproduction(..)
   , readR
   , writeR
-  -- * Misc.
+  -- * Misc
   , createSubCommand
   , megaReadM
-  -- * Re-exports.
+  -- * Re-exports
   , Generic
   , ToJSON
   )
