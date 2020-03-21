@@ -48,7 +48,7 @@ import           ELynx.Data.Tree.MeasurableTree ( Measurable
                                                 , getLen
                                                 )
 import           ELynx.Data.Tree.Multipartition ( Multipartition
-                                                , compatible
+                                                , mpcompatible
                                                 , fromBipartition
                                                 , multipartitions
                                                 )
@@ -83,13 +83,14 @@ symmetric = symmetricWith getName
 countIncompatibilities
   :: (Ord a, Show a) => S.Set (Bipartition a) -> S.Set (Multipartition a) -> Int
 countIncompatibilities bs ms = foldl'
-  (\i b -> if any (compatible (fromBipartition b)) ms then i else i + 1)
+  (\i b -> if any (mpcompatible (fromBipartition b)) ms then i else i + 1)
   0
   bs
 
 -- | Number of incompatible splits. Similar to 'symmetricWith' but all
 -- bipartitions induced by multifurcations are considered. For a detailed
--- description of how the distance is calculated, see 'compatible'.
+-- description of how the distance is calculated, see
+-- 'ELynx.Data.Tree.Bipartition.bpcompatible'.
 --
 -- A multifurcation on a tree may (but not necessarily does) represent missing
 -- information about the order of bifurcations. In this case, it is interesting
@@ -113,8 +114,9 @@ countIncompatibilities bs ms = foldl'
 -- > AD|BC
 --
 -- For an explanation of how compatibility of a bipartition with a
--- multipartition is checked, see 'compatible'. Before using 'compatible',
--- bipartitions are simply converted to multipartitions with two subsets.
+-- multipartition is checked, see 'ELynx.Data.Tree.Multipartition.mpcompatible'.
+-- Before using 'mpcompatible', bipartitions are simply converted to
+-- multipartitions with two subsets.
 --
 -- Only if a bipartition is not compatible with all induced multifurcations of
 -- the other tree, it is incompatible.

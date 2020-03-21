@@ -48,13 +48,7 @@ import           System.Random.MWC              ( GenIO
 
 import           Simulate.Options
 
-import           ELynx.Data.Tree.MeasurableTree ( prune )
-import           ELynx.Data.Tree.PhyloTree      ( PhyloLabel )
-import           ELynx.Data.Tree.SubSample      ( nSubSamples )
-import           ELynx.Data.Tree.SumStat        ( formatNChildSumStat
-                                                , toNChildSumStat
-                                                )
-import           ELynx.Data.Tree.Tree
+import           ELynx.Data.Tree
 import           ELynx.Export.Tree.Newick       ( toNewick )
 import           ELynx.Simulate.PointProcess    ( TimeSpec
                                                 , simulateNReconstructedTrees
@@ -67,10 +61,10 @@ simulate :: ELynx SimulateArguments ()
 simulate = do
   l <- local <$> ask
   let
-    SimulateArguments nTrees nLeaves height mrca lambda mu rho subS sumS (Fixed s)
+    SimulateArguments nTrees nLeaves tHeight mrca lambda mu rho subS sumS (Fixed s)
       = l
   -- error "simulate: seed not available; please contact maintainer."
-  when (isNothing height && mrca)
+  when (isNothing tHeight && mrca)
     $ error "Cannot condition on MRCA (-M) when height is not given (-H)."
   c <- liftIO getNumCapabilities
   logNewSection "Arguments"
@@ -79,7 +73,7 @@ simulate = do
   $(logInfo) $ T.pack $ "Number of used cores: " <> show c
   gs <- liftIO $ initialize s >>= \gen -> splitGen c gen
   let chunks   = getChunks c nTrees
-      timeSpec = fmap (, mrca) height
+      timeSpec = fmap (, mrca) tHeight
   trs <- if subS
     then simulateAndSubSampleNTreesConcurrently nLeaves
                                                 lambda

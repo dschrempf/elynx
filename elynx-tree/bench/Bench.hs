@@ -16,8 +16,7 @@ import           Criterion.Main
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.Tree
 
-import           ELynx.Data.Tree.Bipartition
-import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Data.Tree
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools
 

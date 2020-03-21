@@ -54,14 +54,7 @@ import           Text.Printf                    ( PrintfArg
 
 import           Distance.Options
 
-import           ELynx.Data.Tree.BranchSupportTree
-                                               as B
-import           ELynx.Data.Tree.Distance
-import qualified ELynx.Data.Tree.MeasurableTree
-                                               as M
-import           ELynx.Data.Tree.NamedTree      ( getName )
-import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Data.Tree.Tree           ( intersectWith )
+import           ELynx.Data.Tree
 import           ELynx.Export.Tree.Newick
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools                    ( alignLeft
@@ -160,7 +153,7 @@ distance = do
   let distanceMeasure = if argsIntersect l
         then
           (\t1 t2 ->
-            let [t1', t2'] = intersectWith getName M.extend [t1, t2]
+            let [t1', t2'] = intersectWith getName extendBranchLength [t1, t2]
             in  distanceMeasure' t1' t2'
           )
         else distanceMeasure'
@@ -168,14 +161,14 @@ distance = do
   -- Possibly normalize trees.
   when (argsNormalize l)
     $ $(logInfo) "Normalize trees before calculation of distances."
-  let normalizeF = if argsNormalize l then normalize else id
+  let normalizeF = if argsNormalize l then normalizeBranchLength else id
 
   -- Possibly collapse unsupported nodes.
   let collapseF = case dist of
         -- For the incompatible split distance we have to collapse branches with
         -- support lower than the given value. Before doing so, we normalize the
         -- branch support values.
-        IncompatibleSplit val -> collapse val . B.normalize
+        IncompatibleSplit val -> collapse val . normalizeBranchSupport
         _                     -> id
 
   -- The trees can be prepared now.

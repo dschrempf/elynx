@@ -10,6 +10,9 @@ Portability :  portable
 
 Creation date: Tue Feb 11 15:56:01 2020.
 
+TODO: Move this to the sub-sample command file? Somehow this does not belong in
+the library.
+
 -}
 
 module ELynx.Data.Tree.SubSample

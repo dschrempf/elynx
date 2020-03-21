@@ -17,7 +17,7 @@ Creation date: Thu Jan 17 14:16:34 2019.
 
 module ELynx.Data.Tree.MeasurableTree
   ( Measurable(..)
-  , extend
+  , extendBranchLength
   , distancesRootLeaves
   , distancesOriginLeaves
   , averageDistanceOriginLeaves
@@ -27,7 +27,7 @@ module ELynx.Data.Tree.MeasurableTree
   , shortenStem
   , summarize
   , totalBranchLength
-  , normalize
+  , normalizeBranchLength
   , prune
   , removeMultifurcations
   , ultrametric
@@ -51,10 +51,10 @@ class Measurable a where
 lengthen :: Measurable a => Double -> a -> a
 lengthen dl l = setLen (dl + getLen l) l
 
--- | @extend daughter parent@ takes the daughter node and extends the branch by
--- the length obtained from the parent node.
-extend :: Measurable a => a -> a -> a
-extend da pa = lengthen (getLen pa) da
+-- | @extendBranchLength daughter parent@ takes the daughter node and extends
+-- the branch by the length obtained from the parent node.
+extendBranchLength :: Measurable a => a -> a -> a
+extendBranchLength da pa = lengthen (getLen pa) da
 
 -- | Elongate branch length.
 -- -- | Shorten branch length.
@@ -126,8 +126,8 @@ totalBranchLength :: (Measurable a) => Tree a -> Double
 totalBranchLength = foldl' (\acc n -> acc + getLen n) 0
 
 -- | Normalize tree so that sum of branch lengths is 1.0.
-normalize :: (Measurable a) => Tree a -> Tree a
-normalize t = fmap (\n -> setLen (getLen n / s) n) t
+normalizeBranchLength :: (Measurable a) => Tree a -> Tree a
+normalizeBranchLength t = fmap (\n -> setLen (getLen n / s) n) t
   where s = totalBranchLength t
 
 -- | Prune degree 2 nodes. Add branch lengths but forget pruned node label. See

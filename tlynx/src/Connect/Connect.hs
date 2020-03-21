@@ -30,14 +30,7 @@ import           System.IO
 
 import           Connect.Options
 
-import           ELynx.Data.Tree.Bipartition    ( bipartition
-                                                , compatible
-                                                )
-import           ELynx.Data.Tree.NamedTree      ( getName )
-import           ELynx.Data.Tree.PhyloTree      ( PhyloLabel(PhyloLabel) )
-import           ELynx.Data.Tree.Tree           ( clades
-                                                , connect
-                                                )
+import           ELynx.Data.Tree
 import           ELynx.Export.Tree.Newick       ( toNewick )
 import           ELynx.Import.Tree.Newick       ( manyNewick
                                                 , manyNewickIqTree
@@ -79,7 +72,7 @@ type Constraint a = S.Set a
 
 compatibleAll :: (Show a, Ord a) => Tree a -> [Constraint a] -> Bool
 compatibleAll (Node _ [l, r]) cs =
-  all (compatible (bipartition l)) cs && all (compatible (bipartition r)) cs
+  all (bpcompatible (bipartition l)) cs && all (bpcompatible (bipartition r)) cs
 compatibleAll _ _ = error "Tree is not bifurcating."
 
 compatibleWith

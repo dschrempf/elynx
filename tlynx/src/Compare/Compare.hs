@@ -40,16 +40,7 @@ import           Text.Printf
 
 import           Compare.Options
 
-import           ELynx.Data.Tree.Bipartition
-import           ELynx.Data.Tree.BranchSupportTree
-                                               as BS
-import           ELynx.Data.Tree.Distance
-import           ELynx.Data.Tree.MeasurableTree ( extend
-                                                , getLen
-                                                )
-import           ELynx.Data.Tree.NamedTree
-import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Data.Tree.Tree           ( intersectWith )
+import           ELynx.Data.Tree
 import           ELynx.Export.Tree.Newick       ( toNewick )
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools                    ( parseFileWith
@@ -117,7 +108,7 @@ compareCmd = do
   -- Intersect trees.
   (t1, t2) <- if argsIntersect l
     then do
-      let [x, y] = intersectWith getName extend [tr1, tr2]
+      let [x, y] = intersectWith getName extendBranchLength [tr1, tr2]
       liftIO $ hPutStrLn outH "Intersected trees are:"
       liftIO $ L.hPutStrLn outH $ toNewick x
       liftIO $ L.hPutStrLn outH $ toNewick y
@@ -144,8 +135,8 @@ compareCmd = do
   liftIO $ T.hPutStrLn outH $ formatD
     "Branch score"
     (T.pack $ show $ branchScoreWith getName getLen t1 t2)
-  let t1' = BS.normalize t1
-      t2' = BS.normalize t2
+  let t1' = normalizeBranchSupport t1
+      t2' = normalizeBranchSupport t2
   $(logDebug) "Trees with normalized branch support values:"
   $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick t1'
   $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick t2'

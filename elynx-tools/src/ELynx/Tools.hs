@@ -1,6 +1,6 @@
 {- |
 Module      :  ELynx.Tools
-Description :  Tools and other niceties.
+Description :  Tools and other niceties
 Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 

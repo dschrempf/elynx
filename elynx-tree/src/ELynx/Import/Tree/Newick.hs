@@ -47,7 +47,7 @@ import           Text.Megaparsec.Byte.Lexer     ( decimal
                                                 , float
                                                 )
 
-import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Data.Tree
 import           ELynx.Tools
 
 -- | Shortcut.

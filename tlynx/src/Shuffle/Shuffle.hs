@@ -3,7 +3,7 @@
 
 {- |
 Module      :  Shuffle.Shuffle
-Description :  Shuffle a phylogeny.
+Description :  Shuffle a phylogeny
 Copyright   :  (c) Dominik Schrempf 2019
 License     :  GPL-3
 
@@ -57,15 +57,7 @@ import           System.Random.MWC              ( Gen
 
 import           Shuffle.Options
 
-import           ELynx.Data.Tree.MeasurableTree ( distancesOriginLeaves
-                                                , height
-                                                , rootHeight
-                                                )
-import           ELynx.Data.Tree.NamedTree      ( getName )
-import           ELynx.Data.Tree.PhyloTree      ( PhyloLabel
-                                                , brLen
-                                                )
-import           ELynx.Data.Tree.Tree           ( leaves )
+import           ELynx.Data.Tree
 import           ELynx.Export.Tree.Newick       ( toNewick )
 import           ELynx.Import.Tree.Newick       ( oneNewick
                                                 , oneNewickIqTree

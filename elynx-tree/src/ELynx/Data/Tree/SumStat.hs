@@ -10,6 +10,9 @@ Portability :  portable
 
 Creation date: Thu May 17 14:05:45 2018.
 
+TODO: Move this to the sub-sample command file? Somehow this does not belong in
+the library.
+
 -}
 
 module ELynx.Data.Tree.SumStat

@@ -24,14 +24,7 @@ import           Data.Tree                      ( Tree(Node)
                                                 )
 import           System.Environment             ( getArgs )
 
-import           ELynx.Data.Tree.MeasurableTree ( Measurable
-                                                , rootHeight
-                                                )
--- import           ELynx.Data.Tree.PhyloTree      (PhyloLabel (PhyloLabel))
-import           ELynx.Data.Tree.Tree           ( bifurcating
-                                                , leaves
-                                                )
--- import           ELynx.Export.Tree.Newick       (toNewick)
+import           ELynx.Data.Tree
 import           ELynx.Import.Tree.Newick       ( oneNewick )
 import           ELynx.Tools                    ( parseFileWith )
 

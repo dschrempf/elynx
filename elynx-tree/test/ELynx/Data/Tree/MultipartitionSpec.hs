@@ -28,14 +28,7 @@ import           Test.QuickCheck
 import           Test.QuickCheck.Instances.Containers
                                                 ( )
 
-import           ELynx.Data.Tree.BranchSupportTree
-import           ELynx.Data.Tree.MeasurableTree
-import           ELynx.Data.Tree.Multipartition ( Multipartition
-                                                , mp
-                                                , multipartitions
-                                                )
-import           ELynx.Data.Tree.NamedTree
-import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Data.Tree
 
 ex1 :: Tree Int
 ex1 = Node 0 [Node 1 [], Node 2 [Node 4 [], Node 5 [], Node 6 []], Node 3 []]

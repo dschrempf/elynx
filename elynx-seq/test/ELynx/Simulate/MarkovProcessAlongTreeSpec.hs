@@ -23,7 +23,7 @@ import           Test.Hspec
 import           ELynx.Data.MarkovProcess.Nucleotide
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel
                                                as S
-import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Data.Tree
 import           ELynx.Simulate.MarkovProcess
 import           ELynx.Simulate.MarkovProcessAlongTree
 

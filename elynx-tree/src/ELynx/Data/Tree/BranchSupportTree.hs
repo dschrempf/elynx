@@ -15,7 +15,7 @@ Creation date: Thu Jun 13 14:06:45 2019.
 module ELynx.Data.Tree.BranchSupportTree
   ( BranchSupport
   , BranchSupported(..)
-  , normalize
+  , normalizeBranchSupport
   , collapse
   )
 where
@@ -51,8 +51,8 @@ apply f l = setBranchSupport (f <$> s) l where s = getBranchSupport l
 
 -- | Normalize branch support values. The maximum branch support value will be
 -- set to 1.0.
-normalize :: BranchSupported a => Tree a -> Tree a
-normalize t = case mm of
+normalizeBranchSupport :: BranchSupported a => Tree a -> Tree a
+normalizeBranchSupport t = case mm of
   Nothing -> t
   Just m  -> fmap (apply (/ m)) t
   where mm = maximum $ fmap getBranchSupport t

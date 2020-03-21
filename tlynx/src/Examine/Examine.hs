@@ -35,10 +35,7 @@ import           System.IO                      ( Handle
 
 import           Examine.Options
 
-import           ELynx.Data.Tree.MeasurableTree
-import           ELynx.Data.Tree.NamedTree
-import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Data.Tree.Tree
+import           ELynx.Data.Tree
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools
 

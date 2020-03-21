@@ -26,10 +26,7 @@ import           Test.QuickCheck
 import           Test.QuickCheck.Instances.Containers
                                                 ( )
 
-import           ELynx.Data.Tree.Distance
-import           ELynx.Data.Tree.NamedTree
-import           ELynx.Data.Tree.BranchSupportTree
-import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Data.Tree
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools
 

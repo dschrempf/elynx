@@ -23,9 +23,7 @@ import           Data.Tree
 import           Statistics.Distribution
 import           System.Random.MWC
 
-import           ELynx.Data.Tree.MeasurableTree
-import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Data.Tree.Tree
+import           ELynx.Data.Tree
 import           ELynx.Distribution.CoalescentContinuous
 
 -- | Simulate a coalescent tree with @n@ leaves. The branch lengths are in units

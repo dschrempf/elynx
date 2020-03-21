@@ -32,24 +32,7 @@ import           Test.QuickCheck         hiding ( label )
 import           Test.QuickCheck.Instances.Containers
                                                 ( )
 
-import           ELynx.Data.Tree.Bipartition    ( bipartition
-                                                , compatible
-                                                )
-import           ELynx.Data.Tree.MeasurableTree ( height
-                                                , prune
-                                                )
-import           ELynx.Data.Tree.NamedTree      ( getName )
-import           ELynx.Data.Tree.PhyloTree      ( PhyloLabel(PhyloLabel)
-                                                , label
-                                                )
-import           ELynx.Data.Tree.Tree           ( bifurcating
-                                                , clades
-                                                , connect
-                                                , leaves
-                                                , pruneWith
-                                                , roots
-                                                , subTree
-                                                )
+import           ELynx.Data.Tree
 import           ELynx.Import.Tree.Newick       ( manyNewick
                                                 , newick
                                                 , oneNewick
@@ -96,7 +79,7 @@ type Constraint a = S.Set a
 
 compatibleAll :: (Show a, Ord a) => Tree a -> [Constraint a] -> Bool
 compatibleAll (Node _ [l, r]) cs =
-  all (compatible (bipartition l)) cs && all (compatible (bipartition r)) cs
+  all (bpcompatible (bipartition l)) cs && all (bpcompatible (bipartition r)) cs
 compatibleAll _ _ = error "Tree is not bifurcating."
 
 compatibleWith

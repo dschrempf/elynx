@@ -26,8 +26,7 @@ import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.List                      ( intersperse )
 import           Data.Tree
 
-import           ELynx.Data.Tree.NamedTree
-import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Data.Tree
 import           ELynx.Tools
 
 -- | General conversion of a tree into a Newick 'L.Bytestring'. Use provided

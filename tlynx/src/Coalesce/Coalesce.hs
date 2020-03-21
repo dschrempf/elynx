@@ -39,13 +39,7 @@ import           System.Random.MWC              ( initialize )
 
 import           Coalesce.Options
 
-import           ELynx.Data.Tree.MeasurableTree
-import           ELynx.Data.Tree.PhyloTree      ( PhyloLabel )
-import           ELynx.Data.Tree.SubSample      ( nSubSamples )
-import           ELynx.Data.Tree.SumStat        ( formatNChildSumStat
-                                                , toNChildSumStat
-                                                )
-import           ELynx.Data.Tree.Tree
+import           ELynx.Data.Tree
 import           ELynx.Export.Tree.Newick       ( toNewick )
 import           ELynx.Simulate.Coalescent      ( simulate )
 

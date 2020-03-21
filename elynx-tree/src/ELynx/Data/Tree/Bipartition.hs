@@ -36,7 +36,7 @@ module ELynx.Data.Tree.Bipartition
   , bipartition
   , bipartitions
   , bipartitionToBranchLength
-  , compatible
+  , bpcompatible
   )
 where
 
@@ -190,9 +190,9 @@ bipartitionToBranchLengthUnsafe (l, p) f t@(Node (l', p') xs) =
 -- are either not in the bipartition or mapping to one of the two subsets of the
 -- bipartition, the bipartition and the subset are compatible. See also
 -- 'ELynx.Data.Tree.Multipartition.compatible'.
-compatible :: (Show a, Ord a) => Bipartition a -> S.Set a -> Bool
+bpcompatible :: (Show a, Ord a) => Bipartition a -> S.Set a -> Bool
 -- compatible (Bipartition (l, r)) ss = sintersection l ss `sdisjoint` sintersection r ss
-compatible (Bipartition (l, r)) ss = S.null lOverlap || S.null rOverlap
+bpcompatible (Bipartition (l, r)) ss = S.null lOverlap || S.null rOverlap
  where
   lOverlap = S.intersection l ss
   rOverlap = S.intersection r ss

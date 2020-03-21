@@ -56,9 +56,7 @@ import qualified ELynx.Data.MarkovProcess.SubstitutionModel
 import qualified ELynx.Data.Sequence.Alignment as A
 import qualified ELynx.Data.Sequence.Sequence  as Seq
                                          hiding ( name )
-import           ELynx.Data.Tree.MeasurableTree
-import           ELynx.Data.Tree.NamedTree
-import           ELynx.Data.Tree.Tree
+import           ELynx.Data.Tree
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Import.MarkovProcess.EDMModelPhylobayes
                                          hiding ( Parser )

@@ -38,9 +38,7 @@ import qualified Statistics.Distribution       as D
                                                 ( genContVar )
 import           System.Random.MWC
 
-import           ELynx.Data.Tree.MeasurableTree
-import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Data.Tree.Tree
+import           ELynx.Data.Tree
 import           ELynx.Distribution.BirthDeath
 import           ELynx.Distribution.BirthDeathCritical
 import           ELynx.Distribution.BirthDeathCriticalNoTime

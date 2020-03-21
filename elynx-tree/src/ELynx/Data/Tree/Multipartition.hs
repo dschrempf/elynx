@@ -27,7 +27,7 @@ module ELynx.Data.Tree.Multipartition
         -- * Working with 'Multipartition's.
   , multipartitions
   , findSubset
-  , compatible
+  , mpcompatible
   )
 where
 
@@ -151,8 +151,8 @@ overlap m = foldl' (addSubset m) S.empty
 -- to 3.
 --
 -- See also 'ELynx.Data.Tree.Bipartition.compatible'.
-compatible :: (Ord a, Show a) => Multipartition a -> Multipartition a -> Bool
-compatible l r =
+mpcompatible :: (Ord a, Show a) => Multipartition a -> Multipartition a -> Bool
+mpcompatible l r =
   and
     $  [ x `S.disjoint` y | x <- lOverlaps, y <- lOverlaps, x /= y ]
     ++ [ x `S.disjoint` y | x <- rOverlaps, y <- rOverlaps, x /= y ]

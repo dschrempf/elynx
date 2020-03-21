@@ -38,7 +38,7 @@ import           System.Random.MWC.Distributions
                                                 ( categorical )
 
 import           ELynx.Data.MarkovProcess.RateMatrix
-import           ELynx.Data.Tree.MeasurableTree
+import           ELynx.Data.Tree
 import           ELynx.Simulate.MarkovProcess
 import           ELynx.Tools
 
