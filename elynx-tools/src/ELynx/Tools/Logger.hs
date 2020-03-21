@@ -19,8 +19,7 @@ Creation date: Fri Sep  6 14:43:19 2019.
 -}
 
 module ELynx.Tools.Logger
-  ( ELynx
-  , logNewSection
+  ( logNewSection
   , eLynxWrapper
   )
 where
@@ -78,14 +77,9 @@ import           ELynx.Tools.InputOutput        ( openFile' )
 logNewSection :: MonadLogger m => Text -> m ()
 logNewSection s = $(logInfo) $ "== " <> s
 
--- TODO: This is the new layout. All the sub-commands and options have to be
--- amended; the ELynx data has to be amended.
-
--- TODO: Add a description to Reproducible, then the String arg can be left out.
-
--- | The 'LoggingT' wrapper for ELynx. Prints a header and a footer, logs to
--- 'stderr' if no file is provided. Initializes the seed if none is provided. If
--- a log file is provided, log to the file and to 'stderr'.
+-- | The 'ReaderT' and 'LoggingT' wrapper for ELynx. Prints a header and a
+-- footer, logs to 'stderr' if no file is provided. Initializes the seed if none
+-- is provided. If a log file is provided, log to the file and to 'stderr'.
 eLynxWrapper
   :: forall a
    . (Eq a, Show a, Reproducible a, ToJSON a)

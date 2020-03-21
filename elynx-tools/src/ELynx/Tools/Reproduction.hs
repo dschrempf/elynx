@@ -19,11 +19,7 @@ Creation date: Tue Nov 19 15:07:09 2019.
 
 Use of standard input is not supported.
 
-TODO: Also store output hash.
-
 TODO: Split validate: (1) check input files; (2) perform analysis and check output hash.
-
-TODO: Divide module.
 
 -}
 
@@ -33,25 +29,23 @@ module ELynx.Tools.Reproduction
   , logHeader
   , logFooter
     -- * Options
-  , parseArgumentsWith
   , Verbosity(..)
   , toLogLevel
   , Force(..)
-  , Arguments(..)
   , GlobalArguments(..)
   , globalArguments
-  , createSubCommand
   , Seed(..)
   , seedOpt
-    -- * Options meta
-  , megaReadM
-    -- * Formatting
-  , fillParagraph
+  , Arguments(..)
+  , parseArgumentsWith
   -- * Reproduction
   , Reproducible(..)
-  , State(..)
+  , Reproduction(..)
   , readR
   , writeR
+  -- * Misc.
+  , createSubCommand
+  , megaReadM
   -- * Re-exports.
   , Generic
   , ToJSON
@@ -137,7 +131,6 @@ logHeader desc = do
   t  <- time
   p  <- getProgName
   as <- getArgs
-  -- let l = length desc
   return $ intercalate
     "\n"
     -- [ replicate (l+4) '-'
@@ -152,9 +145,7 @@ logFooter :: IO String
 logFooter = do
   t <- time
   let timeStr = "=== End time: " ++ t
-      -- l       = length timeStr
   return $ intercalate "\n" [timeStr]
-    -- , replicate l '-' ]
 
 versionOpt :: Parser (a -> a)
 versionOpt = infoOption
@@ -183,19 +174,6 @@ evoModSuiteFooter =
   , text "  slynx examine --help"
   ]
 
-argumentsParser :: Parser a -> Parser (Arguments a)
-argumentsParser p = helper <*> versionOpt <*> p'
-  where p' = Arguments <$> globalArguments <*> p
-
--- | Parse arguments. Provide a global description, header, footer, and so on.
--- Custom additional description (first argument) and footer (second argument)
--- can be provided. print help if needed.
-parseArgumentsWith :: [String] -> [String] -> Parser a -> IO (Arguments a)
-parseArgumentsWith desc ftr p = execParser $ info
-  (argumentsParser p)
-  (fullDesc <> header hdr <> progDesc (unlines desc) <> footerDoc (Just ftr'))
-  where ftr' = vsep $ map pretty ftr ++ evoModSuiteFooter
-
 -- | Verbosity levels.
 data Verbosity = Quiet | Warning | Info | Debug
   deriving (Show, Read, Eq, Enum, Bounded, Ord, Generic)
@@ -219,26 +197,6 @@ instance ToJSON Force
 
 instance FromJSON Force
 
--- | Argument skeleton to be used with all commands.
-data Arguments a = Arguments { global :: GlobalArguments
-                             , local  :: a
-                             }
-  deriving (Eq, Show, Generic)
-
-instance ToJSON a => ToJSON (Arguments a)
-
-instance FromJSON a => FromJSON (Arguments a)
-
-instance Reproducible a => Reproducible (Arguments a) where
-  inFiles     = inFiles . local
-  outSuffixes = outSuffixes . local
-  getSeed     = getSeed . local
-  setSeed (Arguments g l) s = Arguments g $ setSeed l s
-  parser  = argumentsParser (parser @a)
-  cmdName = cmdName @a
-  cmdDesc = cmdDesc @a
-  cmdFtr  = cmdFtr @a
-
 -- | A set of global arguments used by all programs. The idea is to provide a
 -- common framework for shared arguments.
 --
@@ -256,13 +214,6 @@ instance FromJSON GlobalArguments
 globalArguments :: Parser GlobalArguments
 globalArguments =
   GlobalArguments <$> verbosityOpt <*> optional outFileBaseNameOpt <*> redoOpt
-
--- | Create a sub command; convenience function.
-createSubCommand
-  :: forall a b . Reproducible a => (a -> b) -> Mod CommandFields b
-createSubCommand f = command (cmdName @a) $ info
-  (f <$> parser @a)
-  (fullDesc <> progDesc (cmdDesc @a) <> footerDoc (pretty <$> cmdFtr @a))
 
 -- | Boolean option; be verbose; default NO.
 verbosityOpt :: Parser Verbosity
@@ -315,18 +266,39 @@ seedPar = optional $ option
     )
   )
 
--- | See 'eitherReader', but for Megaparsec.
-megaReadM :: Parsec Void String a -> ReadM a
-megaReadM p = eitherReader $ \input ->
-  let eea = runParser p "" input
-  in  case eea of
-        Left  eb -> Left $ errorBundlePretty eb
-        Right a  -> Right a
+-- | Argument skeleton to be used with all commands.
+data Arguments a = Arguments { global :: GlobalArguments
+                             , local  :: a
+                             }
+  deriving (Eq, Show, Generic)
 
--- | Fill a string so that it becomes a paragraph with line breaks. Useful for
--- descriptions, headers and footers.
-fillParagraph :: String -> Doc
-fillParagraph = fillSep . map text . words
+instance ToJSON a => ToJSON (Arguments a)
+
+instance FromJSON a => FromJSON (Arguments a)
+
+instance Reproducible a => Reproducible (Arguments a) where
+  inFiles     = inFiles . local
+  outSuffixes = outSuffixes . local
+  getSeed     = getSeed . local
+  setSeed (Arguments g l) s = Arguments g $ setSeed l s
+  parser  = argumentsParser (parser @a)
+  cmdName = cmdName @a
+  cmdDesc = cmdDesc @a
+  cmdFtr  = cmdFtr @a
+
+
+argumentsParser :: Parser a -> Parser (Arguments a)
+argumentsParser p = helper <*> versionOpt <*> p'
+  where p' = Arguments <$> globalArguments <*> p
+
+-- | Parse arguments. Provide a global description, header, footer, and so on.
+-- Custom additional description (first argument) and footer (second argument)
+-- can be provided. print help if needed.
+parseArgumentsWith :: [String] -> [String] -> Parser a -> IO (Arguments a)
+parseArgumentsWith desc ftr p = execParser $ info
+  (argumentsParser p)
+  (fullDesc <> header hdr <> progDesc (unlines desc) <> footerDoc (Just ftr'))
+  where ftr' = vsep $ map pretty ftr ++ evoModSuiteFooter
 
 -- | Reproducible commands have
 --   - a set of input files to be checked for consistency,
@@ -348,7 +320,7 @@ class Reproducible a where
 
 -- | Necessary information for a reproducible run. Notably, the input files are
 -- checked for consistency!
-data State a = State
+data Reproduction a = Reproduction
   { progName      :: String        -- ^ Program name.
   , argsStr       :: [String]      -- ^ Command line arguments without program name.
   , files         :: [FilePath]    -- ^ File paths of used files.
@@ -356,9 +328,9 @@ data State a = State
   , reproducible  :: a             -- ^ Command argument.
   } deriving (Generic)
 
-instance ToJSON a => ToJSON (State a) where
+instance ToJSON a => ToJSON (Reproduction a) where
 
-instance FromJSON a => FromJSON (State a)
+instance FromJSON a => FromJSON (Reproduction a)
 
 parse :: Show a => [String] -> Parser a -> a
 parse s p = case getParseResult res of
@@ -371,7 +343,7 @@ parse s p = case getParseResult res of
 checkArgs
   :: forall a
    . (Eq a, Show a, Reproducible a)
-  => State a
+  => Reproduction a
   -> IO (Either String ())
 checkArgs s = do
   let r   = reproducible s
@@ -396,7 +368,7 @@ checkFile fp h = do
       ]
 
 -- | Check if command line arguments and files check sums are matching.
-validate :: (Eq a, Show a, Reproducible a) => State a -> IO (Either String ())
+validate :: (Eq a, Show a, Reproducible a) => Reproduction a -> IO (Either String ())
 validate s = do
   chA  <- checkArgs s
   chFs <- zipWithM checkFile (files s) (map B.pack $ checkSums s)
@@ -409,13 +381,13 @@ readR
   :: forall a
    . (Eq a, Show a, Reproducible a, FromJSON a)
   => FilePath
-  -> IO (State a)
+  -> IO (Reproduction a)
 readR fp = do
-  res <- eitherDecodeFileStrict' fp :: IO (Either String (State a))
+  res <- eitherDecodeFileStrict' fp :: IO (Either String (Reproduction a))
   case res of
     Left err -> do
       putStrLn "Failed reading the ELynx reproduction file."
-      putStrLn "The following error was encountered."
+      putStrLn "The following error ocurred."
       error err
     Right r -> do
       ch <- validate r
@@ -439,5 +411,25 @@ writeR bn r = do
   let fs = inFiles r ++ outFs
   cs <- mapM hashFile fs
   let cs' = map B.unpack cs
-      s   = State pn as fs cs' r
+      s   = Reproduction pn as fs cs' r
   void $ encodeFile (bn ++ ".elynx") s
+
+-- | Create a sub command; convenience function.
+createSubCommand
+  :: forall a b . Reproducible a => (a -> b) -> Mod CommandFields b
+createSubCommand f = command (cmdName @a) $ info
+  (f <$> parser @a)
+  (fullDesc <> progDesc (cmdDesc @a) <> footerDoc (pretty <$> cmdFtr @a))
+
+-- | See 'eitherReader', but for Megaparsec.
+megaReadM :: Parsec Void String a -> ReadM a
+megaReadM p = eitherReader $ \input ->
+  let eea = runParser p "" input
+  in  case eea of
+        Left  eb -> Left $ errorBundlePretty eb
+        Right a  -> Right a
+
+-- | Fill a string so that it becomes a paragraph with line breaks. Useful for
+-- descriptions, headers and footers.
+fillParagraph :: String -> Doc
+fillParagraph = fillSep . map text . words
