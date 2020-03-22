@@ -1,7 +1,7 @@
 {- |
 Module      :  ELynx.Data.MarkovProcess.AminoAcid
 Description :  Amino acid rate matrices such as LG
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
@@ -33,10 +33,12 @@ import           Numeric.LinearAlgebra
 import           Numeric.SpecFunctions
 
 import           ELynx.Data.Alphabet.Alphabet
+
+import           ELynx.Tools
+
 import           ELynx.Data.MarkovProcess.RateMatrix
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel
                                                as S
-import           ELynx.Tools
 
 n :: Int
 n = 20

@@ -1,7 +1,7 @@
 {- |
 Module      :  ELynx.Data.MarkovProcess.CXXModels
 Description :  C10 to C60 models
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com

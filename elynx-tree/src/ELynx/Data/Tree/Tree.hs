@@ -1,7 +1,7 @@
 {- |
 Module      :  ELynx.Data.Tree.Tree
 Description :  Functions related to phylogenetic trees
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com

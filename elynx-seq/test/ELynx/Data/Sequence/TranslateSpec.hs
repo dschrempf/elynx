@@ -23,7 +23,13 @@ import           ELynx.Data.Character.Codon
 import           ELynx.Data.Sequence.Translate
 import           ELynx.Import.Sequence.Fasta
 import           ELynx.Tools
-import           Files
+
+fastaTranslateDNAFN :: FilePath
+fastaTranslateDNAFN = "data/TranslateMitochondrialVertebrateDNA.fasta"
+
+fastaTranslateProteinFN :: FilePath
+fastaTranslateProteinFN =
+  "data/TranslateMitochondrialVertebrateProtein.fasta"
 
 spec :: Spec
 spec =

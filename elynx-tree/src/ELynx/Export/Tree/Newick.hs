@@ -1,7 +1,7 @@
 {- |
 Module      :  ELynx.Export.Tree.Newick
 Description :  Export tree objects to Newick format
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com

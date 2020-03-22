@@ -5,7 +5,7 @@ license:             GPL-3
 license-file:        LICENSE
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
-copyright:           "Dominik Schrempf (2019)"
+copyright:           "Dominik Schrempf (2020)"
 
 extra-source-files:
 - README.md
@@ -55,7 +55,6 @@ dependencies:
 library:
   source-dirs: src
   dependencies:
-    - elynx-tree
     - elynx-tools
 
 tests:
@@ -69,8 +68,7 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-    - elynx-seq
-    - elynx-tools
-    - elynx-tree
-    - hspec
-    - hspec-megaparsec
+      - elynx-seq
+      - elynx-tools
+      - hspec
+      - hspec-megaparsec

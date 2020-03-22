@@ -1,6 +1,6 @@
 {- |
 Module      :  ELynx.Data.MarkovProcess.AminoAcidSpec
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
@@ -19,12 +19,13 @@ where
 import           Numeric.LinearAlgebra
 import           Test.Hspec
 
+import           ELynx.Tools
+
 import           ELynx.Data.MarkovProcess.AminoAcid
 import qualified ELynx.Data.MarkovProcess.RateMatrix
                                                as R
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel
                                                as S
-import           ELynx.Tools
 
 statDistLGPython :: R.StationaryDistribution
 statDistLGPython = normalizeSumVec 1.0 $ fromList

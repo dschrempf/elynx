@@ -1,7 +1,7 @@
 {- |
 Module      :  ELynx.Data.MarkovProcess.SubstitutionModel
 Description :  Data type describing substitution model
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
@@ -42,9 +42,11 @@ import qualified Data.ByteString.Lazy.Char8    as L
 import qualified Numeric.LinearAlgebra         as LinAlg
 
 import           ELynx.Data.Alphabet.Alphabet
+
+import           ELynx.Tools
+
 import qualified ELynx.Data.MarkovProcess.RateMatrix
                                                as R
-import           ELynx.Tools
 
 -- | Name of substitution model; abstracted and subject to change.
 type Name = String

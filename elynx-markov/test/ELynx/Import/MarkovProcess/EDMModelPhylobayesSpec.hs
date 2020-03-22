@@ -1,6 +1,6 @@
 {- |
 Module      :  ELynx.Import.MarkovProcess.EDMModelPhylobayesSpec
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
@@ -19,9 +19,12 @@ where
 import           Numeric.LinearAlgebra          ( fromList )
 import           Test.Hspec
 
-import           ELynx.Import.MarkovProcess.EDMModelPhylobayes
 import           ELynx.Tools
-import           Files                          ( componentsFilePhylobayes )
+
+import           ELynx.Import.MarkovProcess.EDMModelPhylobayes
+
+componentsFilePhylobayes :: FilePath
+componentsFilePhylobayes = "data/EDMDistsPhylobayes.txt"
 
 testComponents :: [EDMComponent]
 testComponents =

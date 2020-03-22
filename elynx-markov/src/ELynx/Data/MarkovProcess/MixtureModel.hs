@@ -1,7 +1,7 @@
 {- |
 Module      :  ELynx.Data.MarkovProcess.MixtureModel
 Description :  Mixture models are a set of substitution models with weights
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
@@ -43,9 +43,11 @@ import qualified Data.ByteString.Builder       as L
 import qualified Data.ByteString.Lazy.Char8    as L
 
 import           ELynx.Data.Alphabet.Alphabet
+
+import           ELynx.Tools
+
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel
                                                as S
-import           ELynx.Tools
 
 -- | Mixture model component weight.
 type Weight = Double

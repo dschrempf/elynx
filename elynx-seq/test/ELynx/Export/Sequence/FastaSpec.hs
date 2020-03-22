@@ -1,6 +1,6 @@
 {- |
 Module      :  ELynx.Export.Sequence.FastaSpec
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
@@ -22,7 +22,9 @@ import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Export.Sequence.Fasta
 import           ELynx.Import.Sequence.Fasta
 import           ELynx.Tools
-import           Files
+
+fastaNucleotideIUPACFN :: FilePath
+fastaNucleotideIUPACFN = "data/NucleotideIUPAC.fasta"
 
 spec :: Spec
 spec =

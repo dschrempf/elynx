@@ -5,7 +5,7 @@ license:             GPL-3
 license-file:        LICENSE
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
-copyright:           "Dominik Schrempf (2019)"
+copyright:           "Dominik Schrempf (2020)"
 
 extra-source-files:
 - README.md
@@ -65,7 +65,6 @@ dependencies:
 library:
   source-dirs: src
   dependencies:
-    - elynx-seq
     - elynx-tools
     - elynx-tree
 
@@ -81,5 +80,4 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - elynx-tools
-      - elynx-tree
       - tlynx

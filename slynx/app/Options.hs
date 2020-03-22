@@ -3,7 +3,7 @@
 {- |
 Module      :  Options
 Description :  SLynx general options
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com

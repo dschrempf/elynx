@@ -1,8 +1,11 @@
 * Style guide
+** Use brittany
+Use [[https://github.com/lspitzner/brittany][Brittany]] to format code.
+
 ** Use complete sentences
 Wherever possible, use complete sentences ended by full stops. This includes
-error messages and warnings. Headline, list items or mathematical objects may be
-excluded. For example,
+error messages, warnings, and comments. Headline, list items or mathematical
+objects may be excluded. For example,
 #+begin_example
 - A
 - B
@@ -13,27 +16,7 @@ or,
 Length: 10.13
 #+end_example
 
-** Positions of operators
-Put operators at the beginning of lines. For example,
-#+begin_src haskell
-args = Args
-       <$> alphabetOpt
-       <*> optional outFileBaseNameOpt
-       <*> verbosityOpt
-       <*> commandArg
-
-list = [ x1
-       , x2
-       , x3 ]
-
-subsample :: (PrimMonad m)
-          => Int                    -- ^ How many samples?
-          -> Alignment -- ^ The alignment to sample from.
-          -> m Alignment
-#+end_src
-
 * Design principles
 ** Files and standard input
-Binaries should accept both, a file and standard input. If a binary works on
-multiple files, the files must be delimited by a specific delimiter when given
-through standard input.
+Binaries should accept input files, and not the standard input, because ELynx is
+designed for reproducible runs.

@@ -1,6 +1,6 @@
 {- |
 Module      :  ELynx.Import.MarkovProcess.SiteprofilesPhylobayesSpec
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
@@ -19,9 +19,10 @@ where
 import qualified Data.Vector.Storable          as V
 import           Test.Hspec
 
+import           ELynx.Tools
+
 import           ELynx.Data.MarkovProcess.EDMModel
 import           ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
-import           ELynx.Tools
 
 fn :: FilePath
 fn = "data/HSSPMany.siteprofiles"

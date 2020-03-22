@@ -25,7 +25,9 @@ import           ELynx.Data.Alphabet.Character
 import           ELynx.Data.Sequence.Alignment
 import           ELynx.Import.Sequence.Fasta
 import           ELynx.Tools
-import           Files
+
+fastaNucleotideIUPACFN :: FilePath
+fastaNucleotideIUPACFN = "data/NucleotideIUPAC.fasta"
 
 ssData :: M.Matrix Character
 ssData = M.fromLists $ map (reverse . map fromChar) ["AAA", "GAA", "TAA"]

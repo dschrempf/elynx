@@ -1,6 +1,6 @@
 {- |
 Module      :  ELynx.Import.Sequence.FastaSpec
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
@@ -23,7 +23,18 @@ import           ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.Sequence.Alignment as M
 import           ELynx.Import.Sequence.Fasta
 import           ELynx.Tools
-import           Files
+
+fastaNucleotideFN :: FilePath
+fastaNucleotideFN = "data/Nucleotide.fasta"
+
+fastaNucleotideIUPACFN :: FilePath
+fastaNucleotideIUPACFN = "data/NucleotideIUPAC.fasta"
+
+fastaErroneousFN :: FilePath
+fastaErroneousFN = "data/Erroneous.fasta"
+
+fastaAminoAcidFN :: FilePath
+fastaAminoAcidFN = "data/AminoAcid.fasta"
 
 spec :: Spec
 spec = describe "fastaFileAlignment" $ do

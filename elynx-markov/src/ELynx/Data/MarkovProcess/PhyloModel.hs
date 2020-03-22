@@ -1,7 +1,7 @@
 {- |
 Module      :  ELynx.Data.MarkovProcess.PhyloModel
 Description :  Phylogenetic model
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
@@ -28,6 +28,7 @@ where
 import qualified Data.ByteString.Lazy.Char8    as L
 
 import           ELynx.Data.Alphabet.Alphabet
+
 import qualified ELynx.Data.MarkovProcess.MixtureModel
                                                as M
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel

@@ -1,7 +1,7 @@
 {- |
 Module      :  ELynx.Data.MarkovProcess.Nucleotide
 Description :  Substitution models using nucleotides
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
@@ -30,9 +30,11 @@ where
 import           Numeric.LinearAlgebra   hiding ( normalize )
 
 import           ELynx.Data.Alphabet.Alphabet
+
+import           ELynx.Tools
+
 import           ELynx.Data.MarkovProcess.RateMatrix
 import           ELynx.Data.MarkovProcess.SubstitutionModel
-import           ELynx.Tools
 
 -- XXX: Another idea of structuring the code. This would probably be cleaner in
 -- the long run.

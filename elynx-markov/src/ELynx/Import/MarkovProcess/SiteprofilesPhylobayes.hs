@@ -1,7 +1,7 @@
 {- |
 Module      :  ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
 Description :  Import site profiles in Phylobayes format
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
@@ -31,8 +31,9 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
-import           ELynx.Data.MarkovProcess.EDMModel
 import           ELynx.Tools
+
+import           ELynx.Data.MarkovProcess.EDMModel
 
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString

@@ -23,7 +23,13 @@ import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.Sequence.Sequence
 import           ELynx.Import.Sequence.Fasta
 import           ELynx.Tools
-import           Files
+
+fastaDifferentLengthFN :: FilePath
+fastaDifferentLengthFN = "data/NucleotideDifferentLength.fasta"
+
+fastaDifferentLengthTrimmedFN :: FilePath
+fastaDifferentLengthTrimmedFN =
+  "data/NucleotideDifferentLengthTrimmed.fasta"
 
 longestSequenceInFileBS :: L.ByteString
 longestSequenceInFileBS = L.unlines

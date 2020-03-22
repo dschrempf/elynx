@@ -3,7 +3,7 @@
 {- |
 Module      :  ELynx.Data.Tree.MeasurableTree
 Description :  Functions on trees with branch lengths
-Copyright   :  (c) Dominik Schrempf 2019
+Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
 
 Maintainer  :  dominik.schrempf@gmail.com
