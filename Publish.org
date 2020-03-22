@@ -9,12 +9,12 @@ Check module dependencies.
 #+RESULTS: CheckModuleDependencies
 : Draw and analyze graphs with 'xdot'.
 
-* Stylish Haskell
-Clean all source files with Stylish Haskell.
+* Format source files
+Format all source files.
 
 #+NAME: CleanFilesStylishHaskell
 #+BEGIN_SRC sh :exports both :results output verbatim
-./scripts/stylish-haskell-all
+./scripts/format-all
 #+END_SRC
 
 * Version
@@ -31,7 +31,7 @@ Export [[file:README.org][README.org]], and [[file:ChangeLog.org][ChangeLog.org]
 Copy files to package directories.
 #+NAME: CopyFiles
 #+BEGIN_SRC sh :exports both :results output verbatim
-for p in elynx-seq elynx-tools elynx-tree slynx tlynx
+for p in elynx-markov elynx-seq elynx-tools elynx-tree slynx tlynx
 do
     for f in README.md ChangeLog.md
     do

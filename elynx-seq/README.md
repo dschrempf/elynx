@@ -18,9 +18,10 @@ a range of sub commands.
 
 The library packages are:
 
+-   **elynx-markov:** Simulate multi sequence alignments along phylogenetic trees.
 -   **elynx-seq:** Handle evolutionary sequences and multi sequence alignments.
--   **elynx-tree:** Handle phylogenetic trees.
 -   **elynx-tools:** Tools for the provided executables.
+-   **elynx-tree:** Handle phylogenetic trees.
 
 The executables are:
 
@@ -67,10 +68,11 @@ Handle evolutionary sequences.
 
     slynx --help
 
-    ELynx Suite version 0.1.0. Developed by Dominik Schrempf. Compiled on January
-    30, 2020, at 09:18 am, UTC.
+    ELynx Suite version 0.1.0. Developed by Dominik Schrempf. Compiled on March 21,
+    2020, at 16:37 pm, UTC.
     
-    Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] COMMAND
+    Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME]
+                 [-f|--force] COMMAND
       Analyze, and simulate multi sequence alignments.
     
     Available options:
@@ -80,13 +82,15 @@ Handle evolutionary sequences.
                                Debug (default: Info)
       -o,--output-file-basename NAME
                                Specify base name of output file
+      -f,--force               Ignore previous analysis and overwrite existing
+                               output files.
     
     Available commands:
       concatenate              Concatenate sequences found in input files.
       examine                  Examine sequences. If data is a multi sequence
                                alignment, additionally analyze columns.
+      filter-columns           Filter columns of multi sequence alignments.
       filter-rows              Filter rows (or sequences) found in input files.
-      filter-columns           Filter columns of multi-sequence alignments.
       simulate                 Simulate multi sequence alignments.
       sub-sample               Sub-sample columns from multi sequence alignments.
       translate                Translate from DNA to Protein or DNAX to ProteinX.
@@ -301,10 +305,11 @@ Handle phylogenetic trees in Newick format.
 
     tlynx --help
 
-    ELynx Suite version 0.1.0. Developed by Dominik Schrempf. Compiled on January
-    30, 2020, at 09:18 am, UTC.
+    ELynx Suite version 0.1.0. Developed by Dominik Schrempf. Compiled on March 21,
+    2020, at 16:37 pm, UTC.
     
-    Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] COMMAND
+    Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME]
+                 [-f|--force] COMMAND
       Compare, examine, and simulate phylogenetic trees.
     
     Available options:
@@ -314,18 +319,24 @@ Handle phylogenetic trees in Newick format.
                                Debug (default: Info)
       -o,--output-file-basename NAME
                                Specify base name of output file
+      -f,--force               Ignore previous analysis and overwrite existing
+                               output files.
     
     Available commands:
-      distance                 Compute distances between many phylogenetic trees.
-      examine                  Compute summary statistics of phylogenetic trees.
-      simulate                 Simulate phylogenetic trees using birth and death
-                               processes.
+      coalesce                 Simulate phylogenetic trees using the coalescent
+                               processes (see also the 'simulate' command for
+                               simulations using the birth and death process).
       compare                  Compare two phylogenetic trees (compute distances and
                                branch-wise differences).
       connect                  Connect two phylogenetic trees in all ways (possibly
                                honoring constraints).
+      distance                 Compute distances between many phylogenetic trees.
+      examine                  Compute summary statistics of phylogenetic trees.
       shuffle                  Shuffle a phylogenetic tree (keep coalescent times,
                                but shuffle topology and leaves).
+      simulate                 Simulate phylogenetic trees using birth and death
+                               processes (see also the 'coalesce' command for
+                               simulations using the coalescent process).
     
     File formats:
       - Newick
@@ -415,13 +426,17 @@ Simulate phylogenetic trees using birth and death processes.
     Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005
 
 
-# ELynx
+# Library documentation
 
-Documentation of the library can be found on [Hackage](https://hackage.haskell.org/):
+Documentation of the libraries can be found on [Hackage](https://hackage.haskell.org/):
 
+-   [elynx-markov](https://hackage.haskell.org/package/elynx-markov)
 -   [elynx-seq](https://hackage.haskell.org/package/elynx-seq)
--   [elynx-tree](https://hackage.haskell.org/package/elynx-tree)
 -   [elynx-tools](https://hackage.haskell.org/package/elynx-tools)
+-   [elynx-tree](https://hackage.haskell.org/package/elynx-tree)
+
+Documentation of the executables is, or course, also available:
+
 -   [slynx](https://hackage.haskell.org/package/slynx)
 -   [tlynx](https://hackage.haskell.org/package/tlynx)
 

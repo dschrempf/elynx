@@ -86,30 +86,32 @@ examineAlignment perSiteFlag a =
       ]
     <> perSiteBS
  where
-  nTot                = M.length a * M.nSequences a
-  nIUPAC              = M.countIUPACChars a
-  nGaps               = M.countGaps a
-  nUnknowns           = M.countUnknowns a
-  percentageIUPAC     = fromIntegral nIUPAC / fromIntegral nTot :: Double
-  percentageGaps      = fromIntegral nGaps / fromIntegral nTot :: Double
-  percentageUnknowns  = fromIntegral nUnknowns / fromIntegral nTot :: Double
-  aNoGaps             = M.filterColsNoGaps a
-  aOnlyStd            = M.filterColsOnlyStd aNoGaps
-  charFreqsPerSite    = M.toFrequencyData a
-  charFreqs           = M.distribution charFreqsPerSite
-  kEffs               = M.kEffEntropy charFreqsPerSite
-  kEffsNoGaps         = M.kEffEntropy . M.toFrequencyData $ aNoGaps
-  kEffsOnlyStd        = M.kEffEntropy . M.toFrequencyData $ aOnlyStd
-  kEffMean            = sum kEffs / fromIntegral (length kEffs)
-  kEffMeanNoGaps      = sum kEffsNoGaps / fromIntegral (length kEffsNoGaps)
-  kEffMeanOnlyStd     = sum kEffsOnlyStd / fromIntegral (length kEffsOnlyStd)
-  kEffsHomo           = M.kEffHomoplasy charFreqsPerSite
-  kEffsNoGapsHomo     = M.kEffHomoplasy . M.toFrequencyData $ aNoGaps
-  kEffsOnlyStdHomo    = M.kEffHomoplasy . M.toFrequencyData $ aOnlyStd
-  kEffMeanHomo        = sum kEffsHomo / fromIntegral (length kEffsHomo)
-  kEffMeanNoGapsHomo  = sum kEffsNoGapsHomo / fromIntegral (length kEffsNoGapsHomo)
-  kEffMeanOnlyStdHomo = sum kEffsOnlyStdHomo / fromIntegral (length kEffsOnlyStdHomo)
-  perSiteBS           = if perSiteFlag
+  nTot               = M.length a * M.nSequences a
+  nIUPAC             = M.countIUPACChars a
+  nGaps              = M.countGaps a
+  nUnknowns          = M.countUnknowns a
+  percentageIUPAC    = fromIntegral nIUPAC / fromIntegral nTot :: Double
+  percentageGaps     = fromIntegral nGaps / fromIntegral nTot :: Double
+  percentageUnknowns = fromIntegral nUnknowns / fromIntegral nTot :: Double
+  aNoGaps            = M.filterColsNoGaps a
+  aOnlyStd           = M.filterColsOnlyStd aNoGaps
+  charFreqsPerSite   = M.toFrequencyData a
+  charFreqs          = M.distribution charFreqsPerSite
+  kEffs              = M.kEffEntropy charFreqsPerSite
+  kEffsNoGaps        = M.kEffEntropy . M.toFrequencyData $ aNoGaps
+  kEffsOnlyStd       = M.kEffEntropy . M.toFrequencyData $ aOnlyStd
+  kEffMean           = sum kEffs / fromIntegral (length kEffs)
+  kEffMeanNoGaps     = sum kEffsNoGaps / fromIntegral (length kEffsNoGaps)
+  kEffMeanOnlyStd    = sum kEffsOnlyStd / fromIntegral (length kEffsOnlyStd)
+  kEffsHomo          = M.kEffHomoplasy charFreqsPerSite
+  kEffsNoGapsHomo    = M.kEffHomoplasy . M.toFrequencyData $ aNoGaps
+  kEffsOnlyStdHomo   = M.kEffHomoplasy . M.toFrequencyData $ aOnlyStd
+  kEffMeanHomo       = sum kEffsHomo / fromIntegral (length kEffsHomo)
+  kEffMeanNoGapsHomo =
+    sum kEffsNoGapsHomo / fromIntegral (length kEffsNoGapsHomo)
+  kEffMeanOnlyStdHomo =
+    sum kEffsOnlyStdHomo / fromIntegral (length kEffsOnlyStdHomo)
+  perSiteBS = if perSiteFlag
     then L.unlines
       [ L.pack "Effective number of used states per site:"
       , L.pack . show $ kEffs

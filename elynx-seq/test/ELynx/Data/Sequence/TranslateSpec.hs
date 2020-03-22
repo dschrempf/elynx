@@ -28,8 +28,7 @@ fastaTranslateDNAFN :: FilePath
 fastaTranslateDNAFN = "data/TranslateMitochondrialVertebrateDNA.fasta"
 
 fastaTranslateProteinFN :: FilePath
-fastaTranslateProteinFN =
-  "data/TranslateMitochondrialVertebrateProtein.fasta"
+fastaTranslateProteinFN = "data/TranslateMitochondrialVertebrateProtein.fasta"
 
 spec :: Spec
 spec =

@@ -28,8 +28,7 @@ fastaDifferentLengthFN :: FilePath
 fastaDifferentLengthFN = "data/NucleotideDifferentLength.fasta"
 
 fastaDifferentLengthTrimmedFN :: FilePath
-fastaDifferentLengthTrimmedFN =
-  "data/NucleotideDifferentLengthTrimmed.fasta"
+fastaDifferentLengthTrimmedFN = "data/NucleotideDifferentLengthTrimmed.fasta"
 
 longestSequenceInFileBS :: L.ByteString
 longestSequenceInFileBS = L.unlines
