@@ -25,8 +25,11 @@ import           Data.Tree                      ( Tree(Node)
 import           System.Environment             ( getArgs )
 
 import           ELynx.Data.Tree
-import           ELynx.Import.Tree.Newick       ( oneNewick )
+
 import           ELynx.Tools                    ( parseFileWith )
+
+import           ELynx.Import.Tree.Newick       ( oneNewick )
+
 
 -- Algorithm; get the maximum number of optimal constraints K:
 --

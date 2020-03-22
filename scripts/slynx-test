@@ -8,7 +8,7 @@ file_DNA="${project_root}/elynx-seq/data/Nucleotide.fasta"
 file_AA="${project_root}/elynx-seq/data/AminoAcid.fasta"
 file_tree="${project_root}/elynx-tree/data/Newick.tree"
 file_edm="${project_root}/elynx-markov/data/EDMDistsPhylobayes.txt"
-file_siteprofiles="${project_root}/elynx-seq/data/HSSPMany.siteprofiles"
+file_siteprofiles="${project_root}/elynx-markov/data/HSSPMany.siteprofiles"
 
 msg "SLynx; examine DNA."
 stack exec slynx -- examine -a DNA "$file_DNA"
