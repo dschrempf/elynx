@@ -77,3 +77,8 @@ packages:
 # # Deactivate 'eventlog' for production.
 # ghc-options:
 #     "$locals": -Wall -O2 -fllvm -eventlog -threaded -rtsopts -with-rtsopts=-N
+
+# Support weedder.
+ghc-options:
+  "$locals": -fwrite-ide-info
+
