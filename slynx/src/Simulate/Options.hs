@@ -49,7 +49,6 @@ import           Data.Maybe                     ( maybeToList
                                                 , fromMaybe
                                                 )
 import           Data.List
-import           Data.String                    ( words )
 import           Options.Applicative
 
 import           ELynx.Tools

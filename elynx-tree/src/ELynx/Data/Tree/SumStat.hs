@@ -25,7 +25,6 @@ where
 
 import qualified Data.ByteString.Builder       as L
 import qualified Data.ByteString.Lazy.Char8    as L
-import           Data.Monoid                    ( (<>) )
 import           Data.Tree
 import           ELynx.Data.Tree.MeasurableTree
 

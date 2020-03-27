@@ -25,8 +25,7 @@ description:
 ghc-options:
   - -Wall
   - -O2
-  # # LLVM 6.0 not available for Arch anymore.
-  # - -fllvm
+  - -fllvm
 
 dependencies:
   - aeson
@@ -37,7 +36,6 @@ dependencies:
   - data-memocombinators
   - hmatrix
   - integration
-  # - lens
   - math-functions
   - matrices
   - megaparsec
@@ -50,7 +48,6 @@ dependencies:
   - vector
   - vector-th-unbox
   - word8
-  # - zlib
 
 library:
   source-dirs: src
@@ -64,8 +61,6 @@ tests:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
-      # Deactivate eventlog for production.
-      - -eventlog
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N

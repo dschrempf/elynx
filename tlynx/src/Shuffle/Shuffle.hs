@@ -43,7 +43,6 @@ import           Data.Array.ST                  ( newListArray
                                                 , writeArray
                                                 )
 import qualified Data.ByteString.Lazy.Char8    as L
-import           Data.List                      ( filter )
 import           Data.Maybe                     ( isNothing )
 import           Data.Tree                      ( Tree
                                                 , flatten

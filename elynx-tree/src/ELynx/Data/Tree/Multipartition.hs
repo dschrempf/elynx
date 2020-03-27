@@ -31,8 +31,7 @@ module ELynx.Data.Tree.Multipartition
   )
 where
 
-import           Data.List                      ( filter
-                                                , find
+import           Data.List                      ( find
                                                 , foldl'
                                                 , intercalate
                                                 )

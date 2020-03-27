@@ -32,9 +32,7 @@ import           Control.Monad.Logger           ( logDebug
 import           Control.Monad.Trans.Class      ( lift )
 import           Control.Monad.Trans.Reader     ( ask )
 import qualified Data.ByteString.Lazy.Char8    as L
-import           Data.List                      ( length
-                                                , sort
-                                                )
+import           Data.List                      ( sort )
 import           Data.Maybe                     ( isNothing )
 import qualified Data.Text                     as T
 import qualified Data.Text.IO                  as T

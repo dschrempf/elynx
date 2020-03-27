@@ -64,17 +64,9 @@ import           Data.ByteString.Base16         ( encode )
 import           Crypto.Hash.SHA256             ( hash )
 import           Data.Bifunctor                 ( first )
 import qualified Data.ByteString.Char8         as B
-import           Data.Either                    ( either )
 import           Data.Word
 import           Data.Vector.Unboxed            ( Vector )
 import           GHC.Generics                   ( Generic )
-import           Options.Applicative            ( Parser
-                                                , briefDesc
-                                                , defaultPrefs
-                                                , execParserPure
-                                                , getParseResult
-                                                , info
-                                                )
 import           System.Environment             ( getArgs
                                                 , getProgName
                                                 )
