@@ -16,13 +16,13 @@ module Main where
 
 import           Options
 
-import           Coalesce.Coalesce
-import           Compare.Compare
-import           Connect.Connect
-import           Distance.Distance
-import           Examine.Examine
-import           Shuffle.Shuffle
-import           Simulate.Simulate
+import           TLynx.Coalesce.Coalesce
+import           TLynx.Compare.Compare
+import           TLynx.Connect.Connect
+import           TLynx.Distance.Distance
+import           TLynx.Examine.Examine
+import           TLynx.Shuffle.Shuffle
+import           TLynx.Simulate.Simulate
 
 import           ELynx.Tools
 

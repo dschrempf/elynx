@@ -23,13 +23,13 @@ where
 
 import           Options.Applicative
 
-import           Coalesce.Options
-import           Compare.Options
-import           Connect.Options
-import           Distance.Options
-import           Examine.Options
-import           Shuffle.Options
-import           Simulate.Options
+import           TLynx.Coalesce.Options
+import           TLynx.Compare.Options
+import           TLynx.Connect.Options
+import           TLynx.Distance.Options
+import           TLynx.Examine.Options
+import           TLynx.Shuffle.Options
+import           TLynx.Simulate.Options
 
 import           ELynx.Tools
 

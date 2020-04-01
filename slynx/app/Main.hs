@@ -16,12 +16,12 @@ module Main where
 
 import           Options
 
-import           Concatenate.Concatenate
-import           Examine.Examine
-import           Filter.Filter
-import           Simulate.Simulate
-import           SubSample.SubSample
-import           Translate.Translate
+import           SLynx.Concatenate.Concatenate
+import           SLynx.Examine.Examine
+import           SLynx.Filter.Filter
+import           SLynx.Simulate.Simulate
+import           SLynx.SubSample.SubSample
+import           SLynx.Translate.Translate
 
 import           ELynx.Tools
 

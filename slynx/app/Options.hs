@@ -23,12 +23,12 @@ where
 
 import           Options.Applicative
 
-import           Concatenate.Options
-import           Examine.Options
-import           Filter.Options
-import           Simulate.Options
-import           SubSample.Options
-import           Translate.Options
+import           SLynx.Concatenate.Options
+import           SLynx.Examine.Options
+import           SLynx.Filter.Options
+import           SLynx.Simulate.Options
+import           SLynx.SubSample.Options
+import           SLynx.Translate.Options
 
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Tools
