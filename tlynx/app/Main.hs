@@ -14,7 +14,7 @@ Creation date: Thu Sep  5 21:53:07 2019.
 
 module Main where
 
-import           Options
+import           TLynx.Options
 
 import           TLynx.Coalesce.Coalesce
 import           TLynx.Compare.Compare

@@ -14,7 +14,7 @@ Creation date: Thu Sep  5 21:53:07 2019.
 
 module Main where
 
-import           Options
+import           SLynx.Options
 
 import           SLynx.Concatenate.Concatenate
 import           SLynx.Examine.Examine

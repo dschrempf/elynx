@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 {- |
-Module      :  Options
+Module      :  SLynx.Options
 Description :  SLynx general options
 Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
@@ -14,7 +14,7 @@ Creation date: Sat Sep  7 18:55:03 2019.
 
 -}
 
-module Options
+module SLynx.Options
   ( Arguments(..)
   , CommandArguments(..)
   , parseArguments
