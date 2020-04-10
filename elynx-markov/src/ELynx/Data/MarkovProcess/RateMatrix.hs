@@ -21,6 +21,7 @@ module ELynx.Data.MarkovProcess.RateMatrix
   , ExchangeabilityMatrix
   , StationaryDistribution
   , isValid
+  , normalizeSD
   , totalRate
   , totalRateWith
   , normalize
@@ -52,6 +53,10 @@ type StationaryDistribution = Vector R
 isValid :: StationaryDistribution -> Bool
 isValid d = norm_1 d `nearlyEq` 1.0
 
+-- | Normalize a stationary distribution so that the elements sum to 1.0.
+normalizeSD :: StationaryDistribution -> StationaryDistribution
+normalizeSD d = d / scalar (norm_1 d)
+
 -- | Get average number of substitutions per unit time.
 totalRateWith :: StationaryDistribution -> RateMatrix -> Double
 totalRateWith d m = norm_1 $ d <# matrixSetDiagToZero m
@@ -66,7 +71,7 @@ normalize :: RateMatrix -> RateMatrix
 normalize m = normalizeWith (getStationaryDistribution m) m
 
 -- | Normalizes a Markov process generator such that one event happens per unit
--- time. Stationary distribution has to be given.
+-- time. Faster, but stationary distribution has to be given.
 normalizeWith :: StationaryDistribution -> RateMatrix -> RateMatrix
 normalizeWith d m = scale (1.0 / totalRateWith d m) m
 
@@ -98,7 +103,7 @@ fromExchangeabilityMatrix em d = setDiagonal $ em <> diag d
 getStationaryDistribution :: RateMatrix -> StationaryDistribution
 getStationaryDistribution m = if magnitude (eVals ! i) `nearlyEq` 0
   then normalizeSumVec 1.0 distReal
-  else error "Could not retrieve stationary distribution."
+  else error "getStationaryDistribution: Could not retrieve stationary distribution."
  where
   (eVals, eVecs) = eig (tr m)
   i              = minIndex eVals

@@ -21,7 +21,6 @@ The different universal codes.
 
 module ELynx.Data.Character.Codon
   ( Codon(Codon)
-  , unsafeFromList
   , unsafeFromVec
   , UniversalCode(..)
   , translate
@@ -55,11 +54,8 @@ newtype Codon a = Codon (a, a, a)
 convert :: (C.Character a, C.Character b) => Codon a -> Codon b
 convert (Codon (x, y, z)) = Codon (C.convert x, C.convert y, C.convert z)
 
--- | Unsafe conversion from list with three elements.
-unsafeFromList :: [a] -> Codon a
-unsafeFromList xs = Codon (head xs, head . tail $ xs, head . tail . tail $ xs)
-
--- | Unsafe conversion from vector with three elements.
+-- | Unsafe conversion from vector with at least three elements; only the first
+-- three elements are used, the rest is discarded.
 unsafeFromVec :: V.Vector v a => v a -> Codon a
 unsafeFromVec xs =
   Codon (V.head xs, V.head . V.tail $ xs, V.head . V.tail . V.tail $ xs)

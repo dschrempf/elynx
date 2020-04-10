@@ -32,20 +32,20 @@ import qualified ELynx.Data.MarkovProcess.SubstitutionModel
 
 -- | Create CXX model with given number of components and probably with custom
 -- weights.
-cxx :: Int -> Maybe [M.Weight] -> Maybe M.MixtureModel
-cxx 10 (Just ws) = Just $ c10CustomWeights ws
-cxx 20 (Just ws) = Just $ c20CustomWeights ws
-cxx 30 (Just ws) = Just $ c30CustomWeights ws
-cxx 40 (Just ws) = Just $ c40CustomWeights ws
-cxx 50 (Just ws) = Just $ c50CustomWeights ws
-cxx 60 (Just ws) = Just $ c60CustomWeights ws
-cxx 10 Nothing   = Just c10
-cxx 20 Nothing   = Just c20
-cxx 30 Nothing   = Just c30
-cxx 40 Nothing   = Just c40
-cxx 50 Nothing   = Just c50
-cxx 60 Nothing   = Just c60
-cxx _  _         = Nothing
+cxx :: Int -> Maybe [M.Weight] -> M.MixtureModel
+cxx 10 (Just ws) = c10CustomWeights ws
+cxx 20 (Just ws) = c20CustomWeights ws
+cxx 30 (Just ws) = c30CustomWeights ws
+cxx 40 (Just ws) = c40CustomWeights ws
+cxx 50 (Just ws) = c50CustomWeights ws
+cxx 60 (Just ws) = c60CustomWeights ws
+cxx 10 Nothing   = c10
+cxx 20 Nothing   = c20
+cxx 30 Nothing   = c30
+cxx 40 Nothing   = c40
+cxx 50 Nothing   = c50
+cxx 60 Nothing   = c60
+cxx n  _         = error $ "cxx: cannot create CXX model with " ++ show n ++ " components."
 
 -- | C10 model.
 c10 :: M.MixtureModel
@@ -117,7 +117,7 @@ componentName nComps comp = cxxName nComps ++ "; component " ++ show comp
 -- about global or local normalization.
 cxxSubstitutionModelFromStatDist
   :: Int -> Int -> StationaryDistribution -> S.SubstitutionModel
-cxxSubstitutionModelFromStatDist nComps comp = poissonCustom (Just name)
+cxxSubstitutionModelFromStatDist nComps comp d = poissonCustom (Just name) (normalizeSD d)
   where name = componentName nComps comp
 
 cxxSubstitutionModelsFromStatDists

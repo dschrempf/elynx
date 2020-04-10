@@ -81,7 +81,6 @@ getWeights = map weight . components
 getSubstitutionModels :: MixtureModel -> [S.SubstitutionModel]
 getSubstitutionModels = map substModel . components
 
-
 -- | Create a mixture model from a list of substitution models.
 fromSubstitutionModels
   :: S.Name -> [Weight] -> [S.SubstitutionModel] -> MixtureModel

@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 {- |
 Module      :  ELynx.Data.Alphabet.DistributionDiversity
 Description :  Summarize statistics for alphabets
@@ -25,47 +27,51 @@ module ELynx.Data.Alphabet.DistributionDiversity
 where
 
 import qualified Data.Set                      as S
-import qualified Data.Vector.Unboxed           as V
+import qualified Data.Vector.Generic           as V
+import           Data.Vector.Generic            ( Vector
+                                                , toList
+                                                )
 
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Data.Alphabet.Character
 import           ELynx.Tools
 
 -- | Entropy of vector.
-entropy :: V.Vector Double -> Double
+entropy :: (Vector v Double) => v Double -> Double
 entropy v = if isNaN res
-  then error ("entropy: Sesult of following vector is NaN: " ++ show v ++ ".")
+  then error
+    ("entropy: Sesult of following vector is NaN: " ++ show (toList v) ++ ".")
   else res
   where res = negate $ sumVec $ V.map xLogX v
 
 -- | Effective number of used characters measured using 'entropy'. The result
 -- only makes sense when the sum of the array is 1.0.
-kEffEntropy :: V.Vector Double -> Double
+kEffEntropy :: Vector v Double => v Double -> Double
 kEffEntropy v = if e < eps then 1.0 else exp e where e = entropy v
 
 -- | Probability of homoplasy of vector. The result is the probability of
 -- binomially sampling the same character twice and only makes sense when the
 -- sum of the array is 1.0.
-homoplasy :: V.Vector Double -> Double
+homoplasy :: Vector v Double => v Double -> Double
 homoplasy v = sumVec $ V.map (\x -> x * x) v
 
 -- | Effective number of used characters measured using 'homoplasy'. The result
 -- only makes sense when the sum of the array is 1.0.
-kEffHomoplasy :: V.Vector Double -> Double
+kEffHomoplasy :: Vector v Double => v Double -> Double
 kEffHomoplasy v = 1.0 / homoplasy v
 
 -- XXX: Use mutable vector; then V.// is much faster.
 -- Increment element at index in vector by one.
-incrementElemIndexByOne :: [Int] -> V.Vector Int -> V.Vector Int
+incrementElemIndexByOne :: Vector v Int => [Int] -> v Int -> v Int
 incrementElemIndexByOne is v = v V.// zip is es'
   where es' = [ v V.! i + 1 | i <- is ]
 
 -- For a given code and counts vector, increment the count of the given character.
-acc :: AlphabetSpec -> V.Vector Int -> Character -> V.Vector Int
+acc :: Vector v Int => AlphabetSpec -> v Int -> Character -> v Int
 acc alph vec char = incrementElemIndexByOne is vec
   where is = [ S.findIndex c (std alph) | c <- toStd alph char ]
 
-countCharacters :: AlphabetSpec -> V.Vector Character -> V.Vector Int
+countCharacters :: (Vector v Character, Vector v Int) => AlphabetSpec -> v Character -> v Int
 countCharacters alph = V.foldl' (acc alph) zeroCounts
  where
   nChars     = length (std alph)
@@ -79,7 +85,7 @@ saveDivision value divisor =
 -- The input vector has arbitrary length (most often the number of sequences in
 -- an alignment), the length of the output vector is the number of characters in
 -- the alphabet.
-frequencyCharacters :: AlphabetSpec -> V.Vector Character -> V.Vector Double
+frequencyCharacters :: (Vector v Character, Vector v Int, Vector v Double) => AlphabetSpec -> v Character -> v Double
 frequencyCharacters alph d = V.map (`saveDivision` s) counts
  where
   counts = countCharacters alph d

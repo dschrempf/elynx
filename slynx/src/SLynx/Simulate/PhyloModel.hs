@@ -175,9 +175,7 @@ cxxModel :: Maybe [M.Weight] -> Parser M.MixtureModel
 cxxModel mws = do
   _ <- char (c2w 'C')
   n <- decimal :: Parser Int
-  case cxx n mws of
-    Nothing -> fail "Only 10, 20, 30, 40, 50, and 60 components are supported."
-    Just m  -> return m
+  return $ cxx n mws
 
 standardMixtureModel :: [M.Weight] -> Parser M.MixtureModel
 standardMixtureModel ws = do

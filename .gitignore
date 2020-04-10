@@ -6,6 +6,9 @@
 .stack-work-prod/
 *.cabal
 
+# HIE files.
+*.hie
+
 # Profile files.
 /scripts/slynx-examine.aux
 /scripts/slynx-examine.eventlog

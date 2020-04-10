@@ -28,6 +28,7 @@ module ELynx.Data.MarkovProcess.SubstitutionModel
   , totalRate
   -- * Building substitution models
   , substitutionModel
+  -- , substitutionModelNormalize
   , unnormalized
   -- * Transformations
   , scale
@@ -39,6 +40,7 @@ module ELynx.Data.MarkovProcess.SubstitutionModel
 where
 
 import qualified Data.ByteString.Lazy.Char8    as L
+-- import           Numeric.LinearAlgebra hiding  (normalize, scale, (<>))
 import qualified Numeric.LinearAlgebra         as LinAlg
 
 import           ELynx.Data.Alphabet.Alphabet
@@ -87,7 +89,21 @@ substitutionModel
   -> SubstitutionModel
 substitutionModel c n ps d e = if R.isValid d
   then normalize $ SubstitutionModel c n ps d e
-  else error "Stationary distribution does not sum to 1.0."
+  else error $ "substitionModel: Stationary distribution does not sum to 1.0: " ++ show d
+
+-- -- | See 'substitutionModel'. However, no error is thrown when the stationary
+-- -- distribution is not normalized. Instead, it is normalized before
+-- -- instantiating the substitution model.
+-- substitutionModelNormalize
+--   :: Alphabet
+--   -> Name
+--   -> Params
+--   -> R.StationaryDistribution
+--   -> R.ExchangeabilityMatrix
+--   -> SubstitutionModel
+-- substitutionModelNormalize c n ps d = substitutionModel c n ps d'
+--   where nconst = scalar $ 1.0 / norm_1 d
+--         d' = d * nconst
 
 -- | Create UNNORMALIZED 'SubstitutionModel'. See 'substitutionModel'.
 unnormalized

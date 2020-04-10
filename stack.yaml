@@ -81,4 +81,3 @@ packages:
 # Support weedder.
 ghc-options:
   "$locals": -fwrite-ide-info
-
