@@ -24,6 +24,7 @@ module ELynx.Data.MarkovProcess.Nucleotide
   ( jc
   , f81
   , hky
+  , gtr4
   )
 where
 
@@ -83,11 +84,11 @@ jcExch = (n >< n)
 
 -- | JC substitution model.
 jc :: SubstitutionModel
-jc = substitutionModel DNA "JC" [] f jcExch where f = uniformVec n
+jc = substitutionModel DNA "JC" [] d jcExch where d = uniformVec n
 
 -- | F81 substitution model.
 f81 :: StationaryDistribution -> SubstitutionModel
-f81 f = substitutionModel DNA "F81" [] f jcExch
+f81 d = substitutionModel DNA "F81" [] d jcExch
 
 hkyExch :: Double -> ExchangeabilityMatrix
 hkyExch k = (n >< n)
@@ -95,4 +96,8 @@ hkyExch k = (n >< n)
 
 -- | HKY substitution model.
 hky :: Double -> StationaryDistribution -> SubstitutionModel
-hky k f = substitutionModel DNA "HKY" [k] f e where e = hkyExch k
+hky k d = substitutionModel DNA "HKY" [k] d e where e = hkyExch k
+
+-- | HKY substitution model.
+gtr4 :: [Double] -> StationaryDistribution -> SubstitutionModel
+gtr4 es d = substitutionModel DNA "GTR" es d e where e = exchFromListUpper n es

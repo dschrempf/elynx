@@ -126,16 +126,20 @@ assembleSubstitutionModel "F81" Nothing (Just d) =
   Right $ assertLength d nNuc $ f81 d
 assembleSubstitutionModel "HKY" (Just [k]) (Just d) =
   Right $ assertLength d nNuc $ hky k d
+assembleSubstitutionModel "GTR4" (Just es) (Just d) =
+  Right $ assertLength d nNuc $ gtr4 es d
 -- Protein models.
+assembleSubstitutionModel "Poisson" Nothing Nothing = Right poisson
+assembleSubstitutionModel "Poisson-Custom" Nothing (Just d) =
+  Right $ assertLength d nAA $ poissonCustom Nothing d
 assembleSubstitutionModel "LG" Nothing Nothing = Right lg
 assembleSubstitutionModel "LG-Custom" Nothing (Just d) =
   Right $ assertLength d nAA $ lgCustom Nothing d
 assembleSubstitutionModel "WAG" Nothing Nothing = Right wag
 assembleSubstitutionModel "WAG-Custom" Nothing (Just d) =
   Right $ assertLength d nAA $ wagCustom Nothing d
-assembleSubstitutionModel "Poisson" Nothing Nothing = Right poisson
-assembleSubstitutionModel "Poisson-Custom" Nothing (Just d) =
-  Right $ assertLength d nAA $ poissonCustom Nothing d
+assembleSubstitutionModel "GTR20" (Just es) (Just d) =
+  Right $ assertLength d nAA $ gtr20 es d
 -- Ohterwisse, we cannot assemble the model.
 assembleSubstitutionModel n mps mf = Left $ unlines
   [ "Cannot assemble substitution model."

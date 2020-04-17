@@ -56,6 +56,10 @@ type Name = String
 -- | Parameters of substitution model. May be the empty list.
 type Params = [Double]
 
+-- TODO: Use a proper data type. For example.
+-- data SubstitutionModelAA = LG | WAG | LG-Custom dist | ...
+-- data SubstitutionModelNuc = JC | HKY p1 p2 ... | GTR p1 p2 ...
+
 -- | Complete definition of a substitution model. Create instances with
 -- 'substitutionModel'. A substitution model has an alphabet, a name, and a list
 -- of parameters (e.g., the kappa value for the HKY model). Further, the

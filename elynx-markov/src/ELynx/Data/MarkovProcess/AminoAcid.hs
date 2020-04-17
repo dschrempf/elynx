@@ -21,6 +21,7 @@ module ELynx.Data.MarkovProcess.AminoAcid
   , wagCustom
   , poisson
   , poissonCustom
+  , gtr20
   )
 where
 
@@ -28,15 +29,13 @@ import           Data.List                      ( elemIndex )
 import           Data.Maybe                     ( fromMaybe )
 import           Data.Word                      ( Word8 )
 import           Numeric.LinearAlgebra
-import           Numeric.SpecFunctions
 
 import           ELynx.Data.Alphabet.Alphabet
 
 import           ELynx.Tools
 
 import           ELynx.Data.MarkovProcess.RateMatrix
-import qualified ELynx.Data.MarkovProcess.SubstitutionModel
-                                               as S
+import           ELynx.Data.MarkovProcess.SubstitutionModel
 
 n :: Int
 n = 20
@@ -123,42 +122,6 @@ pamlToAlphaMat m = build
   (n, n)
   (\i j -> m ! alphaIndexToPamlIndex (round i) ! alphaIndexToPamlIndex (round j)
   )
-
--- The next functions tackle the somewhat stupid, but not easy solvable problem
--- of converting a lower triangular matrix (excluding the diagonal) given as a
--- list into a symmetric matrix. The diagonal entries are set to zero. This is
--- how the exchangeabilities are specified in PAML.
-
--- Conversion from matrix indices (i,j) to list index k.
--- (i,j) k
---
--- (0,0) -
--- (1,0) 0  (1,1) -
--- (2,0) 1  (2,1) 2  (2,2) -
--- (3,0) 3  (3,1) 4  (3,2) 5 (3,3) -
--- (4,0) 6  (4,1) 7  (4,2) 8 (4,3) 9 (4,4) -
---
--- k = (i choose 2) + j.
-ijToK :: Int -> Int -> Int
-ijToK i j = round (i `choose` 2) + j
-
--- The function is a little weird because HMatrix uses Double indices for Matrix
--- Double builders.
-fromListBuilder :: [Double] -> Double -> Double -> Double
-fromListBuilder es i j
-  | i > j = es !! ijToK iI jI
-  | i == j = 0.0
-  | i < j = es !! ijToK jI iI
-  | otherwise = error
-    "Float indices could not be compared during matrix creation."
- where
-  iI = round i :: Int
-  jI = round j :: Int
-
--- Exchangeability matrix from list denoting lower triangular matrix, and
--- excluding diagonal. This is how the exchangeabilities are specified in PAML.
-exchFromList :: [Double] -> ExchangeabilityMatrix
-exchFromList es = build (n, n) (fromListBuilder es)
 
 -- Lower triangular matrix of LG exchangeabilities in PAML order and in form of
 -- a list.
@@ -359,7 +322,7 @@ lgExchRawPaml =
 
 -- Exchangeabilities of LG model in alphabetical order.
 lgExch :: ExchangeabilityMatrix
-lgExch = pamlToAlphaMat $ exchFromList lgExchRawPaml
+lgExch = pamlToAlphaMat $ exchFromListLower n lgExchRawPaml
 
 -- Stationary distribution in PAML order.
 lgStatDistPaml :: StationaryDistribution
@@ -391,13 +354,13 @@ lgStatDist :: StationaryDistribution
 lgStatDist = pamlToAlphaVec lgStatDistPaml
 
 -- | LG substitution model.
-lg :: S.SubstitutionModel
-lg = S.substitutionModel Protein "LG" [] lgStatDist lgExch
+lg :: SubstitutionModel
+lg = substitutionModel Protein "LG" [] lgStatDist lgExch
 
 -- | LG substitution model with maybe a name and a custom stationary distribution.
-lgCustom :: Maybe String -> StationaryDistribution -> S.SubstitutionModel
-lgCustom mn d = S.substitutionModel Protein name [] d lgExch
-  where name = fromMaybe "LG-Custom" mn
+lgCustom :: Maybe String -> StationaryDistribution -> SubstitutionModel
+lgCustom mnm d = substitutionModel Protein nm [] d lgExch
+  where nm = fromMaybe "LG-Custom" mnm
 
 -- WAG exchangeability list in PAML order.
 wagExchRawPaml :: [Double]
@@ -596,7 +559,7 @@ wagExchRawPaml =
 
 -- WAG exchangeability matrix n alphabetical order.
 wagExch :: ExchangeabilityMatrix
-wagExch = pamlToAlphaMat $ exchFromList wagExchRawPaml
+wagExch = pamlToAlphaMat $ exchFromListLower n wagExchRawPaml
 
 -- WAG stationary distribution in PAML order.
 wagStatDistPaml :: StationaryDistribution
@@ -628,13 +591,13 @@ wagStatDist :: StationaryDistribution
 wagStatDist = pamlToAlphaVec wagStatDistPaml
 
 -- | LG substitution model.
-wag :: S.SubstitutionModel
-wag = S.substitutionModel Protein "WAG" [] wagStatDist wagExch
+wag :: SubstitutionModel
+wag = substitutionModel Protein "WAG" [] wagStatDist wagExch
 
 -- | LG substitution model with maybe a name and a custom stationary distribution.
-wagCustom :: Maybe String -> StationaryDistribution -> S.SubstitutionModel
-wagCustom mn d = S.substitutionModel Protein name [] d wagExch
-  where name = fromMaybe "WAG-Custom" mn
+wagCustom :: Maybe String -> StationaryDistribution -> SubstitutionModel
+wagCustom mnm d = substitutionModel Protein nm [] d wagExch
+  where nm = fromMaybe "WAG-Custom" mnm
 
 uniformExch :: ExchangeabilityMatrix
 uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n * n) 1.0
@@ -643,10 +606,14 @@ poissonExch :: ExchangeabilityMatrix
 poissonExch = uniformExch
 
 -- | Poisson substitution model.
-poisson :: S.SubstitutionModel
-poisson = S.substitutionModel Protein "Poisson" [] (uniformVec n) poissonExch
+poisson :: SubstitutionModel
+poisson = substitutionModel Protein "Poisson" [] (uniformVec n) poissonExch
 
 -- | Poisson substitution model with maybe a name and a custom stationary distribution.
-poissonCustom :: Maybe String -> StationaryDistribution -> S.SubstitutionModel
-poissonCustom mn d = S.substitutionModel Protein name [] d poissonExch
-  where name = fromMaybe "Poisson-Custom" mn
+poissonCustom :: Maybe String -> StationaryDistribution -> SubstitutionModel
+poissonCustom mnm d = substitutionModel Protein nm [] d poissonExch
+  where nm = fromMaybe "Poisson-Custom" mnm
+
+-- | General time reversible (GTR) substitution model for amino acids.
+gtr20 :: [Double] -> StationaryDistribution -> SubstitutionModel
+gtr20 es d = substitutionModel Protein "GTR" es d e where e = exchFromListUpper n es
