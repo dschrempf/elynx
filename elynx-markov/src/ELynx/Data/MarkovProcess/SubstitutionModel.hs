@@ -28,8 +28,6 @@ module ELynx.Data.MarkovProcess.SubstitutionModel
   , totalRate
   -- * Building substitution models
   , substitutionModel
-  -- , substitutionModelNormalize
-  , unnormalized
   -- * Transformations
   , scale
   , normalize
@@ -92,32 +90,9 @@ substitutionModel
   -> R.ExchangeabilityMatrix
   -> SubstitutionModel
 substitutionModel c n ps d e = if R.isValid d
-  then normalize $ SubstitutionModel c n ps d e
+  then normalize $ SubstitutionModel c n ps d' e
   else error $ "substitionModel: Stationary distribution does not sum to 1.0: " ++ show d
-
--- -- | See 'substitutionModel'. However, no error is thrown when the stationary
--- -- distribution is not normalized. Instead, it is normalized before
--- -- instantiating the substitution model.
--- substitutionModelNormalize
---   :: Alphabet
---   -> Name
---   -> Params
---   -> R.StationaryDistribution
---   -> R.ExchangeabilityMatrix
---   -> SubstitutionModel
--- substitutionModelNormalize c n ps d = substitutionModel c n ps d'
---   where nconst = scalar $ 1.0 / norm_1 d
---         d' = d * nconst
-
--- | Create UNNORMALIZED 'SubstitutionModel'. See 'substitutionModel'.
-unnormalized
-  :: Alphabet
-  -> Name
-  -> Params
-  -> R.StationaryDistribution
-  -> R.ExchangeabilityMatrix
-  -> SubstitutionModel
-unnormalized = SubstitutionModel
+  where d' = normalizeSumVec 1.0 d
 
 -- | Scale the rate of a substitution model by given factor.
 scale :: Double -> SubstitutionModel -> SubstitutionModel

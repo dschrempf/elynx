@@ -19,6 +19,7 @@ where
 
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.Maybe
+import           Data.Scientific         hiding ( scientific )
 import           Data.Void
 import           Data.Word                      ( Word8 )
 import           Numeric.LinearAlgebra          ( norm_1
@@ -87,13 +88,13 @@ name = L.unpack <$> takeWhile1P
   )
 
 params :: Parser [Double]
-params =
-  between (char paramsStart) (char paramsEnd) (sepBy1 float (char separator))
+params = map toRealFloat <$>
+  between (char paramsStart) (char paramsEnd) (sepBy1 scientific (char separator))
 
 stationaryDistribution :: Parser StationaryDistribution
 stationaryDistribution = do
-  f <- vector
-    <$> between (char sdStart) (char sdEnd) (sepBy1 float (char separator))
+  f <- vector . map toRealFloat
+    <$> between (char sdStart) (char sdEnd) (sepBy1 scientific (char separator))
   if nearlyEq (norm_1 f) 1.0
     then return f
     else

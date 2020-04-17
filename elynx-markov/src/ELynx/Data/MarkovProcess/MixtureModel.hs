@@ -123,10 +123,12 @@ appendName n m = m { components = cs' }
 
 -- | Checks if a mixture model is valid.
 --
--- XXX: For the future, a proper way of creating mixture models might be of
--- interest. For example, not exporting the constructor nor the record fields
--- and providing an algebraic way of creating mixture models (empty and
--- addComponent which performs necessary checks).
+-- TODO: This function is unused. Provide functions that only return valid
+-- mixture models. For example, not exporting the constructor nor the record
+-- fields and providing an algebraic way of creating mixture models (singleton
+-- and addComponent which performs necessary checks).
+--
+-- Use Data.Semigroup?
 isValid :: MixtureModel -> Bool
 isValid m = not (null $ components m) && allEqual alphabets
   where alphabets = map (S.alphabet . substModel) $ components m

@@ -57,7 +57,7 @@ type StationaryDistribution = Vector R
 
 -- | True if distribution sums to 1.0.
 isValid :: StationaryDistribution -> Bool
-isValid d = norm_1 d `nearlyEq` 1.0
+isValid d = nearlyEqWith eps' (norm_1 d)  1.0
 
 -- | Normalize a stationary distribution so that the elements sum to 1.0.
 normalizeSD :: StationaryDistribution -> StationaryDistribution

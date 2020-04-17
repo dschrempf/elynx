@@ -43,6 +43,7 @@ dependencies:
   - optparse-applicative
   - parallel
   - primitive
+  - scientific
   - statistics
   - text
   - transformers
