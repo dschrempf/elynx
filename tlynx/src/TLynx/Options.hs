@@ -33,6 +33,7 @@ import           TLynx.Simulate.Options
 
 import           ELynx.Tools
 
+-- | The different TLynx commands and their arguments.
 data CommandArguments =
   Coalesce CoalesceArguments
   | Compare CompareArguments
@@ -75,6 +76,7 @@ commandArguments =
     <> shuffleCommand
     <> simulateCommand
 
+-- | Parse TLynx command line.
 parseArguments :: IO (Arguments CommandArguments)
 parseArguments = parseArgumentsWith desc ftr commandArguments
 

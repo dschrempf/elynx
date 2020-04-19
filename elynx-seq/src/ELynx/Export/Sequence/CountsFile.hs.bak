@@ -7,8 +7,6 @@ Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
 Portability :  non-portable (not tested)
 
-TODO: Import.
-
 * The Counts Format
 
 The input of PoMo is allele frequency data.  Especially, when

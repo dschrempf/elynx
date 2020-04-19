@@ -17,11 +17,10 @@ To be imported qualified.
 module ELynx.Data.MarkovProcess.MixtureModel
   ( -- * Types
     Weight
-  , Component(Component)
-  , MixtureModel(MixtureModel)
+  , Component
+  , MixtureModel (name)
   , -- * Getters
-    name
-  , getAlphabet
+    getAlphabet
   , getWeights
   , getSubstitutionModels
     -- * Building mixture models
@@ -30,17 +29,19 @@ module ELynx.Data.MarkovProcess.MixtureModel
   , concatenate
   , scale
   , normalize
-  , appendName
-  -- * Tests
-  , isValid
+  , appendNameComponents
   -- * Output
   , summarizeComponent
   , summarize
   )
 where
 
+import           Prelude                       hiding ( map, head, zipWith, length )
+
 import qualified Data.ByteString.Builder       as L
 import qualified Data.ByteString.Lazy.Char8    as L
+import           Data.List.NonEmpty            hiding ( zip )
+import           Data.Semigroup
 
 import           ELynx.Data.Alphabet.Alphabet
 
@@ -62,34 +63,40 @@ data Component = Component
 -- | A mixture model with its components.
 data MixtureModel = MixtureModel
   { name       :: S.Name        -- ^ Name
-  , components :: [Component]
+  , alphabet   :: Alphabet
+  , components :: NonEmpty Component
   }
   deriving (Show, Read)
 
 -- | Get alphabet used with mixture model. Throws error if components use
 -- different 'Alphabet's.
 getAlphabet :: MixtureModel -> Alphabet
-getAlphabet mm = if isValid mm
-  then S.alphabet . substModel $ head (components mm)
-  else error "Mixture model is invalid."
+getAlphabet = alphabet
 
 -- | Get weights.
-getWeights :: MixtureModel -> [Weight]
+getWeights :: MixtureModel -> NonEmpty Weight
 getWeights = map weight . components
 
 -- | Get substitution models.
-getSubstitutionModels :: MixtureModel -> [S.SubstitutionModel]
+getSubstitutionModels :: MixtureModel -> NonEmpty S.SubstitutionModel
 getSubstitutionModels = map substModel . components
 
 -- | Create a mixture model from a list of substitution models.
 fromSubstitutionModels
-  :: S.Name -> [Weight] -> [S.SubstitutionModel] -> MixtureModel
-fromSubstitutionModels n ws sms = MixtureModel n comps
+  :: S.Name -> NonEmpty Weight -> NonEmpty S.SubstitutionModel -> MixtureModel
+fromSubstitutionModels n ws sms =
+  if allEqual $ toList alphs
+  then MixtureModel n (head alphs) comps
+  else error "fromSubstitutionModels: alphabets of substitution models are not equal."
   where comps = zipWith Component ws sms
+        alphs = map S.alphabet sms
 
 -- | Concatenate mixture models.
-concatenate :: S.Name -> [MixtureModel] -> MixtureModel
-concatenate n mms = MixtureModel n $ concatMap components mms
+concatenate :: S.Name -> NonEmpty MixtureModel -> MixtureModel
+concatenate n mms = fromSubstitutionModels n ws sms
+  where comps = sconcat $ map components mms
+        ws = map weight comps
+        sms = map substModel comps
 
 scaleComponent :: Double -> Component -> Component
 scaleComponent s c = c { substModel = s' } where s' = S.scale s $ substModel c
@@ -115,23 +122,23 @@ appendNameComponent n c = c { substModel = s' }
   where s' = S.appendName n $ substModel c
 
 -- | Append byte string to all substitution models of mixture model.
-appendName :: S.Name -> MixtureModel -> MixtureModel
-appendName n m = m { components = cs' }
+appendNameComponents :: S.Name -> MixtureModel -> MixtureModel
+appendNameComponents n m = m { components = cs' }
  where
   cs  = components m
   cs' = map (appendNameComponent n) cs
 
--- | Checks if a mixture model is valid.
---
--- TODO: This function is unused. Provide functions that only return valid
--- mixture models. For example, not exporting the constructor nor the record
--- fields and providing an algebraic way of creating mixture models (singleton
--- and addComponent which performs necessary checks).
---
--- Use Data.Semigroup?
-isValid :: MixtureModel -> Bool
-isValid m = not (null $ components m) && allEqual alphabets
-  where alphabets = map (S.alphabet . substModel) $ components m
+-- -- | Checks if a mixture model is valid.
+-- --
+-- -- TODO: This function is unused. Provide functions that only return valid
+-- -- mixture models. For example, not exporting the constructor nor the record
+-- -- fields and providing an algebraic way of creating mixture models (singleton
+-- -- and addComponent which performs necessary checks).
+-- --
+-- -- Use Data.Semigroup?
+-- isValid :: MixtureModel -> Bool
+-- isValid m = not (null $ components m) && allEqual alphabets
+--   where alphabets = map (S.alphabet . substModel) $ components m
 
 -- | Summarize a mixture model component; lines to be printed to screen or log.
 summarizeComponent :: Component -> [L.ByteString]
@@ -152,6 +159,6 @@ summarize m =
   detail = if n <= 100
     then concat
       [ L.pack ("Component " ++ show i ++ ":") : summarizeComponent c
-      | (i, c) <- zip [1 :: Int ..] (components m)
+      | (i, c) <- zip [1 :: Int ..] (toList $ components m)
       ]
     else []

@@ -33,6 +33,7 @@ import           SLynx.Translate.Options
 import           ELynx.Data.Alphabet.Alphabet
 import           ELynx.Tools
 
+-- | The different SLynx commands and their arguments.
 data CommandArguments =
   Concatenate ConcatenateArguments
   | Examine ExamineArguments
@@ -75,6 +76,7 @@ commandArguments =
     <> subSampleCommand
     <> translateCommand
 
+-- | Parse SLynx command line.
 parseArguments :: IO (Arguments CommandArguments)
 parseArguments = parseArgumentsWith desc ftr commandArguments
 

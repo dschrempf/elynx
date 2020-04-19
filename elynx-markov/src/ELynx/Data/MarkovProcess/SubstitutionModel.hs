@@ -38,7 +38,6 @@ module ELynx.Data.MarkovProcess.SubstitutionModel
 where
 
 import qualified Data.ByteString.Lazy.Char8    as L
--- import           Numeric.LinearAlgebra hiding  (normalize, scale, (<>))
 import qualified Numeric.LinearAlgebra         as LinAlg
 
 import           ELynx.Data.Alphabet.Alphabet
@@ -54,9 +53,14 @@ type Name = String
 -- | Parameters of substitution model. May be the empty list.
 type Params = [Double]
 
--- TODO: Use a proper data type. For example.
+-- XXX: Use a proper data type. For example:
 -- data SubstitutionModelAA = LG | WAG | LG-Custom dist | ...
 -- data SubstitutionModelNuc = JC | HKY p1 p2 ... | GTR p1 p2 ...
+--
+-- I thought about this a lot, and it seems easier like it is at the moment.
+-- Since the data types are abstracted anyways, not much harm can be done. Of
+-- course, conflicting substitution models can be declared, or duplicate ones
+-- with different names, but well...
 
 -- | Complete definition of a substitution model. Create instances with
 -- 'substitutionModel'. A substitution model has an alphabet, a name, and a list

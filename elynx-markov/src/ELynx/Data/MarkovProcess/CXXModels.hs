@@ -22,6 +22,8 @@ module ELynx.Data.MarkovProcess.CXXModels
   )
 where
 
+import Data.List.NonEmpty (fromList)
+
 import           ELynx.Data.MarkovProcess.AminoAcid
 import           ELynx.Data.MarkovProcess.CXXModelsData
 import qualified ELynx.Data.MarkovProcess.MixtureModel
@@ -128,9 +130,12 @@ cxxSubstitutionModelsFromStatDists ds = zipWith
   ds
   where nComp = length ds
 
+-- XXX: The use of `Data.List.NonEmpty.fromList` is daring, but since this
+-- function is not exported and only applied to predefined non-empty lists, it
+-- should be OK.
 cxxFromStatDistsAndWeights
   :: [M.Weight] -> [StationaryDistribution] -> M.MixtureModel
-cxxFromStatDistsAndWeights ws ds = M.MixtureModel (cxxName nComps) comps
+cxxFromStatDistsAndWeights ws ds = M.fromSubstitutionModels (cxxName n) (fromList ws) sms
  where
-  nComps = length ds
-  comps  = zipWith M.Component ws (cxxSubstitutionModelsFromStatDists ds)
+  n   = length ds
+  sms = fromList $ cxxSubstitutionModelsFromStatDists ds

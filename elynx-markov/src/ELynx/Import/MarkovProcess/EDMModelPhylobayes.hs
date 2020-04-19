@@ -27,12 +27,16 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
-import           ELynx.Tools
+import           ELynx.Data.MarkovProcess.MixtureModel (Weight)
 
-import           ELynx.Data.MarkovProcess.EDMModel
+import           ELynx.Tools
 
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString
+
+-- | An empirical mixture model component has a weight and a stationary
+-- distribution.
+type EDMComponent = (Weight, V.Vector Double)
 
 -- | Parse stationary distributions from Phylobayes format.
 phylobayes :: Parser [EDMComponent]

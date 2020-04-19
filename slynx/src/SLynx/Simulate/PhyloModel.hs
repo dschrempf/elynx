@@ -17,7 +17,10 @@ module SLynx.Simulate.PhyloModel
   )
 where
 
+import Control.Monad (when)
 import qualified Data.ByteString.Lazy.Char8    as L
+import           Data.Either (rights)
+import Data.List.NonEmpty (fromList)
 import           Data.Maybe
 import           Data.Scientific         hiding ( scientific )
 import           Data.Void
@@ -166,15 +169,16 @@ edmModel cs mws = do
   n   <- name
   mps <- optional params
   _   <- char mmEnd
+  when (null cs) $ error "edmModel: no EDM components given."
   let sms     = map (\c -> assembleSubstitutionModel n mps (Just $ snd c)) cs
       edmName = "EDM" ++ show (length cs)
       ws      = fromMaybe (map fst cs) mws
       errs    = [ e | (Left e) <- sms ]
+  when (length sms /= length ws) $
+    error "edmModel: number of substitution models and weights differs."
   if not $ null errs
     then fail $ head errs
-    else return $ M.MixtureModel
-      edmName
-      [ M.Component w sm | (w, Right sm) <- zip ws sms ]
+    else return $ M.fromSubstitutionModels edmName (fromList ws) (fromList $ rights sms)
 
 cxxModel :: Maybe [M.Weight] -> Parser M.MixtureModel
 cxxModel mws = do
@@ -188,7 +192,8 @@ standardMixtureModel ws = do
   _   <- char mmStart
   sms <- parseSubstitutionModel `sepBy1` char separator
   _   <- char mmEnd
-  return $ M.MixtureModel "MIXTURE" [ M.Component w sm | (w, sm) <- zip ws sms ]
+  -- XXX: The use of `Data.List.NonEmpty.fromList` leads to uninformative error messages.
+  return $ M.fromSubstitutionModels "MIXTURE" (fromList ws) (fromList sms)
 
 mixtureModel
   :: Maybe [EDMComponent] -> Maybe [M.Weight] -> Parser M.MixtureModel

@@ -13,30 +13,26 @@ Creation date: Tue Jan 29 12:12:55 2019.
 For now I just try to go with a huge empirical distribution mixture model. Let's
 see if performance is good enough.
 
+There are subtle differences between
+`ELynx.Import.MarkovProcess.EDMModelPhylobayes` and this module, which collects
+one stationary distribution for each site.
+
 -}
 
 module ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
-  ( Parser
-  , EDMComponent
-  , siteprofiles
-  )
+  ( siteprofiles )
 where
 
 import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.List                      ( nub )
 import qualified Data.Vector.Storable          as V
-import           Data.Void
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
 import           ELynx.Tools
 
-import           ELynx.Data.MarkovProcess.EDMModel
-
--- | Shortcut.
-type Parser = Parsec Void L.ByteString
+import           ELynx.Import.MarkovProcess.EDMModelPhylobayes (Parser, EDMComponent)
 
 -- | Parse stationary distributions from Phylobayes format.
 siteprofiles :: Parser [EDMComponent]

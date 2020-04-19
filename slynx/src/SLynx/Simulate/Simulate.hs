@@ -32,6 +32,7 @@ import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader     ( ask )
 import qualified Data.ByteString.Lazy          as L
 import qualified Data.ByteString.Lazy.Char8    as LC
+import Data.List.NonEmpty (toList)
 import           Data.Maybe
 import qualified Data.Set                      as Set
 import qualified Data.Text                     as T
@@ -39,7 +40,7 @@ import qualified Data.Text.Lazy                as LT
 import qualified Data.Text.Lazy.Encoding       as LT
 import           Data.Tree
 import qualified Data.Vector.Unboxed           as V
-import           Numeric.LinearAlgebra   hiding ( (<>) )
+import           Numeric.LinearAlgebra   hiding ( (<>), toList )
 import           System.Random.MWC
 
 import           SLynx.Simulate.Options
@@ -61,7 +62,6 @@ import           ELynx.Export.Sequence.Fasta
 import           ELynx.Import.MarkovProcess.EDMModelPhylobayes
                                          hiding ( Parser )
 import           ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
-                                         hiding ( Parser )
 import           ELynx.Import.Tree.Newick
                                          hiding ( name )
 import           ELynx.Simulate.MarkovProcessAlongTree
@@ -95,9 +95,9 @@ simulateAlignment pm t n g = do
     --   (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws ds es t gen) (zip chunks gs)
     P.MixtureModel mm -> simulateAndFlattenMixtureModelPar n ws ds es t g
      where
-      ws = vector $ M.getWeights mm
-      ds = map SM.stationaryDistribution $ M.getSubstitutionModels mm
-      es = map SM.exchangeabilityMatrix $ M.getSubstitutionModels mm
+      ws = vector . toList $ M.getWeights mm
+      ds = map SM.stationaryDistribution $ toList $ M.getSubstitutionModels mm
+      es = map SM.exchangeabilityMatrix $ toList $ M.getSubstitutionModels mm
   -- XXX @performace. The horizontal concatenation might be slow. If so,
   -- 'concatenateSeqs' or 'concatenateAlignments' can be used, which directly
   -- appends vectors.
