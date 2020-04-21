@@ -114,11 +114,11 @@ pRow name val = alignLeft 33 n <> alignRight 8 v
 
 -- | Summarize a tree with measureable branch lengths.
 summarize :: (Measurable a) => Tree a -> L.ByteString
-summarize t = L.intercalate "\n" $ map pRow
-  [ "Leaves: " $ show n
-  , "Height: " $ printf "%.5f" h
-  , "Average distance root to leaves: " $ printf "%.5f" h'
-  , "Total branch length: " $ printf "%.5f" b
+summarize t = L.intercalate "\n"
+  [ pRow "Leaves: " $ show n
+  , pRow "Height: " $ printf "%.5f" h
+  , pRow "Average distance root to leaves: " $ printf "%.5f" h'
+  , pRow "Total branch length: " $ printf "%.5f" b
   ]
  where
   n  = length . leaves $ t
