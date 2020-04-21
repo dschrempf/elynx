@@ -78,6 +78,8 @@ packages:
 # ghc-options:
 #     "$locals": -Wall -O2 -fllvm -eventlog -threaded -rtsopts -with-rtsopts=-N
 
-# Support weedder.
+# Support weeder.
+# 1.0: -ddump-to-file -ddump-hi.
+# 2.0: -fwrite-ide-info (hie files).
 ghc-options:
-  "$locals": -fwrite-ide-info
+  "$locals": -fwrite-ide-info -ddump-to-file -ddump-hi
