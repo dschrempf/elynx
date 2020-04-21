@@ -25,8 +25,8 @@ import           Test.Hspec
 import           Test.QuickCheck
 import           Test.QuickCheck.Instances.Containers
                                                 ( )
-
 import           ELynx.Data.Tree
+import           ELynx.Data.Tree.PhyloTreeArbitraryInstance ()
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools
 
@@ -196,7 +196,6 @@ incSplitTree3 = parseByteStringWith "" oneNewickIqTree "(((a,b)0.7,c),(d,e));"
 
 incSplitTree4 :: Tree (PhyloLabel L.ByteString)
 incSplitTree4 = parseByteStringWith "" oneNewickIqTree "(((a,c),b),(d,e));"
-
 
 spec :: Spec
 spec = do

@@ -24,6 +24,7 @@ import           Test.QuickCheck.Instances.Containers
                                                 ( )
 
 import           ELynx.Data.Tree
+import           ELynx.Data.Tree.PhyloTreeArbitraryInstance ()
 import           ELynx.Export.Tree.Newick
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools
