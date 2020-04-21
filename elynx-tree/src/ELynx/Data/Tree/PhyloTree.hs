@@ -27,7 +27,7 @@ where
 import           Data.Function
 import           Data.Maybe                     ( fromMaybe )
 import           Data.Tree
-import           Test.QuickCheck         hiding ( label )
+-- import           Test.QuickCheck         hiding ( label )
 
 import           ELynx.Data.Tree.BranchSupportTree
 import           ELynx.Data.Tree.MeasurableTree
@@ -57,18 +57,6 @@ instance BranchSupported (PhyloLabel a) where
   setBranchSupport (Just s) l
     | s > 0     = l { brSup = Just s }
     | otherwise = error "Branch support cannot be negative."
-
--- Of course, the boundaries for branch support and length are chosen pretty
--- arbitrarily :).
---
--- XXX: This instance does not produce values without branch lengths nor branch
--- supports.
-instance Arbitrary a => Arbitrary (PhyloLabel a) where
-  arbitrary =
-    PhyloLabel
-      <$> arbitrary
-      <*> (Just <$> choose (0, 100))
-      <*> (Just <$> choose (0, 10))
 
 instance Named a => Named (PhyloLabel a) where
   getName = getName . label

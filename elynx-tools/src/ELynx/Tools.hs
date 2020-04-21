@@ -26,6 +26,7 @@ module ELynx.Tools
   , module ELynx.Tools.Matrix
   , module ELynx.Tools.Misc
   , module ELynx.Tools.Numeric
+  , module ELynx.Tools.Parallel
   , module ELynx.Tools.Random
   , module ELynx.Tools.Reproduction
   , module ELynx.Tools.Text
@@ -44,6 +45,7 @@ import           ELynx.Tools.Logger
 import           ELynx.Tools.Matrix
 import           ELynx.Tools.Misc
 import           ELynx.Tools.Numeric
+import           ELynx.Tools.Parallel
 import           ELynx.Tools.Random
 import           ELynx.Tools.Reproduction
 import           ELynx.Tools.Text

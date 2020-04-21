@@ -17,10 +17,9 @@ module ELynx.Tools.Concurrent
   (
     -- * MWC
     splitGen
-    -- * Parallel stuff
+    -- * Concurrent calculations
   , parComp
   , getChunks
-  , parMapChunk
   )
 where
 
@@ -28,7 +27,6 @@ import           Control.Concurrent
 import           Control.Concurrent.Async
 import           Control.Monad
 import           Control.Monad.Primitive
-import           Control.Parallel.Strategies
 import qualified Data.Vector                   as V
 import           Data.Word
 import           System.Random.MWC
@@ -68,8 +66,3 @@ getChunks c n = ns
   n' = n `div` c
   r  = n `mod` c
   ns = replicate r (n' + 1) ++ replicate (c - r) n'
-
--- XXX: This should actually be in a module called Parallel, not Concurrent.
--- | Parallel map with given chunk size.
-parMapChunk :: Int -> (a -> b) -> [a] -> [b]
-parMapChunk n f as = map f as `using` parListChunk n rseq

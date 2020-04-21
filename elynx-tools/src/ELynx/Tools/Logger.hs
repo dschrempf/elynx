@@ -25,7 +25,6 @@ module ELynx.Tools.Logger
   )
 where
 
-import           Control.Exception.Lifted       ( bracket )
 import           Control.Monad.Base             ( liftBase )
 import           Control.Monad.IO.Class         ( MonadIO
                                                 , liftIO
@@ -139,10 +138,12 @@ runELynxLoggingT lvl frc (Just fn) =
 
 runELynxFileLoggingT
   :: MonadBaseControl IO m => Force -> FilePath -> LoggingT m a -> m a
-runELynxFileLoggingT frc fp logger =
-  bracket (liftBase $ openFile' frc fp WriteMode) (liftBase . hClose) $ \h ->
-    liftBase (hSetBuffering h LineBuffering)
-      >> runLoggingT logger (output2H stderr h)
+runELynxFileLoggingT frc fp logger = do
+  h <- liftBase $ openFile' frc fp WriteMode
+  liftBase (hSetBuffering h LineBuffering)
+  r <- runLoggingT logger (output2H stderr h)
+  liftBase (hClose h)
+  return r
 
 runELynxStderrLoggingT :: MonadIO m => LoggingT m a -> m a
 runELynxStderrLoggingT = (`runLoggingT` output stderr)

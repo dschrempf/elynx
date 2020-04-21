@@ -128,18 +128,6 @@ appendNameComponents n m = m { components = cs' }
   cs  = components m
   cs' = map (appendNameComponent n) cs
 
--- -- | Checks if a mixture model is valid.
--- --
--- -- TODO: This function is unused. Provide functions that only return valid
--- -- mixture models. For example, not exporting the constructor nor the record
--- -- fields and providing an algebraic way of creating mixture models (singleton
--- -- and addComponent which performs necessary checks).
--- --
--- -- Use Data.Semigroup?
--- isValid :: MixtureModel -> Bool
--- isValid m = not (null $ components m) && allEqual alphabets
---   where alphabets = map (S.alphabet . substModel) $ components m
-
 -- | Summarize a mixture model component; lines to be printed to screen or log.
 summarizeComponent :: Component -> [L.ByteString]
 summarizeComponent c =
