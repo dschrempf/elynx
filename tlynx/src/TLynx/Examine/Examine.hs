@@ -49,7 +49,9 @@ readTrees iqtree fp = do
 examineTree :: (Measurable a, Named a) => Handle -> Tree a -> IO ()
 examineTree h t = do
   L.hPutStrLn h $ summarize t
-  unless (null dups) (hPutStrLn h $ "Duplicate leaves: " ++ show dups)
+  unless (null dups) $
+    hPutStrLn h "" >>
+    hPutStrLn h ("Duplicate leaves: " ++ show dups)
  where
   lvs  = map getName $ leaves t
   dups = lvs \\ nub lvs

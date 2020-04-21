@@ -37,6 +37,7 @@ where
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.Foldable
 import           Data.Tree
+import           Text.Printf
 
 import           ELynx.Data.Tree.Tree
 import           ELynx.Tools
@@ -106,14 +107,18 @@ lengthenStem dl (Node lbl chs) = Node (lengthen dl lbl) chs
 shortenStem :: (Measurable a) => Double -> Tree a -> Tree a
 shortenStem dl = lengthenStem (-dl)
 
+pRow :: String -> String -> L.ByteString
+pRow name val = alignLeft 33 n <> alignRight 8 v
+  where n = L.pack name
+        v = L.pack val
+
 -- | Summarize a tree with measureable branch lengths.
 summarize :: (Measurable a) => Tree a -> L.ByteString
-summarize t = L.intercalate "\n" $ map
-  L.pack
-  [ "Leaves: " ++ show n ++ "."
-  , "Height: " ++ show h ++ "."
-  , "Average distance root to leaves: " ++ show h' ++ "."
-  , "Total branch length: " ++ show b ++ "."
+summarize t = L.intercalate "\n" $ map pRow
+  [ "Leaves: " $ show n
+  , "Height: " $ printf "%.5f" h
+  , "Average distance root to leaves: " $ printf "%.5f" h'
+  , "Total branch length: " $ printf "%.5f" b
   ]
  where
   n  = length . leaves $ t

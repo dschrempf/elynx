@@ -92,12 +92,12 @@ getInfo s = L.unwords
   [ alignLeft nameWidth (name s)
   , alignRight fieldWidth (L.pack $ show $ alphabet s)
   , alignRight fieldWidth (L.pack . show $ len)
-  , alignRight fieldWidth (L.pack $ P.printf "%.3f" pGaps)
+  , alignRight fieldWidth (L.pack $ P.printf "%2.2f" pGaps)
   ]
  where
   len   = length s
   nGaps = countGaps s
-  pGaps = fromIntegral nGaps / fromIntegral len :: Double
+  pGaps = 100 * fromIntegral nGaps / fromIntegral len :: Double
 
 -- | Trim and show a 'Sequence'.
 summarize :: Sequence -> L.ByteString

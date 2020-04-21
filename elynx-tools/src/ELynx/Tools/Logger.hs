@@ -116,9 +116,7 @@ eLynxWrapper worker args = do
     runReaderT worker args'
     -- Reproduction file.
     case outBn of
-      Nothing -> do
-        $(logInfo) "No output file given."
-        $(logInfo) "ELynx file for reproducible runs is not created."
+      Nothing -> $(logInfo) "No output file given --- skip writing ELynx file for reproducible runs."
       Just bn -> liftIO $ writeR bn args'
     -- Footer.
     ftr <- liftIO logFooter

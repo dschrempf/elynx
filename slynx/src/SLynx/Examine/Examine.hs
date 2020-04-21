@@ -36,30 +36,34 @@ import qualified ELynx.Data.Sequence.Alignment as M
 import qualified ELynx.Data.Sequence.Sequence  as Seq
 import           ELynx.Tools
 
+pRow :: String -> String -> L.ByteString
+pRow name val = alignLeft 50 n <> alignRight 10 v
+  where n = L.pack name
+        v = L.pack val
+
 examineAlignment :: Bool -> M.Alignment -> L.ByteString
 examineAlignment perSiteFlag a =
   L.unlines
       [ L.pack
         "Sequences have equal length (multi sequence alignment, or single sequence)."
-      , L.pack $ "Total number of columns in alignment: " ++ show (M.length a)
-      , L.pack $ "Number of columns without gaps: " ++ show (M.length aNoGaps)
-      , L.pack $ "Number of columns with standard characters only: " ++ show
-        (M.length aOnlyStd)
+      , pRow "Total number of columns in alignment:" $ show (M.length a)
+      , pRow "Number of columns without gaps:" $ show (M.length aNoGaps)
+      , pRow "Number of columns with standard characters only:" $
+        show (M.length aOnlyStd)
       , L.empty
-      , L.pack $ "Total number of characters: " ++ show nTot
-      , L.pack $ "Standard (i.e., not extended IUPAC) characters: " ++ show
-        (nTot - nIUPAC - nGaps - nUnknowns)
-      , L.pack $ "Extended IUPAC characters: " ++ show nIUPAC
-      , L.pack $ "Gaps: " ++ show nGaps
-      , L.pack $ "Unknowns: " ++ show nUnknowns
-      , L.pack $ "Percentage of standard characters: " ++ printf
-        "%.3f"
-        (1.0 - percentageIUPAC - percentageGaps - percentageUnknowns)
-      , L.pack
-      $  "Percentage of extended IUPAC characters: "
-      ++ printf "%.3f" percentageIUPAC
-      , L.pack $ "Percentage of gaps: " ++ printf "%.3f" percentageGaps
-      , L.pack $ "Percentage of unknowns: " ++ printf "%.3f" percentageUnknowns
+      , pRow "Total number of characters:" $ show nTot
+      , pRow "Standard (i.e., not extended IUPAC) characters:" $
+        show (nTot - nIUPAC - nGaps - nUnknowns)
+      , pRow "Extended IUPAC characters:" $ show nIUPAC
+      , pRow "Gaps:" $ show nGaps
+      , pRow "Unknowns:" $ show nUnknowns
+      , L.empty
+      , pRow "Percentage of standard characters:" $
+        printf "%2.2f" (100.0 - percentIUPAC - percentGaps - percentUnknowns)
+      , pRow "Percentage of extended IUPAC characters:" $
+        printf "%2.2f" percentIUPAC
+      , pRow "Percentage of gaps:" $ printf "%2.2f" percentGaps
+      , pRow "Percentage of unknowns:" $ printf "%2.2f" percentUnknowns
       , L.empty
       , L.pack "Distribution of characters:"
               -- Holy crap.
@@ -72,17 +76,17 @@ examineAlignment perSiteFlag a =
       , L.pack $ unwords $ map (printf "%.3f") charFreqs
       , L.empty
       , L.pack "Mean effective number of states (measured using entropy):"
-      , L.pack "Across whole alignment: " <> L.pack (printf "%.3f" kEffMean)
-      , L.pack "Across columns without gaps: "
-        <> L.pack (printf "%.3f" kEffMeanNoGaps)
-      , L.pack "Across columns without extended IUPAC characters: "
-        <> L.pack (printf "%.3f" kEffMeanOnlyStd)
+      , pRow "Across whole alignment:" $ printf "%.3f" kEffMean
+      , pRow "Across columns without gaps:" $ printf "%.3f" kEffMeanNoGaps
+      , pRow "Across columns without extended IUPAC characters:" $
+        printf "%.3f" kEffMeanOnlyStd
+      , L.empty
       , L.pack "Mean effective number of states (measured using homoplasy):"
-      , L.pack "Across whole alignment: " <> L.pack (printf "%.3f" kEffMeanHomo)
-      , L.pack "Across columns without gaps: "
-        <> L.pack (printf "%.3f" kEffMeanNoGapsHomo)
-      , L.pack "Across columns without extended IUPAC characters: "
-        <> L.pack (printf "%.3f" kEffMeanOnlyStdHomo)
+      , pRow "Across whole alignment:" $ printf "%.3f" kEffMeanHomo
+      , pRow "Across columns without gaps:" $
+        printf "%.3f" kEffMeanNoGapsHomo
+      , pRow "Across columns without extended IUPAC characters:" $
+        printf "%.3f" kEffMeanOnlyStdHomo
       ]
     <> perSiteBS
  where
@@ -90,9 +94,9 @@ examineAlignment perSiteFlag a =
   nIUPAC             = M.countIUPACChars a
   nGaps              = M.countGaps a
   nUnknowns          = M.countUnknowns a
-  percentageIUPAC    = fromIntegral nIUPAC / fromIntegral nTot :: Double
-  percentageGaps     = fromIntegral nGaps / fromIntegral nTot :: Double
-  percentageUnknowns = fromIntegral nUnknowns / fromIntegral nTot :: Double
+  percentIUPAC       = 100 * fromIntegral nIUPAC / fromIntegral nTot :: Double
+  percentGaps        = 100 * fromIntegral nGaps / fromIntegral nTot :: Double
+  percentUnknowns    = 100 * fromIntegral nUnknowns / fromIntegral nTot :: Double
   aNoGaps            = M.filterColsNoGaps a
   aOnlyStd           = M.filterColsOnlyStd aNoGaps
   charFreqsPerSite   = M.toFrequencyData a
