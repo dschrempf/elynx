@@ -37,7 +37,6 @@ dependencies:
   - directory
   - fast-logger
   - hmatrix
-  - lifted-base
   - matrices
   - megaparsec
   - monad-logger

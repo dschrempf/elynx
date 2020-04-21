@@ -28,21 +28,14 @@ ghc-options:
   - -fllvm
 
 dependencies:
-  - lifted-async
   - base
   - bytestring
   - containers
   - math-functions
   - megaparsec
   - mwc-random
-  - optparse-applicative
-  - parallel
   - primitive
-  - QuickCheck
-  - quickcheck-instances
   - statistics
-  - transformers
-  - vector
 
 library:
   source-dirs: src
@@ -75,3 +68,5 @@ tests:
       - elynx-tree
       - hspec
       - hspec-megaparsec
+      - QuickCheck
+      - quickcheck-instances

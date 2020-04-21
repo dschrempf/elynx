@@ -32,24 +32,15 @@ dependencies:
   - base
   - bytestring
   - containers
-  - data-memocombinators
   - hmatrix
-  - integration
-  - math-functions
-  - matrices
   - megaparsec
   - monad-logger
   - mwc-random
   - optparse-applicative
-  - parallel
-  - primitive
   - scientific
-  - statistics
   - text
   - transformers
   - vector
-  - vector-th-unbox
-  - word8
 
 library:
   source-dirs: src
