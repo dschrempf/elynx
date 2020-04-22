@@ -228,9 +228,9 @@ translate :: UniversalCode -> Codon N.Nucleotide -> AminoAcidS
 translate code = (M.!) (universalCode code)
 
 -- | Translate a codon to amino acids including translation stops. Translate
--- codons including gaps to amino acid gaps. XXX: Be careful, single or two
--- character gaps could have led to a reading frame shift and hence, the
--- translated sequence may be bogus.
+-- codons including gaps to amino acid gaps. Be careful, single or two character
+-- gaps can lead to a reading frame shift and hence, the translated sequence may
+-- be bogus.
 translateX :: UniversalCode -> Codon NX.NucleotideX -> AminoAcidS
 -- translateX _ (Codon (NX.Gap, NX.Gap, NX.Gap)) = Gap
 -- translateX code codon                         = C.convert . translate code . convert $ codon
@@ -240,17 +240,16 @@ translateX code codon@(Codon (x, y, z))
 
 -- | Translate a codon to amino acids including translation stops. Translate gap
 -- triplets to amino acid gaps, and triplets including unknowns to amino acid
--- unknowns. XXX: Be careful, also translates other IUPAC characters at the
--- moment (to amino acid Xs)!
+-- unknowns. Be careful, also translates other IUPAC characters to amino acid Xs!
+translateI :: UniversalCode -> Codon NI.NucleotideI -> AI.AminoAcidI
+translateI code codon@(Codon (x, y, z))
+  | C.isIUPAC x || C.isIUPAC y || C.isIUPAC z = AI.X
+  | otherwise = C.convert . translateX code . convert $ codon
 -- translateI :: UniversalCode -> Codon NI.NucleotideI -> AI.AminoAcidI
 -- translateI _ (Codon (NI.N, _,    _   )) = AI.X
 -- translateI _ (Codon (_   , NI.N, _   )) = AI.X
 -- translateI _ (Codon (_,    _,    NI.N)) = AI.X
 -- translateI code codon                   = C.convert . translateX code . convert $ codon
-translateI :: UniversalCode -> Codon NI.NucleotideI -> AI.AminoAcidI
-translateI code codon@(Codon (x, y, z))
-  | C.isIUPAC x || C.isIUPAC y || C.isIUPAC z = AI.X
-  | otherwise = C.convert . translateX code . convert $ codon
 
 -- Map from 'Codon' to amino acid character.
 universalCode :: UniversalCode -> M.Map (Codon N.Nucleotide) AminoAcidS
