@@ -18,11 +18,13 @@ where
 
 import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.Tree
-import           ELynx.Data.Tree
-import           ELynx.Import.Tree.Newick
 import           Test.Hspec
 import           Test.Hspec.Megaparsec
 import           Text.Megaparsec
+
+import           ELynx.Tools
+import           ELynx.Data.Tree
+import           ELynx.Import.Tree.Newick
 
 sampleLabelByteString :: L.ByteString
 sampleLabelByteString = L.pack "name:0.3"
@@ -90,6 +92,12 @@ sampleNewickEmpty = Node
     ]
   }
 
+sampleTreeNewickRevbayes :: L.ByteString
+sampleTreeNewickRevbayes  = L.pack "[&R](l[IDL]:0.3[KEYVALPAIRS],r[IDR]:0.4[KEYVALPARIS])[ID]:0.3;"
+
+sampleNewickRevBayesFile :: String
+sampleNewickRevBayesFile = "data/NewickRevBayes.tree"
+
 spec :: Spec
 spec = do
   describe "branchLength" $ do
@@ -139,3 +147,9 @@ spec = do
     it "parses a weird newick tree without node labels nor branch lengths"
       $             parse newick "" sampleNewickEmptyByteString
       `shouldParse` sampleNewickEmpty
+
+  describe "newickRevBayes" $
+    it "parses newick trees in RevBayes format" $ do
+    parse newickRevBayes "" `shouldSucceedOn` sampleTreeNewickRevbayes
+    t2 <- parseFileWith newickRevBayes sampleNewickRevBayesFile
+    length (leaves t2) `shouldBe` 102
