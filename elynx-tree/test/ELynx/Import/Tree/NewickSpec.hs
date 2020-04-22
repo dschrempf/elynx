@@ -141,15 +141,15 @@ spec = do
 
   describe "newick" $ do
     it "parses a newick trees" $ do
-      parse newick "" `shouldSucceedOn` sampleNewickByteString1
-      parse newick "" `shouldSucceedOn` sampleNewickByteString2
+      parse (newick Standard) "" `shouldSucceedOn` sampleNewickByteString1
+      parse (newick Standard) "" `shouldSucceedOn` sampleNewickByteString2
 
     it "parses a weird newick tree without node labels nor branch lengths"
-      $             parse newick "" sampleNewickEmptyByteString
+      $             parse (newick Standard) "" sampleNewickEmptyByteString
       `shouldParse` sampleNewickEmpty
 
   describe "newickRevBayes" $
     it "parses newick trees in RevBayes format" $ do
-    parse newickRevBayes "" `shouldSucceedOn` sampleTreeNewickRevbayes
-    t2 <- parseFileWith newickRevBayes sampleNewickRevBayesFile
+    parse (newick RevBayes) "" `shouldSucceedOn` sampleTreeNewickRevbayes
+    t2 <- parseFileWith (newick RevBayes) sampleNewickRevBayesFile
     length (leaves t2) `shouldBe` 102

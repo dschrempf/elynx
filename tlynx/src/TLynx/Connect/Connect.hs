@@ -33,9 +33,7 @@ import           TLynx.Connect.Options
 import           ELynx.Data.Tree
 import           ELynx.Export.Tree.Newick       ( toNewick )
 import           ELynx.Import.Tree.Newick       ( manyNewick
-                                                , manyNewickIqTree
                                                 , oneNewick
-                                                , oneNewickIqTree
                                                 )
 import           ELynx.Tools                    ( outHandle
                                                 , parseFileWith
@@ -55,10 +53,9 @@ connectCmd = do
   let cs = constraints lArgs
       l  = inFileA lArgs
       r  = inFileB lArgs
-      iq = newickIqTreeFlag lArgs
   case cs of
-    Nothing -> connectOnly iq outH l r
-    Just c  -> connectAndFilter iq outH c l r
+    Nothing -> connectOnly outH l r
+    Just c  -> connectAndFilter outH c l r
 
   liftIO $ hClose outH
 
@@ -80,16 +77,15 @@ compatibleWith
 compatibleWith f cs t = compatibleAll (fmap f t) (map (S.map f) cs)
 
 parseTrees
-  :: Bool
-  -> FilePath
+  :: FilePath
   -> FilePath
   -> ELynx
        ConnectArguments
        (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
-parseTrees iqt l r = do
-  let oneNw = if iqt then oneNewickIqTree else oneNewick
-  tl <- liftIO $ parseFileWith oneNw l
-  tr <- liftIO $ parseFileWith oneNw r
+parseTrees l r = do
+  nwF <- nwFormat . local <$> ask
+  tl <- liftIO $ parseFileWith (oneNewick nwF) l
+  tr <- liftIO $ parseFileWith (oneNewick nwF) r
   $(logInfo) "Tree 1:"
   $(logInfo) $ fromBs $ toNewick tl
   $(logInfo) "Tree 2:"
@@ -97,26 +93,25 @@ parseTrees iqt l r = do
   return (tl, tr)
 
 connectOnly
-  :: Bool -> Handle -> FilePath -> FilePath -> ELynx ConnectArguments ()
-connectOnly iq h l r = do
-  (tl, tr) <- parseTrees iq l r
+  :: Handle -> FilePath -> FilePath -> ELynx ConnectArguments ()
+connectOnly h l r = do
+  (tl, tr) <- parseTrees l r
   let ts = connectTrees tl tr
   $(logInfo) $ "Connected trees: " <> tShow (length ts)
   liftIO $ L.hPutStr h $ L.unlines $ map toNewick ts
 
 connectAndFilter
-  :: Bool
-  -> Handle
+  :: Handle
   -> FilePath
   -> FilePath
   -> FilePath
   -> ELynx ConnectArguments ()
-connectAndFilter iq h c l r = do
-  let manyNw = if iq then manyNewickIqTree else manyNewick
-  cts <- liftIO $ parseFileWith manyNw c
+connectAndFilter h c l r = do
+  nwF <- nwFormat . local <$> ask
+  cts <- liftIO $ parseFileWith (manyNewick nwF) c
   $(logInfo) "Constraints:"
   $(logInfo) $ fromBs $ L.intercalate "\n" $ map toNewick cts
-  (tl, tr) <- parseTrees iq l r
+  (tl, tr) <- parseTrees l r
   let ts  = connectTrees tl tr
       cs  = concatMap clades cts :: [Constraint (PhyloLabel L.ByteString)]
       -- Only collect trees that are compatible with the constraints.

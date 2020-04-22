@@ -24,12 +24,14 @@ import           Options.Applicative
 
 import           ELynx.Tools
 
+import           TLynx.Parsers
+
 -- | Arguments of connect command.
 data ConnectArguments = ConnectArguments
-  { newickIqTreeFlag :: Bool
-  , constraints      :: Maybe FilePath
-  , inFileA          :: FilePath
-  , inFileB          :: FilePath }
+  { nwFormat    :: NewickFormat
+  , constraints :: Maybe FilePath
+  , inFileA     :: FilePath
+  , inFileB     :: FilePath }
   deriving (Eq, Show, Generic)
 
 instance Reproducible ConnectArguments where
@@ -47,11 +49,7 @@ instance ToJSON ConnectArguments
 -- | Parse arguments of connect command.
 connectArguments :: Parser ConnectArguments
 connectArguments =
-  ConnectArguments <$> newickIqTree <*> constraintsFile <*> fileA <*> fileB
-
-newickIqTree :: Parser Bool
-newickIqTree = switch $ long "newick-iqtree" <> short 'i' <> help
-  "Use IQ-TREE Newick format (internal node labels are branch support values)"
+  ConnectArguments <$> newickFormat <*> constraintsFile <*> fileA <*> fileB
 
 constraintsFile :: Parser (Maybe FilePath)
 constraintsFile =

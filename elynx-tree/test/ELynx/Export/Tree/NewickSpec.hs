@@ -31,7 +31,7 @@ import           ELynx.Tools
 
 samplePhyloByteStringTree :: Tree (PhyloLabel L.ByteString)
 samplePhyloByteStringTree =
-  parseByteStringWith "Sample newick byte string" newick sampleNewickByteString1
+  parseByteStringWith "Sample newick byte string" (newick Standard) sampleNewickByteString1
 
 sampleNewickByteString1 :: L.ByteString
 sampleNewickByteString1 =
@@ -40,7 +40,7 @@ sampleNewickByteString1 =
 
 prop_invariant :: Tree (PhyloLabel Int) -> Bool
 prop_invariant t =
-  parseByteStringWith "Sample newick byte string" newick (toNewick t)
+  parseByteStringWith "Sample newick byte string" (newick Standard) (toNewick t)
     ==
                    -- We have to convert Int to ByteString, but we cannot use
                    -- arbitrary instances with ByteStrings because many
@@ -51,7 +51,7 @@ spec :: Spec
 spec = describe "parseByteStringWith newick $ toNewickPhyloByteString" $ do
   it "should be an invariant for a sample tree" $ do
     let bs = toNewick samplePhyloByteStringTree
-    parseByteStringWith "Newick string converted from tree object" newick bs
+    parseByteStringWith "Newick string converted from tree object" (newick Standard) bs
       `shouldBe` samplePhyloByteStringTree
 
   it "should be an invariant for a sample tree" $ property prop_invariant

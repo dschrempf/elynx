@@ -36,7 +36,7 @@ treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
 
 getSimpleTrees :: IO [Tree (PhyloLabel L.ByteString)]
-getSimpleTrees = parseFileWith manyNewick treeFileSimple
+getSimpleTrees = parseFileWith (manyNewick Standard) treeFileSimple
 
 bipartitionToBranchAnswer :: M.Map (Bipartition L.ByteString) (Sum Double)
 bipartitionToBranchAnswer = M.fromList

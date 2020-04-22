@@ -24,12 +24,14 @@ import           Options.Applicative
 
 import           ELynx.Tools
 
+import TLynx.Parsers
+
 -- | Arguments of compare command.
 data CompareArguments = CompareArguments
   { argsNormalize    :: Bool
   , argsBipartitions :: Bool
   , argsIntersect    :: Bool
-  , argsNewickIqTree :: Bool
+  , argsNewickFormat :: NewickFormat
   , argsInFiles      :: [FilePath] }
   deriving (Eq, Show, Generic)
 
@@ -55,7 +57,7 @@ compareArguments =
     <$> normalize
     <*> bipartitions
     <*> intersect
-    <*> newickIqTree
+    <*> newickFormat
     <*> some file
 
 normalize :: Parser Bool
@@ -76,7 +78,3 @@ intersect =
 
 file :: Parser FilePath
 file = strArgument $ metavar "NAME" <> help "Tree file"
-
-newickIqTree :: Parser Bool
-newickIqTree = switch $ long "newick-iqtree" <> short 'i' <> help
-  "Use IQ-TREE Newick format (internal node labels are branch support values)"

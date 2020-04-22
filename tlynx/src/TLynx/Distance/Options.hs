@@ -38,6 +38,8 @@ import           Text.Printf
 
 import           ELynx.Tools
 
+import TLynx.Parsers
+
 -- | Supported distance measures.
 data DistanceMeasure =
   Symmetric                  -- ^ Symmetric distance.
@@ -60,7 +62,7 @@ data DistanceArguments = DistanceArguments
   , argsIntersect         :: Bool
   , argsSummaryStatistics :: Bool
   , argsMasterTreeFile    :: Maybe FilePath
-  , argsNewickIqTree      :: Bool
+  , argsNewickFormat      :: NewickFormat
   , argsInFiles           :: [FilePath]
   }
   deriving (Eq, Show, Generic)
@@ -88,7 +90,7 @@ distanceArguments =
     <*> intersectSwitch
     <*> summaryStatisticsSwitch
     <*> masterTreeFile
-    <*> newickIqTree
+    <*> newickFormat
     <*> many inFilesArg
 
 masterTreeFile :: Parser (Maybe FilePath)
@@ -168,15 +170,11 @@ intersectSwitch =
     <> help
          "Compare intersections; i.e., before comparison, drop leaves that are not present in the other tree"
 
-newickIqTree :: Parser Bool
-newickIqTree = switch $ long "newick-iqtree" <> short 'i' <> help
-  "Use IQ-TREE Newick format (internal node labels are branch support values)"
-
 -- | Information about provided distance types.
 distanceFooter :: String
 distanceFooter = intercalate
   "\n"
-  [ "Available distance measures:"
+  [ "Distance measures:"
   , "  symmetric                Symmetric distance (Robinson-Foulds distance)."
   , "  incompatible-split[VAL]  Incompatible split distance. Collapse branches"
   , "                           with support less than VAL before distance calculation;"

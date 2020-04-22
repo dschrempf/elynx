@@ -24,10 +24,12 @@ import           Options.Applicative
 
 import           ELynx.Tools
 
+import TLynx.Parsers
+
 -- | Arguments needed to examine phylogenetic trees.
 data ExamineArguments = ExamineArguments
   { argsInFile       :: FilePath
-  , argsNewickIqTree :: Bool }
+  , argsNewickFormat :: NewickFormat }
   deriving (Eq, Show, Generic)
 
 instance Reproducible ExamineArguments where
@@ -43,12 +45,8 @@ instance ToJSON ExamineArguments
 
 -- | Command line parser.
 examineArguments :: Parser ExamineArguments
-examineArguments = ExamineArguments <$> inFile <*> newickIqTree
+examineArguments = ExamineArguments <$> inFile <*> newickFormat
 
 inFile :: Parser FilePath
 inFile =
   strArgument $ metavar "INPUT-FILE" <> help "Read trees from INPUT-FILE"
-
-newickIqTree :: Parser Bool
-newickIqTree = switch $ long "newick-iqtree" <> short 'i' <> help
-  "Use IQ-TREE Newick format (internal node labels are branch support values)"

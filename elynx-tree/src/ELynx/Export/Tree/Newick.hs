@@ -10,7 +10,8 @@ Portability :  portable
 
 Creation date: Thu Jan 17 13:51:47 2019.
 
-Parts of the code are from https://hackage.haskell.org/package/BiobaseNewick.
+Some functions are inspired by
+[Biobase.Newick.Import](https://hackage.haskell.org/package/BiobaseNewick).
 
 See nomenclature in 'ELynx.Data.Tree.Tree'.
 

@@ -101,7 +101,7 @@ simulateArguments =
 treeFileOpt :: Parser FilePath
 treeFileOpt =
   strOption $ long "tree-file" <> short 't' <> metavar "Name" <> help
-    "Read trees from file NAME"
+    "Read tree from Newick file NAME"
 
 phyloSubstitutionModelOpt :: Parser (Maybe String)
 phyloSubstitutionModelOpt =

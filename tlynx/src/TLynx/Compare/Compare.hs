@@ -51,15 +51,14 @@ import           ELynx.Tools                    ( parseFileWith
                                                 )
 
 treesOneFile
-  :: Bool
-  -> FilePath
+  :: FilePath
   -> ELynx
        CompareArguments
        (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
-treesOneFile iqtree tf = do
-  let nw = if iqtree then manyNewickIqTree else manyNewick
+treesOneFile tf = do
+  nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse file '" ++ tf ++ "'."
-  ts <- liftIO $ parseFileWith nw tf
+  ts <- liftIO $ parseFileWith (manyNewick nwF) tf
   let n = length ts
   case compare n 2 of
     LT -> error "Not enough trees in file."
@@ -67,18 +66,17 @@ treesOneFile iqtree tf = do
     EQ -> return (head ts, head . tail $ ts)
 
 treesTwoFiles
-  :: Bool
-  -> FilePath
+  :: FilePath
   -> FilePath
   -> ELynx
        CompareArguments
        (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
-treesTwoFiles iqtree tf1 tf2 = do
-  let nw = if iqtree then oneNewickIqTree else oneNewick
+treesTwoFiles tf1 tf2 = do
+  nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse first tree file '" ++ tf1 ++ "'."
-  t1 <- liftIO $ parseFileWith nw tf1
+  t1 <- liftIO $ parseFileWith (oneNewick nwF) tf1
   $(logInfo) $ T.pack $ "Parse second tree file '" ++ tf2 ++ "'."
-  t2 <- liftIO $ parseFileWith nw tf2
+  t2 <- liftIO $ parseFileWith (oneNewick nwF) tf2
   return (t1, t2)
 
 -- | More detailed comparison of two trees.
@@ -92,9 +90,9 @@ compareCmd = do
   let inFiles = argsInFiles l
       nFiles  = length inFiles
   (tr1, tr2) <- case nFiles of
-    1 -> treesOneFile (argsNewickIqTree l) (head inFiles)
+    1 -> treesOneFile (head inFiles)
     2 ->
-      treesTwoFiles (argsNewickIqTree l) (head inFiles) (head . tail $ inFiles)
+      treesTwoFiles (head inFiles) (head . tail $ inFiles)
     _ ->
       error
         "Need two input files with one tree each or one input file with two trees."

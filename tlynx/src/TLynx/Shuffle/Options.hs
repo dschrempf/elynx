@@ -24,12 +24,14 @@ import           Options.Applicative
 
 import           ELynx.Tools
 
+import           TLynx.Parsers
+
 -- | Arguments of shuffle command.
 data ShuffleArguments = ShuffleArguments
-  { newickIqTreeFlag :: Bool
-  , nReplicates      :: Int
-  , inFile           :: FilePath
-  , argsSeed         :: Seed }
+  { nwFormat    :: NewickFormat
+  , nReplicates :: Int
+  , inFile      :: FilePath
+  , argsSeed    :: Seed }
   deriving (Eq, Show, Generic)
 
 instance Reproducible ShuffleArguments where
@@ -46,11 +48,7 @@ instance ToJSON ShuffleArguments
 
 -- | Parse arguments of shuffle command.
 shuffleArguments :: Parser ShuffleArguments
-shuffleArguments = ShuffleArguments <$> newickIqTree <*> n <*> file <*> seedOpt
-
-newickIqTree :: Parser Bool
-newickIqTree = switch $ long "newick-iqtree" <> short 'i' <> help
-  "Use IQ-TREE Newick format (internal node labels are branch support values)"
+shuffleArguments = ShuffleArguments <$> newickFormat <*> n <*> file <*> seedOpt
 
 n :: Parser Int
 n =

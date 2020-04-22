@@ -40,11 +40,11 @@ import           ELynx.Import.Tree.Newick
 import           ELynx.Tools
 
 readTrees
-  :: Bool -> FilePath -> ELynx ExamineArguments [Tree (PhyloLabel L.ByteString)]
-readTrees iqtree fp = do
+  :: FilePath -> ELynx ExamineArguments [Tree (PhyloLabel L.ByteString)]
+readTrees fp = do
   $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
-  let nw = if iqtree then manyNewickIqTree else manyNewick
-  liftIO $ parseFileWith nw fp
+  nf <- argsNewickFormat . local <$> ask
+  liftIO $ parseFileWith (manyNewick nf) fp
 
 examineTree :: (Measurable a, Named a) => Handle -> Tree a -> IO ()
 examineTree h t = do
@@ -61,7 +61,6 @@ examine :: ELynx ExamineArguments ()
 examine = do
   l <- local <$> ask
   let inFn   = argsInFile l
-      iqtree = argsNewickIqTree l
-  trs  <- readTrees iqtree inFn
+  trs  <- readTrees inFn
   outH <- outHandle "results" ".out"
   liftIO $ mapM_ (examineTree outH) trs

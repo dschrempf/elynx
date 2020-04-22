@@ -23,6 +23,8 @@ where
 
 import           Options.Applicative
 
+import           ELynx.Tools
+
 import           TLynx.Coalesce.Options
 import           TLynx.Compare.Options
 import           TLynx.Connect.Options
@@ -30,8 +32,7 @@ import           TLynx.Distance.Options
 import           TLynx.Examine.Options
 import           TLynx.Shuffle.Options
 import           TLynx.Simulate.Options
-
-import           ELynx.Tools
+import           TLynx.Parsers               (newickHelp)
 
 -- | The different TLynx commands and their arguments.
 data CommandArguments =
@@ -84,7 +85,6 @@ desc :: [String]
 desc = ["Compare, examine, and simulate phylogenetic trees."]
 
 ftr :: [String]
-ftr = "File formats:" : fs
+ftr = "Available tree file formats:" : indent newickHelp
  where
-  toListItem = ("  - " ++)
-  fs         = map toListItem ["Newick"]
+  indent = map ("  " ++)

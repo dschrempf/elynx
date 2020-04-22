@@ -141,7 +141,7 @@ simulateCmd = do
 
   $(logInfo) ""
   $(logInfo) $ T.pack $ "Read tree from file '" ++ treeFile ++ "'."
-  tree <- liftIO $ parseFileWith newick treeFile
+  tree <- liftIO $ parseFileWith (newick Standard) treeFile
   $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarize tree
 
   let edmFile       = argsEDMFile l

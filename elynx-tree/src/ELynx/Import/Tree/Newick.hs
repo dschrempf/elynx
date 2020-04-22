@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 {- |
 Module      :  ELynx.Import.Tree.Newick
 Description :  Import Newick trees
@@ -10,11 +12,14 @@ Portability :  portable
 
 Creation date: Thu Jan 17 14:56:27 2019.
 
-Some functions are inspired by Biobase.Newick.Import.
+Some functions are inspired by
+[Biobase.Newick.Import](https://hackage.haskell.org/package/BiobaseNewick).
 
 [Specifications](http://evolution.genetics.washington.edu/phylip/newicktree.html)
 
 - In particular, no conversion from _ to (space) is done right now.
+
+TODO: Use 'between' for forests.
 
 -}
 
@@ -22,6 +27,8 @@ Some functions are inspired by Biobase.Newick.Import.
 module ELynx.Import.Tree.Newick
   ( Parser
   -- * Newick tree format
+  , NewickFormat (..)
+  , description
   , newick
   , oneNewick
   , manyNewick
@@ -30,14 +37,6 @@ module ELynx.Import.Tree.Newick
   , node
   , name
   , branchLength
-  -- * Newick tree format with branch support as node names (e.g., used by IQ-TREE)
-  , newickIqTree
-  , oneNewickIqTree
-  , manyNewickIqTree
-  -- * Newick tree format with key-value pais is square backets (e.g., used by RevBayes)
-  , newickRevBayes
-  , oneNewickRevBayes
-  , manyNewickRevBayes
   )
 where
 
@@ -57,20 +56,58 @@ import           ELynx.Tools
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString
 
+-- | Newick tree format.
+--
+-- >>> unlines $ map (("- " <>) . description) (allValues :: [NewickFormat])
+-- - Standard: Branch support values are stored in square brackets after branch lengths.
+-- - IqTree:   Branch support values are stored as node names after the closing bracket of forests.
+-- - RevBayes  Key-value pairs is provided in square brackets after node names as well as branch lengths. Key value pairs are IGNORED at the moment.
+data NewickFormat =
+  Standard
+  | IqTree
+  | RevBayes
+  deriving (Eq, Show, Read, Bounded, Enum, Generic)
+
+instance ToJSON NewickFormat
+
+-- | Short description of the supported Newick formats.
+description :: NewickFormat -> String
+description Standard = "Standard: Branch support values are stored in square brackets after branch lengths."
+description IqTree   = "IqTree:   Branch support values are stored as node names after the closing bracket of forests."
+description RevBayes = "RevBayes  Key-value pairs is provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are IGNORED at the moment."
+
+-- | Parse a single Newick tree. Also succeeds when more trees follow.
+newick :: NewickFormat -> Parser (Tree (PhyloLabel L.ByteString))
+newick Standard = newickStandard
+newick IqTree   = newickIqTree
+newick RevBayes = newickRevBayes
+
+-- | Parse a single Newick tree. Fails when end of file is not reached.
+oneNewick :: NewickFormat -> Parser (Tree (PhyloLabel L.ByteString))
+oneNewick Standard = oneNewickStandard
+oneNewick IqTree   = oneNewickIqTree
+oneNewick RevBayes = oneNewickRevBayes
+
+-- | Parse many Newick trees until end of file.
+manyNewick :: NewickFormat -> Parser [Tree (PhyloLabel L.ByteString)]
+manyNewick Standard = manyNewickStandard
+manyNewick IqTree   = manyNewickIqTree
+manyNewick RevBayes = manyNewickRevBayes
+
 w :: Char -> Parser Word8
 w = char . c2w
 
 -- | Parse a single Newick tree. Also succeeds when more trees follow.
-newick :: Parser (Tree (PhyloLabel L.ByteString))
-newick = space *> tree <* w ';' <* space <?> "newick"
+newickStandard :: Parser (Tree (PhyloLabel L.ByteString))
+newickStandard = space *> tree <* w ';' <* space <?> "newick"
 
 -- | Parse a single Newick tree. Fails when end of file is not reached.
-oneNewick :: Parser (Tree (PhyloLabel L.ByteString))
-oneNewick = newick <* eof <?> "oneNewick"
+oneNewickStandard :: Parser (Tree (PhyloLabel L.ByteString))
+oneNewickStandard = newickStandard <* eof <?> "oneNewick"
 
 -- | Parse many Newick trees until end of file.
-manyNewick :: Parser [Tree (PhyloLabel L.ByteString)]
-manyNewick = some newick <* eof <?> "manyNewick"
+manyNewickStandard :: Parser [Tree (PhyloLabel L.ByteString)]
+manyNewickStandard = some newickStandard <* eof <?> "manyNewick"
 
 tree :: Parser (Tree (PhyloLabel L.ByteString))
 tree = branched <|> leaf <?> "tree"
@@ -83,12 +120,9 @@ branched = do
 
 -- | A 'forest' is a set of trees separated by @,@ and enclosed by parentheses.
 forest :: Parser [Tree (PhyloLabel L.ByteString)]
-forest = do
-  _ <- w '('
-  f <- tree `sepBy1` w ','
-  _ <- w ')' <?> "forest"
-  return f
+forest = between (w '(') (w ')') (tree `sepBy1` w ',') <?> "forest"
 
+-- TODO: Why try?
 branchSupport :: Parser (Maybe Double)
 branchSupport = optional $ do
   _ <- try $ w '['
@@ -131,18 +165,17 @@ decimalAsDouble = fromIntegral <$> (decimal :: Parser Int)
 --------------------------------------------------------------------------------
 -- IQ-TREE.
 
--- | IQ-TREE stores the branch support as node names after the closing bracket
--- of a forest. Parse a single Newick tree. Also succeeds when more trees
--- follow.
+-- IQ-TREE stores the branch support as node names after the closing bracket of
+-- a forest. Parse a single Newick tree. Also succeeds when more trees follow.
 newickIqTree :: Parser (Tree (PhyloLabel L.ByteString))
 newickIqTree = space *> treeIqTree <* w ';' <* space <?> "newickIqTree"
 
--- | See 'newickIqTree'. Parse a single Newick tree. Fails when end of file is
--- not reached.
+-- See 'newickIqTree'. Parse a single Newick tree. Fails when end of file is not
+-- reached.
 oneNewickIqTree :: Parser (Tree (PhyloLabel L.ByteString))
 oneNewickIqTree = newickIqTree <* eof <?> "oneNewickIqTree"
 
--- | See 'newickIqTree'. Parse many Newick trees until end of file.
+-- See 'newickIqTree'. Parse many Newick trees until end of file.
 manyNewickIqTree :: Parser [Tree (PhyloLabel L.ByteString)]
 manyNewickIqTree = some newickIqTree <* eof <?> "manyNewickIqTree"
 
@@ -167,6 +200,7 @@ forestIqTree = do
   _ <- w ')' <?> "forestIqTree"
   return f
 
+-- TODO: Same here, why try?
 -- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
 branchSupportIqTree :: Parser (Maybe Double)
 branchSupportIqTree = optional $ try float <|> try decimalAsDouble
@@ -182,7 +216,7 @@ nodeIqTree = do
 --------------------------------------------------------------------------------
 -- RevBayes.
 
--- | RevBayes uses square brackets and key-value pairs to define information
+-- RevBayes uses square brackets and key-value pairs to define information
 -- about nodes and branches. Parse a single Newick tree. Also succeeds when more
 -- trees follow.
 --
@@ -190,12 +224,12 @@ nodeIqTree = do
 newickRevBayes :: Parser (Tree (PhyloLabel L.ByteString))
 newickRevBayes = space *> brackets *> treeRevBayes <* w ';' <* space <?> "newickRevBayes"
 
--- | See 'newickRevBayes'. Parse a single Newick tree. Fails when end of file is
+-- See 'newickRevBayes'. Parse a single Newick tree. Fails when end of file is
 -- not reached.
 oneNewickRevBayes :: Parser (Tree (PhyloLabel L.ByteString))
 oneNewickRevBayes = newickRevBayes <* eof <?> "oneNewickRevBayes"
 
--- | See 'newickRevBayes'. Parse many Newick trees until end of file.
+-- See 'newickRevBayes'. Parse many Newick trees until end of file.
 manyNewickRevBayes :: Parser [Tree (PhyloLabel L.ByteString)]
 manyNewickRevBayes = some newickRevBayes <* eof <?> "manyNewickRevBayes"
 

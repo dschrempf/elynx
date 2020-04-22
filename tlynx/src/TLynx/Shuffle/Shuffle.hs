@@ -58,9 +58,7 @@ import           TLynx.Shuffle.Options
 
 import           ELynx.Data.Tree
 import           ELynx.Export.Tree.Newick       ( toNewick )
-import           ELynx.Import.Tree.Newick       ( oneNewick
-                                                , oneNewickIqTree
-                                                )
+import           ELynx.Import.Tree.Newick       ( oneNewick )
 import           ELynx.Simulate.PointProcess    ( PointProcess(PointProcess)
                                                 , toReconstructedTree
                                                 )
@@ -74,9 +72,8 @@ shuffleCmd :: ELynx ShuffleArguments ()
 shuffleCmd = do
   l <- local <$> ask
   h <- outHandle "results" ".tree"
-
-  let oneNw = if newickIqTreeFlag l then oneNewickIqTree else oneNewick
-  t <- liftIO $ parseFileWith oneNw (inFile l)
+  let nwF = nwFormat l
+  t <- liftIO $ parseFileWith (oneNewick nwF) (inFile l)
   $(logInfo) "Input tree:"
   $(logInfo) $ fromBs $ toNewick t
 

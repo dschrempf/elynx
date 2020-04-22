@@ -88,8 +88,7 @@ showTriplet n m args (i, j, d) = i' <> j' <> d'
 distance :: ELynx DistanceArguments ()
 distance = do
   l <- local <$> ask
-  let oneNw  = if argsNewickIqTree l then oneNewickIqTree else oneNewick
-      manyNw = if argsNewickIqTree l then manyNewickIqTree else manyNewick
+  let nwFormat = argsNewickFormat l
   -- Determine output handle (stdout or file).
   outH <- outHandle "results" ".out"
   -- Master tree (in case it is given).
@@ -98,7 +97,7 @@ distance = do
     Nothing -> return Nothing
     Just f  -> do
       $(logInfo) $ T.pack $ "Read master tree from file: " <> f <> "."
-      t <- liftIO $ parseFileWith oneNw f
+      t <- liftIO $ parseFileWith (oneNewick nwFormat) f
       $(logInfo) "Compute distances between all trees and master tree."
       return $ Just t
   let tfps = argsInFiles l
@@ -106,13 +105,13 @@ distance = do
     []   -> error "No tree input files given."
     [tf] -> do
       $(logInfo) "Read trees from single file."
-      ts <- liftIO $ parseFileWith manyNw tf
+      ts <- liftIO $ parseFileWith (manyNewick nwFormat) tf
       $(logInfo) $ tShow (length ts) <> " trees found in file."
       $(logInfo) "Trees are indexed with integers."
       return (ts, map show [0 .. length ts - 1])
     _ -> do
       $(logInfo) "Read trees from files."
-      ts <- liftIO $ mapM (parseFileWith oneNw) tfps
+      ts <- liftIO $ mapM (parseFileWith (oneNewick nwFormat)) tfps
       $(logInfo) "Trees are named according to their file names."
       return (ts, tfps)
 
