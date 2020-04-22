@@ -10,7 +10,7 @@ Portability :  portable
 
 Creation date: Thu Jan 17 14:56:27 2019.
 
-Code partly taken from Biobase.Newick.Import.
+Some functions are inspired by Biobase.Newick.Import.
 
 [Specifications](http://evolution.genetics.washington.edu/phylip/newicktree.html)
 
