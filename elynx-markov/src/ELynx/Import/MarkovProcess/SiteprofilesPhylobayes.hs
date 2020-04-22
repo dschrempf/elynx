@@ -20,7 +20,8 @@ one stationary distribution for each site.
 -}
 
 module ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
-  ( siteprofiles )
+  ( siteprofiles
+  )
 where
 
 import           Control.Monad
@@ -32,7 +33,10 @@ import           Text.Megaparsec.Byte.Lexer
 
 import           ELynx.Tools
 
-import           ELynx.Import.MarkovProcess.EDMModelPhylobayes (Parser, EDMComponent)
+import           ELynx.Import.MarkovProcess.EDMModelPhylobayes
+                                                ( Parser
+                                                , EDMComponent
+                                                )
 
 -- | Parse stationary distributions from Phylobayes format.
 siteprofiles :: Parser [EDMComponent]

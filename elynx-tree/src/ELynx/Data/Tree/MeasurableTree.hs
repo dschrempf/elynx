@@ -109,12 +109,14 @@ shortenStem dl = lengthenStem (-dl)
 
 pRow :: String -> String -> L.ByteString
 pRow name val = alignLeft 33 n <> alignRight 8 v
-  where n = L.pack name
-        v = L.pack val
+ where
+  n = L.pack name
+  v = L.pack val
 
 -- | Summarize a tree with measureable branch lengths.
 summarize :: (Measurable a) => Tree a -> L.ByteString
-summarize t = L.intercalate "\n"
+summarize t = L.intercalate
+  "\n"
   [ pRow "Leaves: " $ show n
   , pRow "Height: " $ printf "%.5f" h
   , pRow "Average distance root to leaves: " $ printf "%.5f" h'

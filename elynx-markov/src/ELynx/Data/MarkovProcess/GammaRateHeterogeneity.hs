@@ -23,11 +23,11 @@ module ELynx.Data.MarkovProcess.GammaRateHeterogeneity
   )
 where
 
-import Prelude hiding (repeat)
+import           Prelude                 hiding ( repeat )
 
 import qualified Data.ByteString.Lazy.Char8    as L
 import qualified Data.List.NonEmpty            as N
-import           Data.List.NonEmpty            ( NonEmpty )
+import           Data.List.NonEmpty             ( NonEmpty )
 import           Numeric.Integration.TanhSinh
 import           Statistics.Distribution
 import           Statistics.Distribution.Gamma
@@ -72,7 +72,7 @@ splitSubstitutionModel n alpha sm = renamedSMs
  where
   means      = getMeans n alpha
   scaledSMs  = N.map (`S.scale` sm) means
-  names      = N.fromList $ map (("; gamma rate category " ++) . show) [1 :: Int ..]
+  names = N.fromList $ map (("; gamma rate category " ++) . show) [1 :: Int ..]
   renamedSMs = N.zipWith S.appendName names scaledSMs
 
 expandSubstitutionModel
@@ -89,7 +89,7 @@ expandMixtureModel n alpha mm = M.concatenate name renamedMMs
   name       = M.name mm <> getName n alpha
   means      = getMeans n alpha
   scaledMMs  = N.map (`M.scale` mm) means
-  names      = N.fromList $ map (("; gamma rate category " ++) . show) [1 :: Int ..]
+  names = N.fromList $ map (("; gamma rate category " ++) . show) [1 :: Int ..]
   renamedMMs = N.zipWith M.appendNameComponents names scaledMMs
 
 -- For a given number of rate categories 'n' and a shape parameter 'alpha' (the

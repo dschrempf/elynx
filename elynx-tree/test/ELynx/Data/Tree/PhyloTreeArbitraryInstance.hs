@@ -13,8 +13,8 @@ Creation date: Tue Apr 21 17:13:23 2020.
 -}
 
 module ELynx.Data.Tree.PhyloTreeArbitraryInstance
-  (
-  ) where
+  ()
+where
 
 import           Test.QuickCheck
 

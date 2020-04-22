@@ -24,14 +24,16 @@ import           Test.QuickCheck.Instances.Containers
                                                 ( )
 
 import           ELynx.Data.Tree
-import           ELynx.Data.Tree.PhyloTreeArbitraryInstance ()
+import           ELynx.Data.Tree.PhyloTreeArbitraryInstance
+                                                ( )
 import           ELynx.Export.Tree.Newick
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools
 
 samplePhyloByteStringTree :: Tree (PhyloLabel L.ByteString)
-samplePhyloByteStringTree =
-  parseByteStringWith "Sample newick byte string" (newick Standard) sampleNewickByteString1
+samplePhyloByteStringTree = parseByteStringWith "Sample newick byte string"
+                                                (newick Standard)
+                                                sampleNewickByteString1
 
 sampleNewickByteString1 :: L.ByteString
 sampleNewickByteString1 =
@@ -51,7 +53,9 @@ spec :: Spec
 spec = describe "parseByteStringWith newick $ toNewickPhyloByteString" $ do
   it "should be an invariant for a sample tree" $ do
     let bs = toNewick samplePhyloByteStringTree
-    parseByteStringWith "Newick string converted from tree object" (newick Standard) bs
+    parseByteStringWith "Newick string converted from tree object"
+                        (newick Standard)
+                        bs
       `shouldBe` samplePhyloByteStringTree
 
   it "should be an invariant for a sample tree" $ property prop_invariant

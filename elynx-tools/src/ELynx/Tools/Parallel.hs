@@ -14,7 +14,8 @@ Creation date: Tue Apr 21 15:19:44 2020.
 
 module ELynx.Tools.Parallel
   ( parMapChunk
-  ) where
+  )
+where
 
 import           Control.Parallel.Strategies
 

@@ -93,7 +93,8 @@ sampleNewickEmpty = Node
   }
 
 sampleTreeNewickRevbayes :: L.ByteString
-sampleTreeNewickRevbayes  = L.pack "[&R](l[IDL]:0.3[KEYVALPAIRS],r[IDR]:0.4[KEYVALPARIS])[ID]:0.3;"
+sampleTreeNewickRevbayes =
+  L.pack "[&R](l[IDL]:0.3[KEYVALPAIRS],r[IDR]:0.4[KEYVALPARIS])[ID]:0.3;"
 
 sampleNewickRevBayesFile :: String
 sampleNewickRevBayesFile = "data/NewickRevBayes.tree"
@@ -148,8 +149,7 @@ spec = do
       $             parse (newick Standard) "" sampleNewickEmptyByteString
       `shouldParse` sampleNewickEmpty
 
-  describe "newickRevBayes" $
-    it "parses newick trees in RevBayes format" $ do
+  describe "newickRevBayes" $ it "parses newick trees in RevBayes format" $ do
     parse (newick RevBayes) "" `shouldSucceedOn` sampleTreeNewickRevbayes
     t2 <- parseFileWith (newick RevBayes) sampleNewickRevBayesFile
     length (leaves t2) `shouldBe` 102

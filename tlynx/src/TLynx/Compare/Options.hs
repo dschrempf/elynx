@@ -24,7 +24,7 @@ import           Options.Applicative
 
 import           ELynx.Tools
 
-import TLynx.Parsers
+import           TLynx.Parsers
 
 -- | Arguments of compare command.
 data CompareArguments = CompareArguments

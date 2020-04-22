@@ -27,7 +27,7 @@ TODO: Use 'between' for forests.
 module ELynx.Import.Tree.Newick
   ( Parser
   -- * Newick tree format
-  , NewickFormat (..)
+  , NewickFormat(..)
   , description
   , newick
   , oneNewick
@@ -72,9 +72,12 @@ instance ToJSON NewickFormat
 
 -- | Short description of the supported Newick formats.
 description :: NewickFormat -> String
-description Standard = "Standard: Branch support values are stored in square brackets after branch lengths."
-description IqTree   = "IqTree:   Branch support values are stored as node names after the closing bracket of forests."
-description RevBayes = "RevBayes  Key-value pairs is provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are IGNORED at the moment."
+description Standard =
+  "Standard: Branch support values are stored in square brackets after branch lengths."
+description IqTree
+  = "IqTree:   Branch support values are stored as node names after the closing bracket of forests."
+description RevBayes
+  = "RevBayes  Key-value pairs is provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are IGNORED at the moment."
 
 -- | Parse a single Newick tree. Also succeeds when more trees follow.
 newick :: NewickFormat -> Parser (Tree (PhyloLabel L.ByteString))
@@ -222,7 +225,8 @@ nodeIqTree = do
 --
 -- XXX: Key value pairs are IGNORED at the moment.
 newickRevBayes :: Parser (Tree (PhyloLabel L.ByteString))
-newickRevBayes = space *> brackets *> treeRevBayes <* w ';' <* space <?> "newickRevBayes"
+newickRevBayes =
+  space *> brackets *> treeRevBayes <* w ';' <* space <?> "newickRevBayes"
 
 -- See 'newickRevBayes'. Parse a single Newick tree. Fails when end of file is
 -- not reached.
@@ -265,5 +269,7 @@ leafRevBayes = do
 -- Drop anything between brackets.
 brackets :: Parser ()
 brackets = do
-  _ <- between (w '[') (w ']') (takeWhileP (Just "allCharsButBracketEnd") (/= c2w ']'))
+  _ <- between (w '[')
+               (w ']')
+               (takeWhileP (Just "allCharsButBracketEnd") (/= c2w ']'))
   return ()

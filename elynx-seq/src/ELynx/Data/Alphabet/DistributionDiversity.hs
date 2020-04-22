@@ -71,7 +71,8 @@ acc :: Vector v Int => AlphabetSpec -> v Int -> Character -> v Int
 acc alph vec char = incrementElemIndexByOne is vec
   where is = [ S.findIndex c (std alph) | c <- toStd alph char ]
 
-countCharacters :: (Vector v Character, Vector v Int) => AlphabetSpec -> v Character -> v Int
+countCharacters
+  :: (Vector v Character, Vector v Int) => AlphabetSpec -> v Character -> v Int
 countCharacters alph = V.foldl' (acc alph) zeroCounts
  where
   nChars     = length (std alph)
@@ -85,7 +86,11 @@ saveDivision value divisor =
 -- The input vector has arbitrary length (most often the number of sequences in
 -- an alignment), the length of the output vector is the number of characters in
 -- the alphabet.
-frequencyCharacters :: (Vector v Character, Vector v Int, Vector v Double) => AlphabetSpec -> v Character -> v Double
+frequencyCharacters
+  :: (Vector v Character, Vector v Int, Vector v Double)
+  => AlphabetSpec
+  -> v Character
+  -> v Double
 frequencyCharacters alph d = V.map (`saveDivision` s) counts
  where
   counts = countCharacters alph d

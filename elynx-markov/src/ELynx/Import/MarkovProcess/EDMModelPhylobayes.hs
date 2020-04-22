@@ -27,7 +27,8 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Byte
 import           Text.Megaparsec.Byte.Lexer
 
-import           ELynx.Data.MarkovProcess.MixtureModel (Weight)
+import           ELynx.Data.MarkovProcess.MixtureModel
+                                                ( Weight )
 
 import           ELynx.Tools
 

@@ -84,16 +84,15 @@ parseTrees
        (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
 parseTrees l r = do
   nwF <- nwFormat . local <$> ask
-  tl <- liftIO $ parseFileWith (oneNewick nwF) l
-  tr <- liftIO $ parseFileWith (oneNewick nwF) r
+  tl  <- liftIO $ parseFileWith (oneNewick nwF) l
+  tr  <- liftIO $ parseFileWith (oneNewick nwF) r
   $(logInfo) "Tree 1:"
   $(logInfo) $ fromBs $ toNewick tl
   $(logInfo) "Tree 2:"
   $(logInfo) $ fromBs $ toNewick tr
   return (tl, tr)
 
-connectOnly
-  :: Handle -> FilePath -> FilePath -> ELynx ConnectArguments ()
+connectOnly :: Handle -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectOnly h l r = do
   (tl, tr) <- parseTrees l r
   let ts = connectTrees tl tr
@@ -101,11 +100,7 @@ connectOnly h l r = do
   liftIO $ L.hPutStr h $ L.unlines $ map toNewick ts
 
 connectAndFilter
-  :: Handle
-  -> FilePath
-  -> FilePath
-  -> FilePath
-  -> ELynx ConnectArguments ()
+  :: Handle -> FilePath -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectAndFilter h c l r = do
   nwF <- nwFormat . local <$> ask
   cts <- liftIO $ parseFileWith (manyNewick nwF) c

@@ -616,4 +616,5 @@ poissonCustom mnm d = substitutionModel Protein nm [] d poissonExch
 
 -- | General time reversible (GTR) substitution model for amino acids.
 gtr20 :: [Double] -> StationaryDistribution -> SubstitutionModel
-gtr20 es d = substitutionModel Protein "GTR" es d e where e = exchFromListUpper n es
+gtr20 es d = substitutionModel Protein "GTR" es d e
+  where e = exchFromListUpper n es

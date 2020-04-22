@@ -16,25 +16,28 @@ module TLynx.Parsers
   ( NewickFormat
   , newickFormat
   , newickHelp
-  ) where
+  )
+where
 
 import           Options.Applicative
 
-import           ELynx.Import.Tree.Newick (NewickFormat (..), description)
-import           ELynx.Tools (allValues)
+import           ELynx.Import.Tree.Newick       ( NewickFormat(..)
+                                                , description
+                                                )
+import           ELynx.Tools                    ( allValues )
 
 -- | Parse 'NewickFormat'.
 newickFormat :: Parser NewickFormat
-newickFormat = option auto $
-  long "newick-format"
-  <> short 'f'
-  <> metavar "FORMAT"
-  <> value Standard
-  <> showDefault
-  <> help "Newick tree format; see 'tlynx --help'"
+newickFormat =
+  option auto
+    $  long "newick-format"
+    <> short 'f'
+    <> metavar "FORMAT"
+    <> value Standard
+    <> showDefault
+    <> help "Newick tree format; see 'tlynx --help'"
 
 -- | Help for different 'NewickFormat's.
 newickHelp :: [String]
 newickHelp = map (toListItem . description) (allValues :: [NewickFormat])
- where
-  toListItem = ("- Newick " ++)
+  where toListItem = ("- Newick " ++)

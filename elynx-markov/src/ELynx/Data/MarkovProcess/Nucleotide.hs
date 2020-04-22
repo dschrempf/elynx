@@ -100,4 +100,5 @@ hky k d = substitutionModel DNA "HKY" [k] d e where e = hkyExch k
 
 -- | HKY substitution model.
 gtr4 :: [Double] -> StationaryDistribution -> SubstitutionModel
-gtr4 es d = substitutionModel DNA "GTR" es d e where e = exchFromListUpper n es
+gtr4 es d = substitutionModel DNA "GTR" es d e
+  where e = exchFromListUpper n es

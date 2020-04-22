@@ -91,8 +91,7 @@ compareCmd = do
       nFiles  = length inFiles
   (tr1, tr2) <- case nFiles of
     1 -> treesOneFile (head inFiles)
-    2 ->
-      treesTwoFiles (head inFiles) (head . tail $ inFiles)
+    2 -> treesTwoFiles (head inFiles) (head . tail $ inFiles)
     _ ->
       error
         "Need two input files with one tree each or one input file with two trees."

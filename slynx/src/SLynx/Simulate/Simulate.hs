@@ -32,7 +32,7 @@ import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Reader     ( ask )
 import qualified Data.ByteString.Lazy          as L
 import qualified Data.ByteString.Lazy.Char8    as LC
-import Data.List.NonEmpty (toList)
+import           Data.List.NonEmpty             ( toList )
 import           Data.Maybe
 import qualified Data.Set                      as Set
 import qualified Data.Text                     as T
@@ -40,7 +40,9 @@ import qualified Data.Text.Lazy                as LT
 import qualified Data.Text.Lazy.Encoding       as LT
 import           Data.Tree
 import qualified Data.Vector.Unboxed           as V
-import           Numeric.LinearAlgebra   hiding ( (<>), toList )
+import           Numeric.LinearAlgebra   hiding ( (<>)
+                                                , toList
+                                                )
 import           System.Random.MWC
 
 import           SLynx.Simulate.Options

@@ -26,7 +26,8 @@ import           Test.QuickCheck
 import           Test.QuickCheck.Instances.Containers
                                                 ( )
 import           ELynx.Data.Tree
-import           ELynx.Data.Tree.PhyloTreeArbitraryInstance ()
+import           ELynx.Data.Tree.PhyloTreeArbitraryInstance
+                                                ( )
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools
 
@@ -192,7 +193,8 @@ incSplitTree2 :: Tree (PhyloLabel L.ByteString)
 incSplitTree2 = parseByteStringWith "" (oneNewick IqTree) "((a,c),(b,d));"
 
 incSplitTree3 :: Tree (PhyloLabel L.ByteString)
-incSplitTree3 = parseByteStringWith "" (oneNewick IqTree) "(((a,b)0.7,c),(d,e));"
+incSplitTree3 =
+  parseByteStringWith "" (oneNewick IqTree) "(((a,b)0.7,c),(d,e));"
 
 incSplitTree4 :: Tree (PhyloLabel L.ByteString)
 incSplitTree4 = parseByteStringWith "" (oneNewick IqTree) "(((a,c),b),(d,e));"

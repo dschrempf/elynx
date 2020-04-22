@@ -18,7 +18,7 @@ module ELynx.Data.MarkovProcess.MixtureModel
   ( -- * Types
     Weight
   , Component
-  , MixtureModel (name)
+  , MixtureModel(name)
   , -- * Getters
     getAlphabet
   , getWeights
@@ -36,11 +36,15 @@ module ELynx.Data.MarkovProcess.MixtureModel
   )
 where
 
-import           Prelude                       hiding ( map, head, zipWith, length )
+import           Prelude                 hiding ( map
+                                                , head
+                                                , zipWith
+                                                , length
+                                                )
 
 import qualified Data.ByteString.Builder       as L
 import qualified Data.ByteString.Lazy.Char8    as L
-import           Data.List.NonEmpty            hiding ( zip )
+import           Data.List.NonEmpty      hiding ( zip )
 import           Data.Semigroup
 
 import           ELynx.Data.Alphabet.Alphabet
@@ -84,19 +88,21 @@ getSubstitutionModels = map substModel . components
 -- | Create a mixture model from a list of substitution models.
 fromSubstitutionModels
   :: S.Name -> NonEmpty Weight -> NonEmpty S.SubstitutionModel -> MixtureModel
-fromSubstitutionModels n ws sms =
-  if allEqual $ toList alphs
+fromSubstitutionModels n ws sms = if allEqual $ toList alphs
   then MixtureModel n (head alphs) comps
-  else error "fromSubstitutionModels: alphabets of substitution models are not equal."
-  where comps = zipWith Component ws sms
-        alphs = map S.alphabet sms
+  else error
+    "fromSubstitutionModels: alphabets of substitution models are not equal."
+ where
+  comps = zipWith Component ws sms
+  alphs = map S.alphabet sms
 
 -- | Concatenate mixture models.
 concatenate :: S.Name -> NonEmpty MixtureModel -> MixtureModel
 concatenate n mms = fromSubstitutionModels n ws sms
-  where comps = sconcat $ map components mms
-        ws = map weight comps
-        sms = map substModel comps
+ where
+  comps = sconcat $ map components mms
+  ws    = map weight comps
+  sms   = map substModel comps
 
 scaleComponent :: Double -> Component -> Component
 scaleComponent s c = c { substModel = s' } where s' = S.scale s $ substModel c

@@ -38,7 +38,7 @@ import           Text.Printf
 
 import           ELynx.Tools
 
-import TLynx.Parsers
+import           TLynx.Parsers
 
 -- | Supported distance measures.
 data DistanceMeasure =

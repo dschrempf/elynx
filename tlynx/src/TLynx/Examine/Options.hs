@@ -24,7 +24,7 @@ import           Options.Applicative
 
 import           ELynx.Tools
 
-import TLynx.Parsers
+import           TLynx.Parsers
 
 -- | Arguments needed to examine phylogenetic trees.
 data ExamineArguments = ExamineArguments

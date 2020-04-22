@@ -84,8 +84,12 @@ desc :: [String]
 desc = ["Analyze, and simulate multi sequence alignments."]
 
 ftr :: [String]
-ftr = ["Available sequence file formats:"] ++ fs ++ ["", "Available alphabets:"] ++ as
+ftr =
+  ["Available sequence file formats:"]
+    ++ fs
+    ++ ["", "Available alphabets:"]
+    ++ as
  where
   toListItem = ("  - " ++)
-  fs = map toListItem ["FASTA"]
-  as = map (toListItem . alphabetDescription) (allValues :: [Alphabet])
+  fs         = map toListItem ["FASTA"]
+  as         = map (toListItem . alphabetDescription) (allValues :: [Alphabet])

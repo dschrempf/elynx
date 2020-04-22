@@ -57,7 +57,7 @@ type StationaryDistribution = Vector R
 
 -- | True if distribution sums to 1.0.
 isValid :: StationaryDistribution -> Bool
-isValid d = nearlyEqWith eps' (norm_1 d)  1.0
+isValid d = nearlyEqWith eps' (norm_1 d) 1.0
 
 -- | Normalize a stationary distribution so that the elements sum to 1.0.
 normalizeSD :: StationaryDistribution -> StationaryDistribution
@@ -109,7 +109,8 @@ fromExchangeabilityMatrix em d = setDiagonal $ em <> diag d
 getStationaryDistribution :: RateMatrix -> StationaryDistribution
 getStationaryDistribution m = if magnitude (eVals ! i) `nearlyEq` 0
   then normalizeSumVec 1.0 distReal
-  else error "getStationaryDistribution: Could not retrieve stationary distribution."
+  else error
+    "getStationaryDistribution: Could not retrieve stationary distribution."
  where
   (eVals, eVecs) = eig (tr m)
   i              = minIndex eVals
@@ -136,8 +137,9 @@ getStationaryDistribution m = if magnitude (eVals ! i) `nearlyEq` 0
 --
 -- k = (i choose 2) + j.
 ijToKLower :: Int -> Int -> Int
-ijToKLower i j | i > j = round (i `choose` 2) + j
-               | otherwise = error "ijToKLower: not defined for upper triangular matrix."
+ijToKLower i j
+  | i > j     = round (i `choose` 2) + j
+  | otherwise = error "ijToKLower: not defined for upper triangular matrix."
 
 
 -- Upper triangular matrix. Conversion from matrix indices (i,j) to list index
@@ -154,8 +156,9 @@ ijToKLower i j | i > j = round (i `choose` 2) + j
 --
 -- k = i*(n-2) - (i choose 2) + (j - 1)
 ijToKUpper :: Int -> Int -> Int -> Int
-ijToKUpper n i j | i < j = i*(n-2) - round (i `choose` 2) + j - 1
-                 | otherwise = error "ijToKUpper: not defined for lower triangular matrix."
+ijToKUpper n i j
+  | i < j     = i * (n - 2) - round (i `choose` 2) + j - 1
+  | otherwise = error "ijToKUpper: not defined for lower triangular matrix."
 
 -- The function is a little weird because HMatrix uses Double indices for Matrix
 -- Double builders.
@@ -185,14 +188,15 @@ fromListBuilderUpper n es i j
 
 checkEs :: RealFrac a => Int -> [a] -> [a]
 checkEs n es | length es == nExp = es
-             | otherwise = error eStr
-  where
-    nExp  = round (n `choose` 2)
-    eStr = unlines
-           [ "exchFromListlower: the number of exchangeabilities does not match the matrix size"
-           , "matrix size: " ++ show n
-           , "expected number of exchangeabilities: " ++ show nExp
-           , "received number of exchangeabilities: " ++ show (length es) ]
+             | otherwise         = error eStr
+ where
+  nExp = round (n `choose` 2)
+  eStr = unlines
+    [ "exchFromListlower: the number of exchangeabilities does not match the matrix size"
+    , "matrix size: " ++ show n
+    , "expected number of exchangeabilities: " ++ show nExp
+    , "received number of exchangeabilities: " ++ show (length es)
+    ]
 
 -- | Build exchangeability matrix from list denoting lower triangular matrix,
 -- and excluding diagonal. This is how the exchangeabilities are specified in

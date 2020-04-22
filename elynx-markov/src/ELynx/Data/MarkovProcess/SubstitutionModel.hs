@@ -95,7 +95,10 @@ substitutionModel
   -> SubstitutionModel
 substitutionModel c n ps d e = if R.isValid d
   then normalize $ SubstitutionModel c n ps d' e
-  else error $ "substitionModel: Stationary distribution does not sum to 1.0: " ++ show d
+  else
+    error
+    $  "substitionModel: Stationary distribution does not sum to 1.0: "
+    ++ show d
   where d' = normalizeSumVec 1.0 d
 
 -- | Scale the rate of a substitution model by given factor.

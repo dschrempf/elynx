@@ -22,7 +22,7 @@ module ELynx.Data.MarkovProcess.CXXModels
   )
 where
 
-import Data.List.NonEmpty (fromList)
+import           Data.List.NonEmpty             ( fromList )
 
 import           ELynx.Data.MarkovProcess.AminoAcid
 import           ELynx.Data.MarkovProcess.CXXModelsData
@@ -47,7 +47,8 @@ cxx 30 Nothing   = c30
 cxx 40 Nothing   = c40
 cxx 50 Nothing   = c50
 cxx 60 Nothing   = c60
-cxx n  _         = error $ "cxx: cannot create CXX model with " ++ show n ++ " components."
+cxx n _ =
+  error $ "cxx: cannot create CXX model with " ++ show n ++ " components."
 
 -- | C10 model.
 c10 :: M.MixtureModel
@@ -119,7 +120,9 @@ componentName nComps comp = cxxName nComps ++ "; component " ++ show comp
 -- about global or local normalization.
 cxxSubstitutionModelFromStatDist
   :: Int -> Int -> StationaryDistribution -> S.SubstitutionModel
-cxxSubstitutionModelFromStatDist nComps comp d = poissonCustom (Just name) (normalizeSD d)
+cxxSubstitutionModelFromStatDist nComps comp d = poissonCustom
+  (Just name)
+  (normalizeSD d)
   where name = componentName nComps comp
 
 cxxSubstitutionModelsFromStatDists
@@ -135,7 +138,9 @@ cxxSubstitutionModelsFromStatDists ds = zipWith
 -- should be OK.
 cxxFromStatDistsAndWeights
   :: [M.Weight] -> [StationaryDistribution] -> M.MixtureModel
-cxxFromStatDistsAndWeights ws ds = M.fromSubstitutionModels (cxxName n) (fromList ws) sms
+cxxFromStatDistsAndWeights ws ds = M.fromSubstitutionModels (cxxName n)
+                                                            (fromList ws)
+                                                            sms
  where
   n   = length ds
   sms = fromList $ cxxSubstitutionModelsFromStatDists ds

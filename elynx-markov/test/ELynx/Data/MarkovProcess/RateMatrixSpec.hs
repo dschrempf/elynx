@@ -14,38 +14,36 @@ Creation date: Fri Apr 17 15:18:02 2020.
 
 module ELynx.Data.MarkovProcess.RateMatrixSpec
   ( spec
-  ) where
+  )
+where
 
-import Numeric.LinearAlgebra
-import Test.Hspec
+import           Numeric.LinearAlgebra
+import           Test.Hspec
 
-import ELynx.Data.MarkovProcess.RateMatrix (exchFromListLower, exchFromListUpper)
+import           ELynx.Data.MarkovProcess.RateMatrix
+                                                ( exchFromListLower
+                                                , exchFromListUpper
+                                                )
 
 es :: [Double]
-es = [ 1, 2,3, 4, 5, 6, 7, 8, 9, 10]
+es = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 exMLower :: Matrix R
-exMLower = (5><5)
-  [ 0,  1,  2,  4,  7
-  , 1,  0,  3,  5,  8
-  , 2,  3,  0,  6,  9
-  , 4,  5,  6,  0, 10
-  , 7,  8,  9, 10,  0 ]
+exMLower = (5 >< 5)
+  [0, 1, 2, 4, 7, 1, 0, 3, 5, 8, 2, 3, 0, 6, 9, 4, 5, 6, 0, 10, 7, 8, 9, 10, 0]
 
 exMUpper :: Matrix R
-exMUpper = (5><5)
-  [ 0,  1,  2,  3,  4
-  , 1,  0,  5,  6,  7
-  , 2,  5,  0,  8,  9
-  , 3,  6,  8,  0, 10
-  , 4,  7,  9, 10,  0 ]
+exMUpper = (5 >< 5)
+  [0, 1, 2, 3, 4, 1, 0, 5, 6, 7, 2, 5, 0, 8, 9, 3, 6, 8, 0, 10, 4, 7, 9, 10, 0]
 
 spec :: Spec
 spec = do
-  describe "exchFromListLower" $
-    it "correctly converts to matrix from list" $
-    exMLower `shouldBe` exchFromListLower 5 es
-  describe "exchFromListUpper" $
-    it "correctly converts to matrix from list" $
-    exMUpper `shouldBe` exchFromListUpper 5 es
+  describe "exchFromListLower"
+    $          it "correctly converts to matrix from list"
+    $          exMLower
+    `shouldBe` exchFromListLower 5 es
+  describe "exchFromListUpper"
+    $          it "correctly converts to matrix from list"
+    $          exMUpper
+    `shouldBe` exchFromListUpper 5 es
 

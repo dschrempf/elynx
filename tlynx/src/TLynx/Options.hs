@@ -32,7 +32,7 @@ import           TLynx.Distance.Options
 import           TLynx.Examine.Options
 import           TLynx.Shuffle.Options
 import           TLynx.Simulate.Options
-import           TLynx.Parsers               (newickHelp)
+import           TLynx.Parsers                  ( newickHelp )
 
 -- | The different TLynx commands and their arguments.
 data CommandArguments =
@@ -86,5 +86,4 @@ desc = ["Compare, examine, and simulate phylogenetic trees."]
 
 ftr :: [String]
 ftr = "Available tree file formats:" : indent newickHelp
- where
-  indent = map ("  " ++)
+  where indent = map ("  " ++)

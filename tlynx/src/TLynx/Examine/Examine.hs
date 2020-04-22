@@ -39,8 +39,7 @@ import           ELynx.Data.Tree
 import           ELynx.Import.Tree.Newick
 import           ELynx.Tools
 
-readTrees
-  :: FilePath -> ELynx ExamineArguments [Tree (PhyloLabel L.ByteString)]
+readTrees :: FilePath -> ELynx ExamineArguments [Tree (PhyloLabel L.ByteString)]
 readTrees fp = do
   $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
   nf <- argsNewickFormat . local <$> ask
@@ -49,9 +48,9 @@ readTrees fp = do
 examineTree :: (Measurable a, Named a) => Handle -> Tree a -> IO ()
 examineTree h t = do
   L.hPutStrLn h $ summarize t
-  unless (null dups) $
-    hPutStrLn h "" >>
-    hPutStrLn h ("Duplicate leaves: " ++ show dups)
+  unless (null dups) $ hPutStrLn h "" >> hPutStrLn
+    h
+    ("Duplicate leaves: " ++ show dups)
  where
   lvs  = map getName $ leaves t
   dups = lvs \\ nub lvs
@@ -60,7 +59,7 @@ examineTree h t = do
 examine :: ELynx ExamineArguments ()
 examine = do
   l <- local <$> ask
-  let inFn   = argsInFile l
+  let inFn = argsInFile l
   trs  <- readTrees inFn
   outH <- outHandle "results" ".out"
   liftIO $ mapM_ (examineTree outH) trs
