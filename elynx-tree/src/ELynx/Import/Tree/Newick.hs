@@ -137,14 +137,12 @@ decimalAsDouble = fromIntegral <$> (decimal :: Parser Int)
 newickIqTree :: Parser (Tree (PhyloLabel L.ByteString))
 newickIqTree = space *> treeIqTree <* w ';' <* space <?> "newickIqTree"
 
--- | IQ-TREE stores the branch support as node names after the closing bracket
--- of a forest. Parse a single Newick tree. Fails when end of file is not
--- reached.
+-- | See 'newickIqTree'. Parse a single Newick tree. Fails when end of file is
+-- not reached.
 oneNewickIqTree :: Parser (Tree (PhyloLabel L.ByteString))
 oneNewickIqTree = newickIqTree <* eof <?> "oneNewickIqTree"
 
--- | IQ-TREE stores the branch support as node names after the closing bracket
--- of a forest. Parse many Newick trees until end of file.
+-- | See 'newickIqTree'. Parse many Newick trees until end of file.
 manyNewickIqTree :: Parser [Tree (PhyloLabel L.ByteString)]
 manyNewickIqTree = some newickIqTree <* eof <?> "manyNewickIqTree"
 
@@ -187,17 +185,17 @@ nodeIqTree = do
 -- | RevBayes uses square brackets and key-value pairs to define information
 -- about nodes and branches. Parse a single Newick tree. Also succeeds when more
 -- trees follow.
+--
+-- XXX: Key value pairs are IGNORED at the moment.
 newickRevBayes :: Parser (Tree (PhyloLabel L.ByteString))
 newickRevBayes = space *> brackets *> treeRevBayes <* w ';' <* space <?> "newickRevBayes"
 
--- | RevBayes uses square brackets and key-value pairs to define information
--- about nodes and branches. Parse a single Newick tree. Fails when end of file
--- is not reached.
+-- | See 'newickRevBayes'. Parse a single Newick tree. Fails when end of file is
+-- not reached.
 oneNewickRevBayes :: Parser (Tree (PhyloLabel L.ByteString))
 oneNewickRevBayes = newickRevBayes <* eof <?> "oneNewickRevBayes"
 
--- | RevBayes uses square brackets and key-value pairs to define information
--- about nodes and branches. Parse many Newick trees until end of file.
+-- | See 'newickRevBayes'. Parse many Newick trees until end of file.
 manyNewickRevBayes :: Parser [Tree (PhyloLabel L.ByteString)]
 manyNewickRevBayes = some newickRevBayes <* eof <?> "manyNewickRevBayes"
 
