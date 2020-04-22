@@ -13,7 +13,7 @@ specification of all options is necessary, and nothing is assumed about the data
 consistently, and automatically logged. The work overhead in the beginning
 usually pays off in the end.
 
-The Elynx Suite consists of three library packages and two executables providing
+The Elynx Suite consists of four library packages and two executables providing
 a range of sub commands.
 
 The library packages are:
