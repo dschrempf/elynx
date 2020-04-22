@@ -68,7 +68,6 @@ reportSimulateArguments a = intercalate
   , "Sampling probability: " ++ show (argsRho a)
   , "Perform sub-sampling: " ++ show (argsSubSample a)
   , "Summary statistics only: " ++ show (argsSumStat a)
-  , "Seed: " ++ show (argsSeed a)
   ]
  where
   hStr = case argsHeight a of

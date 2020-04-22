@@ -58,7 +58,6 @@ reportCoalesceArguments a = intercalate
   , "Number of leaves per tree: " ++ show (argsNLeaves a)
   , "Sub-sampling: " ++ ssStr
   , "Summary statistics only: " ++ show (argsSumStat a)
-  , "Seed: " ++ show (argsSeed a)
   ]
  where
   ssStr = case argsRho a of
