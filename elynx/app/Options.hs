@@ -53,7 +53,7 @@ validateArguments :: Parser ValidateArguments
 validateArguments = ValidateArguments <$> inFileArg
 
 validateDsc :: [String]
-validateDsc = ["Validate a past ELynx analysis"]
+validateDsc = ["Validate an ELynx analysis"]
 
 newtype RedoArguments = RedoArguments
   { rElynxFile :: FilePath }
@@ -63,7 +63,7 @@ redoArguments :: Parser RedoArguments
 redoArguments = RedoArguments <$> inFileArg
 
 redoDsc :: [String]
-redoDsc = ["Redo a past ELynx analysis"]
+redoDsc = ["Redo an ELynx analysis"]
 
 inFileArg :: Parser FilePath
 inFileArg = strArgument $ metavar "ELYNX-FILE"

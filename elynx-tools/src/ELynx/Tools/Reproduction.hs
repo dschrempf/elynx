@@ -104,8 +104,8 @@ compilationString = "Compiled on "
 
 -- A short header to be used in executables. 'unlines' doesn't work here because
 -- it adds an additional newline at the end.
-hdr :: String
-hdr = intercalate "\n" [versionString, copyrightString, compilationString]
+hdr :: [String]
+hdr = [versionString, copyrightString, compilationString]
 
 time :: IO String
 time =
@@ -113,17 +113,14 @@ time =
     `fmap` Data.Time.getCurrentTime
 
 -- | Short, globally usable string preceding all logs with obligatory description.
-logHeader :: String -> IO String
-logHeader desc = do
+logHeader :: String -> [String] -> IO String
+logHeader h dsc = do
   t  <- time
   p  <- getProgName
   as <- getArgs
-  return $ intercalate
-    "\n"
-    -- [ replicate (l+4) '-'
-    [ "=== " <> desc
-    , hdr
-    , "Start time: " ++ t
+  return $ intercalate "\n" $
+    ("=== " <> h) : dsc ++ hdr ++
+    [ "Start time: " ++ t
     , "Command line: " ++ p ++ " " ++ unwords as
     ]
 
@@ -136,7 +133,7 @@ logFooter = do
 
 versionOpt :: Parser (a -> a)
 versionOpt = infoOption
-  hdr
+  (intercalate "\n" hdr)
   (  long "version"
     -- Lower case 'v' clashes with verbosity.
   <> short 'V'
@@ -147,17 +144,19 @@ versionOpt = infoOption
 evoModSuiteFooter :: [Doc]
 evoModSuiteFooter =
   [ empty
-  , text "The ELynx Suite"
-  , text "---------------"
+  , text "ELynx"
+  , text "-----"
   , fillParagraph
-    "A Haskell library and a tool set for computational biology. The goal of ELynx is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated. The command line with all arguments is logged consistently, and automatically. Data integrity is verified using SHA256 sums so that validation of past analyses is possible without the need to recompute the result."
+    "A Haskell library and tool set for computational biology. The goal of ELynx is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated. The command line with all arguments is logged consistently, and automatically. Data integrity is verified using SHA256 sums so that validation of past analyses is possible without the need to recompute the result."
   , empty
   , fill 9 (text "slynx")
     <+> text "Analyze, modify, and simulate evolutionary sequences."
   , fill 9 (text "tlynx")
     <+> text "Analyze, modify, and simulate phylogenetic trees."
+  , fill 9 (text "elynx")
+    <+> text "Validate and redo past analyses."
   , empty
-  , text "Get help for specific commands:"
+  , text "Get help for sub commands:"
   , text "  slynx examine --help"
   ]
 
@@ -200,7 +199,7 @@ instance ToJSON GlobalArguments
 -- | See 'GlobalArguments', parser function.
 globalArguments :: Parser GlobalArguments
 globalArguments =
-  GlobalArguments <$> verbosityOpt <*> optional outFileBaseNameOpt <*> redoOpt
+  GlobalArguments <$> verbosityOpt <*> optional outFileBaseNameOpt <*> forceOpt
 
 -- | Boolean option; be verbose; default NO.
 verbosityOpt :: Parser Verbosity
@@ -222,10 +221,11 @@ outFileBaseNameOpt = strOption
     "Specify base name of output file"
   )
 
-redoOpt :: Parser Force
-redoOpt = flag
+forceOpt :: Parser Force
+forceOpt = flag
   (Force False)
   (Force True)
+  -- DO NOT CHANGE --force nor -f; they are used by 'elynx redo'.
   (long "force" <> short 'f' <> help
     "Ignore previous analysis and overwrite existing output files."
   )
@@ -367,15 +367,24 @@ createCommandReproducible f = command (cmdName @a) $ f <$>
 -- | Create a command; convenience function.
 createCommand :: String -> [String] -> [String] -> Parser a -> (a -> b) -> Mod CommandFields b
 createCommand nm dsc ftr p f = command nm $ f <$>
-  elynxParserInfo dsc ftr p
+  parserInfo dsc' ftr' p
+  where
+    dsc' = if null dsc then Nothing else Just $ vsep $ map pretty dsc
+    ftr' = if null ftr then Nothing else Just $ vsep $ map pretty ftr
 
 -- | ELynx parser info; convenience function.
 elynxParserInfo :: [String] -> [String] -> Parser a -> ParserInfo a
-elynxParserInfo dsc ftr p = info (elynxParser p)
-  (fullDesc <> header hdr <> progDescDoc (Just dsc') <> footerDoc (Just ftr'))
+elynxParserInfo dsc ftr = parserInfo dsc' ftr'
   where
-    dsc' = vsep $ map pretty dsc
-    ftr' = vsep $ map pretty ftr ++ evoModSuiteFooter
+    dsc' = if null dsc then Nothing else Just $ vsep $ map pretty dsc
+    ftr' = Just $ vsep $ map pretty ftr ++ evoModSuiteFooter
+
+-- Short version of ELynx parser info for sub commands.
+parserInfo :: Maybe Doc -> Maybe Doc -> Parser a -> ParserInfo a
+parserInfo dsc ftr p = info (elynxParser p)
+  (fullDesc <> headerDoc (Just hdr') <> progDescDoc dsc <> footerDoc ftr)
+  where
+    hdr' = vsep $ map pretty hdr
 
 -- | See 'eitherReader', but for Megaparsec.
 megaReadM :: Parsec Void String a -> ReadM a

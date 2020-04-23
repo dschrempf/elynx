@@ -14,8 +14,6 @@ Portability :  portable
 
 Creation date: Wed Apr 22 21:08:25 2020.
 
-TODO: Help.
-
 TODO: Check version number.
 
 TODO: Think of a stable reproducible hash. The description and so on are not stable enough.
@@ -142,7 +140,7 @@ runRedo a = do
   let fp = rElynxFile a
   repr <- getAllR fp
   let as = getArgs repr
-  as' <- if "-f" `notElem` as
+  as' <- if "-f" `notElem` as && "--force" `notElem` as
          then
            do
              putStrLn "Force option required to redo analysis. Add -f (force) to arguments."
