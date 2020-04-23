@@ -68,6 +68,8 @@ data NewickFormat =
   | RevBayes
   deriving (Eq, Show, Read, Bounded, Enum, Generic)
 
+instance FromJSON NewickFormat
+
 instance ToJSON NewickFormat
 
 -- | Short description of the supported Newick formats.

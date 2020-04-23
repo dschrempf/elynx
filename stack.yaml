@@ -35,6 +35,7 @@ resolver: lts-15.9
 #  - auto-update
 #  - wai
 packages:
+  - elynx
   - elynx-markov
   - elynx-seq
   - elynx-tools

@@ -1,4 +1,4 @@
-name:                slynx
+name:                elynx
 version:             0.2.0
 github:              "dschrempf/elynx"
 license:             GPL-3
@@ -12,15 +12,13 @@ extra-source-files:
 - ChangeLog.md
 
 # Metadata used when publishing your package
-synopsis:            Handle molecular sequences
+synopsis:            Validate and (optionally) redo ELynx analyses
 category:            Bioinformatics
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:
-  Examine, modify, and simulate molecular sequences in a reproducible way.
-  Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
+description:         Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
 
 ghc-options:
   - -Wall
@@ -28,37 +26,43 @@ ghc-options:
   - -fllvm
 
 dependencies:
+  - aeson
   - async
   - base
+  - base16-bytestring
   - bytestring
   - containers
+  - cryptohash-sha256
+  - deepseq
+  - directory
+  - fast-logger
   - hmatrix
+  - matrices
   - megaparsec
   - monad-logger
+  - monad-control
   - mwc-random
   - optparse-applicative
-  - scientific
+  - parallel
+  - primitive
+  - template-haskell
   - text
+  - time
   - transformers
+  - transformers-base
   - vector
-
-library:
-  source-dirs: src
-  dependencies:
-    - elynx-markov
-    - elynx-seq
-    - elynx-tools
-    - elynx-tree
+  - zlib
 
 executables:
-  slynx:
-    main:                Main.hs
-    source-dirs:         app
+  elynx:
+    main: Main.hs
+    source-dirs: app
     ghc-options:
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N
+      - -fwrite-ide-info
     dependencies:
-      - elynx-seq
       - elynx-tools
       - slynx
+      - tlynx

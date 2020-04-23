@@ -50,9 +50,11 @@ instance Reproducible SimulateArguments where
   setSeed a s = a { argsSeed = Fixed s }
   parser  = simulateArguments
   cmdName = "simulate"
-  cmdDesc
-    = "Simulate phylogenetic trees using birth and death processes (see also the 'coalesce' command for simulations using the coalescent process)."
-  cmdFtr = Just simulateFooter
+  cmdDsc
+    = ["Simulate phylogenetic trees using birth and death processes (see also the 'coalesce' command for simulations using the coalescent process)."]
+  cmdFtr = simulateFooter
+
+instance FromJSON SimulateArguments
 
 instance ToJSON SimulateArguments
 
@@ -164,9 +166,8 @@ citation =
   "Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005"
 
 -- | And a footer.
-simulateFooter :: String
-simulateFooter = intercalate
-  "\n"
+simulateFooter :: [String]
+simulateFooter =
   [ "Height of Trees: if no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate."
   , "Summary statistics only: only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character."
   , "Sub-sampling: simulate one big tree with n'=round(n/rho), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with rho=1.0, the same tree is reported over and over again."

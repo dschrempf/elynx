@@ -46,7 +46,7 @@ where
 
 import qualified Data.Set                      as S
 import           Prelude                 hiding ( all )
-import           Data.Aeson                     ( ToJSON )
+import           Data.Aeson                     ( FromJSON, ToJSON )
 import           GHC.Generics                   ( Generic )
 
 import           ELynx.Data.Alphabet.Character
@@ -55,6 +55,8 @@ import           ELynx.Data.Alphabet.Character
 data Alphabet = DNA | DNAX | DNAI
               | Protein | ProteinX | ProteinS | ProteinI
               deriving (Show, Read, Eq, Ord, Enum, Bounded, Generic)
+
+instance FromJSON Alphabet
 
 instance ToJSON Alphabet
 

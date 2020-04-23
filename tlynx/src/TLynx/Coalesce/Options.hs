@@ -44,9 +44,11 @@ instance Reproducible CoalesceArguments where
   setSeed a s = a { argsSeed = Fixed s }
   parser  = coalesceArguments
   cmdName = "coalesce"
-  cmdDesc
-    = "Simulate phylogenetic trees using the coalescent processes (see also the 'simulate' command for simulations using the birth and death process)."
-  cmdFtr = Just coalesceFooter
+  cmdDsc
+    = ["Simulate phylogenetic trees using the coalescent processes (see also the 'simulate' command for simulations using the birth and death process)."]
+  cmdFtr = coalesceFooter
+
+instance FromJSON CoalesceArguments
 
 instance ToJSON CoalesceArguments
 
@@ -111,9 +113,8 @@ sumStatOpt =
     "Only output number of children for each branch"
 
 -- | And a footer.
-coalesceFooter :: String
-coalesceFooter = intercalate
-  "\n"
+coalesceFooter :: [String]
+coalesceFooter =
   [ "Sub-sampling: simulate one big tree with n'=round(n/rho), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with rho=1.0, the same tree is reported over and over again."
   , "Summary statistics: only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character."
   ]

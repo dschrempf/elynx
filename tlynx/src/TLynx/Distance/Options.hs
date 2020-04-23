@@ -22,7 +22,6 @@ module TLynx.Distance.Options
   )
 where
 
-import           Data.List
 import           Data.Void
 import           Data.Scientific                ( toRealFloat )
 import           Options.Applicative
@@ -47,6 +46,8 @@ data DistanceMeasure =
                              -- with branch support below given value.
   | BranchScore              -- ^ Branch score distance.
   deriving (Eq, Generic)
+
+instance FromJSON DistanceMeasure
 
 instance ToJSON DistanceMeasure
 
@@ -76,8 +77,10 @@ instance Reproducible DistanceArguments where
   setSeed = const
   parser  = distanceArguments
   cmdName = "distance"
-  cmdDesc = "Compute distances between many phylogenetic trees."
-  cmdFtr  = Just distanceFooter
+  cmdDsc = ["Compute distances between many phylogenetic trees."]
+  cmdFtr  = distanceFooter
+
+instance FromJSON DistanceArguments
 
 instance ToJSON DistanceArguments
 
@@ -134,10 +137,10 @@ branchScore = do
 
 distanceParser :: Parsec Void String DistanceMeasure
 distanceParser =
+  -- Try first the normalized one, since the normal branch score
+  -- parser also succeeds in this case.
   try symmetric
     <|> try incompatibleSplit
-                 -- Try first the normalized one, since the normal branch score
-                 -- parser also succeeds in this case.
     <|> branchScore
 
 distanceOpt :: Parser DistanceMeasure
@@ -171,9 +174,8 @@ intersectSwitch =
          "Compare intersections; i.e., before comparison, drop leaves that are not present in the other tree"
 
 -- | Information about provided distance types.
-distanceFooter :: String
-distanceFooter = intercalate
-  "\n"
+distanceFooter :: [String]
+distanceFooter =
   [ "Distance measures:"
   , "  symmetric                Symmetric distance (Robinson-Foulds distance)."
   , "  incompatible-split[VAL]  Incompatible split distance. Collapse branches"

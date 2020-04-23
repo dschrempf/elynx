@@ -45,26 +45,72 @@ data CommandArguments =
   | Simulate SimulateArguments
   deriving (Eq, Show, Generic)
 
+instance Reproducible CommandArguments where
+  inFiles (Coalesce a) = inFiles a
+  inFiles (Compare  a) = inFiles a
+  inFiles (Connect  a) = inFiles a
+  inFiles (Distance a) = inFiles a
+  inFiles (Examine  a) = inFiles a
+  inFiles (Shuffle  a) = inFiles a
+  inFiles (Simulate a) = inFiles a
+
+  outSuffixes (Coalesce a) = outSuffixes a
+  outSuffixes (Compare  a) = outSuffixes a
+  outSuffixes (Connect  a) = outSuffixes a
+  outSuffixes (Distance a) = outSuffixes a
+  outSuffixes (Examine  a) = outSuffixes a
+  outSuffixes (Shuffle  a) = outSuffixes a
+  outSuffixes (Simulate a) = outSuffixes a
+
+  getSeed (Coalesce a) = getSeed a
+  getSeed (Compare  a) = getSeed a
+  getSeed (Connect  a) = getSeed a
+  getSeed (Distance a) = getSeed a
+  getSeed (Examine  a) = getSeed a
+  getSeed (Shuffle  a) = getSeed a
+  getSeed (Simulate a) = getSeed a
+
+  setSeed (Coalesce a) = Coalesce . setSeed a
+  setSeed (Compare  a) = Compare . setSeed a
+  setSeed (Connect  a) = Connect . setSeed a
+  setSeed (Distance a) = Distance . setSeed a
+  setSeed (Examine  a) = Examine . setSeed a
+  setSeed (Shuffle  a) = Shuffle . setSeed a
+  setSeed (Simulate a) = Simulate . setSeed a
+
+  parser = commandArguments
+
+  cmdName = "tlynx"
+
+  cmdDsc = ["Compare, examine, and simulate phylogenetic trees."]
+
+  cmdFtr = "Available tree file formats:" : indent newickHelp
+    where indent = map ("  " ++)
+
+instance FromJSON CommandArguments
+
+instance ToJSON CommandArguments
+
 coalesceCommand :: Mod CommandFields CommandArguments
-coalesceCommand = createSubCommand Coalesce
+coalesceCommand = createCommand Coalesce
 
 compareCommand :: Mod CommandFields CommandArguments
-compareCommand = createSubCommand Compare
+compareCommand = createCommand Compare
 
 connectCommand :: Mod CommandFields CommandArguments
-connectCommand = createSubCommand Connect
+connectCommand = createCommand Connect
 
 distanceCommand :: Mod CommandFields CommandArguments
-distanceCommand = createSubCommand Distance
+distanceCommand = createCommand Distance
 
 examineCommand :: Mod CommandFields CommandArguments
-examineCommand = createSubCommand Examine
+examineCommand = createCommand Examine
 
 shuffleCommand :: Mod CommandFields CommandArguments
-shuffleCommand = createSubCommand Shuffle
+shuffleCommand = createCommand Shuffle
 
 simulateCommand :: Mod CommandFields CommandArguments
-simulateCommand = createSubCommand Simulate
+simulateCommand = createCommand Simulate
 
 commandArguments :: Parser CommandArguments
 commandArguments =
@@ -76,14 +122,3 @@ commandArguments =
     <> examineCommand
     <> shuffleCommand
     <> simulateCommand
-
--- | Parse TLynx command line.
-parseArguments :: IO (Arguments CommandArguments)
-parseArguments = parseArgumentsWith desc ftr commandArguments
-
-desc :: [String]
-desc = ["Compare, examine, and simulate phylogenetic trees."]
-
-ftr :: [String]
-ftr = "Available tree file formats:" : indent newickHelp
-  where indent = map ("  " ++)

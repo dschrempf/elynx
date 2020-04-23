@@ -41,7 +41,9 @@ instance Reproducible ConcatenateArguments where
   setSeed = const
   parser  = concatenateArguments
   cmdName = "concatenate"
-  cmdDesc = "Concatenate sequences found in input files."
+  cmdDsc = ["Concatenate sequences found in input files."]
+
+instance FromJSON ConcatenateArguments
 
 instance ToJSON ConcatenateArguments
 

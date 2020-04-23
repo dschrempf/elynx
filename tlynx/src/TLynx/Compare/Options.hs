@@ -45,8 +45,10 @@ instance Reproducible CompareArguments where
   setSeed a _ = a
   parser  = compareArguments
   cmdName = "compare"
-  cmdDesc
-    = "Compare two phylogenetic trees (compute distances and branch-wise differences)."
+  cmdDsc
+    = ["Compare two phylogenetic trees (compute distances and branch-wise differences)."]
+
+instance FromJSON CompareArguments
 
 instance ToJSON CompareArguments
 

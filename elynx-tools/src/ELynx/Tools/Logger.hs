@@ -60,7 +60,7 @@ import           System.Random.MWC              ( createSystemRandom
                                                 )
 
 import           ELynx.Tools.Reproduction       ( Reproducible(..)
-                                                , writeR
+                                                , writeReproduction
                                                 , ToJSON
                                                 , toLogLevel
                                                 , ELynx
@@ -81,12 +81,13 @@ logNewSection s = $(logInfo) $ "== " <> s
 -- footer, logs to 'stderr' if no file is provided. Initializes the seed if none
 -- is provided. If a log file is provided, log to the file and to 'stderr'.
 eLynxWrapper
-  :: forall a
+  :: forall a b
    . (Eq a, Show a, Reproducible a, ToJSON a)
-  => ELynx a ()
-  -> Arguments a
+  => Arguments a
+  -> (Arguments a -> Arguments b)
+  -> ELynx b ()
   -> IO ()
-eLynxWrapper worker args = do
+eLynxWrapper args f worker = do
   -- Arguments.
   let gArgs = global args
       lArgs = local args
@@ -96,7 +97,7 @@ eLynxWrapper worker args = do
       logFile = (++ ".log") <$> outBn
   runELynxLoggingT lvl rd logFile $ do
     -- Header.
-    h <- liftIO $ logHeader (cmdDesc @a)
+    h <- liftIO $ logHeader (unlines $ cmdDsc @a)
     $(logInfo) $ pack $ h ++ "\n"
     -- Fix seed.
     lArgs' <- case getSeed lArgs of
@@ -113,13 +114,13 @@ eLynxWrapper worker args = do
         return lArgs
     let args' = Arguments gArgs lArgs'
     -- Run the worker with the fixed seed.
-    runReaderT worker args'
+    runReaderT worker $ f args'
     -- Reproduction file.
     case outBn of
       Nothing ->
         $(logInfo)
           "No output file given --- skip writing ELynx file for reproducible runs."
-      Just bn -> liftIO $ writeR bn args'
+      Just bn -> liftIO $ writeReproduction bn args'
     -- Footer.
     ftr <- liftIO logFooter
     $(logInfo) $ pack ftr

@@ -44,7 +44,9 @@ instance Reproducible TranslateArguments where
   setSeed = const
   parser  = translateArguments
   cmdName = "translate"
-  cmdDesc = "Translate from DNA to Protein or DNAX to ProteinX."
+  cmdDsc = ["Translate from DNA to Protein or DNAX to ProteinX."]
+
+instance FromJSON TranslateArguments
 
 instance ToJSON TranslateArguments
 

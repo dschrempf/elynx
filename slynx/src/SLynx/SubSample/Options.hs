@@ -62,10 +62,11 @@ instance Reproducible SubSampleArguments where
   setSeed a s = a { ssMbSeed = Fixed s }
   parser  = subSampleArguments
   cmdName = "sub-sample"
-  cmdDesc = "Sub-sample columns from multi sequence alignments."
+  cmdDsc = ["Sub-sample columns from multi sequence alignments."]
   cmdFtr =
-    Just
-      "Create a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment."
+      ["Create a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment."]
+
+instance FromJSON SubSampleArguments
 
 instance ToJSON SubSampleArguments
 

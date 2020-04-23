@@ -29,7 +29,7 @@ module ELynx.Data.Character.Codon
   )
 where
 
-import           Data.Aeson                     ( ToJSON )
+import           Data.Aeson                     ( FromJSON, ToJSON )
 import           Data.List
 import           GHC.Generics                   ( Generic )
 import qualified Data.Map                      as M
@@ -63,6 +63,8 @@ unsafeFromVec xs =
 -- | Universal codes.
 data UniversalCode = Standard | VertebrateMitochondrial
   deriving (Show, Read, Eq, Ord, Enum, Bounded, Generic)
+
+instance FromJSON UniversalCode
 
 instance ToJSON UniversalCode
 

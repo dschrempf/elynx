@@ -48,7 +48,6 @@ where
 import           Data.Maybe                     ( maybeToList
                                                 , fromMaybe
                                                 )
-import           Data.List
 import           Options.Applicative
 
 import           ELynx.Tools
@@ -79,8 +78,10 @@ instance Reproducible SimulateArguments where
   setSeed a s = a { argsSeed = Fixed s }
   parser  = simulateArguments
   cmdName = "simulate"
-  cmdDesc = "Simulate multi sequence alignments."
-  cmdFtr  = Just simulateFooter
+  cmdDsc = ["Simulate multi sequence alignments."]
+  cmdFtr  = simulateFooter
+
+instance FromJSON SimulateArguments
 
 instance ToJSON SimulateArguments
 
@@ -168,8 +169,8 @@ lengthOpt = option
 
 -- | The model specification is somewhat complicated, so we need to provide
 -- additional help.
-simulateFooter :: String
-simulateFooter = intercalate "\n" $ sms ++ mms
+simulateFooter :: [String]
+simulateFooter = sms ++ mms
  where
   sms =
     [ "Substitution models:"

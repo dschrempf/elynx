@@ -19,7 +19,7 @@ Creation date: Tue Nov 19 15:07:09 2019.
 
 Use of standard input is not supported.
 
-TODO: Split validate: (1) check input files; (2) perform analysis and check output hash.
+TODO: Provide redo: (1) check input files; (2) re-perform analysis and check output hash.
 
 -}
 
@@ -36,33 +36,31 @@ module ELynx.Tools.Reproduction
   , Seed(..)
   , seedOpt
   , Arguments(..)
-  , parseArgumentsWith
+  , parseArguments
   -- * Reproduction
   , ELynx
   , Reproducible(..)
+  -- , getReproducibleHash
   , Reproduction(..)
-  , readR
-  , writeR
+  , writeReproduction
+  , hashFile
   -- * Misc
-  , createSubCommand
+  , createCommand
   , megaReadM
   -- * Re-exports
   , Generic
+  , FromJSON
   , ToJSON
   )
 where
 
 import           Data.Aeson                     ( FromJSON
                                                 , ToJSON
-                                                , eitherDecodeFileStrict'
                                                 , encodeFile
                                                 )
-import           Control.Monad                  ( zipWithM
-                                                , void
-                                                )
-import           Data.ByteString.Base16         ( encode )
+import           Control.Monad                  ( void )
 import           Crypto.Hash.SHA256             ( hash )
-import           Data.Bifunctor                 ( first )
+import           Data.ByteString.Base16         ( encode )
 import qualified Data.ByteString.Char8         as B
 import           Data.Word
 import           Data.Vector.Unboxed            ( Vector )
@@ -88,8 +86,6 @@ import           Text.Megaparsec                ( Parsec
 
 import           ELynx.Tools.Misc
 import           Paths_elynx_tools              ( version )
-
-import           Debug.Trace                    ( traceShow )
 
 -- Be careful; it is necessary to synchronize the version numbers across packages.
 versionString :: String
@@ -152,7 +148,7 @@ evoModSuiteFooter =
   , text "The ELynx Suite"
   , text "---------------"
   , fillParagraph
-    "A Haskell library and a tool set for computational biology. The goal of the ELynx Suite is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated. Exact specification of all options is necessary, and nothing is assumed about the data (e.g., the type of code). The command line with all arguments is consistently, and automatically logged."
+    "A Haskell library and a tool set for computational biology. The goal of ELynx is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated. The command line with all arguments is logged consistently, and automatically. Data integrity is verified using SHA256 sums so that validation of past analyses is possible without the need to recompute the result."
   , empty
   , fill 9 (text "slynx")
     <+> text "Analyze, modify, and simulate evolutionary sequences."
@@ -167,9 +163,9 @@ evoModSuiteFooter =
 data Verbosity = Quiet | Warning | Info | Debug
   deriving (Show, Read, Eq, Enum, Bounded, Ord, Generic)
 
-instance ToJSON Verbosity
-
 instance FromJSON Verbosity
+
+instance ToJSON Verbosity
 
 -- | Conert verbosity option to log level.
 toLogLevel :: Verbosity -> LogLevel
@@ -182,9 +178,9 @@ toLogLevel Debug   = LevelDebug
 newtype Force = Force Bool
   deriving (Eq, Show, Generic)
 
-instance ToJSON Force
-
 instance FromJSON Force
+
+instance ToJSON Force
 
 -- | A set of global arguments used by all programs. The idea is to provide a
 -- common framework for shared arguments.
@@ -195,9 +191,9 @@ data GlobalArguments = GlobalArguments
   , forceReanalysis :: Force }
   deriving (Eq, Show, Generic)
 
-instance ToJSON GlobalArguments
-
 instance FromJSON GlobalArguments
+
+instance ToJSON GlobalArguments
 
 -- | See 'GlobalArguments', parser function.
 globalArguments :: Parser GlobalArguments
@@ -234,7 +230,15 @@ redoOpt = flag
 
 -- | Random or fixed seed.
 data Seed = Random | Fixed (Vector Word32)
-  deriving (Eq, Show, Generic)
+  deriving (Show, Generic)
+
+-- | Upon equality check, a random seed is not different from a fixed one.
+instance Eq Seed where
+  Random  == _       = True
+  _       == Random  = True
+  Fixed s == Fixed t = s == t
+
+instance FromJSON Seed
 
 instance ToJSON Seed
 
@@ -261,9 +265,9 @@ data Arguments a = Arguments { global :: GlobalArguments
                              }
   deriving (Eq, Show, Generic)
 
-instance ToJSON a => ToJSON (Arguments a)
-
 instance FromJSON a => FromJSON (Arguments a)
+
+instance ToJSON a => ToJSON (Arguments a)
 
 instance Reproducible a => Reproducible (Arguments a) where
   inFiles     = inFiles . local
@@ -272,9 +276,8 @@ instance Reproducible a => Reproducible (Arguments a) where
   setSeed (Arguments g l) s = Arguments g $ setSeed l s
   parser  = argumentsParser (parser @a)
   cmdName = cmdName @a
-  cmdDesc = cmdDesc @a
+  cmdDsc = cmdDsc @a
   cmdFtr  = cmdFtr @a
-
 
 argumentsParser :: Parser a -> Parser (Arguments a)
 argumentsParser p = helper <*> versionOpt <*> p'
@@ -283,11 +286,13 @@ argumentsParser p = helper <*> versionOpt <*> p'
 -- | Parse arguments. Provide a global description, header, footer, and so on.
 -- Custom additional description (first argument) and footer (second argument)
 -- can be provided. print help if needed.
-parseArgumentsWith :: [String] -> [String] -> Parser a -> IO (Arguments a)
-parseArgumentsWith desc ftr p = execParser $ info
-  (argumentsParser p)
-  (fullDesc <> header hdr <> progDesc (unlines desc) <> footerDoc (Just ftr'))
-  where ftr' = vsep $ map pretty ftr ++ evoModSuiteFooter
+parseArguments :: forall a . Reproducible a => IO (Arguments a)
+parseArguments = execParser $ info
+  (argumentsParser $ parser @a)
+  (fullDesc <> header hdr <> progDescDoc (Just dsc') <> footerDoc (Just ftr'))
+  where
+    dsc' = vsep $ map pretty (cmdDsc @a)
+    ftr' = vsep $ map pretty (cmdFtr @a) ++ evoModSuiteFooter
 
 -- | Logging transformer to be used with all executables.
 type ELynx a = ReaderT (Arguments a) (LoggingT IO)
@@ -306,112 +311,67 @@ class Reproducible a where
   setSeed  :: a -> Vector Word32 -> a
   parser   :: Parser a
   cmdName  :: String
-  cmdDesc  :: String
-  cmdFtr   :: Maybe String
-  cmdFtr = Nothing
+  cmdDsc  :: [String]
+  cmdFtr   :: [String]
+  cmdFtr = []
+
+-- -- TODO Do this for the reproduction type, not for reproducible types.
+-- -- | A (hopefully) unique hash for each 'Reproducible' data type.
+-- getReproducibleHash :: forall a . Reproducible a => String
+-- getReproducibleHash = B.unpack $ encode $ hash $ B.pack $
+--   cmdName @a ++ cmdDsc @a ++ show (cmdFtr @a)
 
 -- | Necessary information for a reproducible run. Notably, the input files are
 -- checked for consistency!
 data Reproduction a = Reproduction
-  { progName      :: String        -- ^ Program name.
-  , argsStr       :: [String]      -- ^ Command line arguments without program name.
-  , files         :: [FilePath]    -- ^ File paths of used files.
-  , checkSums     :: [String]      -- ^ SHA256 sums of used files.
-  , reproducible  :: a             -- ^ Command argument.
+  { progName         :: String        -- ^ Program name.
+  , argsStr          :: [String]      -- ^ Command line arguments without program name.
+  -- , reproducibleHash :: String        -- ^ Unique hash of 'Reproducible' data type.
+  , files            :: [FilePath]    -- ^ File paths of used files.
+  , checkSums        :: [String]      -- ^ SHA256 sums of used files.
+  , reproducible     :: a             -- ^ Command argument.
   } deriving (Generic)
-
-instance ToJSON a => ToJSON (Reproduction a) where
 
 instance FromJSON a => FromJSON (Reproduction a)
 
-parse :: Show a => [String] -> Parser a -> a
-parse s p = case getParseResult res of
-  Nothing ->
-    traceShow res $ error $ "Could not parse command line arguments: " ++ show s
-  Just a -> a
-  where res = execParserPure defaultPrefs (info p briefDesc) s
-
--- Does the command line fit the provided command?
-checkArgs
-  :: forall a
-   . (Eq a, Show a, Reproducible a)
-  => Reproduction a
-  -> IO (Either String ())
-checkArgs s = do
-  let r   = reproducible s
-      p   = parser @a
-      as  = argsStr s
-      res = parse as p
-  return $ if res /= reproducible s
-    then Left $ unlines
-      ["Command line string and command arguments do not fit:", show as, show r]
-    else Right ()
-
--- Does the file match the base 16 checksum?
-checkFile :: FilePath -> B.ByteString -> IO (Either String ())
-checkFile fp h = do
-  h' <- hashFile fp
-  return $ if h' == h
-    then Right ()
-    else Left $ unlines
-      [ "SHA256 sum does not match for a file:"
-      , fp ++ " has check sum " ++ B.unpack h'
-      , "Stored check sum is " ++ B.unpack h
-      ]
-
--- | Check if command line arguments and files check sums are matching.
-validate :: (Eq a, Show a, Reproducible a) => Reproduction a -> IO (Either String ())
-validate s = do
-  chA  <- checkArgs s
-  chFs <- zipWithM checkFile (files s) (map B.pack $ checkSums s)
-  let ch = sequence_ (chA : chFs)
-  return $ first ("Failed validating the reproduction file.\n" ++) ch
-
--- | Read and validate ELynx reproduction file. Check consistency of arguments
--- and input files.
-readR
-  :: forall a
-   . (Eq a, Show a, Reproducible a, FromJSON a)
-  => FilePath
-  -> IO (Reproduction a)
-readR fp = do
-  res <- eitherDecodeFileStrict' fp :: IO (Either String (Reproduction a))
-  case res of
-    Left err -> do
-      putStrLn "Failed reading the ELynx reproduction file."
-      putStrLn "The following error ocurred."
-      error err
-    Right r -> do
-      ch <- validate r
-      return $ either error (const r) ch
+instance ToJSON a => ToJSON (Reproduction a)
 
 -- | Helper function.
 hashFile :: FilePath -> IO B.ByteString
 hashFile f = encode . hash <$> B.readFile f
 
 -- | Write an ELynx reproduction file.
-writeR
+writeReproduction
   :: forall a
    . (Eq a, Show a, Reproducible a, ToJSON a)
   => String
   -> a
   -> IO ()
-writeR bn r = do
+writeReproduction bn r = do
   pn <- getProgName
   as <- getArgs
   let outFs = map (bn ++) (outSuffixes r)
   let fs = inFiles r ++ outFs
   cs <- mapM hashFile fs
   let cs' = map B.unpack cs
+      -- hs  = getReproducibleHash @a
+      -- s   = Reproduction pn as hs fs cs' r
       s   = Reproduction pn as fs cs' r
-  void $ encodeFile (bn ++ ".elynx") s
+  void $ encodeFile (bn <> ".elynx") s
 
--- | Create a sub command; convenience function.
-createSubCommand
+-- TODO: This is very similar to parseArguments, and should not be duplicated.
+-- However, this separate function is somewhat necessary because we have to lift
+-- the command over from type 'a' to 'b' which is not possibly afterwards
+-- anymore.
+-- | Create a command; convenience function.
+createCommand
   :: forall a b . Reproducible a => (a -> b) -> Mod CommandFields b
-createSubCommand f = command (cmdName @a) $ info
+createCommand f = command (cmdName @a) $ info
   (f <$> parser @a)
-  (fullDesc <> progDesc (cmdDesc @a) <> footerDoc (pretty <$> cmdFtr @a))
+  (fullDesc <> header hdr <> progDescDoc (Just dsc') <> footerDoc (Just ftr'))
+  where
+    dsc' = vsep $ map pretty (cmdDsc @a)
+    ftr' = vsep $ map pretty (cmdFtr @a) ++ evoModSuiteFooter
 
 -- | See 'eitherReader', but for Megaparsec.
 megaReadM :: Parsec Void String a -> ReadM a
