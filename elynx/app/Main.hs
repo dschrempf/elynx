@@ -1,8 +1,6 @@
-{-# LANGUAGE DeriveGeneric       #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 {- |
 Module      :  Main
@@ -29,45 +27,21 @@ module Main
   ) where
 
 import Control.Monad
-import           Control.Monad.IO.Class         ( liftIO )
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader     ( ask )
 import Data.Aeson
 import qualified Data.Aeson.Types as J
 import Data.Maybe
 import qualified Data.ByteString.Char8 as B
 import Options.Applicative
+import System.Environment (withProgName, withArgs)
 
 import ELynx.Tools
 
+import SLynx.SLynx (slynx)
 import  qualified         SLynx.Options as S
+import TLynx.TLynx (tlynx)
 import  qualified         TLynx.Options as T
 
-data AllReproductions = S (Reproduction (Arguments S.CommandArguments))
-                      | T (Reproduction (Arguments T.CommandArguments))
-
-newtype ValidateArguments = ValidateArguments
-  { elynxFile :: FilePath }
-  deriving (Eq, Show, Generic)
-
-instance Reproducible ValidateArguments where
-  inFiles = const []
-  outSuffixes = const []
-  getSeed = const Nothing
-  setSeed = const
-  parser = validateArguments
-  cmdName = "validate"
-  cmdDsc = ["Validate a past ELynx analysis."]
-
-instance FromJSON ValidateArguments
-
-instance ToJSON ValidateArguments
-
-validateArguments :: Parser ValidateArguments
-validateArguments = ValidateArguments <$> inFileArg
-
-inFileArg :: Parser FilePath
-inFileArg = strArgument $ metavar "ELYNX-FILE"
+import Options
 
 parseProgName :: Value -> J.Parser String
 parseProgName = withObject "progName" $ \o -> o .: "progName"
@@ -127,40 +101,67 @@ validateAllReproductions :: AllReproductions -> IO (Either String ())
 validateAllReproductions (S x) = validate x
 validateAllReproductions (T x) = validate x
 
--- Read and validate ELynx reproduction file. Check consistency of arguments and
--- input files.
-runValidate :: ELynx ValidateArguments ()
-runValidate = do
-  fp <- elynxFile . local <$> ask
-  eELynx <- liftIO (eitherDecodeFileStrict fp :: IO (Either String Value))
+getAllR :: FilePath -> IO AllReproductions
+getAllR fp = do
+  eELynx <- eitherDecodeFileStrict fp :: IO (Either String Value)
   elynx  <- case eELynx of
               Left err -> do
-                $(logWarn) "Failed decoding the ELynx reproduction file."
-                $(logWarn) "The following error occurred:"
+                putStrLn "Failed decoding the ELynx reproduction file."
+                putStrLn "The following error occurred:"
                 error err
               Right val -> return val
   prog <- case J.parseEither parseProgName elynx of
           Left err -> do
-            $(logWarn) "Failed getting command hash from ELynx reproduction file."
-            $(logWarn) "The following error occurred:"
+            putStrLn "Failed getting command hash from ELynx reproduction file."
+            putStrLn "The following error occurred:"
             error err
           Right prog -> return prog
-  repr <- case J.parseEither (parseAllR prog) elynx of
-            Left err -> do
-              $(logWarn) "Failed parsing the ELynx reproduction file."
-              $(logWarn) "The following error occurred:"
-              error err
-            Right repr -> return repr
-  val <- liftIO $ validateAllReproductions repr
+  case J.parseEither (parseAllR prog) elynx of
+    Left err -> do
+      putStrLn "Failed parsing the ELynx reproduction file."
+      putStrLn "The following error occurred:"
+      error err
+    Right repr -> return repr
+
+-- Read and validate ELynx reproduction file. Check consistency of arguments and
+-- input files.
+runValidate :: ValidateArguments -> IO ()
+runValidate a = do
+  let fp = vElynxFile a
+  repr <- getAllR fp
+  val <- validateAllReproductions repr
   case val of
     Left err -> do
-      $(logWarn) "Failed validating the ELynx reproduction file."
-      $(logWarn) "The following error occurred:"
+      putStrLn "Failed validating the ELynx reproduction file."
+      putStrLn "The following error occurred:"
       error err
-    Right () -> $(logInfo) "Validation successful!"
-  -- TODO: Offer re-analysis.
+    Right () -> putStrLn "Validation successful!"
+
+runRedo :: RedoArguments -> IO ()
+runRedo a = do
+  let fp = rElynxFile a
+  repr <- getAllR fp
+  let as = getArgs repr
+  as' <- if "-f" `notElem` as
+         then
+           do
+             putStrLn "Force option required to redo analysis. Add -f (force) to arguments."
+             return $ "-f" : as
+         else return as
+  withProgName (getProgName repr) $
+    withArgs as' $
+    redo repr
+
+setForce :: Arguments a -> Arguments a
+setForce (Arguments g l) = Arguments g{forceReanalysis = Force True} l
+
+redo :: AllReproductions -> IO ()
+redo (S x) = slynx $ setForce $ reproducible x
+redo (T x) = tlynx $ setForce $ reproducible x
 
 main :: IO ()
 main = do
-  a <- parseArguments
-  eLynxWrapper a id runValidate
+  g <- execParser commandArguments
+  case g of
+    Validate a -> runValidate a
+    Redo     a -> runRedo a

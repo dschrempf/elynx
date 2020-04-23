@@ -92,25 +92,25 @@ instance FromJSON CommandArguments
 instance ToJSON CommandArguments
 
 coalesceCommand :: Mod CommandFields CommandArguments
-coalesceCommand = createCommand Coalesce
+coalesceCommand = createCommandReproducible Coalesce
 
 compareCommand :: Mod CommandFields CommandArguments
-compareCommand = createCommand Compare
+compareCommand = createCommandReproducible Compare
 
 connectCommand :: Mod CommandFields CommandArguments
-connectCommand = createCommand Connect
+connectCommand = createCommandReproducible Connect
 
 distanceCommand :: Mod CommandFields CommandArguments
-distanceCommand = createCommand Distance
+distanceCommand = createCommandReproducible Distance
 
 examineCommand :: Mod CommandFields CommandArguments
-examineCommand = createCommand Examine
+examineCommand = createCommandReproducible Examine
 
 shuffleCommand :: Mod CommandFields CommandArguments
-shuffleCommand = createCommand Shuffle
+shuffleCommand = createCommandReproducible Shuffle
 
 simulateCommand :: Mod CommandFields CommandArguments
-simulateCommand = createCommand Simulate
+simulateCommand = createCommandReproducible Simulate
 
 commandArguments :: Parser CommandArguments
 commandArguments =

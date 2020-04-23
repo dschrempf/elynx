@@ -45,7 +45,9 @@ module ELynx.Tools.Reproduction
   , writeReproduction
   , hashFile
   -- * Misc
+  , createCommandReproducible
   , createCommand
+  , elynxParserInfo
   , megaReadM
   -- * Re-exports
   , Generic
@@ -280,19 +282,16 @@ instance Reproducible a => Reproducible (Arguments a) where
   cmdFtr  = cmdFtr @a
 
 argumentsParser :: Parser a -> Parser (Arguments a)
-argumentsParser p = helper <*> versionOpt <*> p'
-  where p' = Arguments <$> globalArguments <*> p
+argumentsParser p = Arguments <$> globalArguments <*> p
+
+elynxParser :: Parser a -> Parser a
+elynxParser p = helper <*> versionOpt <*> p
 
 -- | Parse arguments. Provide a global description, header, footer, and so on.
 -- Custom additional description (first argument) and footer (second argument)
 -- can be provided. print help if needed.
 parseArguments :: forall a . Reproducible a => IO (Arguments a)
-parseArguments = execParser $ info
-  (argumentsParser $ parser @a)
-  (fullDesc <> header hdr <> progDescDoc (Just dsc') <> footerDoc (Just ftr'))
-  where
-    dsc' = vsep $ map pretty (cmdDsc @a)
-    ftr' = vsep $ map pretty (cmdFtr @a) ++ evoModSuiteFooter
+parseArguments = execParser $ elynxParserInfo (cmdDsc @a) (cmdFtr @a) (argumentsParser $ parser @a)
 
 -- | Logging transformer to be used with all executables.
 type ELynx a = ReaderT (Arguments a) (LoggingT IO)
@@ -359,19 +358,24 @@ writeReproduction bn r = do
       s   = Reproduction pn as fs cs' r
   void $ encodeFile (bn <> ".elynx") s
 
--- TODO: This is very similar to parseArguments, and should not be duplicated.
--- However, this separate function is somewhat necessary because we have to lift
--- the command over from type 'a' to 'b' which is not possibly afterwards
--- anymore.
 -- | Create a command; convenience function.
-createCommand
+createCommandReproducible
   :: forall a b . Reproducible a => (a -> b) -> Mod CommandFields b
-createCommand f = command (cmdName @a) $ info
-  (f <$> parser @a)
+createCommandReproducible f = command (cmdName @a) $ f <$>
+  elynxParserInfo (cmdDsc @a) (cmdFtr @a) (parser @a)
+
+-- | Create a command; convenience function.
+createCommand :: String -> [String] -> [String] -> Parser a -> (a -> b) -> Mod CommandFields b
+createCommand nm dsc ftr p f = command nm $ f <$>
+  elynxParserInfo dsc ftr p
+
+-- | ELynx parser info; convenience function.
+elynxParserInfo :: [String] -> [String] -> Parser a -> ParserInfo a
+elynxParserInfo dsc ftr p = info (elynxParser p)
   (fullDesc <> header hdr <> progDescDoc (Just dsc') <> footerDoc (Just ftr'))
   where
-    dsc' = vsep $ map pretty (cmdDsc @a)
-    ftr' = vsep $ map pretty (cmdFtr @a) ++ evoModSuiteFooter
+    dsc' = vsep $ map pretty dsc
+    ftr' = vsep $ map pretty ftr ++ evoModSuiteFooter
 
 -- | See 'eitherReader', but for Megaparsec.
 megaReadM :: Parsec Void String a -> ReadM a

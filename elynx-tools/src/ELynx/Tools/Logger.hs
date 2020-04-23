@@ -41,6 +41,7 @@ import           Control.Monad.Logger           ( Loc
 import           Control.Monad.Trans.Control    ( MonadBaseControl )
 import           Control.Monad.Trans.Reader     ( ReaderT(runReaderT) )
 import qualified Data.ByteString.Char8         as B
+import Data.List (intercalate)
 import           Data.Text                      ( Text
                                                 , pack
                                                 )
@@ -97,7 +98,7 @@ eLynxWrapper args f worker = do
       logFile = (++ ".log") <$> outBn
   runELynxLoggingT lvl rd logFile $ do
     -- Header.
-    h <- liftIO $ logHeader (unlines $ cmdDsc @a)
+    h <- liftIO $ logHeader (intercalate "\n" $ cmdDsc @a)
     $(logInfo) $ pack $ h ++ "\n"
     -- Fix seed.
     lArgs' <- case getSeed lArgs of
@@ -120,7 +121,9 @@ eLynxWrapper args f worker = do
       Nothing ->
         $(logInfo)
           "No output file given --- skip writing ELynx file for reproducible runs."
-      Just bn -> liftIO $ writeReproduction bn args'
+      Just bn -> do
+        $(logInfo) "Write ELynx reproduction file."
+        liftIO $ writeReproduction bn args'
     -- Footer.
     ftr <- liftIO logFooter
     $(logInfo) $ pack ftr

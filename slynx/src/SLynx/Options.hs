@@ -94,25 +94,25 @@ instance FromJSON CommandArguments
 instance ToJSON CommandArguments
 
 concatenateCommand :: Mod CommandFields CommandArguments
-concatenateCommand = createCommand Concatenate
+concatenateCommand = createCommandReproducible Concatenate
 
 examineCommand :: Mod CommandFields CommandArguments
-examineCommand = createCommand Examine
+examineCommand = createCommandReproducible Examine
 
 filterColumnsCommand :: Mod CommandFields CommandArguments
-filterColumnsCommand = createCommand FilterCols
+filterColumnsCommand = createCommandReproducible FilterCols
 
 filterRowsCommand :: Mod CommandFields CommandArguments
-filterRowsCommand = createCommand FilterRows
+filterRowsCommand = createCommandReproducible FilterRows
 
 simulateCommand :: Mod CommandFields CommandArguments
-simulateCommand = createCommand Simulate
+simulateCommand = createCommandReproducible Simulate
 
 subSampleCommand :: Mod CommandFields CommandArguments
-subSampleCommand = createCommand SubSample
+subSampleCommand = createCommandReproducible SubSample
 
 translateCommand :: Mod CommandFields CommandArguments
-translateCommand = createCommand Translate
+translateCommand = createCommandReproducible Translate
 
 commandArguments :: Parser CommandArguments
 commandArguments =
