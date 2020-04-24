@@ -89,9 +89,9 @@ slynx --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.0.
+ELynx Suite version 0.2.1.
 Developed by Dominik Schrempf.
-Compiled on April 24, 2020, at 13:32 pm, UTC.
+Compiled on April 24, 2020, at 13:50 pm, UTC.
 
 Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
              [-f|--force] COMMAND
@@ -154,9 +154,9 @@ slynx concatenate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.0.
+ELynx Suite version 0.2.1.
 Developed by Dominik Schrempf.
-Compiled on April 24, 2020, at 13:32 pm, UTC.
+Compiled on April 24, 2020, at 13:50 pm, UTC.
 
 Usage: slynx concatenate (-a|--alphabet NAME) INPUT-FILE
   Concatenate sequences found in input files.
@@ -195,9 +195,9 @@ slynx examine --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.0.
+ELynx Suite version 0.2.1.
 Developed by Dominik Schrempf.
-Compiled on April 24, 2020, at 13:32 pm, UTC.
+Compiled on April 24, 2020, at 13:50 pm, UTC.
 
 Usage: slynx examine (-a|--alphabet NAME) INPUT-FILE [--per-site]
   Examine sequences. If data is a multi sequence alignment, additionally analyze columns.
@@ -237,9 +237,9 @@ slynx filter-rows --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.0.
+ELynx Suite version 0.2.1.
 Developed by Dominik Schrempf.
-Compiled on April 24, 2020, at 13:32 pm, UTC.
+Compiled on April 24, 2020, at 13:50 pm, UTC.
 
 Usage: slynx filter-rows (-a|--alphabet NAME) INPUT-FILE [--longer-than LENGTH] 
                          [--shorter-than LENGTH] [--standard-characters]
@@ -282,9 +282,9 @@ slynx filter-columns --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.0.
+ELynx Suite version 0.2.1.
 Developed by Dominik Schrempf.
-Compiled on April 24, 2020, at 13:32 pm, UTC.
+Compiled on April 24, 2020, at 13:50 pm, UTC.
 
 Usage: slynx filter-columns (-a|--alphabet NAME) INPUT-FILE 
                             [--standard-chars DOUBLE]
@@ -326,9 +326,9 @@ slynx simulate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.0.
+ELynx Suite version 0.2.1.
 Developed by Dominik Schrempf.
-Compiled on April 24, 2020, at 13:32 pm, UTC.
+Compiled on April 24, 2020, at 13:50 pm, UTC.
 
 Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL] 
                       [-m|--mixture-model MODEL] [-e|--edm-file NAME] 
@@ -422,9 +422,9 @@ slynx sub-sample --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.0.
+ELynx Suite version 0.2.1.
 Developed by Dominik Schrempf.
-Compiled on April 24, 2020, at 13:32 pm, UTC.
+Compiled on April 24, 2020, at 13:50 pm, UTC.
 
 Usage: slynx sub-sample (-a|--alphabet NAME) INPUT-FILE
                         (-n|--number-of-sites INT)
@@ -471,9 +471,9 @@ slynx translate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.0.
+ELynx Suite version 0.2.1.
 Developed by Dominik Schrempf.
-Compiled on April 24, 2020, at 13:32 pm, UTC.
+Compiled on April 24, 2020, at 13:50 pm, UTC.
 
 Usage: slynx translate (-a|--alphabet NAME) INPUT-FILE (-r|--reading-frame INT)
                        (-u|--universal-code CODE)
@@ -516,9 +516,9 @@ tlynx --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.0.
+ELynx Suite version 0.2.1.
 Developed by Dominik Schrempf.
-Compiled on April 24, 2020, at 13:32 pm, UTC.
+Compiled on April 24, 2020, at 13:50 pm, UTC.
 
 Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
              [-f|--force] COMMAND
@@ -574,9 +574,9 @@ tlynx compare --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.0.
+ELynx Suite version 0.2.1.
 Developed by Dominik Schrempf.
-Compiled on April 24, 2020, at 13:32 pm, UTC.
+Compiled on April 24, 2020, at 13:50 pm, UTC.
 
 Usage: tlynx compare [-n|--normalize] [-b|--bipartitions] [-t|--intersect] 
                      [-f|--newick-format FORMAT] NAME
@@ -622,9 +622,9 @@ tlynx examine --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.0.
+ELynx Suite version 0.2.1.
 Developed by Dominik Schrempf.
-Compiled on April 24, 2020, at 13:32 pm, UTC.
+Compiled on April 24, 2020, at 13:50 pm, UTC.
 
 Usage: tlynx examine INPUT-FILE [-f|--newick-format FORMAT]
   Compute summary statistics of phylogenetic trees.
@@ -665,9 +665,9 @@ tlynx simulate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.0.
+ELynx Suite version 0.2.1.
 Developed by Dominik Schrempf.
-Compiled on April 24, 2020, at 13:32 pm, UTC.
+Compiled on April 24, 2020, at 13:50 pm, UTC.
 
 Usage: tlynx simulate [-t|--nTrees INT] [-n|--nLeaves INT] [-H|--height DOUBLE] 
                       [-M|--condition-on-mrca] [-l|--lambda DOUBLE] 
