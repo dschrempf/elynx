@@ -14,10 +14,6 @@ Portability :  portable
 
 Creation date: Wed Apr 22 21:08:25 2020.
 
-TODO: Check version number.
-
-TODO: Think of a stable reproducible hash. The description and so on are not stable enough.
-
 -}
 
 module Main
@@ -27,8 +23,9 @@ module Main
 import Control.Monad
 import Data.Aeson
 import qualified Data.Aeson.Types as J
-import Data.Maybe
 import qualified Data.ByteString.Char8 as B
+import Data.Maybe
+import Data.Version (Version)
 import Options.Applicative
 import System.Environment (withProgName, withArgs)
 
@@ -39,6 +36,7 @@ import  qualified         SLynx.Options as S
 import TLynx.TLynx (tlynx)
 import  qualified         TLynx.Options as T
 
+import           Paths_elynx              ( version )
 import Options
 
 parseProgName :: Value -> J.Parser String
@@ -87,13 +85,32 @@ checkFile fp h = do
       , "Stored check sum is " ++ B.unpack h
       ]
 
+checkVersion :: Version -> Either String ()
+checkVersion v = if v == version
+                 then Right ()
+                 else Left $ unlines
+                      [ "Versions differ:"
+                      , "Version in ELynx reproduction file: " ++ show v
+                      , "Version of current executable: " ++ show version ]
+
+checkHash :: Reproducible a => Reproduction a -> Either String ()
+checkHash r = if h == h'
+              then Right ()
+              else Left $ unlines
+                   [ "ELynx reproduction file has been changed:"
+                   , "Hash saved in file:        " ++ show h
+                   , "Hash calculated from file: " ++ show h'  ]
+  where h  = rHash r
+        h' = Just $ getReproductionHash r
 
 -- Check if command line arguments and files check sums are matching.
 validate :: (Eq a, Show a, Reproducible a) => Reproduction a -> IO (Either String ())
 validate s = do
   chA  <- checkArgs s
+  let chV = checkVersion (rVersion s)
+      chH = checkHash s
   chFs <- zipWithM checkFile (files s) (map B.pack $ checkSums s)
-  return $ sequence_ (chA : chFs)
+  return $ sequence_ (chA : chV : chH : chFs)
 
 validateAllReproductions :: AllReproductions -> IO (Either String ())
 validateAllReproductions (S x) = validate x

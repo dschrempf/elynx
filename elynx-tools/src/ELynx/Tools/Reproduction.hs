@@ -19,8 +19,6 @@ Creation date: Tue Nov 19 15:07:09 2019.
 
 Use of standard input is not supported.
 
-TODO: Provide redo: (1) check input files; (2) re-perform analysis and check output hash.
-
 -}
 
 module ELynx.Tools.Reproduction
@@ -40,7 +38,7 @@ module ELynx.Tools.Reproduction
   -- * Reproduction
   , ELynx
   , Reproducible(..)
-  -- , getReproducibleHash
+  , getReproductionHash
   , Reproduction(..)
   , writeReproduction
   , hashFile
@@ -76,7 +74,7 @@ import           Control.Monad.Logger           ( LoggingT
 import           Control.Monad.Trans.Reader     ( ReaderT )
 import           Data.List               hiding ( group )
 import           Data.Time
-import           Data.Version                   ( showVersion )
+import           Data.Version                   ( Version, showVersion )
 import           Data.Void
 import           Language.Haskell.TH
 import           Options.Applicative     hiding ( empty )
@@ -314,18 +312,30 @@ class Reproducible a where
   cmdFtr   :: [String]
   cmdFtr = []
 
--- -- TODO Do this for the reproduction type, not for reproducible types.
--- -- | A (hopefully) unique hash for each 'Reproducible' data type.
--- getReproducibleHash :: forall a . Reproducible a => String
--- getReproducibleHash = B.unpack $ encode $ hash $ B.pack $
---   cmdName @a ++ cmdDsc @a ++ show (cmdFtr @a)
+-- | A unique hash of the reproduction data type.
+getReproductionHash :: forall a . Reproducible a => Reproduction a -> String
+getReproductionHash r = B.unpack $ encode $ hash $ B.pack $ unlines $
+  -- Reproduction.
+  progName r : argsStr r
+  <> [showVersion (rVersion r)]
+  <> files r <> checkSums r
+  -- Reproducible.
+  <> inFiles ri <> outSuffixes ri
+  <> [cmdName @a] <> cmdDsc @a <> cmdFtr @a
+  where ri = reproducible r
+
+setHash :: Reproducible a => Reproduction a -> Reproduction a
+setHash r = r {rHash = Just h}
+  where h = getReproductionHash r
+
 
 -- | Necessary information for a reproducible run. Notably, the input files are
 -- checked for consistency!
 data Reproduction a = Reproduction
   { progName         :: String        -- ^ Program name.
   , argsStr          :: [String]      -- ^ Command line arguments without program name.
-  -- , reproducibleHash :: String        -- ^ Unique hash of 'Reproducible' data type.
+  , rVersion         :: Version
+  , rHash            :: Maybe String  -- ^ Unique hash; see 'getReproductionHash'.
   , files            :: [FilePath]    -- ^ File paths of used files.
   , checkSums        :: [String]      -- ^ SHA256 sums of used files.
   , reproducible     :: a             -- ^ Command argument.
@@ -353,10 +363,8 @@ writeReproduction bn r = do
   let fs = inFiles r ++ outFs
   cs <- mapM hashFile fs
   let cs' = map B.unpack cs
-      -- hs  = getReproducibleHash @a
-      -- s   = Reproduction pn as hs fs cs' r
-      s   = Reproduction pn as fs cs' r
-  void $ encodeFile (bn <> ".elynx") s
+      s   = Reproduction pn as version Nothing fs cs' r
+  void $ encodeFile (bn <> ".elynx") (setHash s)
 
 -- | Create a command; convenience function.
 createCommandReproducible

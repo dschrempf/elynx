@@ -18,15 +18,14 @@
 Version: 0.2.0.
 Reproducible evolution made easy.
 
-The ELynx Suite is a Haskell library and a tool set for computational biology.
-The goal of the ELynx Suite is reproducible research. Evolutionary sequences and
-phylogenetic trees can be read, viewed, modified and simulated. Exact
-specification of all options is necessary, and nothing is assumed about the data
-(e.g., the type of the genetic code). The command line with all arguments is
-consistently, and automatically logged. The work overhead in the beginning
-usually pays off in the end.
+A Haskell library and tool set for computational biology. The goal of ELynx is
+reproducible research. Evolutionary sequences and phylogenetic trees can be
+read, viewed, modified and simulated. The command line with all arguments is
+logged consistently, and automatically. Data integrity is verified using SHA256
+sums so that validation of past analyses is possible without the need to
+recompute the result.
 
-The Elynx Suite consists of four library packages and two executables providing
+The Elynx Suite consists of four library packages and three executables providing
 a range of sub commands.
 
 The library packages are:
@@ -36,8 +35,9 @@ The library packages are:
 - elynx-tree :: Handle phylogenetic trees.
 
 The executables are:
-- slynx :: Analyze, modify, and simulate evolutionary sequences (FASTA format).
-- tlynx :: Analyze, modify, and simulate phylogenetic trees (Newick format).
+- slynx :: Analyze, modify, and simulate evolutionary sequences.
+- tlynx :: Analyze, modify, and simulate phylogenetic trees.
+- elynx :: Validate and redo past analyses.
 
 *ELynx is actively developed. We happily receive comments, ideas, feature
 requests, and pull requests!*

@@ -2,18 +2,17 @@
 
 # The ELynx Suite
 
-Version: 0.1.0.
+Version: 0.2.0.
 Reproducible evolution made easy.
 
-The ELynx Suite is a Haskell library and a tool set for computational biology.
-The goal of the ELynx Suite is reproducible research. Evolutionary sequences and
-phylogenetic trees can be read, viewed, modified and simulated. Exact
-specification of all options is necessary, and nothing is assumed about the data
-(e.g., the type of the genetic code). The command line with all arguments is
-consistently, and automatically logged. The work overhead in the beginning
-usually pays off in the end.
+A Haskell library and tool set for computational biology. The goal of ELynx is
+reproducible research. Evolutionary sequences and phylogenetic trees can be
+read, viewed, modified and simulated. The command line with all arguments is
+logged consistently, and automatically. Data integrity is verified using SHA256
+sums so that validation of past analyses is possible without the need to
+recompute the result.
 
-The Elynx Suite consists of four library packages and two executables providing
+The Elynx Suite consists of four library packages and three executables providing
 a range of sub commands.
 
 The library packages are:
@@ -25,8 +24,9 @@ The library packages are:
 
 The executables are:
 
--   **slynx:** Analyze, modify, and simulate evolutionary sequences (FASTA format).
--   **tlynx:** Analyze, modify, and simulate phylogenetic trees (Newick format).
+-   **slynx:** Analyze, modify, and simulate evolutionary sequences.
+-   **tlynx:** Analyze, modify, and simulate phylogenetic trees.
+-   **elynx:** Validate and redo past analyses.
 
 **ELynx is actively developed. We happily receive comments, ideas, feature
 requests, and pull requests!**
@@ -68,10 +68,10 @@ Handle evolutionary sequences.
 
     slynx --help
 
-    ELynx Suite version 0.1.0. Developed by Dominik Schrempf. Compiled on March 21,
-    2020, at 16:37 pm, UTC.
+    ELynx Suite version 0.2.0. Developed by Dominik Schrempf. Compiled on April 22,
+    2020, at 13:22 pm, UTC.
     
-    Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME]
+    Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
                  [-f|--force] COMMAND
       Analyze, and simulate multi sequence alignments.
     
@@ -95,10 +95,10 @@ Handle evolutionary sequences.
       sub-sample               Sub-sample columns from multi sequence alignments.
       translate                Translate from DNA to Protein or DNAX to ProteinX.
     
-    File formats:
+    Available sequence file formats:
       - FASTA
     
-    Alphabet types:
+    Available alphabets:
       - DNA (nucleotides)
       - DNAX (nucleotides; including gaps)
       - DNAI (nucleotides; including gaps, and IUPAC codes)
@@ -144,7 +144,7 @@ Examine sequence with `slynx examine`.
 
     slynx examine --help
 
-    Usage: slynx examine (-a|--alphabet NAME) [INPUT-FILE] [--per-site]
+    Usage: slynx examine (-a|--alphabet NAME) INPUT-FILE [--per-site]
       Examine sequences. If data is a multi sequence alignment, additionally analyze
       columns.
     
@@ -161,9 +161,8 @@ Filter sequences with `filer-rows`.
 
     slynx filter-rows --help
 
-    Usage: slynx filter-rows (-a|--alphabet NAME) [INPUT-FILE]
-                             [--longer-than LENGTH] [--shorter-than LENGTH]
-                             [--standard-characters]
+    Usage: slynx filter-rows (-a|--alphabet NAME) INPUT-FILE [--longer-than LENGTH] 
+                             [--shorter-than LENGTH] [--standard-characters]
       Filter rows (or sequences) found in input files.
     
     Available options:
@@ -179,9 +178,9 @@ Filter columns of multi sequence alignments with `filter-columns`.
 
     slynx filter-columns --help
 
-    Usage: slynx filter-columns (-a|--alphabet NAME) [INPUT-FILE]
+    Usage: slynx filter-columns (-a|--alphabet NAME) INPUT-FILE 
                                 [--standard-chars DOUBLE]
-      Filter columns of multi-sequence alignments.
+      Filter columns of multi sequence alignments.
     
     Available options:
       -a,--alphabet NAME       Specify alphabet type NAME
@@ -197,16 +196,16 @@ Simulate sequences with `slynx simulate`.
 
     slynx simulate --help
 
-    Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL]
-                          [-m|--mixture-model MODEL] [-e|--edm-file NAME]
-                          [-p|--siteprofile-files NAMES]
-                          [-w|--mixture-model-weights "[DOUBLE,DOUBLE,...]"]
+    Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL] 
+                          [-m|--mixture-model MODEL] [-e|--edm-file NAME] 
+                          [-p|--siteprofile-files NAMES] 
+                          [-w|--mixture-model-weights "[DOUBLE,DOUBLE,...]"] 
                           [-g|--gamma-rate-heterogeneity "(NCAT,SHAPE)"]
                           (-l|--length NUMBER) [-S|--seed [INT]]
       Simulate multi sequence alignments.
     
     Available options:
-      -t,--tree-file Name      Read trees from file NAME
+      -t,--tree-file Name      Read tree from Newick file NAME
       -s,--substitution-model MODEL
                                Set the phylogenetic substitution model; available
                                models are shown below (mutually exclusive with -m
@@ -228,17 +227,24 @@ Simulate sequences with `slynx simulate`.
     
     Substitution models:
     -s "MODEL[PARAMETER,PARAMETER,...]{STATIONARY_DISTRIBUTION}"
-       Supported DNA models: JC, HKY.
+       Supported DNA models: JC, F81, HKY, GTR4.
          For example,
            -s HKY[KAPPA]{DOUBLE,DOUBLE,DOUBLE,DOUBLE}
-       Supported Protein models: Poisson, Poisson-Custom, LG, LG-Custom, WAG, WAG-Custom.
+           -s GTR4[e_AC,e_AG,e_AT,e_CG,e_CT,e_GT]{DOUBLE,DOUBLE,DOUBLE,DOUBLE}
+              where the 'e_XY' are the exchangeabilities from nucleotide X to Y.
+       Supported Protein models: Poisson, Poisson-Custom, LG, LG-Custom, WAG, WAG-Custom, GTR20.
          MODEL-Custom means that only the exchangeabilities of MODEL are used,
          and a custom stationary distribution is provided.
          For example,
+           -s LG
            -s LG-Custom{...}
+           -s GTR20[e_AR,e_AN,...]{...}
+              the 'e_XY' are the exchangeabilities from amino acid X to Y (alphabetical order).
+       Notes: The F81 model for DNA is equivalent to the Poisson-Custom for proteins.
+              The GTR4 model for DNA is equivalent to the GTR20 for proteins.
     
     Mixture models:
-    -m "MIXTURE(SUBSTITUTION_MODEL_1,SUBSTITUTION_MODEL_2)"
+    -m "MIXTURE(SUBSTITUTION_MODEL_1,SUBSTITUTION_MODEL_2[PARAMETERS]{STATIONARY_DISTRIBUTION},...)"
        For example,
          -m "MIXTURE(JC,HKY[6.0]{0.3,0.2,0.2,0.3})"
     Mixture weights have to be provided with the -w option.
@@ -261,7 +267,7 @@ Sub-sample columns from multi sequence alignments.
 
     slynx sub-sample --help
 
-    Usage: slynx sub-sample (-a|--alphabet NAME) [INPUT-FILE]
+    Usage: slynx sub-sample (-a|--alphabet NAME) INPUT-FILE
                             (-n|--number-of-sites INT)
                             (-m|--number-of-alignments INT) [-S|--seed [INT]]
       Sub-sample columns from multi sequence alignments.
@@ -276,8 +282,7 @@ Sub-sample columns from multi sequence alignments.
                                integers with up to 256 elements (default: random)
       -h,--help                Show this help text
     
-    Create a given number of multi sequence alignments, each of which contains a
-    given number of random sites drawn from the original multi sequence alignment.
+    Create a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment.
 
 
 ## Translate
@@ -286,8 +291,8 @@ Translate sequences.
 
     slynx translate --help
 
-    Usage: slynx translate (-a|--alphabet NAME) [INPUT-FILE]
-                           (-r|--reading-frame INT) (-u|--universal-code CODE)
+    Usage: slynx translate (-a|--alphabet NAME) INPUT-FILE (-r|--reading-frame INT)
+                           (-u|--universal-code CODE)
       Translate from DNA to Protein or DNAX to ProteinX.
     
     Available options:
@@ -305,10 +310,10 @@ Handle phylogenetic trees in Newick format.
 
     tlynx --help
 
-    ELynx Suite version 0.1.0. Developed by Dominik Schrempf. Compiled on March 21,
-    2020, at 16:37 pm, UTC.
+    ELynx Suite version 0.2.0. Developed by Dominik Schrempf. Compiled on April 22,
+    2020, at 13:22 pm, UTC.
     
-    Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME]
+    Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
                  [-f|--force] COMMAND
       Compare, examine, and simulate phylogenetic trees.
     
@@ -338,8 +343,10 @@ Handle phylogenetic trees in Newick format.
                                processes (see also the 'coalesce' command for
                                simulations using the coalescent process).
     
-    File formats:
-      - Newick
+    Available tree file formats:
+      - Newick Standard: Branch support values are stored in square brackets after branch lengths.
+      - Newick IqTree:   Branch support values are stored as node names after the closing bracket of forests.
+      - Newick RevBayes  Key-value pairs is provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are IGNORED at the moment.
     
     The ELynx Suite
     ---------------
@@ -363,16 +370,19 @@ Compute distances between phylogenetic trees.
 
     tlynx compare --help
 
-    Usage: tlynx compare [-n|--normalize] [-b|--bipartitions] [-i|--newick-iqtree]
-                         NAME
+    Usage: tlynx compare [-n|--normalize] [-b|--bipartitions] [-t|--intersect] 
+                         [-f|--newick-format FORMAT] NAME
       Compare two phylogenetic trees (compute distances and branch-wise
       differences).
     
     Available options:
       -n,--normalize           Normalize trees before comparison
-      -b,--bipartitions        Print common and missing bipartitions
-      -i,--newick-iqtree       Use IQ-TREE Newick format (internal node labels are
-                               branch support values)
+      -b,--bipartitions        Print and plot common and missing bipartitions
+      -t,--intersect           Compare intersections; i.e., before comparison, drop
+                               leaves that are not present in the other tree
+      -f,--newick-format FORMAT
+                               Newick tree format; see 'tlynx
+                               --help' (default: Standard)
       NAME                     Tree file
       -h,--help                Show this help text
 
@@ -383,13 +393,14 @@ Compute summary statistics of phylogenetic trees.
 
     tlynx examine --help
 
-    Usage: tlynx examine [INPUT-FILE] [-i|--newick-iqtree]
+    Usage: tlynx examine INPUT-FILE [-f|--newick-format FORMAT]
       Compute summary statistics of phylogenetic trees.
     
     Available options:
       INPUT-FILE               Read trees from INPUT-FILE
-      -i,--newick-iqtree       Use IQ-TREE Newick format (internal node labels are
-                               branch support values)
+      -f,--newick-format FORMAT
+                               Newick tree format; see 'tlynx
+                               --help' (default: Standard)
       -h,--help                Show this help text
 
 
@@ -399,11 +410,12 @@ Simulate phylogenetic trees using birth and death processes.
 
     tlynx simulate --help
 
-    Usage: tlynx simulate [-t|--nTrees INT] [-n|--nLeaves INT] [-H|--height DOUBLE]
-                          [-M|--condition-on-mrca] [-l|--lambda DOUBLE]
-                          [-m|--mu DOUBLE] [-r|--rho DOUBLE] [-u|--sub-sample]
+    Usage: tlynx simulate [-t|--nTrees INT] [-n|--nLeaves INT] [-H|--height DOUBLE] 
+                          [-M|--condition-on-mrca] [-l|--lambda DOUBLE] 
+                          [-m|--mu DOUBLE] [-r|--rho DOUBLE] [-u|--sub-sample] 
                           [-s|--summary-statistics] [-S|--seed [INT]]
-      Simulate phylogenetic trees using birth and death processes.
+      Simulate phylogenetic trees using birth and death processes (see also the
+      'coalesce' command for simulations using the coalescent process).
     
     Available options:
       -t,--nTrees INT          Number of trees (default: 10)
