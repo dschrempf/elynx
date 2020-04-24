@@ -77,17 +77,21 @@ instance Reproducible CommandArguments where
   setSeed (SubSample   a) = SubSample . setSeed a
   setSeed (Translate   a) = Translate . setSeed a
 
-  parser = commandArguments
+  parser  = commandArguments
 
   cmdName = "slynx"
 
-  cmdDsc = ["Analyze, and simulate multi sequence alignments."]
+  cmdDsc  = ["Analyze, and simulate multi sequence alignments."]
 
-  cmdFtr = ["Available sequence file formats:"] ++ fs ++ ["", "Available alphabets:"] ++ as
-    where
-      toListItem = ("  - " ++)
-      fs         = map toListItem ["FASTA"]
-      as         = map (toListItem . alphabetDescription) (allValues :: [Alphabet])
+  cmdFtr =
+    ["Available sequence file formats:"]
+      ++ fs
+      ++ ["", "Available alphabets:"]
+      ++ as
+   where
+    toListItem = ("  - " ++)
+    fs = map toListItem ["FASTA"]
+    as = map (toListItem . alphabetDescription) (allValues :: [Alphabet])
 
 instance FromJSON CommandArguments
 

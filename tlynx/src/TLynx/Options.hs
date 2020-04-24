@@ -78,13 +78,13 @@ instance Reproducible CommandArguments where
   setSeed (Shuffle  a) = Shuffle . setSeed a
   setSeed (Simulate a) = Simulate . setSeed a
 
-  parser = commandArguments
+  parser  = commandArguments
 
   cmdName = "tlynx"
 
-  cmdDsc = ["Compare, examine, and simulate phylogenetic trees."]
+  cmdDsc  = ["Compare, examine, and simulate phylogenetic trees."]
 
-  cmdFtr = "Available tree file formats:" : indent newickHelp
+  cmdFtr  = "Available tree file formats:" : indent newickHelp
     where indent = map ("  " ++)
 
 instance FromJSON CommandArguments

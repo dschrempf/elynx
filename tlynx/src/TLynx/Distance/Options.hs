@@ -77,7 +77,7 @@ instance Reproducible DistanceArguments where
   setSeed = const
   parser  = distanceArguments
   cmdName = "distance"
-  cmdDsc = ["Compute distances between many phylogenetic trees."]
+  cmdDsc  = ["Compute distances between many phylogenetic trees."]
   cmdFtr  = distanceFooter
 
 instance FromJSON DistanceArguments
@@ -139,9 +139,7 @@ distanceParser :: Parsec Void String DistanceMeasure
 distanceParser =
   -- Try first the normalized one, since the normal branch score
   -- parser also succeeds in this case.
-  try symmetric
-    <|> try incompatibleSplit
-    <|> branchScore
+  try symmetric <|> try incompatibleSplit <|> branchScore
 
 distanceOpt :: Parser DistanceMeasure
 distanceOpt =

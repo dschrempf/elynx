@@ -29,7 +29,9 @@ module ELynx.Data.Character.Codon
   )
 where
 
-import           Data.Aeson                     ( FromJSON, ToJSON )
+import           Data.Aeson                     ( FromJSON
+                                                , ToJSON
+                                                )
 import           Data.List
 import           GHC.Generics                   ( Generic )
 import qualified Data.Map                      as M

@@ -39,7 +39,7 @@ instance Reproducible ExamineArguments where
   setSeed = const
   parser  = examineArguments
   cmdName = "examine"
-  cmdDsc = ["Compute summary statistics of phylogenetic trees."]
+  cmdDsc  = ["Compute summary statistics of phylogenetic trees."]
 
 instance FromJSON ExamineArguments
 

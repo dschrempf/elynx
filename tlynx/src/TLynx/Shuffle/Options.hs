@@ -41,8 +41,9 @@ instance Reproducible ShuffleArguments where
   setSeed a s = a { argsSeed = Fixed s }
   parser  = shuffleArguments
   cmdName = "shuffle"
-  cmdDsc
-    = ["Shuffle a phylogenetic tree (keep coalescent times, but shuffle topology and leaves)."]
+  cmdDsc =
+    [ "Shuffle a phylogenetic tree (keep coalescent times, but shuffle topology and leaves)."
+    ]
 
 instance FromJSON ShuffleArguments
 

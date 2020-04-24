@@ -18,43 +18,51 @@ Creation date: Wed Apr 22 21:08:25 2020.
 
 module Main
   ( main
-  ) where
+  )
+where
 
-import Control.Monad
-import Data.Aeson
-import qualified Data.Aeson.Types as J
-import qualified Data.ByteString.Char8 as B
-import Data.Maybe
-import Data.Version (Version)
-import Options.Applicative
-import System.Environment (withProgName, withArgs)
+import           Control.Monad
+import           Data.Aeson
+import qualified Data.Aeson.Types              as J
+import qualified Data.ByteString.Char8         as B
+import           Data.Maybe
+import           Data.Version                   ( Version )
+import           Options.Applicative
+import           System.Environment             ( withProgName
+                                                , withArgs
+                                                )
 
-import ELynx.Tools
+import           ELynx.Tools
 
-import SLynx.SLynx (slynx)
-import  qualified         SLynx.Options as S
-import TLynx.TLynx (tlynx)
-import  qualified         TLynx.Options as T
+import           SLynx.SLynx                    ( slynx )
+import qualified SLynx.Options                 as S
+import           TLynx.TLynx                    ( tlynx )
+import qualified TLynx.Options                 as T
 
-import           Paths_elynx              ( version )
-import Options
+import           Paths_elynx                    ( version )
+import           Options
 
 parseProgName :: Value -> J.Parser String
 parseProgName = withObject "progName" $ \o -> o .: "progName"
 
 -- TODO: Declaring program names here should not be necessary.
 parseAllR :: String -> Value -> J.Parser AllReproductions
-parseAllR "slynx" v = S <$> (parseJSON v :: J.Parser (Reproduction (Arguments S.CommandArguments)))
-parseAllR "tlynx" v = T <$> (parseJSON v :: J.Parser (Reproduction (Arguments T.CommandArguments)))
-parseAllR p _ = let err = unlines ["Could not parse program name:"
-                                  , p
-                                  , "Do you use the correct ELynx version?"]
-                in error err
+parseAllR "slynx" v =
+  S <$> (parseJSON v :: J.Parser (Reproduction (Arguments S.CommandArguments)))
+parseAllR "tlynx" v =
+  T <$> (parseJSON v :: J.Parser (Reproduction (Arguments T.CommandArguments)))
+parseAllR p _ =
+  let err = unlines
+        [ "Could not parse program name:"
+        , p
+        , "Do you use the correct ELynx version?"
+        ]
+  in  error err
 
 parse :: Show a => [String] -> Parser a -> a
 parse s p = fromMaybe
-            (error $ "parse: could not parse command line arguments: " ++ show s)
-            (getParseResult res)
+  (error $ "parse: could not parse command line arguments: " ++ show s)
+  (getParseResult res)
   where res = execParserPure defaultPrefs (info p briefDesc) s
 
 -- Does the command line fit the saved arguments?
@@ -87,26 +95,30 @@ checkFile fp h = do
 
 checkVersion :: Version -> Either String ()
 checkVersion v = if v == version
-                 then Right ()
-                 else Left $ unlines
-                      [ "Versions differ:"
-                      , "Version in ELynx reproduction file: " ++ show v
-                      , "Version of current executable: " ++ show version ]
+  then Right ()
+  else Left $ unlines
+    [ "Versions differ:"
+    , "Version in ELynx reproduction file: " ++ show v
+    , "Version of current executable: " ++ show version
+    ]
 
 checkHash :: Reproducible a => Reproduction a -> Either String ()
 checkHash r = if h == h'
-              then Right ()
-              else Left $ unlines
-                   [ "ELynx reproduction file has been changed:"
-                   , "Hash saved in file:        " ++ show h
-                   , "Hash calculated from file: " ++ show h'  ]
-  where h  = rHash r
-        h' = Just $ getReproductionHash r
+  then Right ()
+  else Left $ unlines
+    [ "ELynx reproduction file has been changed:"
+    , "Hash saved in file:        " ++ show h
+    , "Hash calculated from file: " ++ show h'
+    ]
+ where
+  h  = rHash r
+  h' = Just $ getReproductionHash r
 
 -- Check if command line arguments and files check sums are matching.
-validate :: (Eq a, Show a, Reproducible a) => Reproduction a -> IO (Either String ())
+validate
+  :: (Eq a, Show a, Reproducible a) => Reproduction a -> IO (Either String ())
 validate s = do
-  chA  <- checkArgs s
+  chA <- checkArgs s
   let chV = checkVersion (rVersion s)
       chH = checkHash s
   chFs <- zipWithM checkFile (files s) (map B.pack $ checkSums s)
@@ -120,17 +132,17 @@ getAllR :: FilePath -> IO AllReproductions
 getAllR fp = do
   eELynx <- eitherDecodeFileStrict fp :: IO (Either String Value)
   elynx  <- case eELynx of
-              Left err -> do
-                putStrLn "Failed decoding the ELynx reproduction file."
-                putStrLn "The following error occurred:"
-                error err
-              Right val -> return val
+    Left err -> do
+      putStrLn "Failed decoding the ELynx reproduction file."
+      putStrLn "The following error occurred:"
+      error err
+    Right val -> return val
   prog <- case J.parseEither parseProgName elynx of
-          Left err -> do
-            putStrLn "Failed getting command hash from ELynx reproduction file."
-            putStrLn "The following error occurred:"
-            error err
-          Right prog -> return prog
+    Left err -> do
+      putStrLn "Failed getting command hash from ELynx reproduction file."
+      putStrLn "The following error occurred:"
+      error err
+    Right prog -> return prog
   case J.parseEither (parseAllR prog) elynx of
     Left err -> do
       putStrLn "Failed parsing the ELynx reproduction file."
@@ -144,7 +156,7 @@ runValidate :: ValidateArguments -> IO ()
 runValidate a = do
   let fp = vElynxFile a
   repr <- getAllR fp
-  val <- validateAllReproductions repr
+  val  <- validateAllReproductions repr
   case val of
     Left err -> do
       putStrLn "Failed validating the ELynx reproduction file."
@@ -158,17 +170,15 @@ runRedo a = do
   repr <- getAllR fp
   let as = getArgs repr
   as' <- if "-f" `notElem` as && "--force" `notElem` as
-         then
-           do
-             putStrLn "Force option required to redo analysis. Add -f (force) to arguments."
-             return $ "-f" : as
-         else return as
-  withProgName (getProgName repr) $
-    withArgs as' $
-    redo repr
+    then do
+      putStrLn
+        "Force option required to redo analysis. Add -f (force) to arguments."
+      return $ "-f" : as
+    else return as
+  withProgName (getProgName repr) $ withArgs as' $ redo repr
 
 setForce :: Arguments a -> Arguments a
-setForce (Arguments g l) = Arguments g{forceReanalysis = Force True} l
+setForce (Arguments g l) = Arguments g { forceReanalysis = Force True } l
 
 redo :: AllReproductions -> IO ()
 redo (S x) = slynx $ setForce $ reproducible x

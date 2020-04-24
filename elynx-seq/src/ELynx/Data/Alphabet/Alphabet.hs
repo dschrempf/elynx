@@ -46,7 +46,9 @@ where
 
 import qualified Data.Set                      as S
 import           Prelude                 hiding ( all )
-import           Data.Aeson                     ( FromJSON, ToJSON )
+import           Data.Aeson                     ( FromJSON
+                                                , ToJSON
+                                                )
 import           GHC.Generics                   ( Generic )
 
 import           ELynx.Data.Alphabet.Character

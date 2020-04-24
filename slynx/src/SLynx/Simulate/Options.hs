@@ -78,7 +78,7 @@ instance Reproducible SimulateArguments where
   setSeed a s = a { argsSeed = Fixed s }
   parser  = simulateArguments
   cmdName = "simulate"
-  cmdDsc = ["Simulate multi sequence alignments."]
+  cmdDsc  = ["Simulate multi sequence alignments."]
   cmdFtr  = simulateFooter
 
 instance FromJSON SimulateArguments

@@ -27,31 +27,9 @@ ghc-options:
 
 dependencies:
   - aeson
-  - async
   - base
-  - base16-bytestring
   - bytestring
-  - containers
-  - cryptohash-sha256
-  - deepseq
-  - directory
-  - fast-logger
-  - hmatrix
-  - matrices
-  - megaparsec
-  - monad-logger
-  - monad-control
-  - mwc-random
   - optparse-applicative
-  - parallel
-  - primitive
-  - template-haskell
-  - text
-  - time
-  - transformers
-  - transformers-base
-  - vector
-  - zlib
 
 executables:
   elynx:

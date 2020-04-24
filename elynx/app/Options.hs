@@ -22,14 +22,15 @@ module Options
   , RedoArguments(..)
   , CommandArguments(..)
   , commandArguments
-  ) where
+  )
+where
 
-import Options.Applicative
+import           Options.Applicative
 
-import ELynx.Tools
+import           ELynx.Tools
 
-import  qualified         SLynx.Options as S
-import  qualified         TLynx.Options as T
+import qualified SLynx.Options                 as S
+import qualified TLynx.Options                 as T
 
 -- | Collect all reproductions in one data type.
 data AllReproductions = S (Reproduction (Arguments S.CommandArguments))
@@ -72,10 +73,12 @@ data CommandArguments = Validate ValidateArguments
                       | Redo RedoArguments
 
 validateCommand :: Mod CommandFields CommandArguments
-validateCommand = createCommand "validate" validateDsc [] validateArguments Validate
+validateCommand =
+  createCommand "validate" validateDsc [] validateArguments Validate
 
 redoCommand :: Mod CommandFields CommandArguments
 redoCommand = createCommand "redo" redoDsc [] redoArguments Redo
 
 commandArguments :: ParserInfo CommandArguments
-commandArguments = elynxParserInfo [] [] $ hsubparser $ validateCommand <> redoCommand
+commandArguments =
+  elynxParserInfo [] [] $ hsubparser $ validateCommand <> redoCommand

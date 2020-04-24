@@ -74,7 +74,9 @@ import           Control.Monad.Logger           ( LoggingT
 import           Control.Monad.Trans.Reader     ( ReaderT )
 import           Data.List               hiding ( group )
 import           Data.Time
-import           Data.Version                   ( Version, showVersion )
+import           Data.Version                   ( Version
+                                                , showVersion
+                                                )
 import           Data.Void
 import           Language.Haskell.TH
 import           Options.Applicative     hiding ( empty )
@@ -116,11 +118,12 @@ logHeader h dsc = do
   t  <- time
   p  <- getProgName
   as <- getArgs
-  return $ intercalate "\n" $
-    ("=== " <> h) : dsc ++ hdr ++
-    [ "Start time: " ++ t
-    , "Command line: " ++ p ++ " " ++ unwords as
-    ]
+  return
+    $  intercalate "\n"
+    $  ("=== " <> h)
+    :  dsc
+    ++ hdr
+    ++ ["Start time: " ++ t, "Command line: " ++ p ++ " " ++ unwords as]
 
 -- | See 'logHeader' but footer.
 logFooter :: IO String
@@ -151,8 +154,7 @@ evoModSuiteFooter =
     <+> text "Analyze, modify, and simulate evolutionary sequences."
   , fill 9 (text "tlynx")
     <+> text "Analyze, modify, and simulate phylogenetic trees."
-  , fill 9 (text "elynx")
-    <+> text "Validate and redo past analyses."
+  , fill 9 (text "elynx") <+> text "Validate and redo past analyses."
   , empty
   , text "Get help for sub commands:"
   , text "  slynx examine --help"
@@ -276,7 +278,7 @@ instance Reproducible a => Reproducible (Arguments a) where
   setSeed (Arguments g l) s = Arguments g $ setSeed l s
   parser  = argumentsParser (parser @a)
   cmdName = cmdName @a
-  cmdDsc = cmdDsc @a
+  cmdDsc  = cmdDsc @a
   cmdFtr  = cmdFtr @a
 
 argumentsParser :: Parser a -> Parser (Arguments a)
@@ -289,7 +291,8 @@ elynxParser p = helper <*> versionOpt <*> p
 -- Custom additional description (first argument) and footer (second argument)
 -- can be provided. print help if needed.
 parseArguments :: forall a . Reproducible a => IO (Arguments a)
-parseArguments = execParser $ elynxParserInfo (cmdDsc @a) (cmdFtr @a) (argumentsParser $ parser @a)
+parseArguments = execParser
+  $ elynxParserInfo (cmdDsc @a) (cmdFtr @a) (argumentsParser $ parser @a)
 
 -- | Logging transformer to be used with all executables.
 type ELynx a = ReaderT (Arguments a) (LoggingT IO)
@@ -314,19 +317,29 @@ class Reproducible a where
 
 -- | A unique hash of the reproduction data type.
 getReproductionHash :: forall a . Reproducible a => Reproduction a -> String
-getReproductionHash r = B.unpack $ encode $ hash $ B.pack $ unlines $
+getReproductionHash r =
+  B.unpack
+    $  encode
+    $  hash
+    $  B.pack
+    $  unlines
+    $
   -- Reproduction.
-  progName r : argsStr r
-  <> [showVersion (rVersion r)]
-  <> files r <> checkSums r
+       progName r
+    :  argsStr r
+    <> [showVersion (rVersion r)]
+    <> files r
+    <> checkSums r
   -- Reproducible.
-  <> inFiles ri <> outSuffixes ri
-  <> [cmdName @a] <> cmdDsc @a <> cmdFtr @a
+    <> inFiles ri
+    <> outSuffixes ri
+    <> [cmdName @a]
+    <> cmdDsc @a
+    <> cmdFtr @a
   where ri = reproducible r
 
 setHash :: Reproducible a => Reproduction a -> Reproduction a
-setHash r = r {rHash = Just h}
-  where h = getReproductionHash r
+setHash r = r { rHash = Just h } where h = getReproductionHash r
 
 
 -- | Necessary information for a reproducible run. Notably, the input files are
@@ -360,7 +373,7 @@ writeReproduction bn r = do
   pn <- getProgName
   as <- getArgs
   let outFs = map (bn ++) (outSuffixes r)
-  let fs = inFiles r ++ outFs
+  let fs    = inFiles r ++ outFs
   cs <- mapM hashFile fs
   let cs' = map B.unpack cs
       s   = Reproduction pn as version Nothing fs cs' r
@@ -369,30 +382,37 @@ writeReproduction bn r = do
 -- | Create a command; convenience function.
 createCommandReproducible
   :: forall a b . Reproducible a => (a -> b) -> Mod CommandFields b
-createCommandReproducible f = command (cmdName @a) $ f <$>
-  elynxParserInfo (cmdDsc @a) (cmdFtr @a) (parser @a)
+createCommandReproducible f = command (cmdName @a) $ f <$> elynxParserInfo
+  (cmdDsc @a)
+  (cmdFtr @a)
+  (parser @a)
 
 -- | Create a command; convenience function.
-createCommand :: String -> [String] -> [String] -> Parser a -> (a -> b) -> Mod CommandFields b
-createCommand nm dsc ftr p f = command nm $ f <$>
-  parserInfo dsc' ftr' p
-  where
-    dsc' = if null dsc then Nothing else Just $ vsep $ map pretty dsc
-    ftr' = if null ftr then Nothing else Just $ vsep $ map pretty ftr
+createCommand
+  :: String
+  -> [String]
+  -> [String]
+  -> Parser a
+  -> (a -> b)
+  -> Mod CommandFields b
+createCommand nm dsc ftr p f = command nm $ f <$> parserInfo dsc' ftr' p
+ where
+  dsc' = if null dsc then Nothing else Just $ vsep $ map pretty dsc
+  ftr' = if null ftr then Nothing else Just $ vsep $ map pretty ftr
 
 -- | ELynx parser info; convenience function.
 elynxParserInfo :: [String] -> [String] -> Parser a -> ParserInfo a
 elynxParserInfo dsc ftr = parserInfo dsc' ftr'
-  where
-    dsc' = if null dsc then Nothing else Just $ vsep $ map pretty dsc
-    ftr' = Just $ vsep $ map pretty ftr ++ evoModSuiteFooter
+ where
+  dsc' = if null dsc then Nothing else Just $ vsep $ map pretty dsc
+  ftr' = Just $ vsep $ map pretty ftr ++ evoModSuiteFooter
 
 -- Short version of ELynx parser info for sub commands.
 parserInfo :: Maybe Doc -> Maybe Doc -> Parser a -> ParserInfo a
-parserInfo dsc ftr p = info (elynxParser p)
+parserInfo dsc ftr p = info
+  (elynxParser p)
   (fullDesc <> headerDoc (Just hdr') <> progDescDoc dsc <> footerDoc ftr)
-  where
-    hdr' = vsep $ map pretty hdr
+  where hdr' = vsep $ map pretty hdr
 
 -- | See 'eitherReader', but for Megaparsec.
 megaReadM :: Parsec Void String a -> ReadM a

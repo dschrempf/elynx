@@ -42,8 +42,9 @@ instance Reproducible ExamineArguments where
   setSeed = const
   parser  = examineArguments
   cmdName = "examine"
-  cmdDsc
-    = ["Examine sequences. If data is a multi sequence alignment, additionally analyze columns."]
+  cmdDsc =
+    [ "Examine sequences. If data is a multi sequence alignment, additionally analyze columns."
+    ]
 
 instance FromJSON ExamineArguments
 

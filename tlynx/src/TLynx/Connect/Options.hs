@@ -41,7 +41,9 @@ instance Reproducible ConnectArguments where
   setSeed a _ = a
   parser  = connectArguments
   cmdName = "connect"
-  cmdDsc  = ["Connect two phylogenetic trees in all ways (possibly honoring constraints)."]
+  cmdDsc =
+    [ "Connect two phylogenetic trees in all ways (possibly honoring constraints)."
+    ]
 
 instance FromJSON ConnectArguments
 
