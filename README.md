@@ -2,7 +2,7 @@
 
 # The ELynx Suite
 
-Version: 0.2.0.
+Version: 0.2.1.
 Reproducible evolution made easy.
 
 A Haskell library and tool set for computational biology. The goal of ELynx is
