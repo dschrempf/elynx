@@ -28,7 +28,7 @@ Bump version.
 Recompile project.
 
 * README and Change Log
-Update help in [[file:README.org][README.org]], and [[file:ChangeLog.org][ChangeLog.org]]; export them to Markdown.
+Update help in [[file:README.org][README.org]] (=, b b=), and [[file:ChangeLog.org][ChangeLog.org]]; export them to Markdown.
 
 Copy files to package directories.
 #+NAME: CopyFiles

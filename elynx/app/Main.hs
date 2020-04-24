@@ -167,6 +167,11 @@ runValidate a = do
 runRedo :: RedoArguments -> IO ()
 runRedo a = do
   let fp = rElynxFile a
+  let f = rForce a
+  when (f == Force False) $ do
+    putStrLn "Validate ELynx reproduction file before reanalysis."
+    putStrLn "Use the --force (-f) option to skip this test."
+    runValidate (ValidateArguments fp)
   repr <- getAllR fp
   let as = getArgs repr
   as' <- if "-f" `notElem` as && "--force" `notElem` as

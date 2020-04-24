@@ -29,6 +29,7 @@ module ELynx.Tools.Reproduction
   , Verbosity(..)
   , toLogLevel
   , Force(..)
+  , forceOpt
   , GlobalArguments(..)
   , globalArguments
   , Seed(..)
@@ -221,6 +222,7 @@ outFileBaseNameOpt = strOption
     "Specify base name of output file"
   )
 
+-- | Force option parser.
 forceOpt :: Parser Force
 forceOpt = flag
   (Force False)

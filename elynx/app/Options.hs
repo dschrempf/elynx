@@ -56,12 +56,13 @@ validateArguments = ValidateArguments <$> inFileArg
 validateDsc :: [String]
 validateDsc = ["Validate an ELynx analysis"]
 
-newtype RedoArguments = RedoArguments
-  { rElynxFile :: FilePath }
+data RedoArguments = RedoArguments
+  { rElynxFile :: FilePath
+  , rForce :: Force }
   deriving (Eq, Show, Generic)
 
 redoArguments :: Parser RedoArguments
-redoArguments = RedoArguments <$> inFileArg
+redoArguments = RedoArguments <$> inFileArg <*> forceOpt
 
 redoDsc :: [String]
 redoDsc = ["Redo an ELynx analysis"]
