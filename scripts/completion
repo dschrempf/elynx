@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+source <(elynx --bash-completion-script `which elynx`)
+source <(slynx --bash-completion-script `which slynx`)
+source <(tlynx --bash-completion-script `which tlynx`)
