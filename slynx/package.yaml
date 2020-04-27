@@ -54,11 +54,13 @@ library:
     - elynx-seq
     - elynx-tools
     - elynx-tree
+  generated-other-modules: Paths_slynx
 
 executables:
   slynx:
     main:                Main.hs
     source-dirs:         app
+    generated-other-modules: Paths_slynx
     ghc-options:
       - -threaded
       - -rtsopts

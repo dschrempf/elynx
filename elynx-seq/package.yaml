@@ -50,11 +50,13 @@ library:
   source-dirs: src
   dependencies:
     - elynx-tools
+  generated-other-modules: Paths_elynx_seq
 
 tests:
   seq-test:
     main:                Spec.hs
     source-dirs:         test
+    generated-other-modules: Paths_elynx_seq
     ghc-options:
       - -threaded
       - -rtsopts

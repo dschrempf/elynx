@@ -52,11 +52,13 @@ library:
     - elynx-seq
     - elynx-tools
     - elynx-tree
+  generated-other-modules: Paths_elynx_markov
 
 tests:
   markov-test:
     main:                Spec.hs
     source-dirs:         test
+    generated-other-modules: Paths_elynx_markov
     ghc-options:
       - -threaded
       - -rtsopts

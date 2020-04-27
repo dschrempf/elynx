@@ -40,6 +40,7 @@ executables:
   elynx:
     main: Main.hs
     source-dirs: app
+    
     ghc-options:
       - -threaded
       - -rtsopts
@@ -49,3 +50,4 @@ executables:
       - elynx-tools
       - slynx
       - tlynx
+    generated-other-modules: Paths_elynx

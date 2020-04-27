@@ -46,11 +46,13 @@ library:
   source-dirs: src
   dependencies:
     - elynx-tools
+  generated-other-modules: Paths_elynx_tree
 
 benchmarks:
   tree-bench:
     main:                Bench.hs
     source-dirs:         bench
+    generated-other-modules: Paths_elynx_tree
     ghc-options:
       - -threaded
       - -rtsopts
@@ -64,6 +66,7 @@ tests:
   tree-test:
     main:                Spec.hs
     source-dirs:         test
+    generated-other-modules: Paths_elynx_tree
     ghc-options:
       - -threaded
       - -rtsopts

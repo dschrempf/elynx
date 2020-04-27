@@ -58,11 +58,13 @@ library:
   dependencies:
     - elynx-tools
     - elynx-tree
+  generated-other-modules: Paths_tlynx
 
 executables:
   tlynx:
     main:                Main.hs
     source-dirs:         app
+    generated-other-modules: Paths_tlynx
     ghc-options:
       - -threaded
       - -rtsopts
