@@ -6,10 +6,6 @@ license-file:        LICENSE
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
 copyright:           "Dominik Schrempf (2020)"
-# TODO: Explicit definition of the version of the cabal file should not be
-# necessary, but see https://github.com/sol/hpack/issues/384.
-verbatim:
-  cabal-version: 3.0
 
 extra-source-files:
 - README.md
@@ -52,13 +48,11 @@ library:
     - elynx-seq
     - elynx-tools
     - elynx-tree
-  generated-other-modules: Paths_elynx_markov
 
 tests:
   markov-test:
     main:                Spec.hs
     source-dirs:         test
-    generated-other-modules: Paths_elynx_markov
     ghc-options:
       - -threaded
       - -rtsopts

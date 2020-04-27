@@ -6,10 +6,6 @@ license-file:        LICENSE
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
 copyright:           "Dominik Schrempf (2020)"
-# TODO: Explicit definition of the version of the cabal file should not be
-# necessary, but see https://github.com/sol/hpack/issues/384.
-verbatim:
-  cabal-version: 3.0
 
 extra-source-files:
 - README.md
@@ -58,13 +54,11 @@ library:
   dependencies:
     - elynx-tools
     - elynx-tree
-  generated-other-modules: Paths_tlynx
 
 executables:
   tlynx:
     main:                Main.hs
     source-dirs:         app
-    generated-other-modules: Paths_tlynx
     ghc-options:
       - -threaded
       - -rtsopts
