@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -e
+
+source include
+
+cd $project_root
+
+# Remove created cabal files.
+fd -I -e cabal -x rm {}
+
+# Remove all stack-work directories.
+fd -I -H .stack-work -x rm -r {}
