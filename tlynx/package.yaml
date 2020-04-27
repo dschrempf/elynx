@@ -1,7 +1,9 @@
 name:                tlynx
 version:             0.2.1
 github:              "dschrempf/elynx"
-license:             GPL-3.0-or-later
+# TODO: Use more explicit specification when source tarball creation and upload work.
+# license:             GPL-3.0-or-later
+license:             GPL-3
 license-file:        LICENSE
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
