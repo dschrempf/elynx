@@ -2,7 +2,7 @@
 # Changelog for ELynx
 
 
-## Version 0.2.1
+## Version 0.2.2
 
 -   Validation and repetition of previous analyses is finally possible with the
     new `elynx` binary.
