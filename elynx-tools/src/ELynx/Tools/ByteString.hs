@@ -56,7 +56,6 @@ alignLeftWith c n s =
 alignLeft :: Int -> L.ByteString -> L.ByteString
 alignLeft = alignLeftWith ' '
 
-
 -- | If a string is longer than a given value, trim it and add some dots.
 summarizeByteString :: Int -> L.ByteString -> L.ByteString
 summarizeByteString l s

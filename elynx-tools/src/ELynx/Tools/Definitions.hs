@@ -32,7 +32,7 @@ import Data.Version
 
 -- | ELynx version.
 version :: Version
-version = read "0.2.1"
+version = makeVersion [0, 2, 1]
 
 -- | Required precision when comparing 'Double' values.
 eps :: Double
