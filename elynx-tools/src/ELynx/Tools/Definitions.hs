@@ -22,7 +22,7 @@ module ELynx.Tools.Definitions
   )
 where
 
-import Data.Version
+import           Data.Version
 
 -- XXX: Manually handled, because automatic handling with @Paths_...@ modules
 -- results in errors during source tarball creation and upload.
@@ -32,7 +32,7 @@ import Data.Version
 
 -- | ELynx version.
 version :: Version
-version = makeVersion [0, 2, 1]
+version = makeVersion [0, 2, 2]
 
 -- | Required precision when comparing 'Double' values.
 eps :: Double

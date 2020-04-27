@@ -233,26 +233,6 @@ toReconstructedTree' [] [] _ trs _  = head trs
 toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
   -- For the algorithm, see 'ELynx.Coalescent.simulate', but index starts
   -- at zero.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
  where
   !i     = head is
   !is'   = tail is
