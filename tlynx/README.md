@@ -70,7 +70,7 @@ Handle evolutionary sequences.
 
     ELynx Suite version 0.2.1.
     Developed by Dominik Schrempf.
-    Compiled on April 24, 2020, at 13:50 pm, UTC.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
     
     Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
                  [-f|--force] COMMAND
@@ -132,7 +132,7 @@ Concatenate multi sequence alignments.
 
     ELynx Suite version 0.2.1.
     Developed by Dominik Schrempf.
-    Compiled on April 24, 2020, at 13:50 pm, UTC.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
     
     Usage: slynx concatenate (-a|--alphabet NAME) INPUT-FILE
       Concatenate sequences found in input files.
@@ -170,7 +170,7 @@ Examine sequence with `slynx examine`.
 
     ELynx Suite version 0.2.1.
     Developed by Dominik Schrempf.
-    Compiled on April 24, 2020, at 13:50 pm, UTC.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
     
     Usage: slynx examine (-a|--alphabet NAME) INPUT-FILE [--per-site]
       Examine sequences. If data is a multi sequence alignment, additionally analyze columns.
@@ -209,7 +209,7 @@ Filter sequences with `filer-rows`.
 
     ELynx Suite version 0.2.1.
     Developed by Dominik Schrempf.
-    Compiled on April 24, 2020, at 13:50 pm, UTC.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
     
     Usage: slynx filter-rows (-a|--alphabet NAME) INPUT-FILE [--longer-than LENGTH] 
                              [--shorter-than LENGTH] [--standard-characters]
@@ -249,7 +249,7 @@ Filter columns of multi sequence alignments with `filter-columns`.
 
     ELynx Suite version 0.2.1.
     Developed by Dominik Schrempf.
-    Compiled on April 24, 2020, at 13:50 pm, UTC.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
     
     Usage: slynx filter-columns (-a|--alphabet NAME) INPUT-FILE 
                                 [--standard-chars DOUBLE]
@@ -290,7 +290,7 @@ Simulate sequences with `slynx simulate`.
 
     ELynx Suite version 0.2.1.
     Developed by Dominik Schrempf.
-    Compiled on April 24, 2020, at 13:50 pm, UTC.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
     
     Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL] 
                           [-m|--mixture-model MODEL] [-e|--edm-file NAME] 
@@ -383,7 +383,7 @@ Sub-sample columns from multi sequence alignments.
 
     ELynx Suite version 0.2.1.
     Developed by Dominik Schrempf.
-    Compiled on April 24, 2020, at 13:50 pm, UTC.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
     
     Usage: slynx sub-sample (-a|--alphabet NAME) INPUT-FILE
                             (-n|--number-of-sites INT)
@@ -429,7 +429,7 @@ Translate sequences.
 
     ELynx Suite version 0.2.1.
     Developed by Dominik Schrempf.
-    Compiled on April 24, 2020, at 13:50 pm, UTC.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
     
     Usage: slynx translate (-a|--alphabet NAME) INPUT-FILE (-r|--reading-frame INT)
                            (-u|--universal-code CODE)
@@ -471,7 +471,7 @@ Handle phylogenetic trees in Newick format.
 
     ELynx Suite version 0.2.1.
     Developed by Dominik Schrempf.
-    Compiled on April 24, 2020, at 13:50 pm, UTC.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
     
     Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
                  [-f|--force] COMMAND
@@ -526,7 +526,7 @@ Compute distances between phylogenetic trees.
 
     ELynx Suite version 0.2.1.
     Developed by Dominik Schrempf.
-    Compiled on April 24, 2020, at 13:50 pm, UTC.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
     
     Usage: tlynx compare [-n|--normalize] [-b|--bipartitions] [-t|--intersect] 
                          [-f|--newick-format FORMAT] NAME
@@ -571,7 +571,7 @@ Compute summary statistics of phylogenetic trees.
 
     ELynx Suite version 0.2.1.
     Developed by Dominik Schrempf.
-    Compiled on April 24, 2020, at 13:50 pm, UTC.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
     
     Usage: tlynx examine INPUT-FILE [-f|--newick-format FORMAT]
       Compute summary statistics of phylogenetic trees.
@@ -611,7 +611,7 @@ Simulate phylogenetic trees using birth and death processes.
 
     ELynx Suite version 0.2.1.
     Developed by Dominik Schrempf.
-    Compiled on April 24, 2020, at 13:50 pm, UTC.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
     
     Usage: tlynx simulate [-t|--nTrees INT] [-n|--nLeaves INT] [-H|--height DOUBLE] 
                           [-M|--condition-on-mrca] [-l|--lambda DOUBLE] 
@@ -658,6 +658,45 @@ Simulate phylogenetic trees using birth and death processes.
       slynx examine --help
 
 
+# ELynx
+
+Validate and (optionally) redo past ELynx analyses.
+
+    elynx --help
+
+    ELynx Suite version 0.2.1.
+    Developed by Dominik Schrempf.
+    Compiled on April 27, 2020, at 06:31 am, UTC.
+    
+    Usage: elynx COMMAND
+      Validate and redo past ELynx analyses
+    
+    Available options:
+      -h,--help                Show this help text
+      -V,--version             Show version
+    
+    Available commands:
+      validate                 Validate an ELynx analysis
+      redo                     Redo an ELynx analysis
+    
+    
+    ELynx
+    -----
+    A Haskell library and tool set for computational biology. The goal of ELynx is
+    reproducible research. Evolutionary sequences and phylogenetic trees can be
+    read, viewed, modified and simulated. The command line with all arguments is
+    logged consistently, and automatically. Data integrity is verified using SHA256
+    sums so that validation of past analyses is possible without the need to
+    recompute the result.
+    
+    slynx     Analyze, modify, and simulate evolutionary sequences.
+    tlynx     Analyze, modify, and simulate phylogenetic trees.
+    elynx     Validate and redo past analyses.
+    
+    Get help for sub commands:
+      slynx examine --help
+
+
 # Library documentation
 
 Documentation of the libraries can be found on [Hackage](https://hackage.haskell.org/):
@@ -667,8 +706,9 @@ Documentation of the libraries can be found on [Hackage](https://hackage.haskell
 -   [elynx-tools](https://hackage.haskell.org/package/elynx-tools)
 -   [elynx-tree](https://hackage.haskell.org/package/elynx-tree)
 
-Documentation of the executables is, or course, also available:
+Documentation of the executables is also available:
 
+-   [elynx](https://hackage.haskell.org/package/elynx)
 -   [slynx](https://hackage.haskell.org/package/slynx)
 -   [tlynx](https://hackage.haskell.org/package/tlynx)
 

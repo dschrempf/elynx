@@ -82,4 +82,7 @@ redoCommand = createCommand "redo" redoDsc [] redoArguments Redo
 
 commandArguments :: ParserInfo CommandArguments
 commandArguments =
-  elynxParserInfo [] [] $ hsubparser $ validateCommand <> redoCommand
+  elynxParserInfo desc [] $ hsubparser $ validateCommand <> redoCommand
+
+desc :: [String]
+desc = ["Validate and redo past ELynx analyses"]
