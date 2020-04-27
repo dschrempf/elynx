@@ -77,6 +77,6 @@ fd 'README.org' "${project_root}" -x \
    sed -i -r '/^Version:\s+/s/[0-9]+\.[0-9]+\.[0-9]+/'"${version_new}"'/'
 
 # Replace version in ELynx.Tools.Definitions
-sed -i -r '/^version = makeVersion\s+/s/\[[0-9]+, [0-9]+, [0-9]+/'"${version_new_list}"'/'
+sed -i -r '/^version = makeVersion\s+/s/\[[0-9]+, [0-9]+, [0-9]+\]/'"${version_new_list}"'/' "${project_root}/elynx-tools/src/ELynx/Tools/Definitions.hs"
 
 echo "Done."
