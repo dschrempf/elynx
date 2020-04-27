@@ -2,7 +2,7 @@
 Module      :  ELynx.Data.MarkovProcess.CXXModelsData
 Description :  Stationary distributions and weights
 Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3
+License     :  GPL-3.0-or-later
 
 Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable

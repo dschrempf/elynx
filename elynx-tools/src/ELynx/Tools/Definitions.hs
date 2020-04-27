@@ -2,7 +2,7 @@
 Module      :  ELynx.Tools.Definitions
 Description :  Some global definitions
 Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3
+License     :  GPL-3.0-or-later
 
 Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
@@ -14,12 +14,21 @@ Creation date: Fri Jan 25 17:17:41 2019.
 
 module ELynx.Tools.Definitions
   ( -- * Definitions
-    eps
+    chunksize
+  , eps
   , eps'
   , precision
-  , chunksize
+  , version
   )
 where
+
+import Data.Version
+
+-- XXX: Manually handled, because automatic handling with @Paths_...@ modules
+-- results in errors during source tarball creation and upload.
+-- | ELynx version.
+version :: Version
+version = read "0.2.1"
 
 -- | Required precision when comparing 'Double' values.
 eps :: Double

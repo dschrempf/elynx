@@ -9,7 +9,7 @@
 Module      :  ELynx.Tools.Reproduction
 Description :  Functions to ease reproduction of analyses
 Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3
+License     :  GPL-3.0-or-later
 
 Maintainer  :  dominik.schrempf@gmail.com
 Stability   :  unstable
@@ -88,7 +88,6 @@ import           Text.Megaparsec                ( Parsec
                                                 )
 
 import           ELynx.Tools.Misc
-import           Paths_elynx_tools              ( version )
 
 -- Be careful; it is necessary to synchronize the version numbers across packages.
 versionString :: String

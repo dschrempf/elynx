@@ -2,7 +2,7 @@
 Module      :  ELynx.Export.Sequence.Fasta
 Description :  Export Fasta sequences
 Copyright   :  (c) Dominik Schrempf 2018
-License     :  GPL-3
+License     :  GPL-3.0-or-later
 
 
 Maintainer  :  dominik.schrempf@gmail.com
