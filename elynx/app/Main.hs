@@ -39,7 +39,6 @@ import qualified SLynx.Options                 as S
 import           TLynx.TLynx                    ( tlynx )
 import qualified TLynx.Options                 as T
 
-import           Paths_elynx                    ( version )
 import           Options
 
 parseProgName :: Value -> J.Parser String

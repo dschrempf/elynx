@@ -87,7 +87,8 @@ import           Text.Megaparsec                ( Parsec
                                                 , runParser
                                                 )
 
-import           ELynx.Tools.Misc
+import           ELynx.Tools.Definitions        ( version )
+import           ELynx.Tools.Misc               ( allValues )
 
 -- Be careful; it is necessary to synchronize the version numbers across packages.
 versionString :: String
