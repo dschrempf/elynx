@@ -26,6 +26,10 @@ import Data.Version
 
 -- XXX: Manually handled, because automatic handling with @Paths_...@ modules
 -- results in errors during source tarball creation and upload.
+
+-- Careful, this version number has to be synchronized with the one specified in
+-- the *.cabal files. This is done with the @bump-version@ script.
+
 -- | ELynx version.
 version :: Version
 version = read "0.2.1"
