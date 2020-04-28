@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 {- |
-Module      :  ELynx.Nexus
+Module      :  ELynx.Import.Nexus
 Description :  Nexus types and classes
 Copyright   :  (c) Dominik Schrempf 2020
 License     :  GPL-3
@@ -14,19 +14,20 @@ Creation date: Tue Apr 28 17:10:05 2020.
 
 -}
 
-module ELynx.Nexus
-  ( Block(..)
+module ELynx.Import.Nexus
+  ( Parser
+  , Block(..)
   , nexus
   ) where
 
 import Control.Monad (void)
--- import qualified Data.ByteString.Lazy.Char8 as B
 import           Data.ByteString.Internal       ( c2w )
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Void (Void)
 import Text.Megaparsec
 import Text.Megaparsec.Byte
 
+-- | Megaparsec shortcut.
 type Parser = Parsec Void ByteString
 
 -- | A Nexus block has a name (e.g., TREES), and parser for the entry.
@@ -36,6 +37,8 @@ data Block a = Block
 
 -- This has to be refined. Like this, only one block can be parsed, and the
 -- block type has to be known beforehand.
+
+-- | Parse a Nexus file with a given 'Block'.
 nexus :: Block a -> Parser a
 nexus b = start *> block b
 

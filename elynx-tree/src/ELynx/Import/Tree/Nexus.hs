@@ -15,8 +15,7 @@ Creation date: Tue Apr 28 17:44:13 2020.
 -}
 
 module ELynx.Import.Tree.Nexus
-  ( nexus
-  , trees
+  ( nexusTrees
   ) where
 
 import Data.Tree
@@ -25,10 +24,14 @@ import Data.ByteString.Lazy (ByteString, pack)
 import Text.Megaparsec
 import Text.Megaparsec.Byte
 
-import ELynx.Data.Tree.PhyloTree
+import ELynx.Data.Tree
 
 import ELynx.Import.Tree.Newick
-import ELynx.Nexus
+import ELynx.Import.Nexus hiding (Parser)
+
+-- | Parse a Nexus files with a TREES block.
+nexusTrees :: NewickFormat -> Parser [(ByteString, Tree (PhyloLabel ByteString))]
+nexusTrees = nexus . trees
 
 trees :: NewickFormat -> Block [(ByteString, Tree (PhyloLabel ByteString))]
 trees f = Block "TREES" (some $ namedNewick f)
