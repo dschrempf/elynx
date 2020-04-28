@@ -85,3 +85,17 @@ do
     stack upload --pvp-bounds both .)
 done
 #+END_SRC
+
+# [2020-04-28 Tue] The Hackage server is out of date, and documentation has to be
+# built manually.
+
+# #+NAME: HackageUploadDocumentation
+# #+BEGIN_SRC sh :exports both :results output verbatim
+# for p in elynx-markov elynx-seq elynx-tools elynx-tree slynx tlynx elynx
+# do
+#     (cd "$p" || exit 1
+#     SOMETHING LIKE
+#     cabal haddock --haddock-for-hackage --haddock-hyperlink-source
+#     cabal upload --documentation --publish dist/pkg-0.1-docs.tar.gz )
+# done
+# #+END_SRC

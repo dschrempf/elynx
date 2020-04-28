@@ -129,13 +129,6 @@ maybeEDMFileOpt = optional $ strOption
     "Empirical distribution model file NAME in Phylobayes format"
   )
 
--- fn :: Parsec Void String FilePath
--- fn = space *> takeWhile1P () <* space
-
--- fns :: Parsec Void String [FilePath]
--- fns = do
---   many string
-
 maybeSiteprofilesFilesOpt :: Parser (Maybe [FilePath])
 maybeSiteprofilesFilesOpt = optional $ words <$> strOption
   (long "siteprofile-files" <> short 'p' <> metavar "NAMES" <> help

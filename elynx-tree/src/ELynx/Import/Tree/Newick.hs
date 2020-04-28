@@ -74,12 +74,12 @@ instance ToJSON NewickFormat
 
 -- | Short description of the supported Newick formats.
 description :: NewickFormat -> String
-description Standard =
-  "Standard: Branch support values are stored in square brackets after branch lengths."
+description Standard
+  = "Standard: Branch support values are stored in square brackets after branch lengths."
 description IqTree
   = "IqTree:   Branch support values are stored as node names after the closing bracket of forests."
 description RevBayes
-  = "RevBayes  Key-value pairs is provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are IGNORED at the moment."
+  = "RevBayes: Key-value pairs is provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are IGNORED at the moment."
 
 -- | Parse a single Newick tree. Also succeeds when more trees follow.
 newick :: NewickFormat -> Parser (Tree (PhyloLabel L.ByteString))

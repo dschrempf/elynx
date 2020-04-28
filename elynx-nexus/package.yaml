@@ -1,4 +1,4 @@
-name:                elynx-tree
+name:                elynx-nexus
 version:             0.2.2
 github:              "dschrempf/elynx"
 # TODO: Use more explicit specification when source tarball creation and upload work.
@@ -14,14 +14,14 @@ extra-source-files:
 - ChangeLog.md
 
 # Metadata used when publishing your package
-synopsis:            Handle phylogenetic trees
+synopsis:            Import and export Nexus files
 category:            Bioinformatics
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
 description:
-  Examine, compare, and simulate phylogenetic trees in a reproducible way.
+  Examine, modify, and simulate molecular sequences in a reproducible way.
   Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
 
 ghc-options:
@@ -30,37 +30,15 @@ ghc-options:
   # - -O2
   - -fllvm
 
-dependencies:
-  - base
-  - bytestring
-  - containers
-  - math-functions
-  - megaparsec
-  - mwc-random
-  - primitive
-  - statistics
-
 library:
   source-dirs: src
   dependencies:
-    - elynx-tools
-    - elynx-nexus
-
-benchmarks:
-  tree-bench:
-    main:                Bench.hs
-    source-dirs:         bench
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
-    dependencies:
-      - elynx-tools
-      - elynx-tree
-      - criterion
+    - base
+    - bytestring
+    - megaparsec
 
 tests:
-  tree-test:
+  seq-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -68,9 +46,5 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - elynx-tools
-      - elynx-tree
+      - base
       - hspec
-      - hspec-megaparsec
-      - QuickCheck
-      - quickcheck-instances

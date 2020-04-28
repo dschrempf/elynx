@@ -19,6 +19,7 @@ module TLynx.Parsers
   )
 where
 
+import           Data.List                      ( intercalate )
 import           Options.Applicative
 
 import           ELynx.Import.Tree.Newick       ( NewickFormat(..)
@@ -34,8 +35,10 @@ newickFormat =
     <> short 'f'
     <> metavar "FORMAT"
     <> value Standard
-    <> showDefault
-    <> help "Newick tree format; see 'tlynx --help'"
+    <> help ("Newick tree format: " ++ nwlist ++ "; default: Standard; for detailed help, see 'tlynx --help'")
+  where
+    nwfs   = map show (allValues :: [NewickFormat])
+    nwlist = intercalate ", " (init nwfs) <> ", or " <> last nwfs
 
 -- | Help for different 'NewickFormat's.
 newickHelp :: [String]

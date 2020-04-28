@@ -143,8 +143,8 @@ versionOpt = infoOption
   <> hidden
   )
 
-evoModSuiteFooter :: [Doc]
-evoModSuiteFooter =
+elynxFooter :: [Doc]
+elynxFooter =
   [ empty
   , text "ELynx"
   , text "-----"
@@ -384,10 +384,13 @@ writeReproduction bn r = do
 -- | Create a command; convenience function.
 createCommandReproducible
   :: forall a b . Reproducible a => (a -> b) -> Mod CommandFields b
-createCommandReproducible f = command (cmdName @a) $ f <$> elynxParserInfo
-  (cmdDsc @a)
-  (cmdFtr @a)
-  (parser @a)
+createCommandReproducible f = command (cmdName @a) $ f <$> parserInfo
+  dsc' ftr' (parser @a)
+  where
+    dsc = cmdDsc @a
+    ftr = cmdFtr @a
+    dsc' = if null dsc then Nothing else Just $ vsep $ map pretty dsc
+    ftr' = Just $ vsep $ map pretty ftr
 
 -- | Create a command; convenience function.
 createCommand
@@ -398,16 +401,16 @@ createCommand
   -> (a -> b)
   -> Mod CommandFields b
 createCommand nm dsc ftr p f = command nm $ f <$> parserInfo dsc' ftr' p
- where
-  dsc' = if null dsc then Nothing else Just $ vsep $ map pretty dsc
-  ftr' = if null ftr then Nothing else Just $ vsep $ map pretty ftr
+  where
+    dsc' = if null dsc then Nothing else Just $ vsep $ map pretty dsc
+    ftr' = if null ftr then Nothing else Just $ vsep $ map pretty ftr
 
 -- | ELynx parser info; convenience function.
 elynxParserInfo :: [String] -> [String] -> Parser a -> ParserInfo a
 elynxParserInfo dsc ftr = parserInfo dsc' ftr'
- where
-  dsc' = if null dsc then Nothing else Just $ vsep $ map pretty dsc
-  ftr' = Just $ vsep $ map pretty ftr ++ evoModSuiteFooter
+  where
+    dsc' = if null dsc then Nothing else Just $ vsep $ map pretty dsc
+    ftr' = Just $ vsep $ map pretty ftr ++ elynxFooter
 
 -- Short version of ELynx parser info for sub commands.
 parserInfo :: Maybe Doc -> Maybe Doc -> Parser a -> ParserInfo a
