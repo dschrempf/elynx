@@ -35,7 +35,7 @@ Update help in [[file:README.org][README.org]] (=, b b=), and [[file:ChangeLog.o
 Copy files to package directories.
 #+NAME: CopyFiles
 #+BEGIN_SRC sh :exports both :results output verbatim
-for p in elynx-markov elynx-seq elynx-tools elynx-tree slynx tlynx elynx
+for p in elynx-markov elynx-nexus elynx-seq elynx-tools elynx-tree slynx tlynx elynx
 do
     for f in README.md ChangeLog.md
     do
@@ -79,7 +79,7 @@ each package.
 
 #+NAME: HackageUploadTarballs
 #+BEGIN_SRC sh :exports both :results output verbatim
-for p in elynx-markov elynx-seq elynx-tools elynx-tree slynx tlynx elynx
+for p in elynx-markov elynx-nexus elynx-seq elynx-tools elynx-tree slynx tlynx elynx
 do
     (cd "$p" || exit 1
     stack upload --pvp-bounds both .)
@@ -91,7 +91,7 @@ done
 
 # #+NAME: HackageUploadDocumentation
 # #+BEGIN_SRC sh :exports both :results output verbatim
-# for p in elynx-markov elynx-seq elynx-tools elynx-tree slynx tlynx elynx
+# for p in elynx-markov elynx-nexus elynx-seq elynx-tools elynx-tree slynx tlynx elynx
 # do
 #     (cd "$p" || exit 1
 #     SOMETHING LIKE

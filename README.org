@@ -25,10 +25,11 @@ logged consistently, and automatically. Data integrity is verified using SHA256
 sums so that validation of past analyses is possible without the need to
 recompute the result.
 
-The Elynx Suite consists of four library packages and three executables providing
-a range of sub commands.
+The Elynx Suite consists of library packages and executables providing a range
+of sub commands.
 
 The library packages are:
+- elynx-nexus :: Nexus file support.
 - elynx-markov :: Simulate multi sequence alignments along phylogenetic trees.
 - elynx-seq :: Handle evolutionary sequences and multi sequence alignments.
 - elynx-tools :: Tools for the provided executables.
@@ -544,6 +545,7 @@ Available commands:
 
 * Library documentation
 Documentation of the libraries can be found on [[https://hackage.haskell.org/][Hackage]]:
+- [[https://hackage.haskell.org/package/elynx-nexus][elynx-nexus]]
 - [[https://hackage.haskell.org/package/elynx-markov][elynx-markov]]
 - [[https://hackage.haskell.org/package/elynx-seq][elynx-seq]]
 - [[https://hackage.haskell.org/package/elynx-tools][elynx-tools]]
