@@ -24,8 +24,6 @@ description:
 
 ghc-options:
   - -Wall
-  # XXX: Try without -O2, but has to be added back if binaries are too slow.
-  # - -O2
   - -fllvm
 
 library:
