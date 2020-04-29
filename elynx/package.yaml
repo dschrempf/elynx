@@ -1,9 +1,7 @@
 name:                elynx
 version:             0.2.2
 github:              "dschrempf/elynx"
-# TODO: Use more explicit specification when source tarball creation and upload work.
-# license:             GPL-3.0-or-later
-license:             GPL-3
+license:             GPL-3.0-or-later
 license-file:        LICENSE
 author:              "Dominik Schrempf"
 maintainer:          "dominik.schrempf@gmail.com"
