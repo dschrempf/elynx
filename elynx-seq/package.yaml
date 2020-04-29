@@ -26,24 +26,22 @@ ghc-options:
   - -Wall
   - -fllvm
 
-dependencies:
-  - aeson
-  - base
-  - bytestring
-  - containers
-  - matrices
-  - megaparsec
-  - mwc-random
-  - parallel
-  - primitive
-  - vector
-  - vector-th-unbox
-  - word8
-
 library:
   source-dirs: src
   dependencies:
+    - aeson
+    - base
+    - bytestring
+    - containers
     - elynx-tools
+    - matrices
+    - megaparsec
+    - mwc-random
+    - parallel
+    - primitive
+    - vector
+    - vector-th-unbox
+    - word8
 
 tests:
   seq-test:
@@ -54,7 +52,11 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
+      - base
+      - bytestring
       - elynx-seq
       - elynx-tools
       - hspec
       - hspec-megaparsec
+      - matrices
+      - vector

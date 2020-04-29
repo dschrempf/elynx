@@ -26,28 +26,26 @@ ghc-options:
   - -Wall
   - -fllvm
 
-dependencies:
-  - async
-  - base
-  - bytestring
-  - containers
-  - hmatrix
-  - megaparsec
-  - monad-logger
-  - mwc-random
-  - optparse-applicative
-  - scientific
-  - text
-  - transformers
-  - vector
-
 library:
   source-dirs: src
   dependencies:
+    - async
+    - base
+    - bytestring
+    - containers
     - elynx-markov
     - elynx-seq
     - elynx-tools
     - elynx-tree
+    - hmatrix
+    - megaparsec
+    - monad-logger
+    - mwc-random
+    - optparse-applicative
+    - scientific
+    - text
+    - transformers
+    - vector
 
 executables:
   slynx:
@@ -58,6 +56,7 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
+      - base
       - elynx-seq
       - elynx-tools
       - slynx

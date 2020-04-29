@@ -26,32 +26,30 @@ ghc-options:
   - -Wall
   - -fllvm
 
-dependencies:
-  - aeson
-  - array
-  - lifted-async
-  - base
-  - bytestring
-  - comonad
-  - containers
-  - gnuplot
-  - megaparsec
-  - monad-logger
-  - mwc-random
-  - optparse-applicative
-  - parallel
-  - primitive
-  - scientific
-  - statistics
-  - text
-  - transformers
-  - vector
-
 library:
   source-dirs: src
   dependencies:
+    - aeson
+    - array
+    - lifted-async
+    - base
+    - bytestring
+    - comonad
+    - containers
     - elynx-tools
     - elynx-tree
+    - gnuplot
+    - megaparsec
+    - monad-logger
+    - mwc-random
+    - optparse-applicative
+    - parallel
+    - primitive
+    - scientific
+    - statistics
+    - text
+    - transformers
+    - vector
 
 executables:
   tlynx:
@@ -62,5 +60,6 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
+      - base
       - elynx-tools
       - tlynx

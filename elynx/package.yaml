@@ -24,23 +24,20 @@ ghc-options:
   - -Wall
   - -fllvm
 
-dependencies:
-  - aeson
-  - base
-  - bytestring
-  - optparse-applicative
-
 executables:
   elynx:
     main: Main.hs
     source-dirs: app
-    
     ghc-options:
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N
       - -fwrite-ide-info
     dependencies:
+      - aeson
+      - base
+      - bytestring
       - elynx-tools
+      - optparse-applicative
       - slynx
       - tlynx

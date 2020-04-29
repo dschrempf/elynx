@@ -26,26 +26,24 @@ ghc-options:
   - -Wall
   - -fllvm
 
-dependencies:
-  - base
-  - bytestring
-  - containers
-  - hmatrix
-  - integration
-  - math-functions
-  - megaparsec
-  - mwc-random
-  - parallel
-  - primitive
-  - statistics
-  - vector
-
 library:
   source-dirs: src
   dependencies:
+    - base
+    - bytestring
+    - containers
     - elynx-seq
     - elynx-tools
     - elynx-tree
+    - hmatrix
+    - integration
+    - math-functions
+    - megaparsec
+    - mwc-random
+    - parallel
+    - primitive
+    - statistics
+    - vector
 
 tests:
   markov-test:
@@ -56,8 +54,13 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
+      - base
+      - containers
       - elynx-markov
       - elynx-tools
       - elynx-tree
+      - hmatrix
       - hspec
       - hspec-megaparsec
+      - mwc-random
+      - vector

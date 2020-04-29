@@ -24,34 +24,33 @@ ghc-options:
   - -Wall
   - -fllvm
 
-dependencies:
-  - aeson
-  - async
-  - base
-  - base16-bytestring
-  - bytestring
-  - containers
-  - cryptohash-sha256
-  - deepseq
-  - directory
-  - fast-logger
-  - hmatrix
-  - matrices
-  - megaparsec
-  - monad-logger
-  - monad-control
-  - mwc-random
-  - optparse-applicative
-  - parallel
-  - primitive
-  - template-haskell
-  - text
-  - time
-  - transformers
-  - transformers-base
-  - vector
-  - zlib
-
 library:
   source-dirs: src
   exposed-modules: ELynx.Tools
+  dependencies:
+    - aeson
+    - async
+    - base
+    - base16-bytestring
+    - bytestring
+    - containers
+    - cryptohash-sha256
+    - deepseq
+    - directory
+    - fast-logger
+    - hmatrix
+    - matrices
+    - megaparsec
+    - monad-logger
+    - monad-control
+    - mwc-random
+    - optparse-applicative
+    - parallel
+    - primitive
+    - template-haskell
+    - text
+    - time
+    - transformers
+    - transformers-base
+    - vector
+    - zlib

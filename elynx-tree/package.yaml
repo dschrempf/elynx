@@ -26,21 +26,19 @@ ghc-options:
   - -Wall
   - -fllvm
 
-dependencies:
-  - base
-  - bytestring
-  - containers
-  - math-functions
-  - megaparsec
-  - mwc-random
-  - primitive
-  - statistics
-
 library:
   source-dirs: src
   dependencies:
+    - base
+    - bytestring
+    - containers
     - elynx-tools
     - elynx-nexus
+    - math-functions
+    - megaparsec
+    - mwc-random
+    - primitive
+    - statistics
 
 benchmarks:
   tree-bench:
@@ -51,6 +49,9 @@ benchmarks:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
+      - base
+      - bytestring
+      - containers
       - elynx-tools
       - elynx-tree
       - criterion
@@ -64,9 +65,13 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
+      - base
+      - bytestring
+      - containers
       - elynx-tools
       - elynx-tree
       - hspec
       - hspec-megaparsec
+      - megaparsec
       - QuickCheck
       - quickcheck-instances
