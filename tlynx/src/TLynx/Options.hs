@@ -84,7 +84,7 @@ instance Reproducible CommandArguments where
 
   cmdDsc  = ["Compare, examine, and simulate phylogenetic trees."]
 
-  cmdFtr  = "Available tree file formats:" : indent newickHelp
+  cmdFtr  = "" : "Available tree file formats:" : indent newickHelp
     where indent = map ("  " ++)
 
 instance FromJSON CommandArguments

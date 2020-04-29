@@ -84,14 +84,14 @@ ELynx is written in [[https://www.haskell.org/][Haskell]] and can be installed w
 Handle evolutionary sequences.
 
 #+BEGIN_SRC sh :exports both :results verbatim output 
-slynx --help
+slynx --help | head -n -16
 #+end_src
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
              [-f|--force] COMMAND
@@ -116,6 +116,7 @@ Available commands:
   sub-sample               Sub-sample columns from multi sequence alignments.
   translate                Translate from DNA to Protein or DNAX to ProteinX.
 
+
 Available sequence file formats:
   - FASTA
 
@@ -126,23 +127,6 @@ Available alphabets:
   - Protein (amino acids)
   - ProteinX (amino acids; including gaps)
   - ProteinS (amino acids; including gaps, and translation stops)
-  - ProteinI (amino acids; including gaps, translation stops, and IUPAC codes)
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 ** Concatenate
@@ -154,9 +138,9 @@ slynx concatenate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: slynx concatenate (-a|--alphabet NAME) INPUT-FILE
   Concatenate sequences found in input files.
@@ -167,23 +151,6 @@ Available options:
   -a,--alphabet NAME       Specify alphabet type NAME
   INPUT-FILE               Read sequences from INPUT-FILE
   -h,--help                Show this help text
-
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 ** Examine
@@ -195,9 +162,9 @@ slynx examine --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: slynx examine (-a|--alphabet NAME) INPUT-FILE [--per-site]
   Examine sequences. If data is a multi sequence alignment, additionally analyze columns.
@@ -209,23 +176,6 @@ Available options:
   INPUT-FILE               Read sequences from INPUT-FILE
   --per-site               Report per site summary statistics
   -h,--help                Show this help text
-
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 ** Filter
@@ -237,9 +187,9 @@ slynx filter-rows --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: slynx filter-rows (-a|--alphabet NAME) INPUT-FILE [--longer-than LENGTH] 
                          [--shorter-than LENGTH] [--standard-characters]
@@ -255,23 +205,6 @@ Available options:
   --standard-characters    Only keep sequences containing at least one standard
                            (i.e., non-IUPAC) character
   -h,--help                Show this help text
-
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 Filter columns of multi sequence alignments with =filter-columns=.
@@ -282,9 +215,9 @@ slynx filter-columns --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: slynx filter-columns (-a|--alphabet NAME) INPUT-FILE 
                             [--standard-chars DOUBLE]
@@ -298,23 +231,6 @@ Available options:
   --standard-chars DOUBLE  Keep columns with a proportion standard (non-IUPAC)
                            characters larger than DOUBLE in [0,1]
   -h,--help                Show this help text
-
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 ** Simulate
@@ -326,9 +242,9 @@ slynx simulate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL] 
                       [-m|--mixture-model MODEL] [-e|--edm-file NAME] 
@@ -395,22 +311,6 @@ Special mixture models:
      LG exchangeabilities with stationary distributions given in FILE.
      -m "EDM(LG-Custom)" -e FILE
 For special mixture models, mixture weights are optional.
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 ** Sub-sample
@@ -422,9 +322,9 @@ slynx sub-sample --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: slynx sub-sample (-a|--alphabet NAME) INPUT-FILE
                         (-n|--number-of-sites INT)
@@ -444,22 +344,6 @@ Available options:
   -h,--help                Show this help text
 
 Create a given number of multi sequence alignments, each of which contains a given number of random sites drawn from the original multi sequence alignment.
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 ** Translate
@@ -471,9 +355,9 @@ slynx translate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: slynx translate (-a|--alphabet NAME) INPUT-FILE (-r|--reading-frame INT)
                        (-u|--universal-code CODE)
@@ -488,37 +372,20 @@ Available options:
   -u,--universal-code CODE universal code; one of: Standard,
                            VertebrateMitochondrial.
   -h,--help                Show this help text
-
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 * TLynx
 Handle phylogenetic trees in Newick format.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-tlynx --help
+tlynx --help | head -n -16
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
              [-f|--force] COMMAND
@@ -543,26 +410,10 @@ Available commands:
   shuffle                  Shuffle a phylogenetic tree (keep coalescent times, but shuffle topology and leaves).
   simulate                 Simulate phylogenetic trees using birth and death processes (see also the 'coalesce' command for simulations using the coalescent process).
 
+
 Available tree file formats:
   - Newick Standard: Branch support values are stored in square brackets after branch lengths.
   - Newick IqTree:   Branch support values are stored as node names after the closing bracket of forests.
-  - Newick RevBayes  Key-value pairs is provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are IGNORED at the moment.
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 ** Compare
@@ -574,9 +425,9 @@ tlynx compare --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: tlynx compare [-n|--normalize] [-b|--bipartitions] [-t|--intersect] 
                      [-f|--newick-format FORMAT] NAME
@@ -590,27 +441,11 @@ Available options:
   -t,--intersect           Compare intersections; i.e., before comparison, drop
                            leaves that are not present in the other tree
   -f,--newick-format FORMAT
-                           Newick tree format; see 'tlynx
-                           --help' (default: Standard)
+                           Newick tree format: Standard, IqTree, or RevBayes;
+                           default: Standard; for detailed help, see 'tlynx
+                           --help'
   NAME                     Tree file
   -h,--help                Show this help text
-
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 ** Examine
@@ -622,9 +457,9 @@ tlynx examine --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: tlynx examine INPUT-FILE [-f|--newick-format FORMAT]
   Compute summary statistics of phylogenetic trees.
@@ -634,26 +469,10 @@ Available options:
   -V,--version             Show version
   INPUT-FILE               Read trees from INPUT-FILE
   -f,--newick-format FORMAT
-                           Newick tree format; see 'tlynx
-                           --help' (default: Standard)
+                           Newick tree format: Standard, IqTree, or RevBayes;
+                           default: Standard; for detailed help, see 'tlynx
+                           --help'
   -h,--help                Show this help text
-
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 ** Simulate
@@ -665,9 +484,9 @@ tlynx simulate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: tlynx simulate [-t|--nTrees INT] [-n|--nLeaves INT] [-H|--height DOUBLE] 
                       [-M|--condition-on-mrca] [-l|--lambda DOUBLE] 
@@ -696,36 +515,20 @@ Height of Trees: if no tree height is given, the heights will be randomly drawn 
 Summary statistics only: only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character.
 Sub-sampling: simulate one big tree with n'=round(n/rho), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with rho=1.0, the same tree is reported over and over again.
 Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 * ELynx
 Validate and (optionally) redo past ELynx analyses.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-elynx --help
+elynx --help | head -n -16
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.1.
+ELynx Suite version 0.2.2.
 Developed by Dominik Schrempf.
-Compiled on April 27, 2020, at 12:08 pm, UTC.
+Compiled on April 29, 2020, at 10:12 am, UTC.
 
 Usage: elynx COMMAND
   Validate and redo past ELynx analyses
@@ -737,23 +540,6 @@ Available options:
 Available commands:
   validate                 Validate an ELynx analysis
   redo                     Redo an ELynx analysis
-
-
-ELynx
------
-A Haskell library and tool set for computational biology. The goal of ELynx is
-reproducible research. Evolutionary sequences and phylogenetic trees can be
-read, viewed, modified and simulated. The command line with all arguments is
-logged consistently, and automatically. Data integrity is verified using SHA256
-sums so that validation of past analyses is possible without the need to
-recompute the result.
-
-slynx     Analyze, modify, and simulate evolutionary sequences.
-tlynx     Analyze, modify, and simulate phylogenetic trees.
-elynx     Validate and redo past analyses.
-
-Get help for sub commands:
-  slynx examine --help
 #+end_example
 
 * Library documentation

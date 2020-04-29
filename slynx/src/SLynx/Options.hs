@@ -84,10 +84,11 @@ instance Reproducible CommandArguments where
   cmdDsc  = ["Analyze, and simulate multi sequence alignments."]
 
   cmdFtr =
-    ["Available sequence file formats:"]
-      ++ fs
-      ++ ["", "Available alphabets:"]
-      ++ as
+    [ ""
+    , "Available sequence file formats:"]
+    ++ fs
+    ++ ["", "Available alphabets:"]
+    ++ as
    where
     toListItem = ("  - " ++)
     fs = map toListItem ["FASTA"]
