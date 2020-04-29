@@ -47,10 +47,6 @@ tests:
   seq-test:
     main:                Spec.hs
     source-dirs:         test
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
     dependencies:
       - base
       - bytestring
