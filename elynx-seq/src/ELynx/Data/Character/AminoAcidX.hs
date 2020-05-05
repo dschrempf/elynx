@@ -43,7 +43,7 @@ T                 Thr                 Threonine
 V                 Val                 Valine
 W                 Trp                 Tryptophan
 Y                 Tyr                 Tyrosine
------------------
+----------------  ------------------  -----------
 -                 Gap                 No amino acid
 .                 Gap                 No amino acid
 @

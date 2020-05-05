@@ -14,11 +14,18 @@ Portability :  portable
 
 Creation date: Thu Oct  4 18:26:35 2018.
 
-
 See header of 'ELynx.Data.Alphabet.Alphabet'.
 
 Nucleotide IUPAC code. See also https://www.bioinformatics.org/sms/iupac.html or
 https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry.
+
+Remarks:
+
+- Question marks (@?@) are interpreted as unknowns (same as @N@). However, when
+  a sequence is printed/exported, @N@s will be used.
+
+- Full stops (@.@) are interpreted as gaps (same as @-@). However, when a
+  sequence is printed/exported, @-@s will be used
 
 @
 Symbol  Description  Bases represented  Complement
@@ -40,9 +47,11 @@ D       not C        A     G  T         H
 H       not G        A  C     T         D
 V       not T        A  C  G            B
 ------  -----------  -----------------  ----------
-N       any          A  C  G  T         N
+N       any          A  C  G  T         N           (preferred)
+?       any          A  C  G  T         N
 ------  -----------  -----------------  ----------
-- or .  Gap (Zero)                      -
+-       Gap (Zero)                      -           (preferred)
+.       Gap (Zero)                      -
 @
 
 -}
@@ -107,6 +116,7 @@ fromWord w = case w2c w of
   'H' -> H
   'V' -> V
   'N' -> N
+  '?' -> N
   '-' -> Gap
   '.' -> Gap
   _   -> error "fromWord: Cannot convert to NucleotideI."

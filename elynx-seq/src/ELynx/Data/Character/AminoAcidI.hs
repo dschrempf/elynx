@@ -19,11 +19,13 @@ See header of 'ELynx.Data.Alphabet.Alphabet'.
 Amino acid IUPAC code. See also https://www.bioinformatics.org/sms/iupac.html or
 https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry.
 
-Additionally, question marks @?@ are treated as unknowns (same as @X@). However,
-when a sequence is printed/exported, @X@s will be used.
+Remarks:
 
-Also, @.@ is interpreted as a gap, but @-@ is preferred and used when
-printing/exporting a sequence.
+- Question marks (@?@) are interpreted as unknowns (same as @X@). However, when
+  a sequence is printed/exported, @X@s will be used.
+
+- Full stops (@.@) are interpreted as gaps (same as @-@). However, when a
+  sequence is printed/exported, @-@s will be used
 
 @
 Amino Acid Code:  Three letter Code:  Amino Acid:
@@ -48,16 +50,16 @@ T                 Thr                 Threonine
 V                 Val                 Valine
 W                 Trp                 Tryptophan
 Y                 Tyr                 Tyrosine
------------------
+----------------  ------------------  -----------
 J                                     Leucine or Isoleucine
 B                 Asx                 Aspartic acid or Asparagine
 Z                 Glx                 Glutamine or Glutamic acid
------------------
+----------------  ------------------  -----------
 X                 Xaa                 Any amino acid (preferred; used for printing)
 ?                 Xaa                 Any amino acid
------------------
+----------------  ------------------  -----------
 *                 Stp                 No amino acid
------------------
+----------------  ------------------  -----------
 -                 Gap                 No amino acid (preferred; used for printing)
 .                 Gap                 No amino acid
 @
