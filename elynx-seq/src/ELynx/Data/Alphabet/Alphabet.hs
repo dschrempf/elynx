@@ -91,6 +91,22 @@ data AlphabetSpec = AlphabetSpec {
   , toStd   :: Character -> [Character]
   }
 
+-- Create alphabet spec.
+fromChars
+  :: String -> String -> String -> String -> (Char -> String) -> AlphabetSpec
+fromChars st ga un iu to = AlphabetSpec st'
+                                        ga'
+                                        un'
+                                        iu'
+                                        al
+                                        (fromString . to . toChar)
+ where
+  st' = S.fromList $ fromString st
+  ga' = S.fromList $ fromString ga
+  un' = S.fromList $ fromString un
+  iu' = S.fromList $ fromString iu
+  al  = S.unions [st', ga', un', iu']
+
 -- | Get the alphabet specification for a given alphabet.
 alphabetSpec :: Alphabet -> AlphabetSpec
 alphabetSpec DNA      = dna
@@ -124,21 +140,6 @@ isIUPAC = isWith iupac
 isMember :: Alphabet -> Character -> Bool
 isMember = isWith all
 
-fromChars
-  :: String -> String -> String -> String -> (Char -> String) -> AlphabetSpec
-fromChars st ga un iu to = AlphabetSpec st'
-                                        ga'
-                                        un'
-                                        iu'
-                                        al
-                                        (fromString . to . toChar)
- where
-  st' = S.fromList $ fromString st
-  ga' = S.fromList $ fromString ga
-  un' = S.fromList $ fromString un
-  iu' = S.fromList $ fromString iu
-  al  = S.unions [st', ga', un', iu']
-
 dna :: AlphabetSpec
 dna = fromChars "ACGT" [] [] [] toStdDNA
 
@@ -162,7 +163,7 @@ toStdDNAX '.' = []
 toStdDNAX _   = error "toStdDNAX: Cannot convert to standard nucleotide."
 
 dnaI :: AlphabetSpec
-dnaI = fromChars "ACGT" "-." "N" "UWSMKRYBDHV" toStdDNAI
+dnaI = fromChars "ACGT" "-." "N?" "UWSMKRYBDHV" toStdDNAI
 
 toStdDNAI :: Char -> String
 toStdDNAI 'A' = "A"
@@ -181,6 +182,7 @@ toStdDNAI 'D' = "AGT"
 toStdDNAI 'H' = "ACT"
 toStdDNAI 'V' = "ACG"
 toStdDNAI 'N' = "ACGT"
+toStdDNAI '?' = "ACGT"
 toStdDNAI '-' = []
 toStdDNAI '.' = []
 toStdDNAI _   = error "toStdDNAI: Cannot convert to standard nucleotide."
@@ -269,7 +271,7 @@ toStdPS '*' = ""
 toStdPS _   = error "toStdPX: Cannot convert to standard amino acid."
 
 proteinI :: AlphabetSpec
-proteinI = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." "X" "*JBZ" toStdPI
+proteinI = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." "X?" "*JBZ" toStdPI
 
 toStdPI :: Char -> String
 toStdPI 'A' = "A"
@@ -299,4 +301,5 @@ toStdPI 'J' = "LI"
 toStdPI 'B' = "DN"
 toStdPI 'Z' = "EQ"
 toStdPI 'X' = "ACDEFGHIKLMNPQRSTVWY"
+toStdPI '?' = "ACDEFGHIKLMNPQRSTVWY"
 toStdPI _   = error "toStdPX: Cannot convert to standard amino acid."
