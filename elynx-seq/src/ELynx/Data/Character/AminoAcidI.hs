@@ -19,6 +19,12 @@ See header of 'ELynx.Data.Alphabet.Alphabet'.
 Amino acid IUPAC code. See also https://www.bioinformatics.org/sms/iupac.html or
 https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry.
 
+Additionally, question marks @?@ are treated as unknowns (same as @X@). However,
+when a sequence is printed/exported, @X@s will be used.
+
+Also, @.@ is interpreted as a gap, but @-@ is preferred and used when
+printing/exporting a sequence.
+
 @
 Amino Acid Code:  Three letter Code:  Amino Acid:
 ----------------  ------------------  -----------
@@ -47,11 +53,12 @@ J                                     Leucine or Isoleucine
 B                 Asx                 Aspartic acid or Asparagine
 Z                 Glx                 Glutamine or Glutamic acid
 -----------------
-X                 Xaa                 Any amino acid
+X                 Xaa                 Any amino acid (preferred; used for printing)
+?                 Xaa                 Any amino acid
 -----------------
 *                 Stp                 No amino acid
 -----------------
--                 Gap                 No amino acid
+-                 Gap                 No amino acid (preferred; used for printing)
 .                 Gap                 No amino acid
 @
 
@@ -131,8 +138,11 @@ fromWord w = case w2c w of
   'B' -> B
   'Z' -> Z
   'X' -> X
+  -- Question marks code for @X@s.
+  '?' -> X
   '*' -> Stop
   '-' -> Gap
+  -- Full stops code for gaps (@-@s).
   '.' -> Gap
   _   -> error "fromWord: Cannot convert Word8 to AminoAcidI"
 

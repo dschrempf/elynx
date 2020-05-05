@@ -176,9 +176,9 @@ distanceFooter :: [String]
 distanceFooter =
   [ "Distance measures:"
   , "  symmetric                Symmetric distance (Robinson-Foulds distance)."
-  , "  incompatible-split[VAL]  Incompatible split distance. Collapse branches"
-  , "                           with support less than VAL before distance calculation;"
-  , "                           in this way, only well supported difference contribute"
-  , "                           to the distance measure."
+  , "  incompatible-split[VAL]  Incompatible split distance. Collapse branches with (normalized)"
+  , "                           support less than 0.0<=VAL<=1.0 before distance calculation;"
+  , "                           if, let's say, VAL>0.7, only well supported differences contribute"
+  , "                           to the total distance."
   , "  branch-score             Branch score distance."
   ]
