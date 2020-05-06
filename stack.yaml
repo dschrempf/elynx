@@ -73,15 +73,16 @@ packages:
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
 
-# # I thought that I could move those flags from the packages to here, but then I
-# # get warnings (because everything is compiled with these flags).
-# # See https://docs.haskellstack.org/en/stable/yaml_configuration/.
-# # Deactivate 'eventlog' for production.
+# # Turn on all optimizations.
 # ghc-options:
-#     "$locals": -Wall -O2 -fllvm -eventlog -threaded -rtsopts -with-rtsopts=-N
+#     "$locals": -O2
 
-# Support weeder.
-# 1.0: -ddump-to-file -ddump-hi.
-# 2.0: -fwrite-ide-info (hie files).
+# # Profiling.
+# ghc-options:
+#     "$locals": -eventlog
+
+# # Support weeder.
+# # 1.0: -ddump-to-file -ddump-hi.
+# # 2.0: -fwrite-ide-info (hie files).
 # ghc-options:
 #   "$locals": -fwrite-ide-info -ddump-to-file -ddump-hi

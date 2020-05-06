@@ -12,12 +12,14 @@
 
 # Profile files.
 /scripts/slynx-examine.aux
+/scripts/slynx-examine.elynx
 /scripts/slynx-examine.eventlog
 /scripts/slynx-examine.hp
 /scripts/slynx-examine.out
 /scripts/slynx-examine.prof
 /scripts/slynx-examine.svg
 /scripts/slynx-simulate.aux
+/scripts/slynx-simulate.elynx
 /scripts/slynx-simulate.eventlog
 /scripts/slynx-simulate.fasta
 /scripts/slynx-simulate.hp
@@ -27,6 +29,7 @@
 /scripts/slynx-simulate.fasta
 /scripts/slynx-simulate.model
 /scripts/tlynx-simulate.aux
+/scripts/tlynx-simulate.elynx
 /scripts/tlynx-simulate.eventlog
 /scripts/tlynx-simulate.hp
 /scripts/tlynx-simulate.out
