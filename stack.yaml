@@ -73,9 +73,9 @@ packages:
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
 
-# # Turn on all optimizations.
-# ghc-options:
-#     "$locals": -O2
+# Turn on all optimizations.
+ghc-options:
+    "$locals": -O2
 
 # # Profiling.
 # ghc-options:

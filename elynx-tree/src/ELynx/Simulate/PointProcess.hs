@@ -33,6 +33,8 @@ where
 import           Control.Monad
 import           Control.Monad.Primitive
 import           Data.List                      ( mapAccumL )
+import qualified Data.Sequence as S
+import Data.Sequence (Seq)
 import           Data.Tree
 import qualified Statistics.Distribution       as D
                                                 ( genContVar )
@@ -215,8 +217,8 @@ toReconstructedTree l pp@(PointProcess ps vs o)
     otherwise                  = treeOrigin
  where
   (vsSorted, isSorted) = sort pp
-  !lvs                 = [ singleton (PhyloLabel p Nothing Nothing) | p <- ps ]
-  !heights             = replicate (length ps) 0
+  !lvs                 = S.fromList [ singleton (PhyloLabel p Nothing Nothing) | p <- ps ]
+  !heights             = S.replicate (length ps) 0
   !treeRoot            = toReconstructedTree' isSorted vsSorted l lvs heights
   !h                   = last vsSorted
   !treeOrigin          = lengthenStem (o - h) treeRoot
@@ -226,10 +228,10 @@ toReconstructedTree'
   :: [Int]                 -- Sorted indices, see 'sort'.
   -> [Double]              -- Sorted merge values.
   -> a                     -- Default node label.
-  -> [Tree (PhyloLabel a)] -- Leaves with accumulated root branch lengths.
-  -> [Double]              -- Accumulated heights of the leaves.
+  -> Seq (Tree (PhyloLabel a)) -- Leaves with accumulated root branch lengths.
+  -> Seq Double              -- Accumulated heights of the leaves.
   -> Tree (PhyloLabel a)
-toReconstructedTree' [] [] _ trs _  = head trs
+toReconstructedTree' [] [] _ trs _  = trs `S.index` 0
 toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
   -- For the algorithm, see 'ELynx.Coalescent.simulate', but index starts
   -- at zero.
@@ -239,13 +241,13 @@ toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
   !v     = head vs
   !vs'   = tail vs
   -- Left: l, right: r.
-  !hl    = hs !! i
-  !hr    = hs !! (i + 1)
+  !hl    = hs `S.index` i
+  !hr    = hs `S.index` (i + 1)
   !dvl   = v - hl
   !dvr   = v - hr
-  !tl    = lengthenStem dvl $ trs !! i
-  !tr    = lengthenStem dvr $ trs !! (i + 1)
+  !tl    = lengthenStem dvl $ trs `S.index` i
+  !tr    = lengthenStem dvr $ trs `S.index` (i + 1)
   !h'    = hl + dvl       -- Should be the same as 'hr + dvr'.
   !tm    = Node (PhyloLabel l Nothing Nothing) [tl, tr]
-  !trs'' = take i trs ++ [tm] ++ drop (i + 2) trs
-  !hs'   = take i hs ++ [h'] ++ drop (i + 2) hs
+  !trs'' = (S.take i trs S.|> tm) S.>< S.drop (i + 2) trs
+  !hs'   = (S.take i hs  S.|> h') S.>< S.drop (i + 2) hs

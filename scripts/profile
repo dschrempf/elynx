@@ -63,7 +63,7 @@ slynx-simulate-siteprofiles() {
 tlynx-simulate() {
     msg "TLynx simulate profile run."
     stack exec --work-dir $prof_dir --profile tlynx -- -f -o tlynx-simulate \
-          simulate -t 10 -n 3000 -r 0.5 -u -S [0] \
+          simulate -t 10 -n 10000 -r 0.5 -u -S [0] \
           +RTS -p -hc -l -s || exit 1
 }
 
