@@ -161,6 +161,8 @@ sort (PointProcess _ vs _) = (vsSorted, isSorted)
 flattenIndices :: [Int] -> [Int]
 flattenIndices is = snd $ mapAccumL fAcc [] is
 
+-- TODO: This is the bottleneck for simulating large trees.
+--
 -- The accumulating function. Count the number of indices which are before the
 -- current index and lower than the current index.
 fAcc :: [Int] -> Int -> ([Int], Int)
