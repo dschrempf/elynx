@@ -44,7 +44,7 @@ ELynx is written in [Haskell](https://www.haskell.org/) and can be installed wit
 
 2.  Clone the ELynx repository.
     
-        git clone clone https://github.com/dschrempf/elynx
+        git clone https://github.com/dschrempf/elynx
 
 3.  Navigate to the newly created `elynx` folder and build the binaries.
     This will take a while.
