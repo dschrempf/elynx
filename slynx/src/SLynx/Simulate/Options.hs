@@ -197,9 +197,11 @@ simulateFooter = sms ++ mms
     , "   where XX is 10, 20, 30, 40, 50, or 60; CXX models, Quang et al., 2008."
     , "-m \"EDM(EXCHANGEABILITIES)\""
     , "   Arbitrary empirical distribution mixture (EDM) models."
-    , "   Stationary distributions have to be provided with the -e option."
+    , "   Stationary distributions have to be provided with the -e or -p option."
     , "   For example,"
     , "     LG exchangeabilities with stationary distributions given in FILE."
     , "     -m \"EDM(LG-Custom)\" -e FILE"
+    , "     LG exchangeabilities with site profiles (Phylobayes) given in FILES."
+    , "     -m \"EDM(LG-Custom)\" -p FILES"
     , "For special mixture models, mixture weights are optional."
     ]
