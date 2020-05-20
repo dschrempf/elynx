@@ -25,7 +25,7 @@ import qualified Data.Vector.Storable          as V
 import           Data.Void
 import           Text.Megaparsec
 import           Text.Megaparsec.Byte
-import           Text.Megaparsec.Byte.Lexer
+import           Text.Megaparsec.Byte.Lexer hiding (space)
 
 import           ELynx.Data.MarkovProcess.MixtureModel
                                                 ( Weight )
@@ -69,7 +69,7 @@ dataLine :: Int -> Parser EDMComponent
 dataLine n = do
   weight <- float
   _      <- horizontalSpace
-  vals   <- float `sepBy` horizontalSpace
+  vals   <- float `sepEndBy1` horizontalSpace
   when (length vals /= n) (error "Did not find correct number of entries.")
-  _ <- many newline <?> "dataLine"
+  _ <- space <?> "dataLine"
   return (weight, V.fromList vals)
