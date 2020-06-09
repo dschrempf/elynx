@@ -29,14 +29,15 @@ ghc-options:
 library:
   source-dirs: src
   dependencies:
-    - base
+    - base >=4.7 && <5
     - bytestring
     - megaparsec
+  generated-other-modules: Paths_elynx_nexus
 
 tests:
   seq-test:
     main:                Spec.hs
     source-dirs:         test
     dependencies:
-      - base
+      - base >=4.7 && <5
       - hspec

@@ -61,7 +61,7 @@ compareArguments =
     <*> bipartitions
     <*> intersect
     <*> newickFormat
-    <*> some file
+    <*> file
 
 normalize :: Parser Bool
 normalize = switch $ long "normalize" <> short 'n' <> help
@@ -79,5 +79,5 @@ intersect =
     <> help
          "Compare intersections; i.e., before comparison, drop leaves that are not present in the other tree"
 
-file :: Parser FilePath
-file = strArgument $ metavar "NAME" <> help "Tree file"
+file :: Parser [FilePath]
+file = some $ strArgument $ metavar "NAMES" <> help "Tree files"

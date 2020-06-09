@@ -30,7 +30,7 @@ library:
   source-dirs: src
   dependencies:
     - aeson
-    - base
+    - base >=4.7 && <5
     - bytestring
     - containers
     - elynx-tools
@@ -42,13 +42,14 @@ library:
     - vector
     - vector-th-unbox
     - word8
+  generated-other-modules: Paths_elynx_seq
 
 tests:
   seq-test:
     main:                Spec.hs
     source-dirs:         test
     dependencies:
-      - base
+      - base >=4.7 && <5
       - bytestring
       - elynx-seq
       - elynx-tools

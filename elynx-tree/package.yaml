@@ -29,7 +29,7 @@ ghc-options:
 library:
   source-dirs: src
   dependencies:
-    - base
+    - base >=4.7 && <5
     - bytestring
     - containers
     - elynx-tools
@@ -39,13 +39,14 @@ library:
     - mwc-random
     - primitive
     - statistics
+  generated-other-modules: Paths_elynx_tree
 
 benchmarks:
   tree-bench:
     main:                Bench.hs
     source-dirs:         bench
     dependencies:
-      - base
+      - base >=4.7 && <5
       - bytestring
       - containers
       - elynx-tools
@@ -57,7 +58,7 @@ tests:
     main:                Spec.hs
     source-dirs:         test
     dependencies:
-      - base
+      - base >=4.7 && <5
       - bytestring
       - containers
       - elynx-tools

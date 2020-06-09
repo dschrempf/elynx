@@ -34,9 +34,10 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - aeson
-      - base
+      - base >=4.7 && <5
       - bytestring
       - elynx-tools
       - optparse-applicative
       - slynx
       - tlynx
+    generated-other-modules: Paths_elynx

@@ -30,7 +30,7 @@ library:
   source-dirs: src
   dependencies:
     - async
-    - base
+    - base >=4.7 && <5
     - bytestring
     - containers
     - elynx-markov
@@ -46,6 +46,7 @@ library:
     - text
     - transformers
     - vector
+  generated-other-modules: Paths_slynx
 
 executables:
   slynx:
@@ -56,7 +57,7 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - base
+      - base >=4.7 && <5
       - elynx-seq
       - elynx-tools
       - slynx

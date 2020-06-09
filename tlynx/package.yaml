@@ -11,13 +11,8 @@ extra-source-files:
 - README.md
 - ChangeLog.md
 
-# Metadata used when publishing your package
 synopsis:            Handle phylogenetic trees
 category:            Bioinformatics
-
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
 description:
   Examine, compare, and simulate phylogenetic trees in a reproducible way.
   Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
@@ -32,7 +27,7 @@ library:
     - aeson
     - array
     - lifted-async
-    - base
+    - base >=4.7 && <5
     - bytestring
     - comonad
     - containers
@@ -50,6 +45,7 @@ library:
     - text
     - transformers
     - vector
+  generated-other-modules: Paths_tlynx
 
 executables:
   tlynx:
@@ -60,6 +56,6 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - base
+      - base >=4.7 && <5
       - elynx-tools
       - tlynx
