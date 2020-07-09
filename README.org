@@ -18,6 +18,8 @@
 Version: 0.2.2.
 Reproducible evolution made easy.
 
+#+html: <p align="center"><img src="https://travis-ci.org/dschrempf/elynx.svg?branch=master"/></p>
+
 A Haskell library and tool set for computational biology. The goal of ELynx is
 reproducible research. Evolutionary sequences and phylogenetic trees can be
 read, viewed, modified and simulated. The command line with all arguments is

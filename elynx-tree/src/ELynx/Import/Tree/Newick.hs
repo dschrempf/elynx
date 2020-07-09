@@ -17,12 +17,12 @@ Some functions are inspired by
 
 [Specifications](http://evolution.genetics.washington.edu/phylip/newicktree.html)
 
-- In particular, no conversion from _ to (space) is done right now.
+In particular, no conversion from _ to (space) is done right now.
 
-TODO: Use 'between' for forests.
 
 -}
 
+-- TODO: Use 'between' for forests.
 
 module ELynx.Import.Tree.Newick
   ( Parser

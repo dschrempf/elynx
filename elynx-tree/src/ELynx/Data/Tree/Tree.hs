@@ -10,13 +10,15 @@ Portability :  portable
 
 Creation date: Thu Jan 17 09:57:29 2019.
 
-Functions to work with rooted, rose 'Tree's with labeled, unique leaves. The
-order of children is not important. However, for the moment, equality checks and
-other comparisons are sensitive to the order of children. See TODO note below.
+Functions to work with rooted, rose 'Tree's with labeled leaves. Although for
+phylogenetic trees, the order of children is unimportant, equality checks and
+other comparisons are sensitive to the order of children for the moment. The
+reason is that the underlying data structure stores the children as a list,
+which has a specific order.
 
 Comment about nomenclature:
 
-- In "Data.Tree", a 'Tree' is defined as
+- A 'Tree' is defined as
 
 @
 data Tree a = Node {
@@ -26,26 +28,25 @@ data Tree a = Node {
 @
 
 This means, that the word 'Node' is reserved for the constructor of a tree, and
-that a 'Node' has a label and a children. The terms 'Node' and /label/ are not
-to be confused.
+that a 'Node' has a label and children. The terms 'Node' and /label/ are not to
+be confused.
 
-- Branches have /lengths/. For example, a branch length can be a distances or a
-  time.
+- Branches have /lengths/. For example, a branch length can be a distance or a
+  given number of time units.
 
 NOTE: Trees in this library are all rooted. Unrooted trees can be treated with a
-rooted data structure equally well. However, in these cases, some functions have
-no meaning. For example, functions measuring the distance from the root to the
-leaves (the height of a rooted tree).
-
-TODO: The 'Tree' data type is a rose tree with an ordered sub-forest. However,
-the order of the sub-forest does not matter for phylogenetic trees. Equality
-checks will throw false negatives the compared trees only differ in their orders
-of sub-trees.
-
-NOTE: Try fgl or alga. Use functional graph library for unrooted trees see also
-the book /Haskell high performance programming from Thomasson/, p. 344.
+rooted data structure, as it is used here. However, some functions may be
+meaningless.
 
 -}
+
+-- TODO: The 'Tree' data type is a rose tree with an ordered sub-forest.
+-- However, the order of the sub-forest does not matter for phylogenetic trees.
+-- Equality checks will throw false negatives the compared trees only differ in
+-- their orders of sub-trees.
+
+-- NOTE: Try fgl or alga. Use functional graph library for unrooted trees see
+-- also the book /Haskell high performance programming from Thomasson/, p. 344.
 
 
 module ELynx.Data.Tree.Tree
