@@ -29,6 +29,7 @@ import           Data.Maybe                     ( fromMaybe )
 import           Data.Tree
 -- import           Test.QuickCheck         hiding ( label )
 
+import ELynx.Data.Tree.Bipartition
 import           ELynx.Data.Tree.BranchSupportTree
 import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.NamedTree
@@ -65,3 +66,12 @@ instance Named a => Named (PhyloLabel a) where
 -- retain the labels.
 removeBrInfo :: Tree (PhyloLabel a) -> Tree a
 removeBrInfo = fmap label
+
+-- | Root a bifurcating tree at a given point.
+--
+-- Root the tree at the midpoint of the branch defined by the given bipartition.
+-- The leaves in the bipartition have to match the leaves of the tree. The
+-- original root node is moved to the new position.
+rootAt :: Measurable a => Bipartition a -> Tree a -> Tree a
+-- TODO! Use goLeft goRight functions with Maybe and <|> from Control.Applicative.Alternative.
+rootAt bp (Node x [l, r]) = undefined
