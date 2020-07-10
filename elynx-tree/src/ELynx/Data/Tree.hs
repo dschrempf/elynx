@@ -12,6 +12,12 @@ Creation date: Sat Mar 21 16:27:20 2020.
 
 -}
 
+-- TODO: Topology data type.
+-- data Topology a = Node (NonEmptySet (Topology a)) | Leaf a
+
+-- TODO: Tree with labeled branches data type.
+-- data Tree e a = Node e a (Set (Tree e a))
+
 module ELynx.Data.Tree
   ( module ELynx.Data.Tree.Tree
   , module ELynx.Data.Tree.PhyloTree

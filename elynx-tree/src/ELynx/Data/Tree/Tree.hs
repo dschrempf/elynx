@@ -58,8 +58,6 @@ module ELynx.Data.Tree.Tree
     subForestGetSubsets,
     subTree,
     bifurcating,
-    roots,
-    connect,
     clades,
   )
 where
@@ -120,10 +118,12 @@ dropLeafWithUnsafe f g lf (Node x xs)
     isThisLeaf y = null (subForest y) && f (rootLabel y) == lf
     xs' = map (dropLeafWithUnsafe f g lf) (filter (not . isThisLeaf) xs)
 
--- | Compute the intersection of trees. The intersections are the largest
--- subtrees sharing the same leaf set. Leaf names used for comparison are
--- extracted by a given function. Leaves are dropped with 'dropLeafWith', and
--- degree two nodes are pruned with 'pruneWith'.
+-- | Compute the intersection of trees.
+--
+-- The intersections are the largest subtrees sharing the same leaf set. Leaf
+-- names used for comparison are extracted by a given function. Leaves are
+-- dropped with 'dropLeafWith', and degree two nodes are pruned with
+-- 'pruneWith'.
 intersectWith ::
   (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> [Tree a] -> [Tree a]
 intersectWith f g ts =
@@ -220,52 +220,6 @@ bifurcating (Node _ _) = False
 -- Solution 1 is pretty, but doesn't allow for what we actually want to do,
 -- which is solution 2. We want to encode clades that for sure do not contain
 -- the root as multifurcations.
-
--- TODO: The topology is handled correctly, but the branches are not!
-
--- | For a rooted, bifurcating tree, get all possible rooted trees. For a tree
--- with @n>2@ leaves, there are @(2n-3)@ rooted trees. A bifurcating tree is
--- assumed (see 'bifurcating'). The root node is moved.
-roots :: Tree a -> [Tree a]
--- -- Leaves, and cherries have to be handled separately, because they cannot be
--- -- rotated.
--- roots t@(Node _ []) = [t]
--- roots t@(Node _ [Node _ [], Node _ []]) = [t]
--- roots t
---   | bifurcating t = t : left t ++ right t
---   | otherwise = error "roots: Tree is not bifurcating."
-roots = error "FIXME: The topology is handled correctly, but the branches are not!"
-
--- -- Move the root to the left.
--- left :: Tree a -> [Tree a]
--- left (Node i [Node j [x, y], z]) =
---   let tll = Node i [x, Node j [y, z]]
---       tlr = Node i [Node j [x, z], y]
---    in tll : tlr : left tll ++ right tlr
--- left (Node _ [Node _ [], _]) = []
--- left (Node _ []) = error "left: Encountered a leaf."
--- left _ = error "left: Tree is not bifurcating."
-
--- -- Move the root to the right.
--- right :: Tree a -> [Tree a]
--- right (Node i [x, Node j [y, z]]) =
---   let trl = Node i [y, Node j [x, z]]
---       trr = Node i [Node j [x, y], z]
---    in trl : trr : left trl ++ right trr
--- right (Node _ [_, Node _ []]) = []
--- right (Node _ []) = error "right: Encountered a leaf."
--- right _ = error "right: Tree is not bifurcating."
-
--- | Connect two trees with a branch in all possible ways.
---
--- Basically, introduce a branch between two trees. If the trees have n, and m
--- branches, respectively, there are n*m ways to connect them.
---
--- A base node has to be given which will be used wherever the new node is
--- introduced.
---
-connect :: a -> Tree a -> Tree a -> [Tree a]
-connect n l r = [Node n [x, y] | x <- roots l, y <- roots r]
 
 -- | Get clades induced by multifurcations.
 clades :: Ord a => Tree a -> [S.Set a]

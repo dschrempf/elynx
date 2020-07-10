@@ -66,7 +66,7 @@ sequenceHeader = do
 -- this set only has to be calculcated once per sequence in 'fastaSequence'.
 sequenceLine :: S.Set Word8 -> Parser L.ByteString
 sequenceLine s = do
-  -- FIXME: Will fail for non-capital letters.
+  -- XXX: Will fail for non-capital letters.
   !xs <- takeWhile1P (Just "Alphabet character") (`S.member` s)
   _   <- void eol <|> eof
   return xs

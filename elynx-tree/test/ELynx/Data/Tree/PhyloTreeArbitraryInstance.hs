@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 {- |
 Module      :  ELynx.Data.Tree.PhyloTreeArbitraryInstance
 Description :  Arbitrary instance, needed for QuickCheck
@@ -20,8 +22,8 @@ import           Test.QuickCheck
 
 import           ELynx.Data.Tree.PhyloTree
 
--- Of course, the boundaries for branch support and length are chosen pretty
--- arbitrarily :).
+-- Of course, the boundaries for branch support and length have been chosen
+-- pretty arbitrarily :).
 --
 -- XXX: This instance does not produce values without branch lengths nor branch
 -- supports.
@@ -29,5 +31,5 @@ instance Arbitrary a => Arbitrary (PhyloLabel a) where
   arbitrary =
     PhyloLabel
       <$> arbitrary
-      <*> (Just <$> choose (0, 100))
-      <*> (Just <$> choose (0, 10))
+      <*> (Just <$> choose (1, 100))
+      <*> (Just <$> choose (0.001, 10))

@@ -1,54 +1,52 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-{- |
-Module      :  ELynx.Data.Tree.MeasurableTree
-Description :  Functions on trees with branch lengths
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Thu Jan 17 14:16:34 2019.
-
--}
-
-
+-- |
+-- Module      :  ELynx.Data.Tree.MeasurableTree
+-- Description :  Functions on trees with branch lengths
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Thu Jan 17 14:16:34 2019.
 module ELynx.Data.Tree.MeasurableTree
-  ( Measurable(..)
-  , extendBranchLength
-  , distancesRootLeaves
-  , distancesOriginLeaves
-  , averageDistanceOriginLeaves
-  , height
-  , rootHeight
-  , lengthenStem
-  , shortenStem
-  , summarize
-  , totalBranchLength
-  , normalizeBranchLength
-  , prune
-  , removeMultifurcations
-  , ultrametric
+  ( Measurable (..),
+    lengthen,
+    extendBranchLength,
+    distancesRootLeaves,
+    distancesOriginLeaves,
+    averageDistanceOriginLeaves,
+    height,
+    rootHeight,
+    lengthenStem,
+    shortenStem,
+    summarize,
+    totalBranchLength,
+    normalizeBranchLength,
+    prune,
+    removeMultifurcations,
+    ultrametric,
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8    as L
-import           Data.Foldable
-import           Data.Tree
-import           Text.Printf
-
-import           ELynx.Data.Tree.Tree
-import           ELynx.Tools
+import qualified Data.ByteString.Lazy.Char8 as L
+import Data.Foldable
+import Data.Tree
+import ELynx.Data.Tree.Tree
+import ELynx.Tools
+import Text.Printf
 
 -- | A 'Node' label with measurable and modifiable branch length to the parent.
 class Measurable a where
   -- | Length of attached branch.
   getLen :: a -> Double
+
   -- | Set attached branch length.
   setLen :: Double -> a -> a
 
+-- | Lengthen a branch by a given value.
 lengthen :: Measurable a => Double -> a -> a
 lengthen dl l = setLen (dl + getLen l) l
 
@@ -57,17 +55,12 @@ lengthen dl l = setLen (dl + getLen l) l
 extendBranchLength :: Measurable a => a -> a -> a
 extendBranchLength da pa = lengthen (getLen pa) da
 
--- | Elongate branch length.
--- -- | Shorten branch length.
--- shorten :: Double -> a -> a
--- shorten dl = lengthen (-dl)
-
 -- | Distances from the root node of a tree to its leaves (this are not the
 -- distances from the origin to the leaves, see 'distancesOriginLeaves').
 distancesRootLeaves :: (Measurable a) => Tree a -> [Double]
 distancesRootLeaves (Node _ []) = [0]
 distancesRootLeaves (Node _ f) =
-  concat [ map (+ getLen (rootLabel d)) (distancesRootLeaves d) | d <- f ]
+  concat [map (+ getLen (rootLabel d)) (distancesRootLeaves d) | d <- f]
 
 -- -- | Distances from the origin of a tree to its leaves (this is not the distance
 -- -- from the root node to the leaves, which would be @distanceOriginLeaves t -
@@ -86,9 +79,9 @@ distancesOriginLeaves t@(Node l _) = map (+ getLen l) (distancesRootLeaves t)
 -- 'distancesOriginLeaves'.
 averageDistanceOriginLeaves :: (Measurable a) => Tree a -> Double
 averageDistanceOriginLeaves tr = sum ds / fromIntegral n
- where
-  ds = distancesOriginLeaves tr
-  n  = length ds
+  where
+    ds = distancesOriginLeaves tr
+    n = length ds
 
 -- | Height (max distance between origin and leaves) of a tree. Return 0 if the
 -- tree is empty.
@@ -105,28 +98,29 @@ lengthenStem dl (Node lbl chs) = Node (lengthen dl lbl) chs
 
 -- | Lengthen the distance between root and origin.
 shortenStem :: (Measurable a) => Double -> Tree a -> Tree a
-shortenStem dl = lengthenStem (-dl)
+shortenStem dl = lengthenStem (- dl)
 
 pRow :: String -> String -> L.ByteString
 pRow name val = alignLeft 33 n <> alignRight 8 v
- where
-  n = L.pack name
-  v = L.pack val
+  where
+    n = L.pack name
+    v = L.pack val
 
 -- | Summarize a tree with measureable branch lengths.
 summarize :: (Measurable a) => Tree a -> L.ByteString
-summarize t = L.intercalate
-  "\n"
-  [ pRow "Leaves: " $ show n
-  , pRow "Height: " $ printf "%.5f" h
-  , pRow "Average distance root to leaves: " $ printf "%.5f" h'
-  , pRow "Total branch length: " $ printf "%.5f" b
-  ]
- where
-  n  = length . leaves $ t
-  h  = height t
-  b  = totalBranchLength t
-  h' = sum (distancesOriginLeaves t) / fromIntegral n
+summarize t =
+  L.intercalate
+    "\n"
+    [ pRow "Leaves: " $ show n,
+      pRow "Height: " $ printf "%.5f" h,
+      pRow "Average distance root to leaves: " $ printf "%.5f" h',
+      pRow "Total branch length: " $ printf "%.5f" b
+    ]
+  where
+    n = length . leaves $ t
+    h = height t
+    b = totalBranchLength t
+    h' = sum (distancesOriginLeaves t) / fromIntegral n
 
 -- | Total branch length of a tree.
 totalBranchLength :: (Measurable a) => Tree a -> Double
@@ -135,7 +129,8 @@ totalBranchLength = foldl' (\acc n -> acc + getLen n) 0
 -- | Normalize tree so that sum of branch lengths is 1.0.
 normalizeBranchLength :: (Measurable a) => Tree a -> Tree a
 normalizeBranchLength t = fmap (\n -> setLen (getLen n / s) n) t
-  where s = totalBranchLength t
+  where
+    s = totalBranchLength t
 
 -- | Prune degree 2 nodes. Add branch lengths but forget pruned node label. See
 -- 'pruneWith'.
@@ -145,13 +140,15 @@ prune = pruneWith f where f da pa = lengthen (getLen pa) da
 -- | Remove multifurcations by copying multifurcating nodes and introducing
 -- branches of length 0.
 removeMultifurcations :: Measurable a => Tree a -> Tree a
-removeMultifurcations t@(Node _ [] ) = t
-removeMultifurcations (  Node l [x]) = Node l [removeMultifurcations x]
+removeMultifurcations t@(Node _ []) = t
+removeMultifurcations (Node l [x]) = Node l [removeMultifurcations x]
 removeMultifurcations (Node l [x, y]) =
   Node l $ map removeMultifurcations [x, y]
-removeMultifurcations (Node l (x : xs)) = Node l
-  $ map removeMultifurcations [x, Node l' xs]
-  where l' = setLen 1.0 l
+removeMultifurcations (Node l (x : xs)) =
+  Node l $
+    map removeMultifurcations [x, Node l' xs]
+  where
+    l' = setLen 1.0 l
 
 -- | Check if a tree is ultrametric.
 ultrametric :: Measurable a => Tree a -> Bool

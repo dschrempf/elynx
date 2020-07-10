@@ -1,41 +1,41 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-{- |
-Module      :  ELynx.Data.Tree.TreeSpec
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Mon May  6 14:04:05 2019.
-
--}
-
+-- |
+-- Module      :  ELynx.Data.Tree.TreeSpec
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Mon May  6 14:04:05 2019.
 module ELynx.Data.Tree.TreeSpec
-  ( spec
+  ( spec,
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8    as L
-import           Data.Maybe
-import qualified Data.Set                      as S
-import           Data.Tree
-import           Test.Hspec                     ( Spec
-                                                , describe
-                                                , it
-                                                , shouldBe
-                                                )
-import           Test.Hspec.QuickCheck          ( modifyMaxSize )
-import           Test.QuickCheck         hiding ( label )
-import           Test.QuickCheck.Instances.Containers
-                                                ( )
-
-import           ELynx.Data.Tree
-import           ELynx.Import.Tree.Newick
-                                         hiding ( node )
-import           ELynx.Tools
+import qualified Data.ByteString.Lazy.Char8 as L
+import Data.Maybe
+import qualified Data.Set as S
+import Data.Tree
+import ELynx.Data.Tree
+import ELynx.Import.Tree.Newick hiding
+  ( node,
+  )
+import ELynx.Tools
+import Test.Hspec
+  ( Spec,
+    describe,
+    it,
+    shouldBe,
+  )
+import ELynx.Data.Tree.PhyloTreeArbitraryInstance ()
+import Test.Hspec.QuickCheck (modifyMaxSize)
+import Test.QuickCheck hiding (label)
+import Test.QuickCheck.Instances.Containers
+  (
+  )
 
 node :: Int -> Tree Int
 node n = Node n []
@@ -62,13 +62,14 @@ subSampleLargeTree :: Tree (PhyloLabel L.ByteString)
 subSampleLargeTree = fromJust $ subTree ((== 'P') . L.head . label) largeTree
 
 -- XXX: Skip not bifurcating trees. This is ugly, I know.
-prop_roots :: Tree a -> Bool
-prop_roots t | not $ bifurcating t = True
-             | length (leaves t) < 3 = length (roots t) == 1
-             | otherwise = length (roots t) == 2 * length (leaves t) - 3
+prop_roots :: (Measurable a, BranchSupported a) => Tree a -> Bool
+prop_roots t
+  | not $ bifurcating t = True
+  | length (leaves t) < 3 = length (roots t) == 1
+  | otherwise = length (roots t) == 2 * length (leaves t) - 3
 
 -- XXX: Skip not bifurcating trees. This is ugly, I know.
-prop_connect :: a -> Tree a -> Tree a -> Bool
+prop_connect :: (Measurable a, BranchSupported a) => a -> Tree a -> Tree a -> Bool
 prop_connect n l r
   | not (bifurcating l) || not (bifurcating r) = True
   | length (leaves l) < 3 || length (leaves r) < 3 = length (connect n l r) == 1
@@ -81,62 +82,66 @@ compatibleAll (Node _ [l, r]) cs =
   all (bpcompatible (bipartition l)) cs && all (bpcompatible (bipartition r)) cs
 compatibleAll _ _ = error "Tree is not bifurcating."
 
-compatibleWith
-  :: (Show b, Ord b) => (a -> b) -> [Constraint a] -> Tree a -> Bool
+compatibleWith ::
+  (Show b, Ord b) => (a -> b) -> [Constraint a] -> Tree a -> Bool
 compatibleWith f cs t = compatibleAll (fmap f t) (map (S.map f) cs)
+
+pl :: a -> PhyloLabel a
+pl x = PhyloLabel x Nothing (Just 0)
 
 spec :: Spec
 spec = do
   describe "subTree" $ do
-    it "returns nothing if no leaf satisfies prediacte"
-      $          subTree (== 3) smallTree
-      `shouldBe` Nothing
-    it "returns the correct subtree for a small example"
-      $          subTree (== 1) smallTree
-      `shouldBe` Just smallSubTree
+    it "returns nothing if no leaf satisfies prediacte" $
+      subTree (== 3) smallTree
+        `shouldBe` Nothing
+    it "returns the correct subtree for a small example" $
+      subTree (== 1) smallTree
+        `shouldBe` Just smallSubTree
 
   describe "pruneWith" $ do
-    it "leaves a normal tree untouched"
-      $          pruneWith const largeTree
-      `shouldBe` largeTree
-    it "correctly prunes a small example"
-      $          pruneWith const smallSubTree
-      `shouldBe` smallSubTreePruned
-    it "leaves height constant for Measurable trees"
-      $          height (prune subSampleLargeTree)
-      `shouldBe` height subSampleLargeTree
+    it "leaves a normal tree untouched" $
+      pruneWith const largeTree
+        `shouldBe` largeTree
+    it "correctly prunes a small example" $
+      pruneWith const smallSubTree
+        `shouldBe` smallSubTreePruned
+    it "leaves height constant for Measurable trees" $
+      height (prune subSampleLargeTree)
+        `shouldBe` height subSampleLargeTree
 
   describe "roots" $ do
     it "correctly handles leaves and cherries" $ do
-      let tleaf   = Node 0 [] :: Tree Int
-          tcherry = Node 0 [Node 1 [], Node 2 []] :: Tree Int
+      let tleaf = Node (PhyloLabel 0 Nothing Nothing) [] :: Tree (PhyloLabel Int)
+          tcherry = Node (pl 0) [Node (pl 1) [], Node (pl 2) []] :: Tree (PhyloLabel Int)
       roots tleaf `shouldBe` [tleaf]
       roots tcherry `shouldBe` [tcherry]
     it "correctly handles simple trees" $ do
       let simpleTre =
-            Node "i" [Node "j" [Node "x" [], Node "y" []], Node "z" []] :: Tree
-                String
+            Node (pl "i") [Node (pl "j") [Node (pl "x") [], Node (pl "y") []], Node (pl "z") []] :: Tree (PhyloLabel String)
           simpleSol =
-            [ Node "i" [Node "j" [Node "x" [], Node "y" []], Node "z" []]
-            , Node "i" [Node "x" [], Node "j" [Node "y" [], Node "z" []]]
-            , Node "i" [Node "j" [Node "x" [], Node "z" []], Node "y" []]
-            ]
+            [ Node (pl "i") [Node (pl "j") [Node (pl "x") [], Node (pl "y") []], Node (pl "z") []],
+              Node (pl "i") [Node (pl "x") [], Node (pl "j") [Node (pl "y") [], Node (pl "z") []]],
+              Node (pl "i") [Node (pl "j") [Node (pl "z") [], Node (pl "x") []], Node (pl "y") []]
+            ] ::
+              [Tree (PhyloLabel String)]
       roots simpleTre `shouldBe` simpleSol
-    modifyMaxSize (* 100)
-      $ it "returns the correct number of rooted trees for arbitrary trees"
-      $ property (prop_roots :: (Tree Int -> Bool))
+    modifyMaxSize (* 100) $
+      it "returns the correct number of rooted trees for arbitrary trees" $
+        property (prop_roots :: (Tree (PhyloLabel Int) -> Bool))
 
   -- TODO: dropLeafWith, intersect.
 
-  describe "connect" $ modifyMaxSize (* 100) $ do
-    it "returns the correct number of rooted trees for arbitrary trees"
-      $ property (prop_connect :: Int -> Tree Int -> Tree Int -> Bool)
-    it "correctly connects sample trees without and with constraints" $ do
-      a <- parseFileWith (oneNewick Standard) "data/ConnectA.tree"
-      b <- parseFileWith (oneNewick Standard) "data/ConnectB.tree"
-      c <- parseFileWith (manyNewick Standard) "data/ConnectConstraints.tree"
-      let ts  = connect (PhyloLabel "" Nothing (Just 1.0)) a b
-          cs  = concatMap clades c :: [Constraint (PhyloLabel L.ByteString)]
-          ts' = filter (compatibleWith getName cs) ts
-      length ts `shouldBe` 63
-      length ts' `shouldBe` 15
+  describe "connect" $
+    modifyMaxSize (* 100) $ do
+      it "returns the correct number of rooted trees for arbitrary trees" $
+        property (prop_connect :: PhyloLabel Int -> Tree (PhyloLabel Int) -> Tree (PhyloLabel Int) -> Bool)
+      it "correctly connects sample trees without and with constraints" $ do
+        a <- parseFileWith (oneNewick Standard) "data/ConnectA.tree"
+        b <- parseFileWith (oneNewick Standard) "data/ConnectB.tree"
+        c <- parseFileWith (manyNewick Standard) "data/ConnectConstraints.tree"
+        let ts = connect (PhyloLabel "" Nothing (Just 1.0)) a b
+            cs = concatMap clades c :: [Constraint (PhyloLabel L.ByteString)]
+            ts' = filter (compatibleWith getName cs) ts
+        length ts `shouldBe` 63
+        length ts' `shouldBe` 15

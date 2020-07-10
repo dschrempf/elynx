@@ -55,8 +55,8 @@ headerLine :: Parser Int
 headerLine = do
   n <- decimal
   _ <- horizontalSpace
-  -- FIXME: This should be more general, but then we also want to ensure that
-  -- the order of states is correct.
+  -- XXX: This should be more general, but then we also want to ensure that the
+  -- order of states is correct.
   _ <- chunk (L.pack "A C D E F G H I K L M N P Q R S T V W Y")
     <|> chunk (L.pack "A C G T")
   _ <- many newline <?> "headerLine"
