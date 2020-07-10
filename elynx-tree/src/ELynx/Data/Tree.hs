@@ -21,7 +21,6 @@ module ELynx.Data.Tree
   , module ELynx.Data.Tree.BranchSupportTree
   , module ELynx.Data.Tree.MeasurableTree
   , module ELynx.Data.Tree.NamedTree
-  , module ELynx.Data.Tree.SubSample
   , module ELynx.Data.Tree.SumStat
   )
 where
@@ -33,7 +32,6 @@ import           ELynx.Data.Tree.MeasurableTree
 import           ELynx.Data.Tree.Multipartition
 import           ELynx.Data.Tree.NamedTree
 import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Data.Tree.SubSample
 import           ELynx.Data.Tree.SumStat
 import           ELynx.Data.Tree.Tree
 
