@@ -79,13 +79,14 @@ simulateAlignment
   -> Int
   -> GenIO
   -> IO A.Alignment
-simulateAlignment pm t n g = do
+simulateAlignment pm t' n g = do
+  let t = fromMaybe (error "simulateAlignment: Provided tree has branches without length.") $ mapM (fromBranchLength . getLen) t'
   c  <- getNumCapabilities
   gs <- splitGen c g
   let chunks = getChunks c n
   leafStatesS <- case pm of
-    -- XXX @performace: This parallelization is not very intelligent, because
-    -- the matrices exponentiation is done in all threads. So ten threads will
+    -- TODO @performace: This parallelization is not very intelligent, because
+    -- the matrix exponentiation is done in all threads. So ten threads will
     -- exponentiate the same matrix ten times.
     P.SubstitutionModel sm -> mapConcurrently
       (\(num, gen) -> simulateAndFlatten num d e t gen)

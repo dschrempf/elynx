@@ -150,7 +150,7 @@ distance = do
   let distanceMeasure = if argsIntersect l
         then
           (\t1 t2 ->
-            let [t1', t2'] = intersectWith getName extendBranchLength [t1, t2]
+            let [t1', t2'] = intersectWith getName extend [t1, t2]
             in  distanceMeasure' t1' t2'
           )
         else distanceMeasure'

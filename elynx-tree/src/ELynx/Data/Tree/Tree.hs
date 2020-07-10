@@ -1,11 +1,3 @@
--- TODO: The 'Tree' data type is a rose tree with an ordered sub-forest.
--- However, the order of the sub-forest does not matter for phylogenetic trees.
--- Equality checks will throw false negatives the compared trees only differ in
--- their orders of sub-trees.
-
--- NOTE: Try fgl or alga. Use functional graph library for unrooted trees see
--- also the book /Haskell high performance programming from Thomasson/, p. 344.
-
 -- |
 -- Module      :  ELynx.Data.Tree.Tree
 -- Description :  Functions related to phylogenetic trees
@@ -39,8 +31,23 @@
 -- that a 'Node' has a label and children. The terms 'Node' and /label/ are not to
 -- be confused.
 --
--- - Branches have /lengths/. For example, a branch length can be a distance or a
---   given number of time units.
+-- Using the 'Tree' data type has some disadvantages:
+--
+-- 1. Branch labels are not explicit.
+--
+-- 2. The order of the sub-forest does not matter for phylogenetic trees.
+-- Equality checks will throw false negatives the compared trees only differ in
+-- their orders of sub-trees.
+--
+-- For example:
+-- @
+-- -- | A rose tree with unordered sub-forest, branch labels of type @e@ and node
+-- -- labels of type @a@.
+-- data Tree e a = Node e a (Set (Tree e a))
+-- @
+--
+-- Branches can have /lengths/. For example, a branch length can be a distance
+-- or a given number of time units.
 --
 -- NOTE: Trees in this library are all rooted. Unrooted trees can be treated with a
 -- rooted data structure, as it is used here. However, some functions may be
@@ -121,9 +128,8 @@ dropLeafWithUnsafe f g lf (Node x xs)
 -- | Compute the intersection of trees.
 --
 -- The intersections are the largest subtrees sharing the same leaf set. Leaf
--- names used for comparison are extracted by a given function. Leaves are
--- dropped with 'dropLeafWith', and degree two nodes are pruned with
--- 'pruneWith'.
+-- are compared using a given function. Leaves are dropped with 'dropLeafWith',
+-- and degree two nodes are pruned with 'pruneWith'.
 intersectWith ::
   (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> [Tree a] -> [Tree a]
 intersectWith f g ts =
@@ -149,7 +155,7 @@ retainLeavesWith f g ls t = foldl' (flip (dropLeafWith f g)) t leavesToDrop
 merge :: Tree a -> Tree b -> Maybe (Tree (a, b))
 merge (Node l xs) (Node r ys) =
   if length xs == length ys
-    then-- I am proud of that :)).
+    then -- I am proud of that :)).
       zipWithM merge xs ys >>= Just . Node (l, r)
     else Nothing
 

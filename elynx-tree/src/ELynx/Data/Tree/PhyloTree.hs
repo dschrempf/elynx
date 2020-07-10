@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
-
 -- |
 -- Module      :  ELynx.Data.Tree.PhyloTree
 -- Description :  Phylogenetic trees
@@ -16,10 +14,12 @@
 -- arbitrary label type, e.g., of type 'Int'.
 module ELynx.Data.Tree.PhyloTree
   ( PhyloLabel (..),
-    removeBrInfo,
-    rootAt,
     roots,
+    rootAt,
     connect,
+    removeMultifurcations,
+    extend,
+    prune,
   )
 where
 
@@ -33,29 +33,17 @@ import ELynx.Data.Tree.MeasurableTree
 import ELynx.Data.Tree.Tree
 import ELynx.Data.Tree.NamedTree
 
--- | A primitive label type for phylogenetic trees with a name, possibly a
--- branch support value, and possibly a branch length.
+-- | A label type for phylogenetic trees with branch length and branch support.
 data PhyloLabel a = PhyloLabel
   { label :: a,
-    -- TODO: This is awkward. Either all branches have support, or none.
-    brSup :: Maybe Double,
-    -- TODO: This is awkward. Either all branches have a length, or none.
-    brLen :: Maybe Double
+    brLen :: BranchLength,
+    brSup :: BranchSupport
   }
   deriving (Read, Show, Eq, Ord)
 
--- XXX: 2020-07-10. I changed this instance; this may have been a breaking change.
--- instance Ord a => Ord (PhyloLabel a) where
---   compare = compare `on` label
-
--- | If no branch length is available, 0 is returned. This is probably not the
--- best (and final) behavior.
 instance Measurable (PhyloLabel a) where
-  -- TODO: See 'roots'. The fromMaybe should not be used.
-  getLen = fromMaybe 0 . brLen
-  setLen l x
-    | l >= 0 = x {brLen = Just l}
-    | otherwise = error $ "Branch lengths cannot be negative: " <> show l
+  getLen = brLen
+  setLen x l = l {brLen = x}
 
 instance BranchSupported (PhyloLabel a) where
   getBranchSupport = brSup
@@ -67,10 +55,61 @@ instance BranchSupported (PhyloLabel a) where
 instance Named a => Named (PhyloLabel a) where
   getName = getName . label
 
--- | Remove all branch relevant information from all nodes of the tree; only
--- retain the labels.
-removeBrInfo :: Tree (PhyloLabel a) -> Tree a
-removeBrInfo = fmap label
+halve :: Measurable a => a -> a
+halve l = setLen (getLen l / 2.0) l
+
+type PhyloTree a = Tree (PhyloLabel a)
+
+-- | For a rooted, bifurcating tree, get all possible rooted trees.
+--
+-- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
+-- is moved. Branch lengths and branch support are merged according to the
+-- 'Measurable' and 'BranchSupported' instances.
+--
+-- An error is thrown if the tree is not 'bifurcating'.
+roots :: PhyloTree a -> [PhyloTree a]
+roots (Node c []) = [Node c []]
+roots t@(Node _ [Node _ [], Node _ []]) = [t]
+roots t@(Node _ [_, _]) = t : lefts t ++ rights t
+roots _ = error "roots: Tree is not bifurcating."
+
+-- Move the root to the left.
+lefts :: PhyloTree a -> [PhyloTree a]
+lefts (Node c [Node l [Node x xs, Node y ys], Node r rs])
+  | getBranchSupport l /= getBranchSupport r = error "lefts: Unequal branch support."
+  | otherwise =
+    let -- Left.
+        x' = halve x
+        l' = setBranchSupport (getBranchSupport x') $ setLen (getLen x') l
+        r' = setLen (getLen r + getLen l) r
+        tl = Node c [Node x' xs, Node l' [Node y ys, Node r' rs]]
+        -- Right.
+        y' = halve y
+        l'' = setBranchSupport (getBranchSupport y') $ setLen (getLen y') l
+        tr = Node c [Node l'' [Node r' rs, Node x xs], Node y' ys]
+     in tl : tr : lefts tl ++ rights tr
+lefts (Node _ [Node _ [], _]) = []
+lefts (Node _ []) = error "lefts: THIS ERROR SHOULD NEVER HAPPEN. Encountered a leaf."
+lefts _ = error "lefts: Tree is not bifurcating."
+
+-- Move the root to the right.
+rights :: PhyloTree a -> [PhyloTree a]
+rights (Node c [Node l ls, Node r [Node x xs, Node y ys]])
+  | getBranchSupport l /= getBranchSupport r = error "rights: Unequal branch support."
+  | otherwise =
+    let -- Left.
+        x' = halve x
+        r' = setBranchSupport (getBranchSupport x') $ setLen (getLen x') r
+        l' = setLen (getLen r + getLen l) l
+        tl = Node c [Node x' xs, Node r' [Node y ys, Node l' ls]]
+        -- Right.
+        y' = halve y
+        r'' = setBranchSupport (getBranchSupport y') $ setLen (getLen y') r
+        tr = Node c [Node r'' [Node l' ls, Node x xs], Node y' ys]
+     in tl : tr : lefts tl ++ rights tr
+rights (Node _ [_, Node _ []]) = []
+rights (Node _ []) = error "rights: THIS ERROR SHOULD NEVER HAPPEN. Encountered a leaf."
+rights _ = error "rights: Tree is not bifurcating."
 
 -- | Root a bifurcating tree at a given point.
 --
@@ -80,7 +119,7 @@ removeBrInfo = fmap label
 -- - The tree has to be bifurcating (may be relaxed in the future).
 -- - The leaves of the tree have to be unique.
 -- - The leaves in the bipartition have to match the leaves of the tree.
-rootAt :: (BranchSupported a, Measurable a, Ord a) => Bipartition a -> Tree a -> Tree a
+rootAt :: Ord a => Bipartition (PhyloLabel a) -> PhyloTree a -> PhyloTree a
 rootAt b t
   -- Tree is checked for being bifurcating in 'roots'.
   | length ls /= S.size lS = error "rootAt: Leaves of tree are not unique."
@@ -95,81 +134,8 @@ rootAt b t
     lS = S.fromList $ leaves t
 
 -- Assume the leaves of the tree are unique.
-rootAt' :: (BranchSupported a, Eq a, Measurable a, Ord a) => Bipartition a -> Tree a -> Maybe (Tree a)
--- XXX: This would lead to errors if the root of the tree is not bifurcating.
+rootAt' :: (Eq a, Ord a) => Bipartition (PhyloLabel a) -> PhyloTree a -> Maybe (PhyloTree a)
 rootAt' b t = find (\x -> b == bipartition x) (roots t)
-
--- -- | For a rooted, bifurcating tree, get all possible rooted trees.
--- --
--- -- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
--- -- is moved. Branch lengths and branch support are merged according to the
--- -- 'Measurable' and 'BranchSupported' instances.
--- --
--- -- An error is thrown if the tree is not 'bifurcating'.
--- roots :: Tree a -> [Tree a]
--- -- Leaves, and cherries have to be handled separately, because they cannot be
--- -- rotated.
--- roots t@(Node _ []) = [t]
--- roots t@(Node _ [Node _ [], Node _ []]) = [t]
--- roots t
---   -- XXX: Do we need the check here, or can we have it while rotating?
---   | bifurcating t = t : left t ++ right t
---   | otherwise = error "roots: Tree is not bifurcating."
-
-halve :: Measurable a => a -> a
-halve l = setLen (getLen l / 2.0) l
-
--- TODO: This will fail if 'PhyloLabel' is used and some branch lengths are actually 'Nothing'.
--- | For a rooted, bifurcating tree, get all possible rooted trees.
---
--- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
--- is moved. Branch lengths and branch support are merged according to the
--- 'Measurable' and 'BranchSupported' instances.
---
--- An error is thrown if the tree is not 'bifurcating'.
-roots :: (Measurable a, BranchSupported a) => Tree a -> [Tree a]
-roots (Node c []) = [Node c []]
-roots t@(Node _ [Node _ [], Node _ []]) = [t]
-roots t@(Node _ [_, _]) = t : lefts t ++ rights t
-roots _ = error "roots: Tree is not bifurcating."
-
--- Move the root to the left.
-lefts :: (Measurable a, BranchSupported a) => Tree a -> [Tree a]
-lefts (Node c [Node l [Node x xs, Node y ys], Node r rs])
-  | getBranchSupport l /= getBranchSupport r = error "lefts: Unequal branch support."
-  | otherwise =
-    let -- Left.
-        x' = halve x
-        l' = setBranchSupport (getBranchSupport x') $ setLen (getLen x') l
-        r' = lengthen (getLen l) r
-        tl = Node c [Node x' xs, Node l' [Node y ys, Node r' rs]]
-        -- Right.
-        y' = halve y
-        l'' = setBranchSupport (getBranchSupport y') $ setLen (getLen y') l
-        tr = Node c [Node l'' [Node r' rs, Node x xs], Node y' ys]
-     in tl : tr : lefts tl ++ rights tr
-lefts (Node _ [Node _ [], _]) = []
-lefts (Node _ []) = error "lefts: THIS ERROR SHOULD NEVER HAPPEN. Encountered a leaf."
-lefts _ = error "lefts: Tree is not bifurcating."
-
--- Move the root to the right.
-rights :: (Measurable a, BranchSupported a) => Tree a -> [Tree a]
-rights (Node c [Node l ls, Node r [Node x xs, Node y ys]])
-  | getBranchSupport l /= getBranchSupport r = error "rights: Unequal branch support."
-  | otherwise =
-    let -- Left.
-        x' = halve x
-        r' = setBranchSupport (getBranchSupport x') $ setLen (getLen x') r
-        l' = lengthen (getLen r) l
-        tl = Node c [Node x' xs, Node r' [Node y ys, Node l' ls]]
-        -- Right.
-        y' = halve y
-        r'' = setBranchSupport (getBranchSupport y') $ setLen (getLen y') r
-        tr = Node c [Node r'' [Node l' ls, Node x xs], Node y' ys]
-     in tl : tr : lefts tl ++ rights tr
-rights (Node _ [_, Node _ []]) = []
-rights (Node _ []) = error "rights: THIS ERROR SHOULD NEVER HAPPEN. Encountered a leaf."
-rights _ = error "rights: Tree is not bifurcating."
 
 -- | Connect two trees with a branch in all possible ways.
 --
@@ -178,5 +144,24 @@ rights _ = error "rights: Tree is not bifurcating."
 --
 -- A base node has to be given which will be used wherever the new node is
 -- introduced.
-connect :: (BranchSupported a, Measurable a) => a -> Tree a -> Tree a -> [Tree a]
+connect :: PhyloLabel a -> PhyloTree a -> PhyloTree a -> [PhyloTree a]
 connect n l r = [Node n [x, y] | x <- roots l, y <- roots r]
+
+-- | Remove multifurcations by copying multifurcating nodes and introducing
+-- branches without length and branch support.
+removeMultifurcations :: PhyloTree a -> PhyloTree a
+removeMultifurcations t@(Node _ []) = t
+removeMultifurcations (Node l [x]) = Node l [removeMultifurcations x]
+removeMultifurcations (Node l [x, y]) = Node l $ map removeMultifurcations [x, y]
+removeMultifurcations (Node l (x : xs)) = Node l $ map removeMultifurcations [x, Node l' xs]
+  where
+    l' = setBranchSupport Nothing $ setLen (branchLength $ Just 1.0) l
+
+-- | Add branch lengths, but forget all other information of parent node label.
+-- Also reset branch support.
+extend :: PhyloLabel a -> PhyloLabel a -> PhyloLabel a
+extend da pa = setBranchSupport Nothing $ setLen (brLen pa + brLen da) da
+
+-- | Prune degree 2 nodes. Use 'extend' and 'pruneWith'.
+prune :: PhyloTree a -> PhyloTree a
+prune = pruneWith extend

@@ -30,7 +30,7 @@ sampleLabelByteString :: L.ByteString
 sampleLabelByteString = L.pack "name:0.3"
 
 sampleLabel :: (PhyloLabel L.ByteString)
-sampleLabel = PhyloLabel (L.pack "name") Nothing (Just 0.3)
+sampleLabel = PhyloLabel (L.pack "name") (Just 0.3) Nothing
 
 sampleForestByteString :: L.ByteString
 sampleForestByteString = L.pack "(l,l,(a,b))"

@@ -127,12 +127,11 @@ branched = do
 forest :: Parser [Tree (PhyloLabel L.ByteString)]
 forest = between (w '(') (w ')') (tree `sepBy1` w ',') <?> "forest"
 
--- TODO: Why try?
-branchSupport :: Parser (Maybe Double)
-branchSupport = optional $ do
-  _ <- try $ w '['
-  s <- try float <|> try decimalAsDouble
-  _ <- try $ w ']'
+branchSupport :: Parser BranchSupport
+branchSupport = optional $ try $ do
+  _ <- w '['
+  s <- float <|> decimalAsDouble
+  _ <- w ']'
   return s
 
 -- | A 'leaf' is a 'node' without children.
@@ -145,9 +144,9 @@ leaf = do
 node :: Parser (PhyloLabel L.ByteString)
 node = do
   n <- name
-  b <- branchLength
+  b <- branchLengthP
   s <- branchSupport <?> "node"
-  return $ PhyloLabel n s b
+  return $ PhyloLabel n b s
 
 checkNameCharacter :: Word8 -> Bool
 checkNameCharacter c = c `notElem` map c2w " :;()[],"
@@ -158,8 +157,8 @@ name :: Parser L.ByteString
 name = L.pack <$> many (satisfy checkNameCharacter) <?> "name"
 
 -- | Branch length.
-branchLength :: Parser (Maybe Double)
-branchLength = optional (w ':' *> branchLengthGiven) <?> "branchLength"
+branchLengthP :: Parser BranchLength
+branchLengthP = branchLength <$> optional (w ':' *> branchLengthGiven) <?> "branchLength"
 
 branchLengthGiven :: Parser Double
 branchLengthGiven = try float <|> decimalAsDouble
@@ -207,15 +206,15 @@ forestIqTree = do
 
 -- TODO: Same here, why try?
 -- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
-branchSupportIqTree :: Parser (Maybe Double)
+branchSupportIqTree :: Parser BranchSupport
 branchSupportIqTree = optional $ try float <|> try decimalAsDouble
 
 -- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
 nodeIqTree :: Parser (PhyloLabel L.ByteString)
 nodeIqTree = do
   n <- name
-  b <- branchLength <?> "nodeIqTree"
-  return $ PhyloLabel n Nothing b
+  b <- branchLengthP <?> "nodeIqTree"
+  return $ PhyloLabel n b Nothing
 
 
 --------------------------------------------------------------------------------
@@ -259,9 +258,9 @@ nodeRevBayes :: Parser (PhyloLabel L.ByteString)
 nodeRevBayes = do
   n <- name
   _ <- optional brackets
-  b <- branchLength
+  b <- branchLengthP
   _ <- optional brackets <?> "nodeRevBayes"
-  return $ PhyloLabel n Nothing b
+  return $ PhyloLabel n b Nothing
 
 leafRevBayes :: Parser (Tree (PhyloLabel L.ByteString))
 leafRevBayes = do

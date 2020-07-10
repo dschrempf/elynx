@@ -20,20 +20,13 @@ where
 import Data.List
 import Data.Tree
 
--- XXX: Implementation of a proper data type. When parsing Newick files, we
--- need to check if an Integer can be parsed, otherwise parse a Double. Also, if
--- one branch support value is a Double, all others have to be converted to
--- Double, so that we do not have a mixed data type. In this case, it may be
--- better to use a type family? Or just use Maybe a, and don't restrict the a
--- type?
+-- | Branch support.
 --
--- type BranchSupport = Maybe BSValue
+-- Not all branches may have support. For example, the stem is not supposed to
+-- have support.
 --
--- data BSValue = BSInt Int
---              | BSDouble Double
-
--- | At the moment, just use 'Double'. It would be preferable to use a wrapper
--- data type that can handle 'Int' or 'Double'.
+-- Use values of type 'Double'. It would be preferable to use a wrapper data
+-- type that can handle 'Int' or 'Double'.
 type BranchSupport = Maybe Double
 
 -- | A label that supports extraction and setting of branch support values.

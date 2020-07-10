@@ -28,11 +28,8 @@ import qualified Data.ByteString.Lazy.Char8    as L
 import           Data.Tree
 import           ELynx.Data.Tree.MeasurableTree
 
--- This may be too specific, but I only change it if necessary. E.g., use types
--- a (for node labels) and b (for branch lengths).
-
 -- | Pair of branch length with number of extant children.
-type BrLnNChildren = (Double, Int)
+type BrLnNChildren = (BranchLength, Int)
 
 -- | Possible summary statistic of phylogenetic trees. A list of tuples
 -- (BranchLength, NumberOfExtantChildrenBelowThisBranch).
@@ -49,7 +46,7 @@ formatNChildSumStat s =
 
 formatNChildSumStatLine :: BrLnNChildren -> L.Builder
 formatNChildSumStatLine (l, n) =
-  L.intDec n <> L.char8 ' ' <> L.doubleDec l <> L.char8 '\n'
+  L.intDec n <> L.char8 ' ' <> L.doubleDec (fromBranchLengthUnsafe l) <> L.char8 '\n'
 
 -- | Compute NChilSumStat for a phylogenetic tree.
 toNChildSumStat :: Measurable a => Tree a -> NChildSumStat

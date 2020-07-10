@@ -214,16 +214,16 @@ toReconstructedTree l pp@(PointProcess ps vs o)
   | length ps /= length vs + 1 = error "Too few or too many points."
   | length vs <= 1             = error "Too few values."
   |
-  -- -- XXX: Test is deactivated.
+  -- -- Test is deactivated.
   -- -- | otherwise = if isReconstructed treeOrigin then treeOrigin else error "Error in algorithm."
     otherwise                  = treeOrigin
  where
   (vsSorted, isSorted) = sort pp
-  !lvs                 = S.fromList [ singleton (PhyloLabel p Nothing Nothing) | p <- ps ]
+  !lvs                 = S.fromList [ singleton (PhyloLabel p 0 Nothing) | p <- ps ]
   !heights             = S.replicate (length ps) 0
   !treeRoot            = toReconstructedTree' isSorted vsSorted l lvs heights
   !h                   = last vsSorted
-  !treeOrigin          = lengthenStem (o - h) treeRoot
+  !treeOrigin          = lengthenStem (branchLength $ Just $ o - h) treeRoot
 
 -- Move up the tree, connect nodes when they join according to the point process.
 toReconstructedTree'
@@ -247,9 +247,9 @@ toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
   !hr    = hs `S.index` (i + 1)
   !dvl   = v - hl
   !dvr   = v - hr
-  !tl    = lengthenStem dvl $ trs `S.index` i
-  !tr    = lengthenStem dvr $ trs `S.index` (i + 1)
+  !tl    = lengthenStem (branchLength $ Just dvl) $ trs `S.index` i
+  !tr    = lengthenStem (branchLength $ Just dvr) $ trs `S.index` (i + 1)
   !h'    = hl + dvl       -- Should be the same as 'hr + dvr'.
-  !tm    = Node (PhyloLabel l Nothing Nothing) [tl, tr]
+  !tm    = Node (PhyloLabel l 0 Nothing) [tl, tr]
   !trs'' = (S.take i trs S.|> tm) S.>< S.drop (i + 2) trs
   !hs'   = (S.take i hs  S.|> h') S.>< S.drop (i + 2) hs

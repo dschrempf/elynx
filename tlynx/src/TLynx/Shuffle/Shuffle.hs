@@ -55,7 +55,7 @@ shuffleCmd = do
 
   -- Check if all branches have a given length. However, the length of the stem is not important.
   let r = rootLabel t
-      r' = r {brLen = Just 0}
+      r' = r {brLen = branchLength $ Just 0}
       t' = t {rootLabel = r'}
   when
     (isNothing $ traverse brLen t')

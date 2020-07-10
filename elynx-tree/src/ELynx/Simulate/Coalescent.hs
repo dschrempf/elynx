@@ -34,7 +34,7 @@ simulate
   -> Gen (PrimState m)
   -> m (Tree (PhyloLabel Int))
 simulate n = simulate' n 0 trs
-  where trs = [ singleton (PhyloLabel i Nothing Nothing) | i <- [0 .. n - 1] ]
+  where trs = [ singleton (PhyloLabel i 0 Nothing) | i <- [0 .. n - 1] ]
 
 simulate'
   :: (PrimMonad m)
@@ -52,11 +52,11 @@ simulate' n a trs g
     i <- uniformR (1, n - 1) g
     -- The time of the coalescent event.
     t <- genContVar (coalescentDistributionCont n) g
-    let trs'  = map (lengthenStem t) trs -- Move time 't' up on the tree.
+    let trs'  = map (lengthenStem $ branchLength $ Just t) trs -- Move time 't' up on the tree.
         tl    = trs' !! (i - 1)
         tr    = trs' !! i
         -- Join the two chosen trees.
-        tm    = Node (PhyloLabel a Nothing Nothing) [tl, tr]
+        tm    = Node (PhyloLabel a 0 Nothing) [tl, tr]
         -- Take the trees on the left, the merged tree, and the trees on the right.
         trs'' = take (i - 1) trs' ++ [tm] ++ drop (i + 1) trs'
     simulate' (n - 1) a trs'' g

@@ -105,7 +105,7 @@ compareCmd = do
   -- Intersect trees.
   (t1, t2) <- if argsIntersect l
     then do
-      let [x, y] = intersectWith getName extendBranchLength [tr1, tr2]
+      let [x, y] = intersectWith getName extend [tr1, tr2]
       liftIO $ hPutStrLn outH "Intersected trees are:"
       liftIO $ L.hPutStrLn outH $ toNewick x
       liftIO $ L.hPutStrLn outH $ toNewick y
@@ -198,9 +198,9 @@ compareCmd = do
         else do
           let
             bpToBrLen1 =
-              M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t1
+              M.map (fromBranchLengthUnsafe . getSum) $ bipartitionToBranchLength getName (Sum . getLen) t1
             bpToBrLen2 =
-              M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t2
+              M.map (fromBranchLengthUnsafe . getSum) $ bipartitionToBranchLength getName (Sum . getLen) t2
           liftIO $ hPutStrLn
             outH
             "Common bipartitions and their respective differences in branch lengths."

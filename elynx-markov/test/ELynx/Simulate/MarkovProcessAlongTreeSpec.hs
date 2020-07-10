@@ -32,16 +32,16 @@ import           ELynx.Simulate.MarkovProcessAlongTree
 
 testTree :: Tree (PhyloLabel Int)
 testTree = Node
-  (PhyloLabel 0 Nothing (Just 0.0))
-  [ Node (PhyloLabel 1 Nothing (Just 1.0)) []
-  , Node (PhyloLabel 2 Nothing (Just 1.0)) []
+  (PhyloLabel 0 (Just 0.0) Nothing)
+  [ Node (PhyloLabel 1 (Just 1.0) Nothing) []
+  , Node (PhyloLabel 2 (Just 1.0) Nothing) []
   ]
 
 -- testStateTree :: Tree State
 -- testStateTree = Node 0 [Node 3 [], Node 2 []]
 
 nullTree :: Tree (PhyloLabel Int)
-nullTree = Node (PhyloLabel 0 Nothing (Just 0.0)) []
+nullTree = Node (PhyloLabel 0 (Just 0.0) Nothing) []
 
 nullStateTree :: Tree State
 nullStateTree = fmap (const 0) nullTree

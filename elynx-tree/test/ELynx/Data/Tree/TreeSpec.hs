@@ -61,6 +61,15 @@ largeTree =
 subSampleLargeTree :: Tree (PhyloLabel L.ByteString)
 subSampleLargeTree = fromJust $ subTree ((== 'P') . L.head . label) largeTree
 
+simpleTree :: Tree (PhyloLabel String)
+simpleTree = Node (pl "i") [Node (pl "j") [Node (pl "x") [], Node (pl "y") []], Node (pl "z") []]
+
+simpleSol :: [Tree (PhyloLabel String)]
+simpleSol = [ Node (pl "i") [Node (pl "j") [Node (pl "x") [], Node (pl "y") []], Node (pl "z") []],
+              Node (pl "i") [Node (pl "x") [], Node (pl "j") [Node (pl "y") [], Node (pl "z") []]],
+              Node (pl "i") [Node (pl "j") [Node (pl "z") [], Node (pl "x") []], Node (pl "y") []]
+            ]
+
 -- XXX: Skip not bifurcating trees. This is ugly, I know.
 prop_roots :: (Measurable a, BranchSupported a) => Tree a -> Bool
 prop_roots t
@@ -87,7 +96,7 @@ compatibleWith ::
 compatibleWith f cs t = compatibleAll (fmap f t) (map (S.map f) cs)
 
 pl :: a -> PhyloLabel a
-pl x = PhyloLabel x Nothing (Just 0)
+pl x = PhyloLabel x (Just 0) Nothing
 
 spec :: Spec
 spec = do
@@ -106,29 +115,29 @@ spec = do
     it "correctly prunes a small example" $
       pruneWith const smallSubTree
         `shouldBe` smallSubTreePruned
-    it "leaves height constant for Measurable trees" $
+    it "leaves height constant for Measurable trees" $ do
+      print subSampleLargeTree
       height (prune subSampleLargeTree)
         `shouldBe` height subSampleLargeTree
 
-  describe "roots" $ do
+  describe "roots and rootAt" $ do
     it "correctly handles leaves and cherries" $ do
       let tleaf = Node (PhyloLabel 0 Nothing Nothing) [] :: Tree (PhyloLabel Int)
           tcherry = Node (pl 0) [Node (pl 1) [], Node (pl 2) []] :: Tree (PhyloLabel Int)
       roots tleaf `shouldBe` [tleaf]
       roots tcherry `shouldBe` [tcherry]
-    it "correctly handles simple trees" $ do
-      let simpleTre =
-            Node (pl "i") [Node (pl "j") [Node (pl "x") [], Node (pl "y") []], Node (pl "z") []] :: Tree (PhyloLabel String)
-          simpleSol =
-            [ Node (pl "i") [Node (pl "j") [Node (pl "x") [], Node (pl "y") []], Node (pl "z") []],
-              Node (pl "i") [Node (pl "x") [], Node (pl "j") [Node (pl "y") [], Node (pl "z") []]],
-              Node (pl "i") [Node (pl "j") [Node (pl "z") [], Node (pl "x") []], Node (pl "y") []]
-            ] ::
-              [Tree (PhyloLabel String)]
-      roots simpleTre `shouldBe` simpleSol
+    it "correctly handles simple trees" $
+      roots simpleTree `shouldBe` simpleSol
     modifyMaxSize (* 100) $
       it "returns the correct number of rooted trees for arbitrary trees" $
         property (prop_roots :: (Tree (PhyloLabel Int) -> Bool))
+
+  describe "rootAt" $
+    it "correctly handles simple trees" $ do
+      rootAt (bipartition simpleTree) simpleTree `shouldBe` simpleTree
+      let l = S.singleton (pl "x")
+          r = S.fromList [pl "y", pl "z"]
+      rootAt (bp l r) simpleTree `shouldBe` (simpleSol !! 1)
 
   -- TODO: dropLeafWith, intersect.
 
@@ -140,7 +149,7 @@ spec = do
         a <- parseFileWith (oneNewick Standard) "data/ConnectA.tree"
         b <- parseFileWith (oneNewick Standard) "data/ConnectB.tree"
         c <- parseFileWith (manyNewick Standard) "data/ConnectConstraints.tree"
-        let ts = connect (PhyloLabel "" Nothing (Just 1.0)) a b
+        let ts = connect (PhyloLabel "" (Just 1.0) Nothing) a b
             cs = concatMap clades c :: [Constraint (PhyloLabel L.ByteString)]
             ts' = filter (compatibleWith getName cs) ts
         length ts `shouldBe` 63
