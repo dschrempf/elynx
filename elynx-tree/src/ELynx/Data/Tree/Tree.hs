@@ -59,7 +59,7 @@ module ELynx.Data.Tree.Tree
     leaves,
     pruneWith,
     dropLeafWith,
-    -- intersectWith,
+    intersectWith,
     -- merge,
     -- tZipWith,
     -- partitionTree,
@@ -72,10 +72,7 @@ where
 
 -- import Control.Monad (zipWithM)
 import Data.Function
--- import Data.List
---   ( foldl',
---     foldl1',
---   )
+import Data.List
 -- import Data.Maybe (mapMaybe)
 import Data.Set (Set)
 import qualified Data.Set as S
@@ -137,30 +134,30 @@ dropLeafWith f l (Node paBr paLb paXs)
     toRm x = S.null (children x) && label x == l
     paXs' = S.map (dropLeafWith f l) (S.filter (not . toRm) paXs)
 
--- -- | Compute the intersection of trees.
--- --
--- -- The intersections are the largest subtrees sharing the same leaf set. Leaf
--- -- are compared using a given function. Leaves are dropped with 'dropLeafWith',
--- -- and degree two nodes are pruned with 'pruneWith'.
--- intersectWith ::
---   (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> [Tree e a] -> [Tree e a]
--- intersectWith f g ts =
---   if null ls
---     then error "intersect: intersection of leaves is empty."
---     else map (retainLeavesWith f g ls) ts
---   where
---     -- Leaf sets.
---     lss = map (S.fromList . leaves . fmap f) ts
---     -- Common leaf set.
---     ls = foldl1' S.intersection lss
+-- | Compute the intersection of trees.
+--
+-- The intersections are the largest subtrees sharing the same leaf set. Leaf
+-- are compared using a given function. Leaves are dropped with 'dropLeafWith',
+-- and degree two nodes are pruned with 'pruneWith'.
+intersectWith ::
+  (Eq e, Ord a) => (e -> e -> e) -> [Tree e a] -> [Tree e a]
+intersectWith f ts =
+  if S.null ls
+    then error "intersectWith: Intersection of leaves is empty."
+    else map (retainLeavesWith f ls) ts
+  where
+    -- Leaf sets.
+    lss = map leaves ts
+    -- Common leaf set.
+    ls = foldl1' S.intersection lss
 
--- -- Retain all leaves in a provided set; or conversely, drop all leaves not in a
--- -- provided set.
--- retainLeavesWith ::
---   (Show b, Ord b) => (a -> b) -> (a -> a -> a) -> S.Set b -> Tree e a -> Tree e a
--- retainLeavesWith f g ls t = foldl' (flip (dropLeafWith f g)) t leavesToDrop
---   where
---     leavesToDrop = filter (`S.notMember` ls) $ leaves $ fmap f t
+-- Retain all leaves in a provided set; or conversely, drop all leaves not in a
+-- provided set.
+retainLeavesWith ::
+  (Eq e, Ord a) => (e -> e -> e) -> S.Set a -> Tree e a -> Tree e a
+retainLeavesWith f ls t = S.foldl' (flip (dropLeafWith f)) t leavesToDrop
+  where
+    leavesToDrop = leaves t S.\\ ls
 
 -- -- | Merge two trees with the same topology. Returns 'Nothing' if the topologies
 -- -- are different.
