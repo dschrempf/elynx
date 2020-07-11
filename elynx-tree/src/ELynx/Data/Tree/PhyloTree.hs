@@ -13,11 +13,11 @@
 -- Phylogenetic nodes labels, aka 'PhyloLabel's, have a branch length and an
 -- arbitrary label type, e.g., of type 'Int'.
 module ELynx.Data.Tree.PhyloTree
-  ( PhyloLabelSoft (..),
-    PhyloLabel (..),
-    harden,
-    hardenPedantic,
-    soften,
+  ( PhyloLabel (..),
+    Length (..),
+    toLength,
+    Support (..),
+    toSupport,
     roots,
     rootAt,
     connect,
@@ -38,78 +38,86 @@ import ELynx.Data.Tree.Tree
 import ELynx.Data.Tree.NamedTree
 
 -- | A label type for phylogenetic trees possibly with branch length and branch support.
-data PhyloLabelSoft a = PhyloLabelSoft
-  { sLabel :: a,
-    sBrLen :: Maybe BranchLength,
-    sBrSup :: Maybe BranchSupport
+data PhyloLabel a = PhyloLabel
+  { pLabel :: a,
+    pBrLen :: Maybe BranchLength,
+    pBrSup :: Maybe BranchSupport
   }
   deriving (Read, Show, Eq, Ord)
 
-instance Named a => Named (PhyloLabelSoft a) where
-  getName = getName . sLabel
+instance Named a => Named (PhyloLabel a) where
+  getName = getName . pLabel
 
-data PhyloLabel a = PhyloLabel
-  { label :: a,
-    brLen :: BranchLength,
+-- | A label with a branch length.
+data Length a = Length
+  { lLabel :: a,
+    brLen :: BranchLength
+  }
+  deriving (Read, Show, Eq, Ord)
+
+instance Named a => Named (Length a) where
+  getName = getName . lnLabel
+
+instance Measurable (Length a) where
+  getLen = brLen
+  setLen x l = l {brLen = x}
+
+-- | A label with branch support.
+data Support a = Support
+  { sLabel :: a,
     brSup :: BranchSupport
   }
   deriving (Read, Show, Eq, Ord)
 
-instance Measurable (PhyloLabel a) where
-  getLen = brLen
-  setLen x l = l {brLen = x}
+instance Named a => Named (Support a) where
+  getName = getName . spLabel
 
-instance BranchSupported (PhyloLabel a) where
+instance BranchSupported (Support a) where
   getBranchSupport = brSup
   setBranchSupport x l = l {brSup = x}
 
-instance Named a => Named (PhyloLabel a) where
-  getName = getName . label
+getMaxBrSup :: Tree (PhyloLabel a) -> BranchSupport
+getMaxBrSup =
+  -- If all branch support values are below 1.0, set the max support to 1.0.
+  max 1.0 .
+  -- If no branch support is given, set max support to 1.0.
+  fromMaybe 1.0 . maximum . fmap pBrSup
 
-getMaxBrSup :: Tree (PhyloLabelSoft a) -> BranchSupport
-getMaxBrSup = max 1.0 . fromMaybe 1.0 . maximum . fmap sBrSup
+-- | If root branch length is not available, set it to 0. Return 'Nothing' if
+-- any other branch length is unavailable.
+toLength :: Tree (PhyloLabel a) -> Maybe (Tree (Length a))
+toLength = traverse toLengthLabel . cleanRootLength
 
--- TODO: Haddock.
+cleanRootLength :: Tree (PhyloLabel a) -> Tree (PhyloLabel a)
+cleanRootLength (Node (PhyloLabel l Nothing s) f) = Node (PhyloLabel l (Just 0) s)
+cleanRootLength _ = id
 
--- TODO: Check usage of harden. Try to use hardenPedantic.
--- | Set unavailable branch lengths to 0, and unavailable branch support values
--- to maximum support.
-harden :: Tree (PhyloLabelSoft a) -> Tree (PhyloLabel a)
-harden t = hardenLabel m <$> t
-  where
-    m = getMaxBrSup t
+toLengthLabel :: PhyloLabel a -> Maybe (Length a)
+toLengthLabel (PhyloLabel l Nothing _) = Nothing
+toLengthLabel (PhyloLabel l (Just b) _) = Length l b
 
-hardenLabel :: BranchSupport -> PhyloLabelSoft a -> PhyloLabel a
-hardenLabel d (PhyloLabelSoft l b s) = PhyloLabel l (fromMaybe 0 b) (fromMaybe d s)
-
--- TODO: Try to use hardenPedantic.
--- | Set unavailable branch support values to maximum support. Set the root
--- branch length to 0 if it is unavailable. Fail if any other branch length is
--- not available.
-hardenPedantic :: Tree (PhyloLabelSoft a) -> Tree (PhyloLabel a)
-hardenPedantic t = hardenLabelPedantic m <$> cleanRoot t
-  where
-    m = getMaxBrSup t
-
-cleanRoot :: Tree (PhyloLabelSoft a) -> Tree (PhyloLabelSoft a)
-cleanRoot (Node (PhyloLabelSoft l Nothing s) xs) = Node (PhyloLabelSoft l (Just 0) s) xs
-cleanRoot t = t
-
-hardenLabelPedantic :: BranchSupport -> PhyloLabelSoft a -> PhyloLabel a
-hardenLabelPedantic d (PhyloLabelSoft l b s) = PhyloLabel l (fromMaybe (error "hardenLabelPedantic: Branch length unavailable.") b) (fromMaybe d s)
-
--- TODO: Check usage of soften. It should not be used to report input trees etc.
--- | Useful when exporting trees to Newick format. We have
+-- | Set branch support values of branches leading to the leaves to maximum
+-- support. Set the root branch support to maximum support.
 --
--- @
--- harden . soften == id
--- soften . harden /= id
--- @
-soften :: Tree (PhyloLabel a) -> Tree (PhyloLabelSoft a)
-soften = fmap softenLabel
+-- Return 'Nothing' if any other branch has no available support value.
+toSupport :: Tree (PhyloLabel a) -> Maybe (Tree (Support a))
+toSupport t = traverse toSupportLabel . cleanLeafSupport m . cleanRootSupport m
+  where
+    m = getMaxBrSup t
 
-softenLabel :: PhyloLabel a -> PhyloLabelSoft a
-softenLabel (PhyloLabel l b s) = PhyloLabelSoft l (Just b) (Just s)
+cleanRootSupport :: BranchSupport -> Tree (PhyloLabel a) -> Tree (PhyloLabel a)
+cleanRootSupport maxSup (Node (PhyloLabel l b Nothing) xs) = Node (PhyloLabel l (Just maxSup)) xs
+cleanRootSupport _ t = t
+
+cleanLeafSupport :: BranchSupport -> Tree (PhyloLabel a) -> Tree (PhyloLabel a)
+cleanLeafSupport maxSup (Node (PhyloLabel l b Nothing) []) = Node (PhyloLabel l (Just maxSup)) []
+cleanLeafSupport _ (Node l xs) = Node l $ map cleanLeafSupport xs
+
+toSupportLabel :: PhyloLabel a -> Maybe (Support a)
+toSupportLabel (PhyloLabel l _ Nothing) = Nothing
+toSupportLabel (PhyloLabel l _ (Just s)) = Support l s
+
+-- TODO. Go on here.
 
 halve :: PhyloLabel a -> PhyloLabel a
 halve l = setLen (getLen l / 2.0) l
