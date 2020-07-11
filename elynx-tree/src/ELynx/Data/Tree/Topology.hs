@@ -16,19 +16,32 @@
 -- The order of children is arbitrary. Internally, 'Set's are used instead of
 -- lists like for rose trees (see 'Data.Tree').
 module ELynx.Data.Tree.Topology
-  (
+  ( Topology (..),
+    fromTree,
+    leaves,
   )
 where
 
+import Data.Function
 import Data.Tree
+import qualified Data.Set as S
 import Data.Set (Set)
 
-data Topology a = Node { children ::Set (Topology a) }
-                | Leaf { label :: a }
+data Topology a = TN { children ::Set (Topology a) }
+                | TL { label :: a }
+                deriving (Eq)
 
--- TODO.
-fromTree :: Tree a -> Topology a
-fromTree = undefined
+instance Ord a => Ord (Topology a) where
+  compare = compare `on` leaves
+
+-- | Convert a tree to a topology. Internal node labels are lost.
+fromTree :: Ord a => Tree a -> Topology a
+fromTree (Node x xs) = TN (S.fromList $ map fromTree xs)
+
+-- | Set of leaves.
+leaves :: Ord a => Topology a -> Set a
+leaves (TN xs) = S.unions $ S.map leaves xs
+leaves (TL x)  = S.singleton x
 
 -- -- TODO: Decide which of these functions should be provided for more general
 -- -- data structures. Provide some of these functions only for @Topology@ (which
