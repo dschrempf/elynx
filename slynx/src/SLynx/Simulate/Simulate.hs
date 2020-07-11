@@ -80,7 +80,7 @@ simulateAlignment
   -> GenIO
   -> IO A.Alignment
 simulateAlignment pm t' n g = do
-  let t = fromMaybe (error "simulateAlignment: Provided tree has branches without length.") $ mapM (fromBranchLength . getLen) t'
+  let t = fmap getLen t'
   c  <- getNumCapabilities
   gs <- splitGen c g
   let chunks = getChunks c n
@@ -144,7 +144,7 @@ simulateCmd = do
 
   $(logInfo) ""
   $(logInfo) $ T.pack $ "Read tree from file '" ++ treeFile ++ "'."
-  tree <- liftIO $ parseFileWith (newick Standard) treeFile
+  tree <- liftIO $ harden <$> parseFileWith (newick Standard) treeFile
   $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarize tree
 
   let edmFile       = argsEDMFile l

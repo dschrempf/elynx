@@ -20,14 +20,13 @@ module TLynx.Shuffle.Shuffle
   )
 where
 
-import Control.Comonad (extend)
+import qualified Control.Comonad as C
 import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Logger (logDebug, logInfo)
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as L
-import Data.Maybe (isNothing)
-import Data.Tree (Tree, flatten, rootLabel)
+import Data.Tree
 import ELynx.Data.Tree
 import ELynx.Export.Tree.Newick (toNewick)
 import ELynx.Import.Tree.Newick (oneNewick)
@@ -49,20 +48,11 @@ shuffleCmd = do
   l <- local <$> ask
   h <- outHandle "results" ".tree"
   let nwF = nwFormat l
-  t <- liftIO $ parseFileWith (oneNewick nwF) (inFile l)
+  tSoft <- liftIO $ parseFileWith (oneNewick nwF) (inFile l)
   $(logInfo) "Input tree:"
-  $(logInfo) $ fromBs $ toNewick t
-
+  $(logInfo) $ fromBs $ toNewick tSoft
   -- Check if all branches have a given length. However, the length of the stem is not important.
-  let r = rootLabel t
-      r' = r {brLen = branchLength $ Just 0}
-      t' = t {rootLabel = r'}
-  when
-    (isNothing $ traverse brLen t')
-    ( do
-        $(logDebug) $ tShow t'
-        error "Not all branches have a given length."
-    )
+  let t = hardenPedantic tSoft
 
   -- Check if tree is ultrametric enough.
   let dh = sum $ map (height t -) (distancesOriginLeaves t)
@@ -73,7 +63,7 @@ shuffleCmd = do
       "Tree is nearly ultrametric, ignore branch length differences smaller than 2e-4."
   when (dh < eps) $ $(logInfo) "Tree is ultrametric."
 
-  let cs = filter (> 0) $ flatten $ extend rootHeight t
+  let cs = filter (> 0) $ flatten $ C.extend rootHeight t
       ls = map getName $ leaves t
   $(logDebug) $ "Number of coalescent times: " <> tShow (length cs)
   $(logDebug) $ "Number of leaves: " <> tShow (length ls)
@@ -85,7 +75,7 @@ shuffleCmd = do
     Fixed s -> liftIO $ initialize s
 
   ts <- liftIO $ shuffleT (nReplicates l) (height t) cs ls gen
-  liftIO $ L.hPutStr h $ L.unlines $ map toNewick ts
+  liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . soften) ts
 
   liftIO $ hClose h
 
@@ -103,3 +93,6 @@ shuffleT n o cs ls gen = do
     [ toReconstructedTree "" (PointProcess names times o)
       | (times, names) <- zip css lss
     ]
+
+rootHeight :: Measurable a => Tree a -> Double
+rootHeight (Node _ xs) = maximum $ map height xs

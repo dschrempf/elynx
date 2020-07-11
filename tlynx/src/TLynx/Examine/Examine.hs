@@ -34,7 +34,7 @@ import System.IO
   )
 import TLynx.Examine.Options
 
-readTrees :: FilePath -> ELynx ExamineArguments [Tree (PhyloLabel L.ByteString)]
+readTrees :: FilePath -> ELynx ExamineArguments [Tree (PhyloLabelSoft L.ByteString)]
 readTrees fp = do
   $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
   nf <- argsNewickFormat . local <$> ask
@@ -59,4 +59,4 @@ examine = do
   let inFn = argsInFile l
   trs <- readTrees inFn
   outH <- outHandle "results" ".out"
-  liftIO $ mapM_ (examineTree outH) trs
+  liftIO $ mapM_ (examineTree outH . harden) trs

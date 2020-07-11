@@ -13,7 +13,11 @@
 -- Phylogenetic nodes labels, aka 'PhyloLabel's, have a branch length and an
 -- arbitrary label type, e.g., of type 'Int'.
 module ELynx.Data.Tree.PhyloTree
-  ( PhyloLabel (..),
+  ( PhyloLabelSoft (..),
+    PhyloLabel (..),
+    harden,
+    hardenPedantic,
+    soften,
     roots,
     rootAt,
     connect,
@@ -33,7 +37,17 @@ import ELynx.Data.Tree.MeasurableTree
 import ELynx.Data.Tree.Tree
 import ELynx.Data.Tree.NamedTree
 
--- | A label type for phylogenetic trees with branch length and branch support.
+-- | A label type for phylogenetic trees possibly with branch length and branch support.
+data PhyloLabelSoft a = PhyloLabelSoft
+  { sLabel :: a,
+    sBrLen :: Maybe BranchLength,
+    sBrSup :: Maybe BranchSupport
+  }
+  deriving (Read, Show, Eq, Ord)
+
+instance Named a => Named (PhyloLabelSoft a) where
+  getName = getName . sLabel
+
 data PhyloLabel a = PhyloLabel
   { label :: a,
     brLen :: BranchLength,
@@ -47,18 +61,58 @@ instance Measurable (PhyloLabel a) where
 
 instance BranchSupported (PhyloLabel a) where
   getBranchSupport = brSup
-  setBranchSupport Nothing l = l {brSup = Nothing}
-  setBranchSupport (Just s) l
-    | s > 0 = l {brSup = Just s}
-    | otherwise = error "Branch support cannot be zero nor negative."
+  setBranchSupport x l = l {brSup = x}
 
 instance Named a => Named (PhyloLabel a) where
   getName = getName . label
 
-halve :: Measurable a => a -> a
-halve l = setLen (getLen l / 2.0) l
+getMaxBrSup :: Tree (PhyloLabelSoft a) -> BranchSupport
+getMaxBrSup = max 1.0 . fromMaybe 1.0 . maximum . fmap sBrSup
 
-type PhyloTree a = Tree (PhyloLabel a)
+-- TODO: Haddock.
+
+-- TODO: Check usage of harden. Try to use hardenPedantic.
+-- | Set unavailable branch lengths to 0, and unavailable branch support values
+-- to maximum support.
+harden :: Tree (PhyloLabelSoft a) -> Tree (PhyloLabel a)
+harden t = hardenLabel m <$> t
+  where
+    m = getMaxBrSup t
+
+hardenLabel :: BranchSupport -> PhyloLabelSoft a -> PhyloLabel a
+hardenLabel d (PhyloLabelSoft l b s) = PhyloLabel l (fromMaybe 0 b) (fromMaybe d s)
+
+-- TODO: Try to use hardenPedantic.
+-- | Set unavailable branch support values to maximum support. Set the root
+-- branch length to 0 if it is unavailable. Fail if any other branch length is
+-- not available.
+hardenPedantic :: Tree (PhyloLabelSoft a) -> Tree (PhyloLabel a)
+hardenPedantic t = hardenLabelPedantic m <$> cleanRoot t
+  where
+    m = getMaxBrSup t
+
+cleanRoot :: Tree (PhyloLabelSoft a) -> Tree (PhyloLabelSoft a)
+cleanRoot (Node (PhyloLabelSoft l Nothing s) xs) = Node (PhyloLabelSoft l (Just 0) s) xs
+cleanRoot t = t
+
+hardenLabelPedantic :: BranchSupport -> PhyloLabelSoft a -> PhyloLabel a
+hardenLabelPedantic d (PhyloLabelSoft l b s) = PhyloLabel l (fromMaybe (error "hardenLabelPedantic: Branch length unavailable.") b) (fromMaybe d s)
+
+-- TODO: Check usage of soften. It should not be used to report input trees etc.
+-- | Useful when exporting trees to Newick format. We have
+--
+-- @
+-- harden . soften == id
+-- soften . harden /= id
+-- @
+soften :: Tree (PhyloLabel a) -> Tree (PhyloLabelSoft a)
+soften = fmap softenLabel
+
+softenLabel :: PhyloLabel a -> PhyloLabelSoft a
+softenLabel (PhyloLabel l b s) = PhyloLabelSoft l (Just b) (Just s)
+
+halve :: PhyloLabel a -> PhyloLabel a
+halve l = setLen (getLen l / 2.0) l
 
 -- | For a rooted, bifurcating tree, get all possible rooted trees.
 --
@@ -67,14 +121,14 @@ type PhyloTree a = Tree (PhyloLabel a)
 -- 'Measurable' and 'BranchSupported' instances.
 --
 -- An error is thrown if the tree is not 'bifurcating'.
-roots :: PhyloTree a -> [PhyloTree a]
+roots :: Tree (PhyloLabel a) -> [Tree (PhyloLabel a)]
 roots (Node c []) = [Node c []]
 roots t@(Node _ [Node _ [], Node _ []]) = [t]
 roots t@(Node _ [_, _]) = t : lefts t ++ rights t
 roots _ = error "roots: Tree is not bifurcating."
 
 -- Move the root to the left.
-lefts :: PhyloTree a -> [PhyloTree a]
+lefts :: Tree (PhyloLabel a) -> [Tree (PhyloLabel a)]
 lefts (Node c [Node l [Node x xs, Node y ys], Node r rs])
   | getBranchSupport l /= getBranchSupport r = error "lefts: Unequal branch support."
   | otherwise =
@@ -93,7 +147,7 @@ lefts (Node _ []) = error "lefts: THIS ERROR SHOULD NEVER HAPPEN. Encountered a 
 lefts _ = error "lefts: Tree is not bifurcating."
 
 -- Move the root to the right.
-rights :: PhyloTree a -> [PhyloTree a]
+rights :: Tree (PhyloLabel a) -> [Tree (PhyloLabel a)]
 rights (Node c [Node l ls, Node r [Node x xs, Node y ys]])
   | getBranchSupport l /= getBranchSupport r = error "rights: Unequal branch support."
   | otherwise =
@@ -119,7 +173,7 @@ rights _ = error "rights: Tree is not bifurcating."
 -- - The tree has to be bifurcating (may be relaxed in the future).
 -- - The leaves of the tree have to be unique.
 -- - The leaves in the bipartition have to match the leaves of the tree.
-rootAt :: Ord a => Bipartition (PhyloLabel a) -> PhyloTree a -> PhyloTree a
+rootAt :: Ord a => Bipartition (PhyloLabel a) -> Tree (PhyloLabel a) -> Tree (PhyloLabel a)
 rootAt b t
   -- Tree is checked for being bifurcating in 'roots'.
   | length ls /= S.size lS = error "rootAt: Leaves of tree are not unique."
@@ -134,7 +188,7 @@ rootAt b t
     lS = S.fromList $ leaves t
 
 -- Assume the leaves of the tree are unique.
-rootAt' :: (Eq a, Ord a) => Bipartition (PhyloLabel a) -> PhyloTree a -> Maybe (PhyloTree a)
+rootAt' :: (Eq a, Ord a) => Bipartition (PhyloLabel a) -> Tree (PhyloLabel a) -> Maybe (Tree (PhyloLabel a))
 rootAt' b t = find (\x -> b == bipartition x) (roots t)
 
 -- | Connect two trees with a branch in all possible ways.
@@ -144,24 +198,24 @@ rootAt' b t = find (\x -> b == bipartition x) (roots t)
 --
 -- A base node has to be given which will be used wherever the new node is
 -- introduced.
-connect :: PhyloLabel a -> PhyloTree a -> PhyloTree a -> [PhyloTree a]
+connect :: PhyloLabel a -> Tree (PhyloLabel a) -> Tree (PhyloLabel a) -> [Tree (PhyloLabel a)]
 connect n l r = [Node n [x, y] | x <- roots l, y <- roots r]
 
 -- | Remove multifurcations by copying multifurcating nodes and introducing
--- branches without length and branch support.
-removeMultifurcations :: PhyloTree a -> PhyloTree a
+-- branches with length 0 and branch support 0.
+removeMultifurcations :: Tree (PhyloLabel a) -> Tree (PhyloLabel a)
 removeMultifurcations t@(Node _ []) = t
 removeMultifurcations (Node l [x]) = Node l [removeMultifurcations x]
 removeMultifurcations (Node l [x, y]) = Node l $ map removeMultifurcations [x, y]
 removeMultifurcations (Node l (x : xs)) = Node l $ map removeMultifurcations [x, Node l' xs]
   where
-    l' = setBranchSupport Nothing $ setLen (branchLength $ Just 1.0) l
+    l' = l {brLen = 0, brSup = 0}
 
--- | Add branch lengths, but forget all other information of parent node label.
--- Also reset branch support.
+-- | Add branch lengths. Set branch support to the lower support value. Forget
+-- the parent node label.
 extend :: PhyloLabel a -> PhyloLabel a -> PhyloLabel a
-extend da pa = setBranchSupport Nothing $ setLen (brLen pa + brLen da) da
+extend da pa = da {brSup = min (brSup pa) (brSup da), brLen = brLen pa + brLen da}
 
 -- | Prune degree 2 nodes. Use 'extend' and 'pruneWith'.
-prune :: PhyloTree a -> PhyloTree a
+prune :: Tree (PhyloLabel a) -> Tree (PhyloLabel a)
 prune = pruneWith extend

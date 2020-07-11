@@ -60,7 +60,7 @@ coalesce = do
   let ls =
         if s
           then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
-          else parMap rpar toNewick trs
+          else parMap rpar toNewick (map soften trs)
   let res = L.unlines ls
   out "simulated trees" res ".tree"
 
@@ -98,7 +98,7 @@ simulateAndSubSampleNTreesConcurrently = do
       <> show nLeavesBigTree
       <> " leaves."
   -- Log the base tree.
-  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick tr
+  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ soften tr
   logNewSection
     $ T.pack
     $ "Sub sample "

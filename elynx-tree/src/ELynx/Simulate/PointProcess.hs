@@ -219,11 +219,12 @@ toReconstructedTree l pp@(PointProcess ps vs o)
     otherwise                  = treeOrigin
  where
   (vsSorted, isSorted) = sort pp
-  !lvs                 = S.fromList [ singleton (PhyloLabel p 0 Nothing) | p <- ps ]
+  -- TODO: Ideally we use a data structure without branch support.
+  !lvs                 = S.fromList [ singleton (PhyloLabel p 0 1.0) | p <- ps ]
   !heights             = S.replicate (length ps) 0
   !treeRoot            = toReconstructedTree' isSorted vsSorted l lvs heights
   !h                   = last vsSorted
-  !treeOrigin          = lengthenStem (branchLength $ Just $ o - h) treeRoot
+  !treeOrigin          = lengthenStem (o - h) treeRoot
 
 -- Move up the tree, connect nodes when they join according to the point process.
 toReconstructedTree'
@@ -247,9 +248,10 @@ toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
   !hr    = hs `S.index` (i + 1)
   !dvl   = v - hl
   !dvr   = v - hr
-  !tl    = lengthenStem (branchLength $ Just dvl) $ trs `S.index` i
-  !tr    = lengthenStem (branchLength $ Just dvr) $ trs `S.index` (i + 1)
+  !tl    = lengthenStem dvl $ trs `S.index` i
+  !tr    = lengthenStem dvr $ trs `S.index` (i + 1)
   !h'    = hl + dvl       -- Should be the same as 'hr + dvr'.
-  !tm    = Node (PhyloLabel l 0 Nothing) [tl, tr]
+  -- TODO: Ideally we use a data structure without branch support.
+  !tm    = Node (PhyloLabel l 0 1.0) [tl, tr]
   !trs'' = (S.take i trs S.|> tm) S.>< S.drop (i + 2) trs
   !hs'   = (S.take i hs  S.|> h') S.>< S.drop (i + 2) hs

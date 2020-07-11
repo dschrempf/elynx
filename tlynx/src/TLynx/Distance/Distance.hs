@@ -97,7 +97,7 @@ distance = do
     Nothing -> return Nothing
     Just f  -> do
       $(logInfo) $ T.pack $ "Read master tree from file: " <> f <> "."
-      t <- liftIO $ parseFileWith (oneNewick nwFormat) f
+      t <- liftIO $ harden <$> parseFileWith (oneNewick nwFormat) f
       $(logInfo) "Compute distances between all trees and master tree."
       return $ Just t
   let tfps = argsInFiles l
@@ -105,13 +105,13 @@ distance = do
     []   -> error "No tree input files given."
     [tf] -> do
       $(logInfo) "Read trees from single file."
-      ts <- liftIO $ parseFileWith (manyNewick nwFormat) tf
+      ts <- liftIO $ map harden <$> parseFileWith (manyNewick nwFormat) tf
       $(logInfo) $ tShow (length ts) <> " trees found in file."
       $(logInfo) "Trees are indexed with integers."
       return (ts, map show [0 .. length ts - 1])
     _ -> do
       $(logInfo) "Read trees from files."
-      ts <- liftIO $ mapM (parseFileWith (oneNewick nwFormat)) tfps
+      ts <- liftIO $ map harden <$> mapM (parseFileWith (oneNewick nwFormat)) tfps
       $(logInfo) "Trees are named according to their file names."
       return (ts, tfps)
 
@@ -121,7 +121,7 @@ distance = do
   -- when (isNothing mtree) $ $(logInfo)
   --   "Compute pairwise distances between trees from different files."
   $(logDebug) "The trees are:"
-  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees
+  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map (toNewick . soften) trees
 
   -- Set the distance measure.
   let dist = argsDistance l
@@ -169,10 +169,12 @@ distance = do
         _                     -> id
 
   -- The trees can be prepared now.
-  let trees' = map (collapseF . normalizeF) trees
+  let
+    trees' :: [Tree (PhyloLabel L.ByteString)]
+    trees' = map (collapseF . normalizeF) trees
 
   $(logDebug) "The prepared trees are:"
-  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees'
+  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map (toNewick . soften) trees'
   let dsTriplets = case mtree of
         Nothing -> pairwise distanceMeasure trees'
         Just t ->

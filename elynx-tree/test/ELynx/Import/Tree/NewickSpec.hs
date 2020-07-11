@@ -29,22 +29,22 @@ import           ELynx.Import.Tree.Newick
 sampleLabelByteString :: L.ByteString
 sampleLabelByteString = L.pack "name:0.3"
 
-sampleLabel :: (PhyloLabel L.ByteString)
-sampleLabel = PhyloLabel (L.pack "name") (Just 0.3) Nothing
+sampleLabel :: (PhyloLabelSoft L.ByteString)
+sampleLabel = PhyloLabelSoft (L.pack "name") (Just 0.3) Nothing
 
 sampleForestByteString :: L.ByteString
 sampleForestByteString = L.pack "(l,l,(a,b))"
 
-sampleForest :: [Tree (PhyloLabel L.ByteString)]
+sampleForest :: [Tree (PhyloLabelSoft L.ByteString)]
 sampleForest =
-  [ Node { rootLabel = PhyloLabel (L.pack "l") Nothing Nothing, subForest = [] }
-  , Node { rootLabel = PhyloLabel (L.pack "l") Nothing Nothing, subForest = [] }
+  [ Node { rootLabel = PhyloLabelSoft (L.pack "l") Nothing Nothing, subForest = [] }
+  , Node { rootLabel = PhyloLabelSoft (L.pack "l") Nothing Nothing, subForest = [] }
   , Node
-    { rootLabel = PhyloLabel (L.pack "") Nothing Nothing
-    , subForest = [ Node { rootLabel = PhyloLabel (L.pack "a") Nothing Nothing
+    { rootLabel = PhyloLabelSoft (L.pack "") Nothing Nothing
+    , subForest = [ Node { rootLabel = PhyloLabelSoft (L.pack "a") Nothing Nothing
                          , subForest = []
                          }
-                  , Node { rootLabel = PhyloLabel (L.pack "b") Nothing Nothing
+                  , Node { rootLabel = PhyloLabelSoft (L.pack "b") Nothing Nothing
                          , subForest = []
                          }
                   ]
@@ -65,28 +65,28 @@ sampleNewickByteString2 =
 sampleNewickEmptyByteString :: L.ByteString
 sampleNewickEmptyByteString = L.pack "(,(,,),);"
 
-sampleNewickEmpty :: Tree (PhyloLabel L.ByteString)
+sampleNewickEmpty :: Tree (PhyloLabelSoft L.ByteString)
 sampleNewickEmpty = Node
-  { rootLabel = PhyloLabel (L.pack "") Nothing Nothing
+  { rootLabel = PhyloLabelSoft (L.pack "") Nothing Nothing
   , subForest =
-    [ Node { rootLabel = PhyloLabel (L.pack "") Nothing Nothing
+    [ Node { rootLabel = PhyloLabelSoft (L.pack "") Nothing Nothing
            , subForest = []
            }
     , Node
-      { rootLabel = PhyloLabel (L.pack "") Nothing Nothing
+      { rootLabel = PhyloLabelSoft (L.pack "") Nothing Nothing
       , subForest =
-        [ Node { rootLabel = PhyloLabel (L.pack "") Nothing Nothing
+        [ Node { rootLabel = PhyloLabelSoft (L.pack "") Nothing Nothing
                , subForest = []
                }
-        , Node { rootLabel = PhyloLabel (L.pack "") Nothing Nothing
+        , Node { rootLabel = PhyloLabelSoft (L.pack "") Nothing Nothing
                , subForest = []
                }
-        , Node { rootLabel = PhyloLabel (L.pack "") Nothing Nothing
+        , Node { rootLabel = PhyloLabelSoft (L.pack "") Nothing Nothing
                , subForest = []
                }
         ]
       }
-    , Node { rootLabel = PhyloLabel (L.pack "") Nothing Nothing
+    , Node { rootLabel = PhyloLabelSoft (L.pack "") Nothing Nothing
            , subForest = []
            }
     ]
@@ -128,7 +128,7 @@ spec = do
 
     it "parses tree nodes with empty names and branch lengths"
       $             parse node "" (L.pack "")
-      `shouldParse` PhyloLabel (L.pack "") Nothing Nothing
+      `shouldParse` PhyloLabelSoft (L.pack "") Nothing Nothing
 
   describe "leaf"
     $             it "parses a leaf of a tree"

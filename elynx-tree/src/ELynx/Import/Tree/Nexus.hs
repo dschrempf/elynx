@@ -26,13 +26,13 @@ import Text.Megaparsec.Byte
 import ELynx.Import.Nexus hiding (Parser)
 
 -- | Parse a Nexus files with a TREES block.
-nexusTrees :: NewickFormat -> Parser [(ByteString, Tree (PhyloLabel ByteString))]
+nexusTrees :: NewickFormat -> Parser [(ByteString, Tree (PhyloLabelSoft ByteString))]
 nexusTrees = nexus . trees
 
-trees :: NewickFormat -> Block [(ByteString, Tree (PhyloLabel ByteString))]
+trees :: NewickFormat -> Block [(ByteString, Tree (PhyloLabelSoft ByteString))]
 trees f = Block "TREES" (some $ namedNewick f)
 
-namedNewick :: NewickFormat -> Parser (ByteString, Tree (PhyloLabel ByteString))
+namedNewick :: NewickFormat -> Parser (ByteString, Tree (PhyloLabelSoft ByteString))
 namedNewick f = do
   _ <- space
   _ <- string "TREE"

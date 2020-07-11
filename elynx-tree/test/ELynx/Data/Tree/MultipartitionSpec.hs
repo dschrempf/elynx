@@ -15,21 +15,12 @@ module ELynx.Data.Tree.MultipartitionSpec
   )
 where
 
-import Data.Set
-  ( Set,
-    empty,
-    fromList,
-  )
+import Data.Set (Set, fromList)
 import Data.Tree
 import ELynx.Data.Tree
-import ELynx.Data.Tree.PhyloTreeArbitraryInstance
-  (
-  )
+import ELynx.Data.Tree.PhyloTreeArbitraryInstance ()
 import Test.Hspec
-import Test.QuickCheck
-import Test.QuickCheck.Instances.Containers
-  (
-  )
+import Test.QuickCheck.Instances.Containers ()
 
 ex1 :: Tree Int
 ex1 = Node 0 [Node 1 [], Node 2 [Node 4 [], Node 5 [], Node 6 []], Node 3 []]

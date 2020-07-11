@@ -28,12 +28,12 @@ import ELynx.Import.Tree.Nexus
 import ELynx.Export.Tree.Nexus
 import ELynx.Tools
 
-tree :: Tree (PhyloLabel ByteString)
-tree = Node (PhyloLabel "" Nothing Nothing)
-  [ Node (PhyloLabel "" Nothing Nothing)
-    [ Node (PhyloLabel "A" Nothing Nothing) []
-    , Node (PhyloLabel "B" Nothing Nothing) []]
-  , Node (PhyloLabel "C" Nothing Nothing) [] ]
+tree :: Tree (PhyloLabelSoft ByteString)
+tree = Node (PhyloLabelSoft "" Nothing Nothing)
+  [ Node (PhyloLabelSoft "" Nothing Nothing)
+    [ Node (PhyloLabelSoft "A" Nothing Nothing) []
+    , Node (PhyloLabelSoft "B" Nothing Nothing) []]
+  , Node (PhyloLabelSoft "C" Nothing Nothing) [] ]
 
 spec :: Spec
 spec = describe "toNexusTrees" $ it "exports a nexus file with a TREES block" $ do

@@ -63,7 +63,7 @@ connectTrees
   :: Tree (PhyloLabel L.ByteString)
   -> Tree (PhyloLabel L.ByteString)
   -> [Tree (PhyloLabel L.ByteString)]
-connectTrees = connect (PhyloLabel "" 0 Nothing)
+connectTrees = connect (PhyloLabel "" 0 0)
 
 type Constraint a = S.Set a
 
@@ -90,22 +90,22 @@ parseTrees l r = do
   $(logInfo) $ fromBs $ toNewick tl
   $(logInfo) "Tree 2:"
   $(logInfo) $ fromBs $ toNewick tr
-  return (tl, tr)
+  return (harden tl, harden tr)
 
 connectOnly :: Handle -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectOnly h l r = do
   (tl, tr) <- parseTrees l r
   let ts = connectTrees tl tr
   $(logInfo) $ "Connected trees: " <> tShow (length ts)
-  liftIO $ L.hPutStr h $ L.unlines $ map toNewick ts
+  liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . soften) ts
 
 connectAndFilter
   :: Handle -> FilePath -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectAndFilter h c l r = do
   nwF <- nwFormat . local <$> ask
-  cts <- liftIO $ parseFileWith (manyNewick nwF) c
+  cts <- liftIO $ map harden <$> parseFileWith (manyNewick nwF) c
   $(logInfo) "Constraints:"
-  $(logInfo) $ fromBs $ L.intercalate "\n" $ map toNewick cts
+  $(logInfo) $ fromBs $ L.intercalate "\n" $ map (toNewick . soften) cts
   (tl, tr) <- parseTrees l r
   let ts  = connectTrees tl tr
       cs  = concatMap clades cts :: [Constraint (PhyloLabel L.ByteString)]
@@ -113,4 +113,4 @@ connectAndFilter h c l r = do
       ts' = filter (compatibleWith getName cs) ts
   $(logInfo) $ "Connected  trees: " <> tShow (length ts)
   $(logInfo) $ "Compatible trees: " <> tShow (length ts')
-  liftIO $ L.hPutStr h $ L.unlines $ map toNewick ts'
+  liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . soften) ts'

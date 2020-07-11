@@ -46,7 +46,7 @@ formatNChildSumStat s =
 
 formatNChildSumStatLine :: BrLnNChildren -> L.Builder
 formatNChildSumStatLine (l, n) =
-  L.intDec n <> L.char8 ' ' <> L.doubleDec (fromBranchLengthUnsafe l) <> L.char8 '\n'
+  L.intDec n <> L.char8 ' ' <> L.doubleDec l <> L.char8 '\n'
 
 -- | Compute NChilSumStat for a phylogenetic tree.
 toNChildSumStat :: Measurable a => Tree a -> NChildSumStat

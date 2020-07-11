@@ -161,9 +161,9 @@ branchScoreWith f g t1 t2
     dsSquared = foldl' (\acc e -> acc + e * e) 0 dBs
 
 -- | See 'branchScoreWith', use 'Named' and 'Measurable' instances for
--- comparisons. Fails if a branch length is not available.
+-- comparisons.
 branchScore :: (Ord a, Named a, Measurable a) => Tree a -> Tree a -> Double
-branchScore = branchScoreWith getName (fromBranchLengthUnsafe . getLen)
+branchScore = branchScoreWith getName getLen
 
 -- | Compute pairwise distances of a list of input trees. Use given distance
 -- measure. Returns a triple, the first two elements are the indices of the

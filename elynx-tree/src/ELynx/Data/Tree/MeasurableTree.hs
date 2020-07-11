@@ -13,8 +13,6 @@
 -- Creation date: Thu Jan 17 14:16:34 2019.
 module ELynx.Data.Tree.MeasurableTree
   ( BranchLength,
-    branchLength,
-    fromBranchLengthUnsafe,
     Measurable (..),
     lengthenStem,
     setStem,
@@ -28,7 +26,6 @@ module ELynx.Data.Tree.MeasurableTree
   )
 where
 
-import Control.Applicative
 import qualified Data.ByteString.Lazy.Char8 as L
 import Data.Foldable
 import Data.Tree
@@ -37,54 +34,10 @@ import ELynx.Tools
 import Text.Printf
 
 -- | Branch length.
---
--- | Not all branches may have a length. For example, the stem may not have a
--- given length when reading a Newick file.
-newtype BranchLength = BL {fromBranchLength :: Maybe Double}
-  deriving (Eq, Ord, Read, Show)
-
-instance Num BranchLength where
-  l + r = BL $ liftA2 (+) (fromBranchLength l) (fromBranchLength r)
-  l * r = BL $ liftA2 (*) (fromBranchLength l) (fromBranchLength r)
-  abs = BL . fmap abs . fromBranchLength
-  signum = BL . fmap signum . fromBranchLength
-  fromInteger = BL . Just . fromInteger
-  negate = error "negate: Branch lengths cannot be negative."
-
-instance Fractional BranchLength where
-  fromRational = BL . Just . fromRational
-  l / r = BL $ liftA2 (/) (fromBranchLength l) (fromBranchLength r)
-
-instance Floating BranchLength where
-  pi = BL $ Just pi
-  exp = BL . fmap exp . fromBranchLength
-  log = BL . fmap log . fromBranchLength
-  sin = BL . fmap sin . fromBranchLength
-  cos = BL . fmap cos . fromBranchLength
-  asin = BL . fmap asin . fromBranchLength
-  acos = BL . fmap acos . fromBranchLength
-  atan = BL . fmap atan . fromBranchLength
-  sinh = BL . fmap sinh . fromBranchLength
-  cosh = BL . fmap cosh . fromBranchLength
-  asinh = BL . fmap asinh . fromBranchLength
-  acosh = BL . fmap acosh . fromBranchLength
-  atanh = BL . fmap atanh . fromBranchLength
-
--- | Conversion to branch length. Fail if given value is negative.
-branchLength :: Maybe Double -> BranchLength
-branchLength Nothing = BL Nothing
-branchLength (Just l)
-    | l >= 0 = BL (Just l)
-    | otherwise = error $ "Branch lengths cannot be negative: " <> show l
-
--- | Conversion from branch length. Fail if branch length is not given.
-fromBranchLengthUnsafe :: BranchLength -> Double
-fromBranchLengthUnsafe (BL (Just x)) = x
-fromBranchLengthUnsafe _ = error "fromBranchLengthUnsafe: Branch length not available."
+type BranchLength = Double
 
 pretty :: BranchLength -> String
-pretty (BL Nothing) = "Nothing"
-pretty (BL (Just x)) = printf "%.5f" x
+pretty = printf "%.5f"
 
 -- | A 'Node' label with measurable and modifiable branch length to the parent.
 class Measurable a where
@@ -106,6 +59,7 @@ setStem x (Node l f) = Node (setLen x l) f
 -- from the root node to the leaves, which would be @distanceOriginLeaves t -
 -- (getLen $ rootLabel t)@.). See also 'distancesRootLeaves'.
 distancesOriginLeaves :: (Measurable a) => Tree a -> [BranchLength]
+distancesOriginLeaves (Node l []) = [getLen l]
 distancesOriginLeaves (Node l f) = map (getLen l +) (concatMap distancesOriginLeaves f)
 
 -- | Average distance from the origin of a tree to its leaves, see
@@ -154,5 +108,5 @@ normalizeBranchLength t = fmap (\n -> setLen (getLen n / s) n) t
     s = totalBranchLength t
 
 -- | Check if a tree is ultrametric.
-ultrametric :: Measurable a => Tree a -> Maybe Bool
-ultrametric = fmap allNearlyEqual . mapM fromBranchLength . distancesOriginLeaves
+ultrametric :: Measurable a => Tree a -> Bool
+ultrametric = allNearlyEqual . distancesOriginLeaves

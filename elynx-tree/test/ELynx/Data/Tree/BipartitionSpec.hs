@@ -36,9 +36,9 @@ treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
 
 getSimpleTrees :: IO [Tree (PhyloLabel L.ByteString)]
-getSimpleTrees = parseFileWith (manyNewick Standard) treeFileSimple
+getSimpleTrees = map harden <$> parseFileWith (manyNewick Standard) treeFileSimple
 
-bipartitionToBranchAnswer :: M.Map (Bipartition L.ByteString) (Sum Double)
+bipartitionToBranchAnswer :: M.Map (Bipartition L.ByteString) (Sum BranchLength)
 bipartitionToBranchAnswer = M.fromList
   [ (bp (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]), Sum { getSum = 0.3 })
   , (bp (sfrom ["B", "C", "D", "E"]) (sfrom ["A"]), Sum { getSum = 0.1 })
@@ -76,7 +76,7 @@ spec = do
   describe "bipartitions"
     $ it "calculates correct bipartitions for sample trees"
     $ do
-        simpleTrees <- map removeBrInfo <$> getSimpleTrees
+        simpleTrees <- map (fmap label) <$> getSimpleTrees
         let t1 = head simpleTrees
             t2 = simpleTrees !! 1
         bipartitions t1 `shouldBe` bipartitionsFirstTree

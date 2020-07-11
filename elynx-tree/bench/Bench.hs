@@ -24,7 +24,7 @@ treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"
 
 getManyTrees :: IO [Tree (PhyloLabel L.ByteString)]
-getManyTrees = parseFileWith (manyNewick Standard) treeFileMany
+getManyTrees = map harden <$> parseFileWith (manyNewick Standard) treeFileMany
 
 main :: IO ()
 main = do

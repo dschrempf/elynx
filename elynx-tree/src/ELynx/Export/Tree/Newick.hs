@@ -29,7 +29,7 @@ import ELynx.Tools
 -- | General conversion of a tree into a Newick 'L.Bytestring'. Use provided
 -- functions to extract node labels and branch lengths builder objects. See also
 -- Biobase.Newick.Export.
-toNewick :: Named a => Tree (PhyloLabel a) -> L.ByteString
+toNewick :: Named a => Tree (PhyloLabelSoft a) -> L.ByteString
 toNewick t = L.toLazyByteString $ go t <> L.word8 (c2w ';')
   where
     go (Node l []) = lbl l
@@ -38,10 +38,10 @@ toNewick t = L.toLazyByteString $ go t <> L.word8 (c2w ';')
         <> mconcat (intersperse (L.word8 $ c2w ',') $ map go ts)
         <> L.word8 (c2w ')')
         <> lbl l
-    mBrSupBuilder l = maybe mempty (\bs -> L.word8 (c2w '[') <> L.doubleDec bs <> L.word8 (c2w ']')) (brSup l)
-    mBrLenBuilder l = maybe mempty (\bl -> L.word8 (c2w ':') <> L.doubleDec bl) (fromBranchLength $ brLen l)
+    mBrSupBuilder l = maybe mempty (\bs -> L.word8 (c2w '[') <> L.doubleDec bs <> L.word8 (c2w ']')) (sBrSup l)
+    mBrLenBuilder l = maybe mempty (\bl -> L.word8 (c2w ':') <> L.doubleDec bl) (sBrLen l)
     lbl l =
-      L.lazyByteString (getName l)
+      L.lazyByteString (getName $ sLabel l)
         <> mBrLenBuilder l
         -- After reading several discussion, I go for the "more semantical
         -- form" with branch support values in square brackets.

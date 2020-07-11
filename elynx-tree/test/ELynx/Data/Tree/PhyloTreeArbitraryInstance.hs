@@ -20,16 +20,22 @@ where
 
 import           Test.QuickCheck
 
-import           ELynx.Data.Tree.PhyloTree
+import           ELynx.Data.Tree
 
 -- Of course, the boundaries for branch support and length have been chosen
 -- pretty arbitrarily :).
---
--- XXX: This instance does not produce values without branch lengths nor branch
--- supports.
 instance Arbitrary a => Arbitrary (PhyloLabel a) where
   arbitrary =
     PhyloLabel
+      <$> arbitrary
+      <*> choose (1, 100)
+      <*> choose (0.001, 10)
+
+-- XXX: This instance does not produce values without branch lengths nor branch
+-- supports.
+instance Arbitrary a => Arbitrary (PhyloLabelSoft a) where
+  arbitrary =
+    PhyloLabelSoft
       <$> arbitrary
       <*> (Just <$> choose (1, 100))
       <*> (Just <$> choose (0.001, 10))

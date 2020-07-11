@@ -63,7 +63,7 @@ treesOneFile tf = do
   case compare n 2 of
     LT -> error "Not enough trees in file."
     GT -> error "Too many trees in file."
-    EQ -> return (head ts, head . tail $ ts)
+    EQ -> return (harden $ head ts, harden $ head . tail $ ts)
 
 treesTwoFiles
   :: FilePath
@@ -77,7 +77,7 @@ treesTwoFiles tf1 tf2 = do
   t1 <- liftIO $ parseFileWith (oneNewick nwF) tf1
   $(logInfo) $ T.pack $ "Parse second tree file '" ++ tf2 ++ "'."
   t2 <- liftIO $ parseFileWith (oneNewick nwF) tf2
-  return (t1, t2)
+  return (harden t1, harden t2)
 
 -- | More detailed comparison of two trees.
 compareCmd :: ELynx CompareArguments ()
@@ -97,9 +97,9 @@ compareCmd = do
         "Need two input files with one tree each or one input file with two trees."
 
   liftIO $ hPutStrLn outH "Tree 1:"
-  liftIO $ L.hPutStrLn outH $ toNewick tr1
+  liftIO $ L.hPutStrLn outH $ toNewick $ soften tr1
   liftIO $ hPutStrLn outH "Tree 2:"
-  liftIO $ L.hPutStrLn outH $ toNewick tr2
+  liftIO $ L.hPutStrLn outH $ toNewick $ soften tr2
   liftIO $ hPutStrLn outH ""
 
   -- Intersect trees.
@@ -107,8 +107,8 @@ compareCmd = do
     then do
       let [x, y] = intersectWith getName extend [tr1, tr2]
       liftIO $ hPutStrLn outH "Intersected trees are:"
-      liftIO $ L.hPutStrLn outH $ toNewick x
-      liftIO $ L.hPutStrLn outH $ toNewick y
+      liftIO $ L.hPutStrLn outH $ toNewick $ soften x
+      liftIO $ L.hPutStrLn outH $ toNewick $ soften y
       return (x, y)
     else return (tr1, tr2)
 
@@ -135,8 +135,8 @@ compareCmd = do
   let t1' = normalizeBranchSupport t1
       t2' = normalizeBranchSupport t2
   $(logDebug) "Trees with normalized branch support values:"
-  $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick t1'
-  $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick t2'
+  $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick $ soften t1'
+  $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick $ soften t2'
   liftIO $ T.hPutStrLn outH $ formatD
     "Incompatible split"
     (T.pack $ show $ incompatibleSplits t1' t2')
@@ -198,9 +198,9 @@ compareCmd = do
         else do
           let
             bpToBrLen1 =
-              M.map (fromBranchLengthUnsafe . getSum) $ bipartitionToBranchLength getName (Sum . getLen) t1
+              M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t1
             bpToBrLen2 =
-              M.map (fromBranchLengthUnsafe . getSum) $ bipartitionToBranchLength getName (Sum . getLen) t2
+              M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t2
           liftIO $ hPutStrLn
             outH
             "Common bipartitions and their respective differences in branch lengths."

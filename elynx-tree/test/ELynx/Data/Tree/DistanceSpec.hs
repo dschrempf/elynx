@@ -35,13 +35,13 @@ treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
 
 getSimpleTrees :: IO [Tree (PhyloLabel L.ByteString)]
-getSimpleTrees = parseFileWith (manyNewick Standard) treeFileSimple
+getSimpleTrees = map harden <$> parseFileWith (manyNewick Standard) treeFileSimple
 
 treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"
 
 getManyTrees :: IO [Tree (PhyloLabel L.ByteString)]
-getManyTrees = parseFileWith (manyNewick Standard) treeFileMany
+getManyTrees = map harden <$> parseFileWith (manyNewick Standard) treeFileMany
 
 -- I used treedist from Phylip to get the correct results.
 -- See http://evolution.genetics.washington.edu/phylip/doc/treedist.html.
@@ -184,20 +184,19 @@ bifurcatingIncomp = Node
   ]
 
 incSplitTree1a :: Tree (PhyloLabel L.ByteString)
-incSplitTree1a = parseByteStringWith "" (oneNewick IqTree) "((a,b)0.7,(c,d));"
+incSplitTree1a = harden $ parseByteStringWith "" (oneNewick IqTree) "((a,b)0.7,(c,d));"
 
 incSplitTree1b :: Tree (PhyloLabel L.ByteString)
-incSplitTree1b = parseByteStringWith "" (oneNewick IqTree) "((a,b)0.7,c,d);"
+incSplitTree1b = harden $ parseByteStringWith "" (oneNewick IqTree) "((a,b)0.7,c,d);"
 
 incSplitTree2 :: Tree (PhyloLabel L.ByteString)
-incSplitTree2 = parseByteStringWith "" (oneNewick IqTree) "((a,c),(b,d));"
+incSplitTree2 = harden $ parseByteStringWith "" (oneNewick IqTree) "((a,c),(b,d));"
 
 incSplitTree3 :: Tree (PhyloLabel L.ByteString)
-incSplitTree3 =
-  parseByteStringWith "" (oneNewick IqTree) "(((a,b)0.7,c),(d,e));"
+incSplitTree3 = harden $ parseByteStringWith "" (oneNewick IqTree) "(((a,b)0.7,c),(d,e));"
 
 incSplitTree4 :: Tree (PhyloLabel L.ByteString)
-incSplitTree4 = parseByteStringWith "" (oneNewick IqTree) "(((a,c),b),(d,e));"
+incSplitTree4 = harden $ parseByteStringWith "" (oneNewick IqTree) "(((a,c),b),(d,e));"
 
 spec :: Spec
 spec = do

@@ -90,7 +90,7 @@ simulate = do
   let ls =
         if sumS
           then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
-          else parMap rpar toNewick trs
+          else parMap rpar toNewick (map soften trs)
   let res = L.unlines ls
   out "simulated trees" res ".tree"
 
@@ -131,7 +131,7 @@ simulateAndSubSampleNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
       <> " leaves."
   tr <- liftIO $ simulateReconstructedTree nLeavesBigTree timeSpec l m (head gs)
   -- Log the base tree.
-  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick tr
+  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ soften tr
   logNewSection
     $ T.pack
     $ "Sub sample "
