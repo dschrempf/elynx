@@ -31,7 +31,9 @@ library:
   dependencies:
     - base >=4.7 && <5
     - bytestring
+    - comonad
     - containers
+    - deepseq
     - elynx-nexus
     - elynx-tools
     - math-functions

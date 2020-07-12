@@ -1,3 +1,6 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+
 -- |
 -- Module      :  ELynx.Data.Tree.Tree
 -- Description :  Functions related to phylogenetic trees
@@ -10,51 +13,46 @@
 --
 -- Creation date: Thu Jan 17 09:57:29 2019.
 --
--- Functions to work with rooted, rose 'Tree's with labeled leaves. Although for
--- phylogenetic trees, the order of children is unimportant, equality checks and
--- other comparisons are sensitive to the order of children for the moment. The
--- reason is that the underlying data structure stores the children as a list,
--- which has a specific order.
+-- Functions to work with rooted, rose 'Tree's with labeled branches. For
+-- comparisons between trees, the order of children is meaningless. However, the
+-- underlying data structure stores the children as a list, which has a specific
+-- order.
 --
 -- Comment about nomenclature:
 --
 -- - A 'Tree' is defined as
 --
 -- @
--- data Tree a = Node {
---         rootLabel :: a,         -- ^ label value
---         subForest :: Forest a   -- ^ zero or more child trees
---     }
+-- data Tree e a = Node
+--   { branch :: e,
+--     label :: a,
+--     children :: [Tree e a]
+--   }
 -- @
 --
--- This means, that the word 'Node' is reserved for the constructor of a tree, and
--- that a 'Node' has a label and children. The terms 'Node' and /label/ are not to
--- be confused.
+-- This means, that the word 'Node' is reserved for the constructor of a tree,
+-- and that a 'Node' has an attached branch, a label, and children. The terms
+-- 'Node' and /label/ are not to be confused.
 --
 -- Using the 'Tree' data type has some disadvantages:
 --
--- 1. Branch labels are not explicit.
+-- 1. All trees are rooted. Unrooted trees can be treated with a rooted data
+-- structure, as it is used here. However, some functions may be meaningless.
 --
--- 2. The order of the sub-forest does not matter for phylogenetic trees.
--- Equality checks will throw false negatives the compared trees only differ in
--- their orders of sub-trees.
+-- 2. Internally, the children are ordered, so we have to do some tricks when
+-- comparing trees.
 --
--- For example:
--- @
--- -- | A rose tree with unordered sub-forest, branch labels of type @e@ and node
--- -- labels of type @a@.
--- data Tree e a = Node e a (Set (Tree e a))
--- @
+-- 3. Changing branch labels, node labels, or the topology of the tree are slow
+-- operations, especially, when the changes are close to the leaves of the tree.
 --
--- Branches can have /lengths/. For example, a branch length can be a distance
--- or a given number of time units.
+-- 4. The uniqueness of the leaves has to be checked at runtime and is not
+-- ensured by the data type.
 --
--- NOTE: Trees in this library are all rooted. Unrooted trees can be treated with a
--- rooted data structure, as it is used here. However, some functions may be
--- meaningless.
+-- NOTE: Trees in this library are all rooted.
 module ELynx.Data.Tree.Tree
   ( Tree (branch, label, children),
     singleton,
+    valid,
     degree,
     leaves,
     pruneWith,
@@ -62,7 +60,7 @@ module ELynx.Data.Tree.Tree
     intersectWith,
     -- merge,
     -- tZipWith,
-    -- partitionTree,
+    partitionTree,
     -- subForestGetSubsets,
     -- subTree,
     -- bifurcating,
@@ -70,75 +68,143 @@ module ELynx.Data.Tree.Tree
   )
 where
 
+import Control.Comonad
+import Control.DeepSeq
 -- import Control.Monad (zipWithM)
-import Data.Function
+-- import Control.Monad.Zip
+import Data.Bifoldable
+import Data.Bifunctor
+import Data.Bitraversable
+import Data.Data
 import Data.List
 -- import Data.Maybe (mapMaybe)
 import Data.Set (Set)
 import qualified Data.Set as S
+import GHC.Generics
 
 -- import Data.Traversable
 
--- Unpack a singleton. Fail if set is not a singleton.
-unpack :: Set a -> a
-unpack s
-  | S.size s == 1 = S.elemAt 0 s
-  | otherwise = error "unpack: Set is not a singleton."
-
+-- | Rooted rose trees with branch labels.
+--
+-- NOTE: Trees in this library are all rooted.
+--
+-- NOTE: Unary instances such as 'Functor' act on node labels, and not on branch
+-- labels. Binary instances such as 'Bifunctor' act on both labels.
 data Tree e a = Node
   { branch :: e,
     label :: a,
-    children :: Set (Tree e a)
+    children :: Forest e a
   }
-  deriving (Eq)
+  deriving (Read, Show, Data, Generic, Generic1)
 
-instance (Eq e, Ord a) => Ord (Tree e a) where
-  compare = compare `on` leaves
+-- | A shorthand.
+type Forest e a = [Tree e a]
 
--- | The simplest tree. Usually an extant leaf.
+-- This is expected to be very slow. Can we do better?
+instance (Eq e, Eq a) => Eq (Tree e a) where
+  ~(Node brL lbL tsL) == ~(Node brR lbR tsR) =
+    (brL == brR)
+      && (lbL == lbR)
+      && (length tsL == length tsR)
+      && all (`elem` tsR) tsL
+
+instance Functor (Tree e) where
+  fmap f ~(Node br lb ts) = Node br (f lb) $ map (fmap f) ts
+  x <$ ~(Node br _ ts) = Node br x (map (x <$) ts)
+
+instance Bifunctor Tree where
+  bimap f g ~(Node br lb ts) = Node (f br) (g lb) $ map (bimap f g) ts
+  first f ~(Node br lb ts) = Node (f br) lb $ map (first f) ts
+  second g ~(Node br lb ts) = Node br (g lb) $ map (second g) ts
+
+instance Foldable (Tree e) where
+  foldMap f ~(Node _ lb ts) = f lb <> foldMap (foldMap f) ts
+
+instance Bifoldable Tree where
+  bifoldMap f g ~(Node br lb ts) = f br <> g lb <> foldMap (bifoldMap f g) ts
+
+instance Traversable (Tree e) where
+  traverse g ~(Node br lb ts) = Node br <$> g lb <*> traverse (traverse g) ts
+
+instance Bitraversable Tree where
+  bitraverse f g ~(Node br lb ts) = Node <$> f br <*> g lb <*> traverse (bitraverse f g) ts
+
+-- -- XXX: I am unsure how to provide 'Applicative' and 'Monad' instances since
+-- -- the branch label is undefined when using 'pure'.
+
+-- instance MonadZip (Tree e) where
+--   mzipWith g (Node brL lbL tsL) (Node _ lbR tsR) =
+--     Node brL (g lbL lbR) (mzipWith (mzipWith g) tsL tsR)
+
+--   munzip (Node br (lbL, lbR) ts) = (Node br lbL tsL, Node br lbR tsR)
+--     where
+--       (tsL, tsR) = munzip (map munzip ts)
+
+instance Comonad (Tree e) where
+  duplicate t@(Node br _ ts) = Node br t (map duplicate ts)
+  extract (Node _ lb _) = lb
+  {-# INLINE extract #-}
+
+instance (NFData e, NFData a) => NFData (Tree e a) where
+  rnf (Node br lb ts) = rnf br `seq` rnf lb `seq` rnf ts
+
+-- TODO: ToJSON, FromJSON.
+
+-- | The simplest tree, a leaf.
 singleton :: e -> a -> Tree e a
-singleton br lb = Node br lb S.empty
+singleton br lb = Node br lb []
 
--- TODO: Provide construction functions checking uniqueness of leaves.
+hasNoDuplicates :: Ord a => [a] -> Bool
+hasNoDuplicates = go S.empty
+  where
+    go _ [] = True
+    go seen (x : xs) = x `S.notMember` seen && go (S.insert x seen) xs
+
+-- | Check if a tree is valid, that is, if the leaves are unique.
+valid :: Ord a => Tree e a -> Bool
+valid = hasNoDuplicates . leaves
 
 -- | The degree of the root node of a tree.
 degree :: Tree e a -> Int
-degree = (+ 1) . S.size . children
+degree = (+ 1) . length . children
 
--- | Get leaves of tree.
-leaves :: Ord a => Tree e a -> Set a
-leaves (Node _ lb xs)
-  | S.null xs = S.singleton lb
-  | otherwise = S.unions $ S.map leaves xs
+-- | Get leaves.
+leaves :: Ord a => Tree e a -> [a]
+leaves (Node _ lb []) = [lb]
+leaves (Node _ _ xs) = concatMap leaves xs
 
--- | Prune degree two nodes. The information stored in a pruned node is lost.
--- The branches are combined with a given function of the form @\daughterBranch
--- parentBranch -> combinedBranch@.
+-- | Prune degree two nodes.
+--
+-- The information stored in a pruned node is lost. The branches are combined
+-- with a given function of the form @\daughterBranch parentBranch ->
+-- combinedBranch@.
 pruneWith :: (Eq e, Ord a) => (e -> e -> e) -> Tree e a -> Tree e a
-pruneWith f t@(Node paBr paLb paXs) = case S.size paXs of
-  0 -> t
-  1 -> Node (f daBr paBr) daLb daXs
-  _ -> Node paBr paLb $ S.map (pruneWith f) paXs
-  where
-    (Node daBr daLb daXs) = unpack paXs
+pruneWith _ t@(Node _ _ []) = t
+pruneWith f (Node paBr _ [Node daBr daLb daXs]) = Node (f daBr paBr) daLb daXs
+pruneWith f (Node paBr paLb paXs) = Node paBr paLb $ map (pruneWith f) paXs
 
--- | Drop a leaf from a tree. The possibly resulting degree two node is pruned
--- and the branches are combined using a given function (see 'pruneWith').
+-- | Drop a leaf from a tree.
+--
+-- The possibly resulting degree two node is pruned and the branches are
+-- combined using a given function (see 'pruneWith').
 --
 -- The same tree is returned, if the leaf is not found on the tree.
 dropLeafWith :: (Eq e, Ord a) => (e -> e -> e) -> a -> Tree e a -> Tree e a
-dropLeafWith f l (Node paBr paLb paXs)
-  | S.size paXs' == 1 = let Node daBr daLb daXs = unpack paXs' in Node (f daBr paBr) daLb daXs
-  | otherwise = Node paBr paLb paXs'
+dropLeafWith f l (Node paBr paLb paXs) =
+  case paXs' of
+    [Node daBr daLb daXs] -> Node (f daBr paBr) daLb daXs
+    _ -> Node paBr paLb paXs'
   where
-    toRm x = S.null (children x) && label x == l
-    paXs' = S.map (dropLeafWith f l) (S.filter (not . toRm) paXs)
+    toRm x = null (children x) && label x == l
+    paXs' = map (dropLeafWith f l) (filter (not . toRm) paXs)
 
 -- | Compute the intersection of trees.
 --
 -- The intersections are the largest subtrees sharing the same leaf set. Leaf
 -- are compared using a given function. Leaves are dropped with 'dropLeafWith',
 -- and degree two nodes are pruned with 'pruneWith'.
+--
+-- Assume that the trees are valid!
 intersectWith ::
   (Eq e, Ord a) => (e -> e -> e) -> [Tree e a] -> [Tree e a]
 intersectWith f ts =
@@ -147,18 +213,19 @@ intersectWith f ts =
     else map (retainLeavesWith f ls) ts
   where
     -- Leaf sets.
-    lss = map leaves ts
+    lss = map (S.fromList . leaves) ts
     -- Common leaf set.
     ls = foldl1' S.intersection lss
 
 -- Retain all leaves in a provided set; or conversely, drop all leaves not in a
 -- provided set.
 retainLeavesWith ::
-  (Eq e, Ord a) => (e -> e -> e) -> S.Set a -> Tree e a -> Tree e a
+  (Eq e, Ord a) => (e -> e -> e) -> Set a -> Tree e a -> Tree e a
 retainLeavesWith f ls t = S.foldl' (flip (dropLeafWith f)) t leavesToDrop
   where
-    leavesToDrop = leaves t S.\\ ls
+    leavesToDrop = S.fromList (leaves t) S.\\ ls
 
+-- -- TODO: Is this needed?
 -- -- | Merge two trees with the same topology. Returns 'Nothing' if the topologies
 -- -- are different.
 -- merge :: Tree e a -> Tree e b -> Maybe (Tree e (a, b))
@@ -168,6 +235,7 @@ retainLeavesWith f ls t = S.foldl' (flip (dropLeafWith f)) t leavesToDrop
 --       zipWithM merge xs ys >>= Just . Node (l, r)
 --     else Nothing
 
+-- -- TODO: Is this needed?
 -- -- | Apply a function with different effect on each node to a 'Traversable'.
 -- -- Based on https://stackoverflow.com/a/41523456.
 -- tZipWith :: Traversable t => (a -> b -> c) -> [a] -> t b -> Maybe (t c)
@@ -176,13 +244,11 @@ retainLeavesWith f ls t = S.foldl' (flip (dropLeafWith f)) t leavesToDrop
 --     pair [] _ = ([], Nothing)
 --     pair (y : ys) z = (ys, Just (f y z))
 
--- -- | Each node of a tree is root of a subtree. Get the leaves of the subtree of
--- -- each node.
--- partitionTree :: (Ord a) => Tree e a -> Tree e (Set a)
--- partitionTree (Node br lb xs) = Node (S.singleton l) []
--- partitionTree (Node br lb xs) = Node (S.unions $ map rootLabel xs') xs'
---   where
---     xs' = map partitionTree xs
+-- | Each node of a tree is root of a subtree. Get the leaves of the subtree of
+-- each node.
+partitionTree :: (Ord a) => Tree e a -> Tree e (Set a)
+-- I am proud of this awesome 'Comonad' usage here :).
+partitionTree = extend (S.fromList . leaves)
 
 -- -- | Get subtree of 'Tree' with nodes satisfying predicate. Return 'Nothing', if
 -- -- no leaf satisfies predicate. At the moment: recursively, for each child, take
