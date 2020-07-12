@@ -130,6 +130,14 @@ instance Bitraversable Tree where
 
 -- TODO: 'Applicative' and 'Monad' instances with @Monoid e@ constraint.
 
+-- -- | The branch labels of the first tree containing the actions are discarded.
+-- instance Monoid e => Applicative (Tree e) where
+--   pure lb = Node mempty lb []
+--   Node brF lbF tsF <*> tX@(Node brX lbX tsX) =
+--     Node (brF <> brX) (lbF lbX) (map (lbF <$>) tsX ++ map (<*> tX) tsF)
+--   liftA2 f (Node brX lbX tsX) tY@(Node brY lbY tsY) =
+--     Node (brX <> brY) (f lbX lbY) (map (f lbX <$>) tsY ++ map (\tX -> liftA2 f tX tY) tsX)
+
 -- -- TODO: Uncomment this after providing 'Monad' instance.
 -- instance MonadZip (Tree e) where
 --   mzipWith g (Node brL lbL tsL) (Node _ lbR tsR) =
