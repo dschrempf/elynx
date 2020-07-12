@@ -70,19 +70,16 @@ where
 
 import Control.Comonad
 import Control.DeepSeq
--- import Control.Monad (zipWithM)
+-- -- TODO: Uncomment this after providing 'Monad' instance.
 -- import Control.Monad.Zip
 import Data.Bifoldable
 import Data.Bifunctor
 import Data.Bitraversable
 import Data.Data
 import Data.List
--- import Data.Maybe (mapMaybe)
 import Data.Set (Set)
 import qualified Data.Set as S
 import GHC.Generics
-
--- import Data.Traversable
 
 -- | Rooted rose trees with branch labels.
 --
@@ -99,6 +96,8 @@ data Tree e a = Node
 
 -- | A shorthand.
 type Forest e a = [Tree e a]
+
+-- TODO: Comments!
 
 -- This is expected to be very slow. Can we do better?
 instance (Eq e, Eq a) => Eq (Tree e a) where
@@ -129,9 +128,9 @@ instance Traversable (Tree e) where
 instance Bitraversable Tree where
   bitraverse f g ~(Node br lb ts) = Node <$> f br <*> g lb <*> traverse (bitraverse f g) ts
 
--- -- XXX: I am unsure how to provide 'Applicative' and 'Monad' instances since
--- -- the branch label is undefined when using 'pure'.
+-- TODO: 'Applicative' and 'Monad' instances with @Monoid e@ constraint.
 
+-- -- TODO: Uncomment this after providing 'Monad' instance.
 -- instance MonadZip (Tree e) where
 --   mzipWith g (Node brL lbL tsL) (Node _ lbR tsR) =
 --     Node brL (g lbL lbR) (mzipWith (mzipWith g) tsL tsR)
