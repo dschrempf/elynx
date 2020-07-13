@@ -61,7 +61,8 @@ module ELynx.Data.Tree.Tree
     pruneWith,
     dropLeafWith,
     intersectWith,
-    -- merge,
+    zipTreesWith,
+    zipTrees,
     -- tZipWith,
     partitionTree,
     -- subForestGetSubsets,
@@ -74,6 +75,7 @@ where
 import Control.Applicative
 import Control.Comonad
 import Control.DeepSeq
+import Control.Monad
 import Control.Monad.Fix
 import Data.Aeson
 import Data.Bifoldable
@@ -189,7 +191,6 @@ instance Monoid e => Monad (Tree e) where
   ~(Node br lb ts) >>= f = case f lb of
     Node br' lb' ts' -> Node (br <> br') lb' (ts' ++ map (>>= f) ts)
 
-
 -- instance Monoid e => MonadZip (Tree e) where
 --   mzipWith f (Node brL lbL tsL) (Node brR lbR tsR) =
 --     Node (brL <> brR) (f lbL lbR) (mzipWith (mzipWith f) tsL tsR)
@@ -205,9 +206,15 @@ instance Monoid e => MonadFix (Tree e) where
 
 mfixTree :: (a -> Tree e a) -> Tree e a
 mfixTree f
-  | Node br lb ts <- fix (f . label)
-  = Node br lb (zipWith (\i _ -> mfixTree ((!! i) . forest . f))
-                 [0..] ts)
+  | Node br lb ts <- fix (f . label) =
+    Node
+      br
+      lb
+      ( zipWith
+          (\i _ -> mfixTree ((!! i) . forest . f))
+          [0 ..]
+          ts
+      )
 
 instance Comonad (Tree e) where
   duplicate t@(Node br _ ts) = Node br t (map duplicate ts)
@@ -238,7 +245,8 @@ valid = hasNoDuplicates . leaves
 -- | Check if two trees have the same topology.
 equalTopology :: Eq a => Tree e a -> Tree e a -> Bool
 equalTopology l r = rmBr l == rmBr r
-  where rmBr = first (const ())
+  where
+    rmBr = first (const ())
 
 -- | The degree of the root node.
 degree :: Tree e a -> Int
@@ -252,7 +260,8 @@ leaves (Node _ _ xs) = concatMap leaves xs
 -- | Return node labels in pre-order.
 flatten :: Tree e a -> [a]
 flatten t = squish t []
-  where squish (Node _ x ts) xs = x : foldr squish xs ts
+  where
+    squish (Node _ x ts) xs = x : foldr squish xs ts
 
 -- | Label the nodes with unique integer ids starting at the root with 0. Works
 -- for any 'Traversable' data type.
@@ -311,15 +320,24 @@ retainLeavesWith f ls t = S.foldl' (flip (dropLeafWith f)) t leavesToDrop
   where
     leavesToDrop = S.fromList (leaves t) S.\\ ls
 
--- -- TODO: Is this needed?
--- -- | Merge two trees with the same topology. Returns 'Nothing' if the topologies
--- -- are different.
--- merge :: Tree e a -> Tree e b -> Maybe (Tree e (a, b))
--- merge (Node brL lbL xsL) (Node brR lbR xsR) =
---   if length xs == length ys
---     then -- I am proud of that :)).
---       zipWithM merge xs ys >>= Just . Node (l, r)
---     else Nothing
+-- | Zip two trees with the same topology. Returns 'Nothing' if the topologies
+-- are different.
+zipTreesWith ::
+  (e1 -> e2 -> e) ->
+  (a1 -> a2 -> a) ->
+  Tree e1 a1 ->
+  Tree e2 a2 ->
+  Maybe (Tree e a)
+zipTreesWith f g (Node brL lbL tsL) (Node brR lbR tsR) =
+  if length tsL == length tsR
+    then -- I am proud of that :)).
+      zipWithM (zipTreesWith f g) tsL tsR >>= Just . Node (f brL brR) (g lbL lbR)
+    else Nothing
+
+-- | Zip two trees with the same topology. Returns 'Nothing' if the topologies
+-- are different.
+zipTrees :: Tree e1 a1 -> Tree e2 a2 -> Maybe (Tree (e1, e2) (a1, a2))
+zipTrees = zipTreesWith (,) (,)
 
 -- | Each node of a tree is root of a subtree. Get the leaves of the subtree of
 -- each node.
