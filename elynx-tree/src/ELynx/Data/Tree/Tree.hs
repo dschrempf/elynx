@@ -63,10 +63,9 @@ module ELynx.Data.Tree.Tree
     intersectWith,
     zipTreesWith,
     zipTrees,
-    -- tZipWith,
     partitionTree,
     -- subForestGetSubsets,
-    -- subTree,
+    subTree,
     -- bifurcating,
     -- clades,
   )
@@ -84,6 +83,7 @@ import Data.Bitraversable
 import Data.Data
 import Data.Foldable
 import Data.List
+import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import GHC.Generics
@@ -345,19 +345,19 @@ partitionTree :: (Ord a) => Tree e a -> Tree e (Set a)
 -- I am proud of this awesome 'Comonad' usage here :).
 partitionTree = extend (S.fromList . leaves)
 
--- -- | Get subtree of 'Tree' with nodes satisfying predicate. Return 'Nothing', if
--- -- no leaf satisfies predicate. At the moment: recursively, for each child, take
--- -- the child if any leaf in the child satisfies the predicate.
--- subTree :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
--- subTree p leaf@(Node br lb [])
---   | p lb = Just leaf
---   | otherwise = Nothing
--- subTree p (Node br lb chs) =
---   if null subTrees
---     then Nothing
---     else Just $ Node lbl subTrees
---   where
---     subTrees = mapMaybe (subTree p) chs
+-- | Get subtree of 'Tree' with leaves satisfying predicate.
+--
+-- Return 'Nothing', if no leaf satisfies predicate.
+subTree :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
+subTree p leaf@(Node _ lb [])
+  | p lb = Just leaf
+  | otherwise = Nothing
+subTree p (Node br lb ts) =
+  if null subTrees
+    then Nothing
+    else Just $ Node br lb subTrees
+  where
+    subTrees = mapMaybe (subTree p) ts
 
 -- -- | Loop through each tree in a forest to report the complementary leaf sets.
 -- subForestGetSubsets ::
