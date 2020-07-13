@@ -34,8 +34,9 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
-import Control.Parallel.Strategies
+import qualified Data.ByteString.Builder as L
 import qualified Data.ByteString.Lazy.Char8 as L
+import Control.Parallel.Strategies
 import Data.Foldable (toList)
 import Data.Maybe
 import qualified Data.Sequence as Seq
@@ -45,6 +46,7 @@ import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Encoding as LT
 import Data.Tree
 import ELynx.Data.Tree
+import ELynx.Data.Tree.Measurable
 import ELynx.Export.Tree.Newick (toNewick)
 import ELynx.Simulate.PointProcess
   ( TimeSpec,
@@ -124,21 +126,21 @@ simulateAndSubSampleNTreesConcurrently ::
   ELynx SimulateArguments [Tree (PhyloLabel Int)]
 simulateAndSubSampleNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
   let nLeavesBigTree = (round $ fromIntegral nLeaves / r) :: Int
-  logNewSection
-    $ T.pack
-    $ "Simulate one big tree with "
-      <> show nLeavesBigTree
-      <> " leaves."
+  logNewSection $
+    T.pack $
+      "Simulate one big tree with "
+        <> show nLeavesBigTree
+        <> " leaves."
   tr <- liftIO $ simulateReconstructedTree nLeavesBigTree timeSpec l m (head gs)
   -- Log the base tree.
   $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ soften tr
-  logNewSection
-    $ T.pack
-    $ "Sub sample "
-      <> show (sum chunks)
-      <> " trees with "
-      <> show nLeaves
-      <> " leaves."
+  logNewSection $
+    T.pack $
+      "Sub sample "
+        <> show (sum chunks)
+        <> " trees with "
+        <> show nLeaves
+        <> " leaves."
   let lvs = Seq.fromList $ leaves tr
   trss <-
     liftIO $
@@ -169,3 +171,31 @@ nSubSamples m lvs n tree g
     lss <- grabble (toList lvs) m n g
     let lsSets = map Set.fromList lss
     return [subTree (`Set.member` ls) tree | ls <- lsSets]
+
+-- | Pair of branch length with number of extant children.
+type BrLnNChildren = (BranchLength, Int)
+
+-- | Possible summary statistic of phylogenetic trees. A list of tuples
+-- (BranchLength, NumberOfExtantChildrenBelowThisBranch).
+type NChildSumStat = [BrLnNChildren]
+
+-- | Format the summary statistics in the following form:
+-- @
+--    nLeaves1 branchLength1
+--    nLeaves2 branchLength2
+--    ....
+formatNChildSumStat :: NChildSumStat -> L.ByteString
+formatNChildSumStat s =
+  L.toLazyByteString . mconcat $ map formatNChildSumStatLine s
+
+formatNChildSumStatLine :: BrLnNChildren -> L.Builder
+formatNChildSumStatLine (l, n) =
+  L.intDec n <> L.char8 ' ' <> L.doubleDec l <> L.char8 '\n'
+
+-- | Compute NChilSumStat for a phylogenetic tree.
+toNChildSumStat :: Measurable a => Tree a -> NChildSumStat
+toNChildSumStat (Node lbl []) = [(getLen lbl, 1)]
+toNChildSumStat (Node lbl ts) = (getLen lbl, sumCh) : concat nChSS
+  where
+    nChSS = map toNChildSumStat ts
+    sumCh = sum $ map (snd . head) nChSS

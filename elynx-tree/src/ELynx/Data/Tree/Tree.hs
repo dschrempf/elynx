@@ -13,14 +13,9 @@
 --
 -- Creation date: Thu Jan 17 09:57:29 2019.
 --
--- Functions to work with rooted, rose 'Tree's with labeled branches. For
--- comparisons between trees, the order of the trees in the sub-forest is
--- meaningless. However, the underlying data structure stores the sub-forest as
--- a list, which has a specific order.
+-- Functions to work with rooted, rose 'Tree's with labeled branches.
 --
--- Comment about nomenclature:
---
--- - A 'Tree' is defined as
+-- Comment about nomenclature: A 'Tree' is defined as
 --
 -- @
 -- data Tree e a = Node
@@ -31,29 +26,22 @@
 -- @
 --
 -- This means, that the word 'Node' is reserved for the constructor of a tree,
--- and that a 'Node' has an attached branch, a label, and a sub-forest. The
--- terms 'Node' and /label/ are not to be confused.
+-- and that a 'Node' has an attached 'branch', a 'label', and a sub-'forest'.
+-- The terms /Node/ and /label/ are not to be confused. The elements of the
+-- sub-forest are often called /children/.
 --
 -- Using the 'Tree' data type has some disadvantages:
 --
 -- 1. All trees are rooted. Unrooted trees can be treated with a rooted data
 -- structure, as it is used here. However, some functions may be meaningless.
 --
--- 2. Internally, the sub-forests are ordered, so we have to do some tricks when
--- comparing trees (see the 'Eq' instance).
---
--- 3. Changing branch labels, node labels, or the topology of the tree are slow
+-- 2. Changing branch labels, node labels, or the topology of the tree are slow
 -- operations, especially, when the changes are close to the leaves of the tree.
---
--- 4. The uniqueness of the leaves has to be checked at runtime and is not
--- ensured by the data type.
 --
 -- NOTE: Trees in this library are all rooted.
 module ELynx.Data.Tree.Tree
-  ( Tree (branch, label, forest),
+  ( Tree (..),
     singleton,
-    valid,
-    equalTopology,
     degree,
     leaves,
     flatten,
@@ -93,24 +81,17 @@ import GHC.Generics
 --
 -- NOTE: Unary instances such as 'Functor' act on node labels, and not on branch
 -- labels. Binary instances such as 'Bifunctor' act on both labels.
+--
+-- NOTE: Lifted instances are not provided.
 data Tree e a = Node
   { branch :: e,
     label :: a,
     forest :: Forest e a
   }
-  deriving (Read, Show, Data, Generic, Generic1)
+  deriving (Eq, Read, Show, Data, Generic)
 
 -- | A shorthand.
 type Forest e a = [Tree e a]
-
--- | Checking for equality is slow because the order of trees in the sub-forests
--- is arbitrary.
-instance (Eq e, Eq a) => Eq (Tree e a) where
-  ~(Node brL lbL tsL) == ~(Node brR lbR tsR) =
-    (brL == brR)
-      && (lbL == lbR)
-      && (length tsL == length tsR)
-      && all (`elem` tsR) tsL
 
 -- | Map over node labels.
 instance Functor (Tree e) where
@@ -181,8 +162,6 @@ instance Monoid e => Applicative (Tree e) where
   ~(Node brX lbX tsX) <* ~ty@(Node brY _ tsY) =
     Node (brX <> brY) lbX (map (lbX <$) tsY ++ map (<* ty) tsX)
 
--- NOTE: A zip-like applicative instance would make the Monad instance meaningless.
-
 -- | NOTE: The 'Monoid' instance of the branch labels determines how the
 -- branches are combined. For example, distances can be summed using
 -- 'Data.Monoid.Sum'.
@@ -190,12 +169,12 @@ instance Monoid e => Monad (Tree e) where
   ~(Node br lb ts) >>= f = case f lb of
     Node br' lb' ts' -> Node (br <> br') lb' (ts' ++ map (>>= f) ts)
 
+-- -- XXX: Cannot provide MonadZip instance because branch labels cannot be
+-- -- recovered from combined label.
 -- instance Monoid e => MonadZip (Tree e) where
 --   mzipWith f (Node brL lbL tsL) (Node brR lbR tsR) =
 --     Node (brL <> brR) (f lbL lbR) (mzipWith (mzipWith f) tsL tsR)
 
--- -- XXX: Cannot provide MonadZip instance because branch labels cannot be
--- -- recovered from combined label.
 --   munzip (Node br (lbL, lbR) ts) = (Node ? lbL tsL, Node ? lbR tsR)
 --     where
 --       (tsL, tsR) = munzip (map munzip ts)
@@ -231,28 +210,12 @@ instance (FromJSON e, FromJSON a) => FromJSON (Tree e a)
 singleton :: e -> a -> Tree e a
 singleton br lb = Node br lb []
 
-hasNoDuplicates :: Ord a => [a] -> Bool
-hasNoDuplicates = go S.empty
-  where
-    go _ [] = True
-    go seen (x : xs) = x `S.notMember` seen && go (S.insert x seen) xs
-
--- | Check if a tree is valid, that is, if the leaves are unique.
-valid :: Ord a => Tree e a -> Bool
-valid = hasNoDuplicates . leaves
-
--- | Check if two trees have the same topology.
-equalTopology :: Eq a => Tree e a -> Tree e a -> Bool
-equalTopology l r = rmBr l == rmBr r
-  where
-    rmBr = first (const ())
-
 -- | The degree of the root node.
 degree :: Tree e a -> Int
 degree = (+ 1) . length . forest
 
 -- | Get leaves.
-leaves :: Ord a => Tree e a -> [a]
+leaves :: Tree e a -> [a]
 leaves (Node _ lb []) = [lb]
 leaves (Node _ _ xs) = concatMap leaves xs
 
@@ -272,7 +235,7 @@ labelNodes = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
 -- The information stored in a pruned node is lost. The branches are combined
 -- with a given function of the form @\daughterBranch parentBranch ->
 -- combinedBranch@.
-pruneWith :: (Eq e, Ord a) => (e -> e -> e) -> Tree e a -> Tree e a
+pruneWith :: (e -> e -> e) -> Tree e a -> Tree e a
 pruneWith _ t@(Node _ _ []) = t
 pruneWith f (Node paBr _ [Node daBr daLb daXs]) = Node (f daBr paBr) daLb daXs
 pruneWith f (Node paBr paLb paXs) = Node paBr paLb $ map (pruneWith f) paXs
@@ -283,7 +246,7 @@ pruneWith f (Node paBr paLb paXs) = Node paBr paLb $ map (pruneWith f) paXs
 -- combined using a given function (see 'pruneWith').
 --
 -- The same tree is returned, if the leaf is not found on the tree.
-dropLeafWith :: (Eq e, Ord a) => (e -> e -> e) -> a -> Tree e a -> Tree e a
+dropLeafWith :: Eq a => (e -> e -> e) -> a -> Tree e a -> Tree e a
 dropLeafWith f l (Node paBr paLb paXs) =
   case paXs' of
     [Node daBr daLb daXs] -> Node (f daBr paBr) daLb daXs
@@ -338,19 +301,16 @@ zipTreesWith f g (Node brL lbL tsL) (Node brR lbR tsR) =
 zipTrees :: Tree e1 a1 -> Tree e2 a2 -> Maybe (Tree (e1, e2) (a1, a2))
 zipTrees = zipTreesWith (,) (,)
 
--- TODO: Remove this funtion. Does not belong here.
-
--- | Each node of a tree is root of a subtree. Get the leaves of the subtree of
--- each node.
-partitionTree :: (Ord a) => Tree e a -> Tree e (Set a)
+-- | Each node of a tree is root of an induced subtree. Set the node labels to
+-- the leaves of the induced subtrees.
+partitionTree :: Tree e a -> Tree e [a]
 -- I am proud of this awesome 'Comonad' usage here :).
-partitionTree = extend (S.fromList . leaves)
+partitionTree = extend leaves
 
--- TODO: Remove this funtion. Does not belong here.
-
--- | Get subtree of 'Tree' with leaves satisfying predicate.
+-- | Get subtree of 'Tree' including leaves satisfying predicate.
 --
--- Return 'Nothing', if no leaf satisfies predicate.
+-- - The resulting tree may contain degree 2 nodes.
+-- - Return 'Nothing', if no leaf satisfies predicate.
 subTree :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
 subTree p leaf@(Node _ lb [])
   | p lb = Just leaf
@@ -370,11 +330,13 @@ bifurcating (Node _ _ []) = True
 bifurcating (Node _ _ [x, y]) = bifurcating x && bifurcating y
 bifurcating _ = False
 
--- TODO: Remove this funtion. Does not belong here.
-
 -- | Get clades induced by multifurcations.
-clades :: Ord a => Tree e a -> [S.Set a]
+--
+-- A multifurcation is a node with three or more children (degree 4 or larger).
+--
+-- Collect the leaves of all trees induced by multifurcations.
+clades :: Tree e a -> [[a]]
 clades (Node _ _ []) = []
 clades (Node _ _ [x]) = clades x
 clades (Node _ _ [x, y]) = clades x ++ clades y
-clades t = S.fromList (leaves t) : concatMap clades (forest t)
+clades t = leaves t : concatMap clades (forest t)
