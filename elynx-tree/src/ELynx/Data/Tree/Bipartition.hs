@@ -22,36 +22,37 @@
 -- > Bipartition x y
 -- we always have @x >= y@.
 module ELynx.Data.Tree.Bipartition
-  ( -- * The 'Bipartition' data type
+  ( -- * Data type
     Bipartition (fromBipartition),
     bp,
     toSet,
     bpHuman,
     bpMap,
 
-    -- * Working with 'Bipartition's
+    -- * Work with 'Bipartition's
     bipartition,
     bipartitions,
-    -- bipartitionToBranchLength,
-    -- bpcompatible,
+    getComplementaryLeaves,
+    bipartitionToBranch,
+    bipartitionCompatible,
   )
 where
 
 import Data.List
--- import qualified Data.Map as M
--- import Data.Map (Map)
+import qualified Data.Map as M
+import Data.Map (Map)
 -- import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
-import ELynx.Data.Tree.Tree
 import ELynx.Data.Tree.Phylogeny
+import ELynx.Data.Tree.Rooted
 
 -- | Each branch of a tree partitions the leaves of the tree into two subsets,
 -- or a bipartition.
 --
 -- The order of the two subsets of a 'Bipartition' is meaningless. We ensure by
--- construction that the smaller subset comes first, and so, equality checks are
--- meaningful.
+-- construction that the smaller subset comes first, and hence, that equality
+-- checks are meaningful.
 newtype Bipartition a = Bipartition
   { fromBipartition :: (Set a, Set a)
   }
@@ -98,14 +99,16 @@ bipartition (Node _ _ [x, y]) =
   bp (S.fromList $ leaves x) (S.fromList $ leaves y)
 bipartition _ = error "Root node is not bifurcating."
 
+-- TODO: Use list?
+
 -- | Get all bipartitions of the tree.
 bipartitions :: Ord a => Tree e a -> Maybe (Set (Bipartition a))
 bipartitions t
   | valid t =
-    Just $ S.filter bpValid $ bipartitionsUnsafe S.empty $ S.fromList <$> partitionTree t
+    Just $ S.filter bpValid $ bipartitions' S.empty $ S.fromList <$> partitionTree t
   | otherwise = Nothing
 
--- Report the complementary leaves for each child.
+-- | Report the complementary leaves for each child.
 getComplementaryLeaves ::
   (Ord a) =>
   -- Complementary leaves.
@@ -123,104 +126,77 @@ getComplementaryLeaves p (Node _ _ ts) =
 
 -- See 'bipartitions', but do not check if leaves are unique, nor if
 -- bipartitions are valid.
-bipartitionsUnsafe :: Ord a => Set a -> Tree e (Set a) -> Set (Bipartition a)
-bipartitionsUnsafe p (Node _ l []) = S.singleton $ bp p l
--- Degree two nodes do not induce additional bipartitions.
-bipartitionsUnsafe p (Node _ _ [t]) = bipartitionsUnsafe p t
--- Go through the list of children and combine each of them with the rest.
-bipartitionsUnsafe p t@(Node _ l ts) =
+bipartitions' :: Ord a => Set a -> Tree e (Set a) -> Set (Bipartition a)
+bipartitions' p (Node _ p' []) = S.singleton $ bp p p'
+bipartitions' p t@(Node _ p' ts) =
   S.unions $
-    S.singleton (bp p l) :
-      [bipartitionsUnsafe c s | (c, s) <- zip complementaryLeaves ts]
+    S.singleton (bp p p') :
+      [bipartitions' c s | (c, s) <- zip cs ts]
   where
-    complementaryLeaves = getComplementaryLeaves p t
+    cs = getComplementaryLeaves p t
 
--- TODO: Continue here.
+-- TODO: Unrooted? See module comment of Distance.hs.
 
--- -- | For a given rose 'Tree', remove all degree two nodes and reconnect the
--- -- resulting disconnected pairs of branches and sum their branch lengths.
--- --
--- -- Since the induced bipartitions of the daughter branches of a bifurcating root
--- -- node are equal, the branches are also combined in this case. See
--- -- http://evolution.genetics.washington.edu/phylip/doc/treedist.html and how
--- -- unrooted trees should be handled.
--- --
--- -- For this operation, a combining binary function and a unity element is
--- -- required. These requirements are encoded in the 'Monoid' type class
--- -- constraint. Now, each branch on the tree defines a unique 'Bipartition' of
--- -- leaves. Convert a tree into a 'Map' from each 'Bipartition' to the length
--- -- of the branch inducing the respective 'Bipartition'. The relevant information
--- -- about the leaves is extracted from the (leaf) nodes with a given function.
--- -- Also check if leaves are unique.
--- bipartitionToBranchLength ::
---   (Ord a, Ord b, Monoid c) =>
---   -- | Convert node labels to leaves (usually
---   -- leaf names)
---   (a -> b) ->
---   -- | Get length of branch attached to node
---   (a -> c) ->
---   -- | Tree to dissect
---   Tree e a ->
---   Map (Bipartition b) c
--- bipartitionToBranchLength f g t =
---   if S.size (S.fromList ls) == length ls
---     then
---       M.filterWithKey (const . valid) $
---         bipartitionToBranchLengthUnsafe (mempty, S.empty) f lAndPTree
---     else error "bipartitionToBranchLength: The tree contains duplicate leaves."
---   where
---     ls = leaves t
---     bTree = fmap g t
---     pTree = partitionTree t
---     lAndPTree = fromJust $ merge bTree pTree
+-- | Convert a tree into a 'Map' from each 'Bipartition' to the branch inducing
+-- the respective 'Bipartition'.
+--
+-- Since the induced bipartitions of the daughter branches of a bifurcating root
+-- node are equal, the branches leading to the root have to be combined in this
+-- case. See http://evolution.genetics.washington.edu/phylip/doc/treedist.html
+-- and how unrooted trees should be handled.
+--
+-- Further, branches connected to degree two nodes also induce the same
+-- bipartitions and have to be combined.
+--
+-- For combining branches, a binary function is required. This requirement is
+-- encoded in the 'Semigroup' type class constraint (see 'pruneWith'). Further,
+-- the 'Monoid' type class constraint has been added because the availability of
+-- /null/ branches reduces the complexity of the algorithm.
+--
+-- Return 'Nothing' if the leaves are not unique.
+bipartitionToBranch ::
+  (Monoid e, Ord a) =>
+  Tree e a ->
+  Maybe (Map (Bipartition a) e)
+bipartitionToBranch t
+  | valid t =
+    Just $
+      M.filterWithKey (const . bpValid) $
+        bipartitionToBranch' S.empty pTree
+  | otherwise = Nothing
+  where
+    pTree = S.fromList <$> partitionTree t
 
--- -- | See 'bipartitionToBranchLength'.
--- --
--- -- When calculating the map, branches separated by various degree two nodes have
--- -- to be combined. Hence, not only the complementary partition towards the stem,
--- -- but also the node label itself have to be passed along.
--- type Info c a = (c, Set a)
+-- When calculating the map, branches separated by various degree two nodes have
+-- to be combined. Hence, not only the complementary leaves, but also the branch
+-- label itself have to be passed along.
+bipartitionToBranch' ::
+  (Monoid e, Ord a) =>
+  -- Complementary leaves.
+  Set a ->
+  -- Partition tree.
+  Tree e (Set a) ->
+  Map (Bipartition a) e
+bipartitionToBranch' p t@(Node b p' ts) =
+  M.unionsWith (<>) $
+    M.singleton (bp p p') b :
+      [ bipartitionToBranch' c s
+        | (c, s) <- zip cs ts
+      ]
+  where
+    cs = getComplementaryLeaves p t
 
--- -- | See 'bipartitionToBranchLength', but does not check if leaves are unique.
--- --
--- -- We need information about the nodes, and also about the leaves of the induced
--- -- sub trees. Hence, we need a somewhat complicated node label type
--- --
--- -- > (a, Set a)
--- bipartitionToBranchLengthUnsafe ::
---   (Ord a, Ord b, Monoid c) =>
---   Info c a ->
---   -- | Value to compare on
---   (a -> b) ->
---   -- | Tree to dissect
---   Tree e (Info c a) ->
---   Map (Bipartition b) c
--- bipartitionToBranchLengthUnsafe (l, p) f (Node (l', p') []) =
---   M.singleton (bpwith f p p') (l <> l')
--- -- The branch length has to be added for degree two nodes.
--- bipartitionToBranchLengthUnsafe (l, p) f (Node (l', _) [x]) =
---   bipartitionToBranchLengthUnsafe (l <> l', p) f x
--- -- Go through the list of children and combine each of them with the rest.
--- bipartitionToBranchLengthUnsafe (l, p) f t@(Node (l', p') xs) =
---   M.unionsWith (<>) $
---     M.singleton (bpwith f p p') (l <> l') :
---       [ bipartitionToBranchLengthUnsafe (mempty, lvs) f x
---         | (lvs, x) <- zip lvsOthers xs
---       ]
---   where
---     lvsOthers = subForestGetSubsets p (fmap snd t)
-
--- -- | Determine compatibility between an bipartition and a subset.
--- --
--- -- If both subsets of the bipartition share elements with the given subset, the
--- -- bipartition is incompatible with this subset. If all elements of the subset
--- -- are either not in the bipartition or mapping to one of the two subsets of the
--- -- bipartition, the bipartition and the subset are compatible.
--- --
--- -- See also 'ELynx.Data.Tree.Multipartition.compatible'.
--- bpcompatible :: (Show a, Ord a) => Bipartition a -> Set a -> Bool
--- -- compatible (Bipartition (l, r)) ss = sintersection l ss `sdisjoint` sintersection r ss
--- bpcompatible (Bipartition (l, r)) ss = S.null lOverlap || S.null rOverlap
---   where
---     lOverlap = S.intersection l ss
---     rOverlap = S.intersection r ss
+-- | Determine compatibility between a bipartition and a set.
+--
+-- If both subsets of the bipartition share elements with the given set, the
+-- bipartition is incompatible with this subset. If all elements of the subset
+-- are either not in the bipartition or mapping to one of the two subsets of the
+-- bipartition, the bipartition and the subset are compatible.
+--
+-- See also 'ELynx.Data.Tree.Multipartition.compatible'.
+bipartitionCompatible :: (Show a, Ord a) => Bipartition a -> Set a -> Bool
+-- compatible (Bipartition (l, r)) ss = sintersection l ss `sdisjoint` sintersection r ss
+bipartitionCompatible (Bipartition (l, r)) s = S.null lOverlap || S.null rOverlap
+  where
+    lOverlap = S.intersection l s
+    rOverlap = S.intersection r s

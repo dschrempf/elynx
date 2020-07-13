@@ -13,159 +13,135 @@
 -- A multifurcation induces a 'Multipartition', similar to branches inducing
 -- 'ELynx.Data.Tree.Bipartition's.
 module ELynx.Data.Tree.Multipartition
-  ( -- * The 'Multipartition' data type.
-    Multipartition (),
-    mps,
+  ( -- * Data type
+    Multipartition (fromMultipartition),
     mp,
-    mpmap,
-    mphuman,
-    fromBipartition,
+    bpToMp,
+    mpHuman,
+    mpMap,
 
-    -- * Working with 'Multipartition's.
+    -- * Work with 'Multipartition's
     multipartitions,
-    findSubset,
-    mpcompatible,
+    multipartitionCompatible,
   )
 where
 
+import Data.Foldable
 import Data.List
-  ( find,
-    foldl',
-    intercalate,
-  )
-import Data.Maybe (fromMaybe)
 import qualified Data.Set as S
-import Data.Tree
+import Data.Set (Set)
 import ELynx.Data.Tree.Bipartition
-  ( Bipartition (fromBipartition),
-  )
-import ELynx.Data.Tree.Tree
+import ELynx.Data.Tree.Phylogeny
+import ELynx.Data.Tree.Rooted
 
--- | Each branch of a bifurcating tree partitions the leaves of the tree into
--- three subsets, see 'ELynx.Data.Tree.Bipartition'. In a similar way, each
--- internal node induces a tripartition. Tripartitions are not yet implemented
--- (December 2019) because it is usually sufficient to work with bipartitions.
--- If, however, the tree is multifurcating and a specific node has more than two
--- children, the number of subsets induced by this node is larger than three,
--- and a 'Multipartition'. Multipartitions are interesting in that we can use
--- them for calculating incompatible splits, see 'ELynx.Data.Tree.Distance'. The
--- order of the partitions within a multipartition is unimportant, .
+-- | Each branch of a tree partitions the leaves of the tree into two subsets
+-- (see 'ELynx.Data.Tree.Bipartition'). In a similar way, each internal node
+-- (excluding the root node) partitions the leaves into three (or more) subsets
+-- which is called 'Multipartition'. If the tree is multifurcating, and a
+-- specific node has more than two children, the number of subsets induced by
+-- this node is larger than three. Multipartitions are interesting in that we
+-- can use them for calculating incompatible splits, see
+-- 'ELynx.Data.Tree.Distance'.
+--
+-- The order of the subsets of a 'Multipartition' is meaningless. We ensure by
+-- construction that the subsets are ordered, and hence, that equality checks
+-- are meaningful.
 newtype Multipartition a = Multipartition
-  { -- | Set of partitions
-    mps :: S.Set (S.Set a)
+  { fromMultipartition :: Set (Set a)
   }
-  deriving (Show, Read)
+  deriving (Eq, Ord, Show, Read)
 
--- Show the elements of a set in a human readable format.
-sshow :: Set a -> String
-sshow = intercalate "," . S.toList
+-- | Create a multipartition.
+mp :: Ord a => [Set a] -> Multipartition a
+mp = mp' . filter (not . S.null)
+
+-- Unsafe.
+mp' :: Ord a => [Set a] -> Multipartition a
+mp' xs = Multipartition (S.fromList xs)
+
+-- | Convert a bipartition to a multipartition.
+bpToMp :: Ord a => Bipartition a -> Multipartition a
+bpToMp = mp . toList . fromBipartition
 
 -- | Show a multipartition in a human readable form. Use a provided function to
 -- extract the valuable information.
-mphuman :: (a -> String) -> Multipartition a -> String
-mphuman f (Multipartition xs) =
-  "(" ++ intercalate "|" (map (sshow f) (S.toList xs)) ++ ")"
+mpHuman :: Show a => Multipartition a -> String
+mpHuman (Multipartition xs) =
+  "(" ++ intercalate "|" (map setShow (S.toList xs)) ++ ")"
 
--- | Create a multipartition.
-mp :: Ord a => [S.Set a] -> Multipartition a
-mp = mp' . filter (not . S.null)
+-- Show the elements of a set in a human readable format.
+setShow :: Show a => Set a -> String
+setShow = intercalate "," . map show . S.toList
 
-mp' :: Ord a => [S.Set a] -> Multipartition a
-mp' xs = Multipartition (S.fromList xs)
+-- | Map a function over all elements in the 'Multipartition'.
+mpMap :: (Ord a, Ord b) => (a -> b) -> Multipartition a -> Multipartition b
+mpMap f (Multipartition xs) = Multipartition $ S.map (S.map f) xs
 
--- | Map a function over all elements in the multipartitions.
-mpmap :: (Ord a, Ord b) => (a -> b) -> Multipartition a -> Multipartition b
-mpmap f (Multipartition xs) = Multipartition $ S.map (S.map f) xs
+-- TODO: Use list?
 
-instance (Eq a) => Eq (Multipartition a) where
-  Multipartition xs == Multipartition ys = xs == ys
+-- | Get all 'Multipartition's of a tree.
+multipartitions :: Ord a => Tree e a -> Maybe (Set (Multipartition a))
+multipartitions t
+  | valid t = Just $ multipartitions' S.empty $ S.fromList <$> partitionTree t
+  | otherwise = Nothing
 
-instance (Ord a) => Ord (Multipartition a) where
-  Multipartition xs `compare` Multipartition ys = xs `compare` ys
-
--- | Convert bipartition to multipartition.
-fromBipartition :: Ord a => Bipartition a -> Multipartition a
-fromBipartition bp = mp [l, r] where (l, r) = bps bp
-
--- | Get all multipartitions of a tree.
-multipartitions :: Ord a => Tree a -> S.Set (Multipartition a)
-multipartitions t =
-  if S.size (S.fromList lvs) == length lvs
-    then multipartitionsUnsafe S.empty (partitionTree t)
-    else error "multipartitions: The tree contains duplicate leaves."
-  where
-    lvs = leaves t
-
--- | See 'multipartitions', but do not check if leaves are unique.
-multipartitionsUnsafe ::
-  Ord a => S.Set a -> Tree (S.Set a) -> S.Set (Multipartition a)
-multipartitionsUnsafe _ (Node _ []) = S.empty
-multipartitionsUnsafe xs (Node _ [x]) = multipartitionsUnsafe xs x
-multipartitionsUnsafe xs (Node _ [x, y]) = S.union l r
-  where
-    l = multipartitionsUnsafe (S.union xs (rootLabel x)) y
-    r = multipartitionsUnsafe (S.union xs (rootLabel y)) x
-multipartitionsUnsafe xs t@(Node _ ys) =
+-- See 'multipartitions', but do not check if leaves are unique.
+multipartitions' :: Ord a => Set a -> Tree e (Set a) -> Set (Multipartition a)
+multipartitions' _ (Node _ _ []) = S.empty
+multipartitions' p t@(Node _ _ ts) =
   S.unions $
-    S.singleton (mp (xs : map rootLabel ys)) :
-    zipWith multipartitionsUnsafe lvsOthers ys
+    S.singleton (mp (p : map label ts)) :
+    zipWith multipartitions' cs ts
   where
-    lvsOthers = subForestGetSubsets xs t
+    cs = getComplementaryLeaves p t
 
--- | Find the subset of a multipartition containing a given element.
-findSubset :: Ord a => a -> Multipartition a -> S.Set a
-findSubset l m =
-  -- Return the empty subset if nothing is found. This corresponds
-  -- to having no information about the leaf in question.
-  fromMaybe S.empty (find (S.member l) ss)
-  where
-    ss = mps m
+-- Find the subset of a multipartition containing a given element.
+findSubset :: Ord a => a -> Multipartition a -> Maybe (Set a)
+findSubset l = find (S.member l) . fromMultipartition
 
--- Add the subset of a bipartition which contains a given element.
-addSubset ::
-  Ord a => Multipartition a -> S.Set (S.Set a) -> a -> S.Set (S.Set a)
-addSubset m ss l = if not $ S.null s then s `S.insert` ss else ss
-  where
-    s = findSubset l m
+-- Find and collect the subset of a multipartition which contains a given element.
+addSubset :: Ord a => Multipartition a -> Set (Set a) -> a -> Set (Set a)
+addSubset m acc l = case findSubset l m of
+  Just s -> s `S.insert` acc
+  Nothing -> acc
 
--- Each subset overlaps with a number of subsets of a bipartition which are
--- returned by this function.
-overlap :: Ord a => Multipartition a -> S.Set a -> S.Set (S.Set a)
+-- Return the subsets of the multipartition overlapping with the given set.
+overlap :: Ord a => Multipartition a -> Set a -> Set (Set a)
 overlap m = foldl' (addSubset m) S.empty
 
--- | Multipartitions are compatible if they do not contain conflicting
+-- | 'Multipartition's are compatible if they do not contain conflicting
 -- information. This function checks if two multipartitions are compatible with
--- each other. Thereby, following algorithm is used:
+-- each other. Thereby, the following algorithm is used:
 --
 -- 1. Take each subset of the first multipartition.
 --
--- 2a. Determine the overlap: For each leaf of the chosen subset, add the subset
--- of the second multipartition containing the leaf. The result is a set of
--- subsets, which is the union of the added subsets.
+-- 2. Determine the overlap: For each leaf of the chosen subset, add the subset
+--    of the second multipartition containing the leaf. The result is a set of
+--    subsets, which is the union of the added subsets.
 --
--- The data type "set of subsets" is actually the same data type as a
--- multipartition. However, it is not a partition, because it may and will not
--- span the whole set of leaves, and so, I use @S.Set (S.Set a)@. One could
--- define a multiset data type to improve comprehensibility.
+--    The data type "set of subsets" is actually the same data type as a
+--    multipartition. However, it is not a partition, because it may and will not
+--    span the whole set of leaves, and so, I use @Set (Set a)@. One could define
+--    a multiset data type to improve comprehensibility.
 --
--- 2b. Collect the set of subsets from point 1.
+-- 3. Collect the set of subsets from point 2.
 --
--- 3. Each set of subsets needs to be either equal or disjoint with any other
--- set of subsets in the collection. If so, the first multipartition is
--- compatible with the second.
+-- 4. Each set of subsets needs to be either equal or disjoint with any other
+--    set of subsets in the collection. If so, the first multipartition is
+--    compatible with the second.
 --
--- 4. Exchange the first with the second multipartition and go through steps 1
--- to 3.
+-- 5. Exchange the first with the second multipartition and go through steps 1
+--    to 4.
 --
 -- See also 'ELynx.Data.Tree.Bipartition.compatible'.
-mpcompatible :: (Ord a, Show a) => Multipartition a -> Multipartition a -> Bool
-mpcompatible l r =
+multipartitionCompatible :: (Ord a, Show a) => Multipartition a -> Multipartition a -> Bool
+multipartitionCompatible l r =
   and $
     [x `S.disjoint` y | x <- lOverlaps, y <- lOverlaps, x /= y]
       ++ [x `S.disjoint` y | x <- rOverlaps, y <- rOverlaps, x /= y]
   where
-    ls = S.toList $ mps l
-    rs = S.toList $ mps r
+    ls = S.toList $ fromMultipartition l
+    rs = S.toList $ fromMultipartition r
     -- The subsets on the left multipartition overlap the subsets of the
     -- right multipartition.
     lOverlaps = map (overlap r) ls

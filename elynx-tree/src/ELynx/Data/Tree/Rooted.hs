@@ -2,8 +2,8 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
 -- |
--- Module      :  ELynx.Data.Tree.Tree
--- Description :  Functions related to phylogenetic trees
+-- Module      :  ELynx.Data.Tree.Rooted
+-- Description :  Rooted trees with labeled branches
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -13,7 +13,7 @@
 --
 -- Creation date: Thu Jan 17 09:57:29 2019.
 --
--- Functions to work with rooted, rose 'Tree's with labeled branches.
+-- Rooted rose 'Tree's with labeled branches.
 --
 -- Comment about nomenclature: A 'Tree' is defined as
 --
@@ -38,8 +38,12 @@
 -- 2. Changing branch labels, node labels, or the topology of the tree are slow
 -- operations, especially, when the changes are close to the leaves of the tree.
 --
--- NOTE: Trees in this library are all rooted.
-module ELynx.Data.Tree.Tree
+-- Note: 'Tree's are rooted!
+--
+-- In mathematical terms: A 'Tree' is a directed acyclic graph without loops,
+-- with vertex labels, with edge labels. Let me know if this definition is
+-- incomplete.
+module ELynx.Data.Tree.Rooted
   ( Tree (..),
     singleton,
     degree,
@@ -148,9 +152,12 @@ instance Bitraversable Tree where
 --   ~(Node brX lbX tsX) <* ~(Node brY _ tsY) =
 --     Node (brX <> brY) lbX (zipWith (<*) tsX tsY)
 
--- | NOTE: The 'Monoid' instance of the branch labels determines how the
--- branches are combined. For example, distances can be summed usingthe
--- 'Data.Monoid.Sum'.
+-- | The 'Semigroup' instance of the branch labels determines how the
+-- branches are combined. For example, distances can be summed using
+-- 'Data.Semigroup.Sum'.
+--
+-- The 'Monoid' instance of the branch labels determines the default branch
+-- label when using 'pure'.
 instance Monoid e => Applicative (Tree e) where
   pure lb = Node mempty lb []
   ~(Node brF lbF tsF) <*> ~tx@(Node brX lbX tsX) =
@@ -162,9 +169,9 @@ instance Monoid e => Applicative (Tree e) where
   ~(Node brX lbX tsX) <* ~ty@(Node brY _ tsY) =
     Node (brX <> brY) lbX (map (lbX <$) tsY ++ map (<* ty) tsX)
 
--- | NOTE: The 'Monoid' instance of the branch labels determines how the
--- branches are combined. For example, distances can be summed using
--- 'Data.Monoid.Sum'.
+-- | The 'Semigroup' instance of the branch labels determines how the branches
+-- are combined. For example, distances can be summed using
+-- 'Data.Semigroup.Sum'.
 instance Monoid e => Monad (Tree e) where
   ~(Node br lb ts) >>= f = case f lb of
     Node br' lb' ts' -> Node (br <> br') lb' (ts' ++ map (>>= f) ts)
@@ -230,30 +237,32 @@ flatten t = squish t []
 labelNodes :: Traversable t => t a -> t Int
 labelNodes = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
 
+-- TODO: Use Monoid instance of @e@, not a dedicaated function.
+
 -- | Prune degree two nodes.
 --
 -- The information stored in a pruned node is lost. The branches are combined
--- with a given function of the form @\daughterBranch parentBranch ->
--- combinedBranch@.
-pruneWith :: (e -> e -> e) -> Tree e a -> Tree e a
-pruneWith _ t@(Node _ _ []) = t
-pruneWith f (Node paBr _ [Node daBr daLb daXs]) = Node (f daBr paBr) daLb daXs
-pruneWith f (Node paBr paLb paXs) = Node paBr paLb $ map (pruneWith f) paXs
+-- according to their 'Semigroup' instance of the form @\daughterBranch
+-- parentBranch -> combinedBranch@.
+pruneWith :: Semigroup e => Tree e a -> Tree e a
+pruneWith t@(Node _ _ []) = t
+pruneWith (Node paBr _ [Node daBr daLb daXs]) = Node (daBr <> paBr) daLb daXs
+pruneWith (Node paBr paLb paXs) = Node paBr paLb $ map pruneWith paXs
 
 -- | Drop a leaf from a tree.
 --
 -- The possibly resulting degree two node is pruned and the branches are
--- combined using a given function (see 'pruneWith').
+-- combined using their 'Semigroup' instance (see 'pruneWith').
 --
 -- The same tree is returned, if the leaf is not found on the tree.
-dropLeafWith :: Eq a => (e -> e -> e) -> a -> Tree e a -> Tree e a
-dropLeafWith f l (Node paBr paLb paXs) =
+dropLeafWith :: (Semigroup e, Eq a) => a -> Tree e a -> Tree e a
+dropLeafWith l (Node paBr paLb paXs) =
   case paXs' of
-    [Node daBr daLb daXs] -> Node (f daBr paBr) daLb daXs
+    [Node daBr daLb daXs] -> Node (daBr <> paBr) daLb daXs
     _ -> Node paBr paLb paXs'
   where
     toRm x = null (forest x) && label x == l
-    paXs' = map (dropLeafWith f l) (filter (not . toRm) paXs)
+    paXs' = map (dropLeafWith l) (filter (not . toRm) paXs)
 
 -- | Compute the intersection of trees.
 --
@@ -263,11 +272,11 @@ dropLeafWith f l (Node paBr paLb paXs) =
 --
 -- Assume that the trees are valid!
 intersectWith ::
-  (Eq e, Ord a) => (e -> e -> e) -> [Tree e a] -> [Tree e a]
-intersectWith f ts =
+  (Semigroup e, Eq e, Ord a) => [Tree e a] -> [Tree e a]
+intersectWith ts =
   if S.null ls
     then error "intersectWith: Intersection of leaves is empty."
-    else map (retainLeavesWith f ls) ts
+    else map (retainLeavesWith ls) ts
   where
     -- Leaf sets.
     lss = map (S.fromList . leaves) ts
@@ -277,8 +286,8 @@ intersectWith f ts =
 -- Retain all leaves in a provided set; or conversely, drop all leaves not in a
 -- provided set.
 retainLeavesWith ::
-  (Eq e, Ord a) => (e -> e -> e) -> Set a -> Tree e a -> Tree e a
-retainLeavesWith f ls t = S.foldl' (flip (dropLeafWith f)) t leavesToDrop
+  (Semigroup e, Eq e, Ord a) => Set a -> Tree e a -> Tree e a
+retainLeavesWith ls t = S.foldl' (flip dropLeafWith) t leavesToDrop
   where
     leavesToDrop = S.fromList (leaves t) S.\\ ls
 

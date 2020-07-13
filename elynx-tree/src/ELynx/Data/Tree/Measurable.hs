@@ -25,10 +25,10 @@ module ELynx.Data.Tree.Measurable
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8 as L
 import Data.Bifoldable
+import qualified Data.ByteString.Lazy.Char8 as L
 import Data.Bifunctor
-import ELynx.Data.Tree.Tree
+import ELynx.Data.Tree.Rooted
 import ELynx.Tools
 import Text.Printf
 

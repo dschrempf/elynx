@@ -20,7 +20,7 @@ where
 import Data.Bifoldable
 import Data.Bifunctor
 import Data.List
-import ELynx.Data.Tree.Tree
+import ELynx.Data.Tree.Rooted
 
 -- | Branch support.
 type BranchSupport = Double
@@ -40,8 +40,8 @@ normalizeBranchSupport :: Supported e => Tree e a -> Tree e a
 normalizeBranchSupport t = first (apply (/ m)) t
   where m = bimaximum $ bimap getBranchSupport (const 0) t
 
--- TODO: Something is wrong here. @collapse 1.0 t@ should be a star tree but it
--- is a leaf.
+-- TODO: Something was wrong here. @collapse 1.0 t@ should be a star tree but it
+-- was a leaf. Is this still so?
 -- | Collapse branches with support lower than given value.
 --
 -- The branch and node labels of the collapsed branches are discarded.

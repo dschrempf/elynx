@@ -10,13 +10,20 @@
 --
 -- Creation date: Thu Jun 13 17:15:54 2019.
 --
--- Various distance functions for phylogenetic trees (and binary trees in general).
+-- Various distance functions for phylogenetic trees (and trees with branch
+-- lengths in general).
 --
--- TODO: All trees are assumed to be UNROOTED. See comments of 'symmetricWith' and
--- 'branchScoreWith', as well as 'bipartitionToBranchLength'.
--- http://evolution.genetics.washington.edu/phylip/doc/treedist.html. However, this
--- disagrees with the statement in 'ELynx.Data.Tree.Tree', and should be changed.
--- I definitely need separate data types for rooted and unrooted trees.
+-- The functions provided in this module return distances for __unrooted__
+-- trees. See comments of 'symmetricWith' and 'branchScoreWith', as well as
+-- 'bipartitionToBranchLength' and the documentation of
+-- [treedist](http://evolution.genetics.washington.edu/phylip/doc/treedist.html).
+--
+-- It is a little unfortunate that 'Tree' data type, which represents rooted
+-- trees, is also used in this module. However, rooted trees are much easier to
+-- handle. In the future, a separate data type for unrooted trees may be
+-- introduced. In theory, this is quite straight forward, for example, using
+-- algebraic graphs. Difficulties may arise because the branches of an unrooted
+-- tree are undirected.
 module ELynx.Data.Tree.Distance
   ( symmetric,
     symmetricWith,
@@ -33,15 +40,15 @@ import Data.List
 import qualified Data.Map as M
 import Data.Monoid
 import qualified Data.Set as S
-import Data.Tree
+import Data.Set (Set)
 import ELynx.Data.Tree.Bipartition
-import ELynx.Data.Tree.MeasurableTree
+import ELynx.Data.Tree.Measurable
 import ELynx.Data.Tree.Multipartition
-import ELynx.Data.Tree.NamedTree
-import ELynx.Data.Tree.Tree
+import ELynx.Data.Tree.Named
+import ELynx.Data.Tree.Rooted
 
 -- Symmetric difference between two 'Set's.
-symmetricDifference :: Ord a => S.Set a -> S.Set a -> S.Set a
+symmetricDifference :: Ord a => Set a -> Set a -> Set a
 symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
 
 -- | Symmetric (Robinson-Foulds) distance between two trees. Before comparing
@@ -68,7 +75,7 @@ symmetric :: (Show a, Ord a, Named a) => Tree a -> Tree a -> Int
 symmetric = symmetricWith getName
 
 countIncompatibilities ::
-  (Ord a, Show a) => S.Set (Bipartition a) -> S.Set (Multipartition a) -> Int
+  (Ord a, Show a) => Set (Bipartition a) -> Set (Multipartition a) -> Int
 countIncompatibilities bs ms =
   foldl'
     (\i b -> if any (mpcompatible (fromBipartition b)) ms then i else i + 1)

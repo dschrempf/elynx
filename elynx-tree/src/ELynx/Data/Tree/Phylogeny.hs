@@ -40,7 +40,7 @@ import qualified Data.Set as S
 -- import ELynx.Data.Tree.Measurable
 -- import ELynx.Data.Tree.Named
 -- import ELynx.Data.Tree.Supported
-import ELynx.Data.Tree.Tree
+import ELynx.Data.Tree.Rooted
 
 -- | The equality check is slow because the order of children is arbitrary.
 equal :: (Eq e, Eq a) => Tree e a -> Tree e a -> Bool
