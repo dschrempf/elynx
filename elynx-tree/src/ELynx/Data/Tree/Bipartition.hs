@@ -114,6 +114,26 @@ bipartitions t =
     ls = leaves t
     pTree = partitionTree t
 
+-- TODO: CHECK THIS.
+
+-- | Loop through each tree in a forest to report the complementary leaf sets.
+subForestGetSubsets ::
+  (Ord a) =>
+  -- | Complementary partition at the stem
+  Set a ->
+  -- | Tree with partition nodes
+  Tree e (Set a) ->
+  [S.Set a]
+subForestGetSubsets lvs t@(Node br lb ts) = lvsOthers
+  where
+    nChildren = length ts
+    lvsChildren = map label ts
+    lvsOtherChildren =
+      [ S.unions $ lvs : take i lvsChildren ++ drop (i + 1) lvsChildren
+        | i <- [0 .. (nChildren - 1)]
+      ]
+    lvsOthers = map (S.union lvs) lvsOtherChildren
+
 -- See 'bipartitions', but do not check if leaves are unique.
 bipartitionsUnsafe ::
   Ord a => S.Set a -> Tree (S.Set a) -> S.Set (Bipartition a)

@@ -64,10 +64,9 @@ module ELynx.Data.Tree.Tree
     zipTreesWith,
     zipTrees,
     partitionTree,
-    -- subForestGetSubsets,
     subTree,
-    -- bifurcating,
-    -- clades,
+    bifurcating,
+    clades,
   )
 where
 
@@ -339,11 +338,15 @@ zipTreesWith f g (Node brL lbL tsL) (Node brR lbR tsR) =
 zipTrees :: Tree e1 a1 -> Tree e2 a2 -> Maybe (Tree (e1, e2) (a1, a2))
 zipTrees = zipTreesWith (,) (,)
 
+-- TODO: Remove this funtion. Does not belong here.
+
 -- | Each node of a tree is root of a subtree. Get the leaves of the subtree of
 -- each node.
 partitionTree :: (Ord a) => Tree e a -> Tree e (Set a)
 -- I am proud of this awesome 'Comonad' usage here :).
 partitionTree = extend (S.fromList . leaves)
+
+-- TODO: Remove this funtion. Does not belong here.
 
 -- | Get subtree of 'Tree' with leaves satisfying predicate.
 --
@@ -359,37 +362,19 @@ subTree p (Node br lb ts) =
   where
     subTrees = mapMaybe (subTree p) ts
 
--- -- | Loop through each tree in a forest to report the complementary leaf sets.
--- subForestGetSubsets ::
---   (Ord a) =>
---   -- | Complementary partition at the stem
---   Set a ->
---   -- | Tree with partition nodes
---   Tree e (Set a) ->
---   [S.Set a]
--- subForestGetSubsets lvs t = lvsOthers
---   where
---     xs = subForest t
---     nChildren = length xs
---     lvsChildren = map rootLabel xs
---     lvsOtherChildren =
---       [ S.unions $ lvs : take i lvsChildren ++ drop (i + 1) lvsChildren
---         | i <- [0 .. (nChildren - 1)]
---       ]
---     lvsOthers = map (S.union lvs) lvsOtherChildren
+-- | Check if a tree is bifurcating.
+--
+-- A Bifurcating tree only contains degree one and degree three nodes.
+bifurcating :: Tree e a -> Bool
+bifurcating (Node _ _ []) = True
+bifurcating (Node _ _ [x, y]) = bifurcating x && bifurcating y
+bifurcating _ = False
 
--- -- | Check if a tree is bifurcating. A Bifurcating tree only contains degree one
--- -- and degree three nodes. I know, one should use a proper data structure to
--- -- encode bifurcating trees.
--- bifurcating :: Tree e a -> Bool
--- bifurcating (Node _ _ []) = True
--- bifurcating (Node _ _ [x, y]) = bifurcating x && bifurcating y
--- bifurcating (Node _ _ [_]) = False
--- bifurcating (Node _ _ _) = False
+-- TODO: Remove this funtion. Does not belong here.
 
--- -- | Get clades induced by multifurcations.
--- clades :: Ord a => Tree e a -> [S.Set a]
--- clades (Node _ _ []) = []
--- clades (Node _ _ [x]) = clades x
--- clades (Node _ _ [x, y]) = clades x ++ clades y
--- clades t = S.fromList (leaves t) : concatMap clades (subForest t)
+-- | Get clades induced by multifurcations.
+clades :: Ord a => Tree e a -> [S.Set a]
+clades (Node _ _ []) = []
+clades (Node _ _ [x]) = clades x
+clades (Node _ _ [x, y]) = clades x ++ clades y
+clades t = S.fromList (leaves t) : concatMap clades (forest t)
