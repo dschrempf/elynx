@@ -36,7 +36,7 @@ instance Ord a => Ord (Topology a) where
 
 -- | Convert a tree to a topology. Internal node labels are lost.
 fromTree :: Ord a => Tree a -> Topology a
-fromTree (Node x xs) = TN (S.fromList $ map fromTree xs)
+fromTree (Node _ xs) = TN (S.fromList $ map fromTree xs)
 
 -- | Set of leaves.
 leaves :: Ord a => Topology a -> Set a
