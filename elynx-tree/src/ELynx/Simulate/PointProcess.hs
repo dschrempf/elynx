@@ -218,7 +218,6 @@ toReconstructedTree l pp@(PointProcess ps vs o)
     otherwise                  = treeOrigin
  where
   (vsSorted, isSorted) = sort pp
-  -- TODO: Ideally we use a data structure without branch support.
   !lvs                 = S.fromList [ singleton (Length 0) p | p <- ps ]
   !heights             = S.replicate (length ps) 0
   !treeRoot            = toReconstructedTree' isSorted vsSorted l lvs heights
@@ -250,7 +249,6 @@ toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
   !tl    = lengthenStem dvl $ trs `S.index` i
   !tr    = lengthenStem dvr $ trs `S.index` (i + 1)
   !h'    = hl + dvl       -- Should be the same as 'hr + dvr'.
-  -- TODO: Ideally we use a data structure without branch support.
   !tm    = Node (Length 0) l [tl, tr]
   !trs'' = (S.take i trs S.|> tm) S.>< S.drop (i + 2) trs
   !hs'   = (S.take i hs  S.|> h') S.>< S.drop (i + 2) hs
