@@ -27,18 +27,18 @@ type BranchSupport = Double
 
 -- | A branch label that supports extraction and setting of branch support values.
 class Supported e where
-  getBranchSupport :: e -> BranchSupport
-  setBranchSupport :: BranchSupport -> e -> e
+  getSup :: e -> BranchSupport
+  setSup :: BranchSupport -> e -> e
 
 -- Apply a function to a branch support label.
 apply :: Supported e => (BranchSupport -> BranchSupport) -> e -> e
-apply f l = setBranchSupport (f s) l where s = getBranchSupport l
+apply f l = setSup (f s) l where s = getSup l
 
 -- | Normalize branch support values. The maximum branch support value will be
 -- set to 1.0.
 normalizeBranchSupport :: Supported e => Tree e a -> Tree e a
 normalizeBranchSupport t = first (apply (/ m)) t
-  where m = bimaximum $ bimap getBranchSupport (const 0) t
+  where m = bimaximum $ bimap getSup (const 0) t
 
 -- TODO: Something was wrong here. @collapse 1.0 t@ should be a star tree but it
 -- was a leaf. Is this still so?
@@ -54,5 +54,5 @@ collapse' :: Supported e => BranchSupport -> Tree e a -> Tree e a
 collapse' _ t@(Node _ _ []) = t
 collapse' th (Node br lb ts) = Node br lb $ map (collapse' th) (highSupport ++ lowSupportForest)
   where
-    (highSupport, lowSupport) = partition ((>= th) . getBranchSupport . branch) ts
+    (highSupport, lowSupport) = partition ((>= th) . getSup . branch) ts
     lowSupportForest = concatMap forest lowSupport

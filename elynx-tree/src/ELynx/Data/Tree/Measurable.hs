@@ -39,12 +39,12 @@ pretty :: BranchLength -> String
 pretty = printf "%.5f"
 
 -- | A 'Node' label with measurable and modifiable branch length to the parent.
-class Measurable a where
+class Measurable e where
   -- | Length of attached branch.
-  getLen :: a -> BranchLength
+  getLen :: e -> BranchLength
 
   -- | Set attached branch length.
-  setLen :: BranchLength -> a -> a
+  setLen :: BranchLength -> e -> e
 
 -- Apply a function to a branch support label.
 apply :: Measurable e => (BranchLength -> BranchLength) -> e -> e

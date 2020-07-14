@@ -60,6 +60,7 @@ module ELynx.Data.Tree.Rooted
     subTree,
     bifurcating,
     clades,
+    roots,
   )
 where
 
@@ -352,3 +353,98 @@ clades (Node _ _ []) = []
 clades (Node _ _ [x]) = clades x
 clades (Node _ _ [x, y]) = clades x ++ clades y
 clades t = leaves t : concatMap clades (forest t)
+
+-- -- TODO: Probably provide these functions also for 'Topology'.
+
+-- | For a rooted, bifurcating tree, get all possible rooted (bifurcating) trees.
+--
+-- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
+-- is moved. Branch labels are not handled (yet).
+--
+-- Return 'Left' if the tree is not 'bifurcating'.
+roots :: Tree () a -> Either String (Forest () a)
+roots t@(Node _ _ []) = Right [t]
+roots t@(Node _ _ [Node _ _ [], Node _ _ []]) = Right [t]
+roots t@(Node _ _ [_, _]) = sequence $ Right t : sequence (lefts t) ++ sequence (rights t)
+roots _ = Left "roots: Tree is not bifurcating."
+
+-- Move the root to the left.
+lefts :: Tree () a -> Either String (Forest () a)
+lefts (Node _ c [Node _ l [Node _ x tsX, Node _ y tsY], Node _ r tsR]) =
+  let -- Left.
+      tl = Node () c [Node () x tsX, Node () l [Node () y tsY, Node () r tsR]]
+      -- Right.
+      tr = Node () c [Node () l [Node () r tsR, Node () x tsX], Node () y tsY]
+   in sequence $ Right tl : Right tr : sequence (lefts tl) ++ sequence (rights tr)
+lefts (Node _ _ [Node _ _ [], _]) = Right []
+lefts (Node _ _ []) = Left "lefts: This is a bug. Encountered a leaf."
+lefts _ = Left "lefts: Tree is not bifurcating."
+
+-- Move the root to the right.
+rights :: Tree () a -> Either String (Forest () a)
+rights (Node _ c [Node _ l tsL, Node _ r [Node _ x tsX, Node _ y tsY]]) =
+  let -- Left.
+      tl = Node () c [Node () x tsX, Node () r [Node () y tsY, Node () l tsL]]
+      -- Right.
+      tr = Node () c [Node () r [Node () l tsL, Node () x tsX], Node () y tsY]
+   in sequence $ Right tl : Right tr : sequence (lefts tl) ++ sequence (rights tr)
+rights (Node _ _ [_, Node _ _ []]) = Right []
+rights (Node _ _ []) = Left "rights: This is a bug. Encountered a leaf."
+rights _ = Left "rights: Tree is not bifurcating."
+
+-- TODO: Continue here.
+
+-- -- | Root a bifurcating tree at a given point.
+-- --
+-- -- Root the tree at the midpoint of the branch defined by the given bipartition.
+-- -- The original root node is moved to the new position.
+-- --
+-- -- - The tree has to be bifurcating (may be relaxed in the future).
+-- -- - The leaves of the tree have to be unique.
+-- -- - The leaves in the bipartition have to match the leaves of the tree.
+-- rootAt :: Ord a => Bipartition (PhyloLabel a) -> Tree (PhyloLabel a) -> Tree (PhyloLabel a)
+-- rootAt b t
+--   -- Tree is checked for being bifurcating in 'roots'.
+--   | length ls /= S.size lS = error "rootAt: Leaves of tree are not unique."
+--   | bS /= lS = error "rootAt: Bipartition does not match leaves of tree."
+--   | otherwise =
+--     fromMaybe
+--       (error "rootAt: Bipartition not found on tree.")
+--       (rootAt' b t)
+--   where
+--     bS = toSet b
+--     ls = S.fromList $ leaves t
+--     lS = S.fromList $ leaves t
+
+-- -- Assume the leaves of the tree are unique.
+-- rootAt' :: (Eq a, Ord a) => Bipartition (PhyloLabel a) -> Tree (PhyloLabel a) -> Maybe (Tree (PhyloLabel a))
+-- rootAt' b t = find (\x -> b == bipartition x) (roots t)
+
+-- -- | Connect two trees with a branch in all possible ways.
+-- --
+-- -- Basically, introduce a branch between two trees. If the trees have n, and m
+-- -- branches, respectively, there are n*m ways to connect them.
+-- --
+-- -- A base node has to be given which will be used wherever the new node is
+-- -- introduced.
+-- connect :: PhyloLabel a -> Tree (PhyloLabel a) -> Tree (PhyloLabel a) -> [Tree (PhyloLabel a)]
+-- connect n l r = [Node n [x, y] | x <- roots l, y <- roots r]
+
+-- -- | Remove multifurcations by copying multifurcating nodes and introducing
+-- -- branches with length 0 and branch support 0.
+-- removeMultifurcations :: Tree (PhyloLabel a) -> Tree (PhyloLabel a)
+-- removeMultifurcations t@(Node _ []) = t
+-- removeMultifurcations (Node l [x]) = Node l [removeMultifurcations x]
+-- removeMultifurcations (Node l [x, y]) = Node l $ map removeMultifurcations [x, y]
+-- removeMultifurcations (Node l (x : xs)) = Node l $ map removeMultifurcations [x, Node l' xs]
+--   where
+--     l' = l {brLen = 0, brSup = 0}
+
+-- -- | Add branch lengths. Set branch support to the lower support value. Forget
+-- -- the parent node label.
+-- extend :: PhyloLabel a -> PhyloLabel a -> PhyloLabel a
+-- extend da pa = da {brSup = min (brSup pa) (brSup da), brLen = brLen pa + brLen da}
+
+-- -- | Prune degree 2 nodes. Use 'extend' and 'pruneWith'.
+-- prune :: Tree (PhyloLabel a) -> Tree (PhyloLabel a)
+-- prune = pruneWith extend

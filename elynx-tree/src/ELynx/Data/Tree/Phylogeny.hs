@@ -34,6 +34,9 @@ module ELynx.Data.Tree.Phylogeny
     lengthToPhyloTree,
     Support (..),
     phyloToSupportTree,
+    PhyloStrict (..),
+    toStrictTree,
+    fromStrictTree,
   )
 where
 
@@ -41,6 +44,7 @@ import Data.Bifoldable
 import Data.Bifunctor
 import Data.Bitraversable
 import Data.Maybe
+import Data.Monoid
 import Data.Semigroup
 import qualified Data.Set as S
 import ELynx.Data.Tree.Measurable
@@ -83,15 +87,15 @@ data Phylo = Phylo
 -- | Branch length label. For conversion, see 'phyloToLengthTree' and 'lengthToPhyloTree'.
 newtype Length = Length {fromLength :: BranchLength}
   deriving (Read, Show, Eq, Ord, Num, Fractional, Floating)
-  deriving (Monoid) via Sum Double
-  deriving (Semigroup) via Sum Double
+  deriving (Semigroup, Monoid) via Sum Double
 
 instance Measurable Length where
   getLen = fromLength
   setLen b _ = Length b
 
--- | If root branch length is not available, set it to 0. Return 'Nothing' if
--- any other branch length is unavailable.
+-- | If root branch length is not available, set it to 0.
+--
+-- Return 'Left' if any other branch length is unavailable.
 phyloToLengthTree :: Tree Phylo a -> Either String (Tree Length a)
 phyloToLengthTree =
   maybe (Left "phyloToLengthTree: Length unavailable for some branches.") Right
@@ -105,26 +109,30 @@ cleanRootLength t = t
 toLength :: Phylo -> Maybe Length
 toLength p = Length <$> brLen p
 
--- | Set all branch support values to 'Nothing'. Useful, for example, to export
--- a tree with branch lengths in Newick format.
+-- | Set all branch support values to 'Nothing'.
+--
+-- Useful, for example, to export a tree with branch lengths in Newick format.
 lengthToPhyloTree :: Tree Length a -> Tree Phylo a
 lengthToPhyloTree = first fromLengthLabel
 
 fromLengthLabel :: Length -> Phylo
 fromLengthLabel (Length b) = Phylo (Just b) Nothing
 
--- | Branch support label. For conversion, see 'phyloToSupportTree'.
+-- | Branch support label.
+--
+-- For conversion, see 'phyloToSupportTree'.
 newtype Support = Support {fromSupport :: BranchSupport}
-  deriving (Read, Show, Eq, Ord, Num, Fractional)
+  deriving (Read, Show, Eq, Ord, Num, Fractional, Floating)
+  deriving (Semigroup) via Min Double
 
 instance Supported Support where
-  getBranchSupport = fromSupport
-  setBranchSupport s _ = Support s
+  getSup = fromSupport
+  setSup s _ = Support s
 
 -- | Set branch support values of branches leading to the leaves and of the root
 -- branch to maximum support.
 --
--- Return 'Nothing' if any other branch has no available support value.
+-- Return 'Left' if any other branch has no available support value.
 phyloToSupportTree :: Tree Phylo a -> Either String (Tree Support a)
 phyloToSupportTree t =
   maybe
@@ -150,4 +158,40 @@ toSupport :: Phylo -> Maybe Support
 toSupport (Phylo _ Nothing) = Nothing
 toSupport (Phylo _ (Just s)) = Just $ Support s
 
--- TODO: Something like 'PhyloStrict' with conversion functions.
+-- | Strict branch label for phylogenetic trees.
+data PhyloStrict = PhyloStrict
+  { sBrLen :: BranchLength,
+    sBrSup :: BranchSupport
+  }
+  deriving (Read, Show, Eq, Ord)
+
+instance Semigroup PhyloStrict where
+  PhyloStrict bL sL <> PhyloStrict bR sR = PhyloStrict (bL + bR) (min sL sR)
+
+instance Measurable PhyloStrict where
+  getLen = sBrLen
+  setLen b l = l {sBrLen = b}
+
+instance Supported PhyloStrict where
+  getSup = sBrSup
+  setSup s l = l {sBrSup = s}
+
+-- | Conversion to a 'PhyloStrict' tree.
+--
+-- See 'phyloToLengthTree' and 'phyloToSupportTree'.
+toStrictTree :: Tree Phylo a -> Either String (Tree PhyloStrict a)
+toStrictTree t = do
+  lt <- first fromLength <$> phyloToLengthTree t
+  st <- first fromSupport <$> phyloToSupportTree t
+  case zipTreesWith PhyloStrict const lt st of
+    Nothing -> error "toStrictTree: This is a bug. Can not zip two trees with the same topology."
+    Just zt -> return zt
+
+-- | Set all branch length and support values to 'Just' the value.
+--
+-- Useful, for example, to export a tree with branch lengths in Newick format.
+fromStrictTree :: Tree PhyloStrict a -> Tree Phylo a
+fromStrictTree = first fromStrictLabel
+
+fromStrictLabel :: PhyloStrict -> Phylo
+fromStrictLabel (PhyloStrict b s) = Phylo (Just b) (Just s)

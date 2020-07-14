@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
--- Module      :  ELynx.Data.Tree.TreeSpec
+-- Module      :  ELynx.Data.Tree.RootedSpec
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -10,7 +10,7 @@
 -- Portability :  portable
 --
 -- Creation date: Mon May  6 14:04:05 2019.
-module ELynx.Data.Tree.TreeSpec
+module ELynx.Data.Tree.RootedSpec
   ( spec,
   )
 where
