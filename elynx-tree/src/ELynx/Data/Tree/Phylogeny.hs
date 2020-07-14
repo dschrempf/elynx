@@ -113,8 +113,8 @@ instance Supported Support where
   getBranchSupport = fromSupport
   setBranchSupport s _ = Support s
 
--- | Set branch support values of branches leading to the leaves to maximum
--- support. Set the root branch support to maximum support.
+-- | Set branch support values of branches leading to the leaves and of the root
+-- branch to maximum support.
 --
 -- Return 'Nothing' if any other branch has no available support value.
 phyloToSupportTree :: Tree Phylo a -> Maybe (Tree Support a)
@@ -137,3 +137,5 @@ cleanLeafSupport s (Node b l xs) = Node b l $ map (cleanLeafSupport s) xs
 toSupport :: Phylo -> Maybe Support
 toSupport (Phylo _ Nothing) = Nothing
 toSupport (Phylo _ (Just s)) = Just $ Support s
+
+-- TODO: Something like 'PhyloStrict' with conversion functions.
