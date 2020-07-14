@@ -25,21 +25,23 @@ module ELynx.Data.Tree.Phylogeny
   ( equal,
     equalTopology,
     valid,
-    -- PhyloLabel (..),
-    -- Length (..),
-    -- toLength,
-    -- fromLength,
-    -- Support (..),
-    -- toSupport,
+    Phylo (..),
+    Length (fromLength),
+    phyloToLengthTree,
+    lengthToPhyloTree,
+    Support (fromSupport),
+    phyloToSupportTree,
   )
 where
 
+import Data.Bifoldable
 import Data.Bifunctor
--- import Data.Maybe (fromMaybe)
+import Data.Bitraversable
+import Data.Maybe
 import qualified Data.Set as S
--- import ELynx.Data.Tree.Measurable
+import ELynx.Data.Tree.Measurable
 -- import ELynx.Data.Tree.Named
--- import ELynx.Data.Tree.Supported
+import ELynx.Data.Tree.Supported
 import ELynx.Data.Tree.Rooted
 
 -- | The equality check is slow because the order of children is arbitrary.
@@ -66,96 +68,72 @@ hasNoDuplicates = go S.empty
 valid :: Ord a => Tree e a -> Bool
 valid = hasNoDuplicates . leaves
 
--- -- TODO: Rename to Phylo.
+-- | Branch label for phylogenetic trees.
+--
+-- Branches may have a length and a support value.
+data Phylo = Phylo
+  { brLen :: Maybe BranchLength,
+    brSup :: Maybe BranchSupport
+  }
+  deriving (Read, Show, Eq, Ord)
 
--- -- | A label type for phylogenetic trees possibly with branch length and branch support.
--- data PhyloLabel a = PhyloLabel
---   { pLabel :: a,
---     pBrLen :: Maybe BranchLength,
---     pBrSup :: Maybe BranchSupport
---   }
---   deriving (Read, Show, Eq, Ord)
+-- | Branch length label. For conversion, see 'phyloToLengthTree' and 'lengthToPhyloTree'.
+newtype Length = Length { fromLength :: BranchLength }
+  deriving (Read, Show, Eq, Ord)
 
--- instance Named a => Named (PhyloLabel a) where
---   getName = getName . pLabel
+instance Measurable Length where
+  getLen = fromLength
+  setLen b _ = Length b
 
--- -- | A label with a branch length. For conversion, see 'toLength' and
--- -- 'fromLength'.
--- data Length a = Length
---   { lLabel :: a,
---     brLen :: BranchLength
---   }
---   deriving (Read, Show, Eq, Ord)
+-- | If root branch length is not available, set it to 0. Return 'Nothing' if
+-- any other branch length is unavailable.
+phyloToLengthTree :: Tree Phylo a -> Maybe (Tree Length a)
+phyloToLengthTree = bitraverse toLength pure . cleanRootLength
 
--- instance Named a => Named (Length a) where
---   getName = getName . lLabel
+cleanRootLength :: Tree Phylo a -> Tree Phylo a
+cleanRootLength (Node (Phylo Nothing s) l f) = Node (Phylo (Just 0) s) l f
+cleanRootLength t = t
 
--- instance Measurable (Length a) where
---   getLen = brLen
---   setLen x l = l {brLen = x}
+toLength :: Phylo -> Maybe Length
+toLength p = Length <$> brLen p
 
--- -- | If root branch length is not available, set it to 0. Return 'Nothing' if
--- -- any other branch length is unavailable.
--- toLength :: Tree (PhyloLabel a) -> Maybe (Tree (Length a))
--- toLength = traverse toLengthLabel . cleanRootLength
+-- | Set all branch support values to 'Nothing'. Useful, for example, to export
+-- a tree with branch lengths in Newick format.
+lengthToPhyloTree :: Tree Length a -> Tree Phylo a
+lengthToPhyloTree = first fromLengthLabel
 
--- cleanRootLength :: Tree (PhyloLabel a) -> Tree (PhyloLabel a)
--- cleanRootLength (Node (PhyloLabel l Nothing s) f) = Node (PhyloLabel l (Just 0) s) f
--- cleanRootLength _ = id
+fromLengthLabel :: Length -> Phylo
+fromLengthLabel (Length b) = Phylo (Just b) Nothing
 
--- toLengthLabel :: PhyloLabel a -> Maybe (Length a)
--- toLengthLabel (PhyloLabel l Nothing _) = Nothing
--- toLengthLabel (PhyloLabel l (Just b) _) = Length l b
+-- | Branch support label. For conversion, see 'phyloToSupportTree'.
+newtype Support = Support { fromSupport :: BranchSupport }
+  deriving (Read, Show, Eq, Ord)
 
--- -- | Set all branch support values to 'Nothing'. Useful, for example, to export
--- -- a tree with branch lengths in Newick format.
--- fromLength :: Tree (Length a) -> Tree (PhyloLabel a)
--- fromLength = fmap fromLengthLabel
+instance Supported Support where
+  getBranchSupport = fromSupport
+  setBranchSupport s _ = Support s
 
--- fromLengthLabel :: Length a -> PhyloLabel a
--- fromLengthLabel (Length l b) = PhyloLabel l (Just b) Nothing
+-- | Set branch support values of branches leading to the leaves to maximum
+-- support. Set the root branch support to maximum support.
+--
+-- Return 'Nothing' if any other branch has no available support value.
+phyloToSupportTree :: Tree Phylo a -> Maybe (Tree Support a)
+phyloToSupportTree t = bitraverse toSupport pure $ cleanLeafSupport m $ cleanRootSupport m t
+  where
+    m = getMaxSupport t
 
--- -- | A label with branch support. For conversion, see 'toSupport'.
--- data Support a = Support
---   { sLabel :: a,
---     brSup :: BranchSupport
---   }
---   deriving (Read, Show, Eq, Ord)
+-- If all branch support values are below 1.0, set the max support to 1.0.
+getMaxSupport :: Tree Phylo a -> BranchSupport
+getMaxSupport = fromJust . max (Just 1.0) . bimaximum . bimap brSup (const Nothing)
 
--- instance Named a => Named (Support a) where
---   getName = getName . spLabel
+cleanRootSupport :: BranchSupport -> Tree Phylo a -> Tree Phylo a
+cleanRootSupport maxSup (Node (Phylo b Nothing) l xs) = Node (Phylo b (Just maxSup)) l xs
+cleanRootSupport _ t = t
 
--- instance Supported (Support a) where
---   getBranchSupport = brSup
---   setBranchSupport x l = l {brSup = x}
+cleanLeafSupport :: BranchSupport -> Tree Phylo a -> Tree Phylo a
+cleanLeafSupport s (Node (Phylo b Nothing) l []) = Node (Phylo b (Just s)) l []
+cleanLeafSupport s (Node b l xs) = Node b l $ map (cleanLeafSupport s) xs
 
--- getMaxBrSup :: Tree (PhyloLabel a) -> BranchSupport
--- getMaxBrSup =
---   -- If all branch support values are below 1.0, set the max support to 1.0.
---   max 1.0
---     .
---     -- If no branch support is given, set max support to 1.0.
---     fromMaybe 1.0
---     . maximum
---     . fmap pBrSup
-
--- -- | Set branch support values of branches leading to the leaves to maximum
--- -- support. Set the root branch support to maximum support.
--- --
--- -- Return 'Nothing' if any other branch has no available support value.
--- toSupport :: Tree (PhyloLabel a) -> Maybe (Tree (Support a))
--- toSupport t = traverse toSupportLabel . cleanLeafSupport m . cleanRootSupport m
---   where
---     m = getMaxBrSup t
-
--- cleanRootSupport :: BranchSupport -> Tree (PhyloLabel a) -> Tree (PhyloLabel a)
--- cleanRootSupport maxSup (Node (PhyloLabel l b Nothing) xs) = Node (PhyloLabel l (Just maxSup)) xs
--- cleanRootSupport _ t = t
-
--- cleanLeafSupport :: BranchSupport -> Tree (PhyloLabel a) -> Tree (PhyloLabel a)
--- cleanLeafSupport maxSup (Node (PhyloLabel l b Nothing) []) = Node (PhyloLabel l (Just maxSup)) []
--- cleanLeafSupport _ (Node l xs) = Node l $ map cleanLeafSupport xs
-
--- toSupportLabel :: PhyloLabel a -> Maybe (Support a)
--- toSupportLabel (PhyloLabel l _ Nothing) = Nothing
--- toSupportLabel (PhyloLabel l _ (Just s)) = Support l s
+toSupport :: Phylo -> Maybe Support
+toSupport (Phylo _ Nothing) = Nothing
+toSupport (Phylo _ (Just s)) = Just $ Support s

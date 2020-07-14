@@ -1,45 +1,44 @@
-{- |
-Module      :  ELynx.Data.Tree
-Description :  Phylogenetic trees
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Sat Mar 21 16:27:20 2020.
-
--}
-
 -- TODO: Topology data type.
 -- data Topology a = Node (NonEmptySet (Topology a)) | Leaf a
 
--- TODO: Tree with labeled branches data type.
--- data Tree e a = Node e a (Set (Tree e a))
-
+-- |
+-- Module      :  ELynx.Data.Tree
+-- Description :  Phylogenetic trees
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Sat Mar 21 16:27:20 2020.
 module ELynx.Data.Tree
-  ( module ELynx.Data.Tree.Tree
-  , module ELynx.Data.Tree.PhyloTree
-  , module ELynx.Data.Tree.Bipartition
-  , module ELynx.Data.Tree.Multipartition
-  , module ELynx.Data.Tree.Distance
-  , module ELynx.Data.Tree.BranchSupportTree
-  , module ELynx.Data.Tree.MeasurableTree
-  , module ELynx.Data.Tree.NamedTree
-  , module ELynx.Data.Tree.SumStat
+  ( -- * Rooted trees
+    module ELynx.Data.Tree.Rooted,
+    module ELynx.Data.Tree.Phylogeny,
+
+    -- * Branch label classes
+    module ELynx.Data.Tree.Measurable,
+    module ELynx.Data.Tree.Supported,
+
+    -- * Node label classes
+    module ELynx.Data.Tree.Named,
+
+    -- * Partitions and distances
+    module ELynx.Data.Tree.Bipartition,
+    module ELynx.Data.Tree.Multipartition,
+    module ELynx.Data.Tree.Distance,
   )
 where
 
-import           ELynx.Data.Tree.Bipartition
-import           ELynx.Data.Tree.BranchSupportTree
-import           ELynx.Data.Tree.Distance
-import           ELynx.Data.Tree.MeasurableTree
-import           ELynx.Data.Tree.Multipartition
-import           ELynx.Data.Tree.NamedTree
-import           ELynx.Data.Tree.PhyloTree
-import           ELynx.Data.Tree.SumStat
-import           ELynx.Data.Tree.Tree
+import ELynx.Data.Tree.Bipartition
+import ELynx.Data.Tree.Distance
+import ELynx.Data.Tree.Measurable
+import ELynx.Data.Tree.Multipartition
+import ELynx.Data.Tree.Named
+import ELynx.Data.Tree.Phylogeny
+import ELynx.Data.Tree.Rooted
+import ELynx.Data.Tree.Supported
 
 -- -- | An evolutionary label has some information about where the corresponding
 -- -- node is on the tree, and if the node is 'extant', 'extinct', 'internal', or

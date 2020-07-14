@@ -84,6 +84,32 @@ showTriplet n m args (i, j, d) = i' <> j' <> d'
   j' = alignLeft (n + 2) $ L.pack (args !! j)
   d' = alignRight (m + 2) $ L.pack (printf pf d)
 
+-- Compute pairwise distances of a list of input trees. Use given distance
+-- measure. Returns a triple, the first two elements are the indices of the
+-- compared trees, the third is the distance.
+pairwise ::
+  -- | Distance function
+  (a -> a -> b) ->
+  -- | Input trees
+  [a] ->
+  -- | (index i, index j, distance i j)
+  [(Int, Int, b)]
+pairwise dist trs =
+  [ (i, j, dist x y)
+    | (i : is, x : xs) <- zip (tails [0 ..]) (tails trs),
+      (j, y) <- zip is xs
+  ]
+
+-- Compute distances between adjacent pairs of a list of input trees. Use given
+-- distance measure.
+adjacent ::
+  -- | Distance function.
+  (a -> a -> b) ->
+  -- | Input values.
+  [a] ->
+  [b]
+adjacent dist trs = [dist x y | (x, y) <- zip trs (tail trs)]
+
 -- | Compute distance functions between phylogenetic trees.
 distance :: ELynx DistanceArguments ()
 distance = do

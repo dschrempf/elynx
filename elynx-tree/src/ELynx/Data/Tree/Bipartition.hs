@@ -41,7 +41,6 @@ where
 import Data.List
 import qualified Data.Map as M
 import Data.Map (Map)
--- import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Data.Tree.Phylogeny
@@ -99,9 +98,9 @@ bipartition (Node _ _ [x, y]) =
   bp (S.fromList $ leaves x) (S.fromList $ leaves y)
 bipartition _ = error "Root node is not bifurcating."
 
--- TODO: Use list?
-
 -- | Get all bipartitions of the tree.
+--
+-- Return 'Nothing' if the tree contains duplicate leaves.
 bipartitions :: Ord a => Tree e a -> Maybe (Set (Bipartition a))
 bipartitions t
   | valid t =
@@ -153,7 +152,7 @@ bipartitions' p t@(Node _ p' ts) =
 -- the 'Monoid' type class constraint has been added because the availability of
 -- /null/ branches reduces the complexity of the algorithm.
 --
--- Return 'Nothing' if the leaves are not unique.
+-- Return 'Nothing' if the tree contains duplicate leaves.
 bipartitionToBranch ::
   (Monoid e, Ord a) =>
   Tree e a ->

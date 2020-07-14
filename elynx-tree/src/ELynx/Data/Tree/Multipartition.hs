@@ -77,8 +77,6 @@ setShow = intercalate "," . map show . S.toList
 mpMap :: (Ord a, Ord b) => (a -> b) -> Multipartition a -> Multipartition b
 mpMap f (Multipartition xs) = Multipartition $ S.map (S.map f) xs
 
--- TODO: Use list?
-
 -- | Get all 'Multipartition's of a tree.
 multipartitions :: Ord a => Tree e a -> Maybe (Set (Multipartition a))
 multipartitions t
@@ -134,7 +132,7 @@ overlap m = foldl' (addSubset m) S.empty
 --    to 4.
 --
 -- See also 'ELynx.Data.Tree.Bipartition.compatible'.
-multipartitionCompatible :: (Ord a, Show a) => Multipartition a -> Multipartition a -> Bool
+multipartitionCompatible :: Ord a => Multipartition a -> Multipartition a -> Bool
 multipartitionCompatible l r =
   and $
     [x `S.disjoint` y | x <- lOverlaps, y <- lOverlaps, x /= y]
