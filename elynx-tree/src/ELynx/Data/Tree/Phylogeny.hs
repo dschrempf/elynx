@@ -26,10 +26,10 @@ module ELynx.Data.Tree.Phylogeny
     equalTopology,
     valid,
     Phylo (..),
-    Length (fromLength),
+    Length (..),
     phyloToLengthTree,
     lengthToPhyloTree,
-    Support (fromSupport),
+    Support (..),
     phyloToSupportTree,
   )
 where
@@ -40,9 +40,8 @@ import Data.Bitraversable
 import Data.Maybe
 import qualified Data.Set as S
 import ELynx.Data.Tree.Measurable
--- import ELynx.Data.Tree.Named
-import ELynx.Data.Tree.Supported
 import ELynx.Data.Tree.Rooted
+import ELynx.Data.Tree.Supported
 
 -- | The equality check is slow because the order of children is arbitrary.
 equal :: (Eq e, Eq a) => Tree e a -> Tree e a -> Bool
@@ -78,7 +77,7 @@ data Phylo = Phylo
   deriving (Read, Show, Eq, Ord)
 
 -- | Branch length label. For conversion, see 'phyloToLengthTree' and 'lengthToPhyloTree'.
-newtype Length = Length { fromLength :: BranchLength }
+newtype Length = Length {fromLength :: BranchLength}
   deriving (Read, Show, Eq, Ord)
 
 instance Measurable Length where
@@ -106,7 +105,7 @@ fromLengthLabel :: Length -> Phylo
 fromLengthLabel (Length b) = Phylo (Just b) Nothing
 
 -- | Branch support label. For conversion, see 'phyloToSupportTree'.
-newtype Support = Support { fromSupport :: BranchSupport }
+newtype Support = Support {fromSupport :: BranchSupport}
   deriving (Read, Show, Eq, Ord)
 
 instance Supported Support where

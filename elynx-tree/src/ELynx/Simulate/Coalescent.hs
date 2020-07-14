@@ -15,7 +15,6 @@ module ELynx.Simulate.Coalescent
 where
 
 import Control.Monad.Primitive
-import Data.Tree
 import ELynx.Data.Tree
 import ELynx.Distribution.CoalescentContinuous
 import Statistics.Distribution
@@ -28,19 +27,18 @@ simulate ::
   -- | Number of leaves.
   Int ->
   Gen (PrimState m) ->
-  m (Tree (PhyloLabel Int))
+  m (Tree Length Int)
 simulate n = simulate' n 0 trs
   where
-    -- TODO: Ideally we use a data structure without branch support.
-    trs = [singleton (PhyloLabel i 0 1.0) | i <- [0 .. n - 1]]
+    trs = [singleton (Length 0) i | i <- [0 .. n - 1]]
 
 simulate' ::
   (PrimMonad m) =>
   Int ->
   Int ->
-  [Tree (PhyloLabel Int)] ->
+  Forest Length Int ->
   Gen (PrimState m) ->
-  m (Tree (PhyloLabel Int))
+  m (Tree Length Int)
 simulate' n a trs g
   | n <= 0 = error "Cannot construct trees without leaves."
   | n == 1 && length trs /= 1 = error "Too many trees provided."
@@ -54,8 +52,7 @@ simulate' n a trs g
         tl = trs' !! (i - 1)
         tr = trs' !! i
         -- Join the two chosen trees.
-        -- TODO: Ideally we use a data structure without branch support.
-        tm = Node (PhyloLabel a 0 1.0) [tl, tr]
+        tm = Node (Length 0) a [tl, tr]
         -- Take the trees on the left, the merged tree, and the trees on the right.
         trs'' = take (i - 1) trs' ++ [tm] ++ drop (i + 1) trs'
     simulate' (n - 1) a trs'' g

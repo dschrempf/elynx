@@ -17,14 +17,13 @@ module ELynx.Export.Tree.Nexus
 where
 
 import Data.ByteString.Lazy (ByteString)
-import Data.Tree
 import ELynx.Data.Tree
 import ELynx.Export.Nexus
 import ELynx.Export.Tree.Newick
 
 -- | Export a list of (NAME, TREE) to a Nexus file.
-toNexusTrees :: Named a => [(ByteString, Tree (PhyloLabelSoft a))] -> ByteString
+toNexusTrees :: Named a => [(ByteString, Tree Phylo a)] -> ByteString
 toNexusTrees ts = toNexus "TREES" (map tree ts)
 
-tree :: Named a => (ByteString, Tree (PhyloLabelSoft a)) -> ByteString
+tree :: Named a => (ByteString, Tree Phylo a) -> ByteString
 tree (n, t) = "  TREE " <> n <> " = " <> toNewick t

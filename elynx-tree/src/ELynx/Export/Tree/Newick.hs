@@ -22,27 +22,26 @@ where
 import qualified Data.ByteString.Lazy.Builder as L
 import qualified Data.ByteString.Lazy.Char8 as L
 import Data.List (intersperse)
-import Data.Tree
 import ELynx.Data.Tree
 import ELynx.Tools
 
 -- | General conversion of a tree into a Newick 'L.Bytestring'. Use provided
 -- functions to extract node labels and branch lengths builder objects. See also
 -- Biobase.Newick.Export.
-toNewick :: Named a => Tree (PhyloLabelSoft a) -> L.ByteString
+toNewick :: Named a => Tree Phylo a -> L.ByteString
 toNewick t = L.toLazyByteString $ go t <> L.word8 (c2w ';')
   where
-    go (Node l []) = lbl l
-    go (Node l ts) =
+    go (Node b l []) = lbl b l
+    go (Node b l ts) =
       L.word8 (c2w '(')
         <> mconcat (intersperse (L.word8 $ c2w ',') $ map go ts)
         <> L.word8 (c2w ')')
-        <> lbl l
-    mBrSupBuilder l = maybe mempty (\bs -> L.word8 (c2w '[') <> L.doubleDec bs <> L.word8 (c2w ']')) (sBrSup l)
-    mBrLenBuilder l = maybe mempty (\bl -> L.word8 (c2w ':') <> L.doubleDec bl) (sBrLen l)
-    lbl l =
-      L.lazyByteString (getName $ sLabel l)
-        <> mBrLenBuilder l
+        <> lbl b l
+    mBrSupBuilder x = maybe mempty (\bs -> L.word8 (c2w '[') <> L.doubleDec bs <> L.word8 (c2w ']')) (brSup x)
+    mBrLenBuilder x = maybe mempty (\bl -> L.word8 (c2w ':') <> L.doubleDec bl) (brLen x)
+    lbl x y =
+      L.lazyByteString (getName y)
+        <> mBrLenBuilder x
         -- After reading several discussion, I go for the "more semantical
         -- form" with branch support values in square brackets.
-        <> mBrSupBuilder l
+        <> mBrSupBuilder x

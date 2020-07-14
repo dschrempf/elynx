@@ -18,7 +18,6 @@ where
 
 import Data.ByteString.Internal (c2w)
 import Data.ByteString.Lazy (ByteString, pack)
-import Data.Tree
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick
 import Text.Megaparsec
@@ -26,13 +25,13 @@ import Text.Megaparsec.Byte
 import ELynx.Import.Nexus hiding (Parser)
 
 -- | Parse a Nexus files with a TREES block.
-nexusTrees :: NewickFormat -> Parser [(ByteString, Tree (PhyloLabelSoft ByteString))]
+nexusTrees :: NewickFormat -> Parser [(ByteString, Tree Phylo ByteString)]
 nexusTrees = nexus . trees
 
-trees :: NewickFormat -> Block [(ByteString, Tree (PhyloLabelSoft ByteString))]
+trees :: NewickFormat -> Block [(ByteString, Tree Phylo ByteString)]
 trees f = Block "TREES" (some $ namedNewick f)
 
-namedNewick :: NewickFormat -> Parser (ByteString, Tree (PhyloLabelSoft ByteString))
+namedNewick :: NewickFormat -> Parser (ByteString, Tree Phylo ByteString)
 namedNewick f = do
   _ <- space
   _ <- string "TREE"

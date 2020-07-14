@@ -35,7 +35,6 @@ import           Control.Monad.Primitive
 import           Data.List                      ( mapAccumL )
 import qualified Data.Sequence as S
 import Data.Sequence (Seq)
-import           Data.Tree
 import qualified Statistics.Distribution       as D
                                                 ( genContVar )
 import           System.Random.MWC
@@ -177,7 +176,7 @@ simulateNReconstructedTrees
   -> Rate       -- ^ Birth rate
   -> Rate       -- ^ Death rate
   -> Gen (PrimState m)   -- ^ Generator (see 'System.Random.MWC')
-  -> m [Tree (PhyloLabel Int)]
+  -> m (Forest Length Int)
 simulateNReconstructedTrees nT nP t l m g
   | nT <= 0   = return []
   | otherwise = replicateM nT $ simulateReconstructedTree nP t l m g
@@ -192,7 +191,7 @@ simulateReconstructedTree
   -> Rate       -- ^ Birth rate
   -> Rate       -- ^ Death rate
   -> Gen (PrimState m)   -- ^ Generator (see 'System.Random.MWC')
-  -> m (Tree (PhyloLabel Int))
+  -> m (Tree Length Int)
 simulateReconstructedTree n t l m g =
   toReconstructedTree 0 <$> simulate n t l m g
 
@@ -209,7 +208,7 @@ simulateReconstructedTree n t l m g =
 toReconstructedTree
   :: a                      -- Default node label.
   -> PointProcess a Double
-  -> Tree (PhyloLabel a)
+  -> Tree Length a
 toReconstructedTree l pp@(PointProcess ps vs o)
   | length ps /= length vs + 1 = error "Too few or too many points."
   | length vs <= 1             = error "Too few values."
@@ -220,7 +219,7 @@ toReconstructedTree l pp@(PointProcess ps vs o)
  where
   (vsSorted, isSorted) = sort pp
   -- TODO: Ideally we use a data structure without branch support.
-  !lvs                 = S.fromList [ singleton (PhyloLabel p 0 1.0) | p <- ps ]
+  !lvs                 = S.fromList [ singleton (Length 0) p | p <- ps ]
   !heights             = S.replicate (length ps) 0
   !treeRoot            = toReconstructedTree' isSorted vsSorted l lvs heights
   !h                   = last vsSorted
@@ -231,9 +230,9 @@ toReconstructedTree'
   :: [Int]                 -- Sorted indices, see 'sort'.
   -> [Double]              -- Sorted merge values.
   -> a                     -- Default node label.
-  -> Seq (Tree (PhyloLabel a)) -- Leaves with accumulated root branch lengths.
+  -> Seq (Tree Length a) -- Leaves with accumulated root branch lengths.
   -> Seq Double              -- Accumulated heights of the leaves.
-  -> Tree (PhyloLabel a)
+  -> Tree Length a
 toReconstructedTree' [] [] _ trs _  = trs `S.index` 0
 toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
   -- For the algorithm, see 'ELynx.Coalescent.simulate', but index starts
@@ -252,6 +251,6 @@ toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
   !tr    = lengthenStem dvr $ trs `S.index` (i + 1)
   !h'    = hl + dvl       -- Should be the same as 'hr + dvr'.
   -- TODO: Ideally we use a data structure without branch support.
-  !tm    = Node (PhyloLabel l 0 1.0) [tl, tr]
+  !tm    = Node (Length 0) l [tl, tr]
   !trs'' = (S.take i trs S.|> tm) S.>< S.drop (i + 2) trs
   !hs'   = (S.take i hs  S.|> h') S.>< S.drop (i + 2) hs

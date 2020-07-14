@@ -45,6 +45,7 @@
 -- incomplete.
 module ELynx.Data.Tree.Rooted
   ( Tree (..),
+    Forest,
     singleton,
     degree,
     leaves,
@@ -78,6 +79,8 @@ import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import GHC.Generics
+
+-- TODO: Check usage of Forest = [Tree].
 
 -- | Rooted rose trees with branch labels.
 --
