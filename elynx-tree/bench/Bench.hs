@@ -1,30 +1,27 @@
-{- |
-Module      :  Bench
-Description :  Various benchmarks
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
+-- |
+-- Module      :  Bench
+-- Description :  Various benchmarks
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Mon Dec 16 13:33:27 2019.
+module Main where
 
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Mon Dec 16 13:33:27 2019.
-
--}
-
-import           Criterion.Main
-import qualified Data.ByteString.Lazy.Char8    as L
-import           Data.Tree
-
-import           ELynx.Data.Tree
-import           ELynx.Import.Tree.Newick
-import           ELynx.Tools
+import Criterion.Main
+import Data.ByteString.Lazy.Char8 (ByteString)
+import ELynx.Data.Tree
+import ELynx.Import.Tree.Newick
+import ELynx.Tools
 
 treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"
 
-getManyTrees :: IO [Tree (PhyloLabel L.ByteString)]
-getManyTrees = map harden <$> parseFileWith (manyNewick Standard) treeFileMany
+getManyTrees :: IO (Forest Phylo ByteString)
+getManyTrees = parseFileWith (manyNewick Standard) treeFileMany
 
 main :: IO ()
 main = do

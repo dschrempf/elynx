@@ -16,14 +16,13 @@ module ELynx.Data.Tree.MultipartitionSpec
 where
 
 import Data.Set (Set, fromList)
-import Data.Tree
 import ELynx.Data.Tree
 import ELynx.Data.Tree.PhyloTreeArbitraryInstance ()
 import Test.Hspec
 import Test.QuickCheck.Instances.Containers ()
 
-ex1 :: Tree Int
-ex1 = Node 0 [Node 1 [], Node 2 [Node 4 [], Node 5 [], Node 6 []], Node 3 []]
+ex1 :: Tree () Int
+ex1 = Node () 0 [Node () 1 [], Node () 2 [Node () 4 [], Node () 5 [], Node () 6 []], Node () 3 []]
 
 sol1 :: Set (Multipartition Int)
 sol1 =
@@ -32,13 +31,14 @@ sol1 =
       mp [fromList [1, 3], fromList [4], fromList [5], fromList [6]]
     ]
 
-ex2 :: Tree Int
-ex2 = Node 0 [Node 1 [], Node 2 [], Node 0 [Node 3 [], Node 4 []], Node 5 []]
+ex2 :: Tree () Int
+ex2 = Node () 0 [Node () 1 [], Node () 2 [], Node () 0 [Node () 3 [], Node () 4 []], Node () 5 []]
 
 sol2 :: Set (Multipartition Int)
 sol2 =
   fromList [mp [fromList [1], fromList [2], fromList [3, 4], fromList [5]]]
 
+-- -- TODO.
 -- -- removeMultifurcations was moved to 'PhyloTree' (but commented). It didn't
 -- -- fit into 'MeasurableTree'.
 -- prop_bifurcating_tree
@@ -50,8 +50,8 @@ spec = describe "multipartitions" $
   it "calculates correct multipartitions for a sample tree" $ do
     -- t <- removeBrInfo <$> getMultifurcatingTree
     -- print $ multipartitions ex1
-    multipartitions ex1 `shouldBe` sol1
-    multipartitions ex2 `shouldBe` sol2
+    multipartitions ex1 `shouldBe` Just sol1
+    multipartitions ex2 `shouldBe` Just sol2
 
 -- it "is empty for a collection of random bifurcating trees"
 --   $ property (prop_bifurcating_tree :: Tree (PhyloLabel Double) -> Bool)

@@ -1,3 +1,6 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DerivingVia #-}
+
 -- |
 -- Module      :  ELynx.Data.Tree.Phylogeny
 -- Description :  Phylogenetic trees
@@ -38,6 +41,7 @@ import Data.Bifoldable
 import Data.Bifunctor
 import Data.Bitraversable
 import Data.Maybe
+import Data.Semigroup
 import qualified Data.Set as S
 import ELynx.Data.Tree.Measurable
 import ELynx.Data.Tree.Rooted
@@ -78,7 +82,9 @@ data Phylo = Phylo
 
 -- | Branch length label. For conversion, see 'phyloToLengthTree' and 'lengthToPhyloTree'.
 newtype Length = Length {fromLength :: BranchLength}
-  deriving (Read, Show, Eq, Ord)
+  deriving (Read, Show, Eq, Ord, Num, Fractional)
+  deriving Monoid via Sum Double
+  deriving Semigroup via Sum Double
 
 instance Measurable Length where
   getLen = fromLength
@@ -106,7 +112,7 @@ fromLengthLabel (Length b) = Phylo (Just b) Nothing
 
 -- | Branch support label. For conversion, see 'phyloToSupportTree'.
 newtype Support = Support {fromSupport :: BranchSupport}
-  deriving (Read, Show, Eq, Ord)
+  deriving (Read, Show, Eq, Ord, Num, Fractional)
 
 instance Supported Support where
   getBranchSupport = fromSupport
