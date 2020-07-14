@@ -82,9 +82,9 @@ data Phylo = Phylo
 
 -- | Branch length label. For conversion, see 'phyloToLengthTree' and 'lengthToPhyloTree'.
 newtype Length = Length {fromLength :: BranchLength}
-  deriving (Read, Show, Eq, Ord, Num, Fractional)
-  deriving Monoid via Sum Double
-  deriving Semigroup via Sum Double
+  deriving (Read, Show, Eq, Ord, Num, Fractional, Floating)
+  deriving (Monoid) via Sum Double
+  deriving (Semigroup) via Sum Double
 
 instance Measurable Length where
   getLen = fromLength
@@ -92,8 +92,11 @@ instance Measurable Length where
 
 -- | If root branch length is not available, set it to 0. Return 'Nothing' if
 -- any other branch length is unavailable.
-phyloToLengthTree :: Tree Phylo a -> Maybe (Tree Length a)
-phyloToLengthTree = bitraverse toLength pure . cleanRootLength
+phyloToLengthTree :: Tree Phylo a -> Either String (Tree Length a)
+phyloToLengthTree =
+  maybe (Left "phyloToLengthTree: Length unavailable for some branches.") Right
+    . bitraverse toLength pure
+    . cleanRootLength
 
 cleanRootLength :: Tree Phylo a -> Tree Phylo a
 cleanRootLength (Node (Phylo Nothing s) l f) = Node (Phylo (Just 0) s) l f
@@ -122,8 +125,12 @@ instance Supported Support where
 -- branch to maximum support.
 --
 -- Return 'Nothing' if any other branch has no available support value.
-phyloToSupportTree :: Tree Phylo a -> Maybe (Tree Support a)
-phyloToSupportTree t = bitraverse toSupport pure $ cleanLeafSupport m $ cleanRootSupport m t
+phyloToSupportTree :: Tree Phylo a -> Either String (Tree Support a)
+phyloToSupportTree t =
+  maybe
+    (Left "phyloToSupportTree: Support unavailable for some branches.")
+    Right
+    $ bitraverse toSupport pure $ cleanLeafSupport m $ cleanRootSupport m t
   where
     m = getMaxSupport t
 

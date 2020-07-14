@@ -16,14 +16,13 @@ module ELynx.Data.Tree.TreeSpec
 where
 
 import qualified Data.ByteString.Lazy.Char8 as L
+import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Maybe
 import qualified Data.Set as S
-import Data.Tree
+import Data.Set (Set)
 import ELynx.Data.Tree
-import ELynx.Data.Tree.PhyloTreeArbitraryInstance ()
-import ELynx.Import.Tree.Newick hiding
-  ( node,
-  )
+import ELynx.Data.Tree.Arbitrary ()
+import ELynx.Import.Tree.Newick
 import ELynx.Tools
 import Test.Hspec
   ( Spec,
@@ -33,70 +32,67 @@ import Test.Hspec
   )
 import Test.Hspec.QuickCheck (modifyMaxSize)
 import Test.QuickCheck hiding (label)
-import Test.QuickCheck.Instances.Containers
-  (
-  )
 
-node :: Int -> Tree Int
-node n = Node n []
+node :: Int -> Tree () Int
+node n = Node () n []
 
-smallTree :: Tree Int
-smallTree = Node 0 [node 1, node 2]
+smallTree :: Tree () Int
+smallTree = Node () 0 [node 1, node 2]
 
-smallSubTree :: Tree Int
-smallSubTree = Node 0 [node 1]
+smallSubTree :: Tree () Int
+smallSubTree = Node () 0 [node 1]
 
-smallSubTreePruned :: Tree Int
+smallSubTreePruned :: Tree () Int
 smallSubTreePruned = node 1
 
-sampleTreeBS :: L.ByteString
+sampleTreeBS :: ByteString
 sampleTreeBS =
   L.pack
     "(Aeropyrum0:0.5478645225,(((((((((Arabidopsi:0.0701001024,Oryza_sati:0.0765988261):0.0309636193,Gymnosperm:0.0520325624):0.0338982245,Physcomitr:0.0768008916):0.0895714685,(Chlamydomo:0.1136227755,Dunaliella:0.1406347323):0.1117340620):0.0818876186,Rhodophyta:0.3405656487):0.0363527066,((((((Babesia_bo:0.1646969208,Theileria0:0.1519889486):0.1908081096,Plasmodium:0.3250696762):0.0637865908,(Toxoplasma:0.1153570425,Eimeria000:0.1671916078):0.0980136930):0.0518956330,Cryptospor:0.3175062809):0.1607708388,Ciliophora:0.5687502950):0.0624078848,(Phytophtho:0.2016424948,((Thalassios:0.1202730781,Phaeodacty:0.1290341329):0.1772775509,Phaeophyce:0.1989260715):0.0312359673):0.1154768302):0.0311952864):0.0149160316,(((((((((Candida_al:0.1027755272,Saccharomy:0.1190206560):0.1333487870,Neurospora:0.1977309079):0.0522926266,Schizosacc:0.2019603227):0.0567441011,(Cryptococc:0.1948614959,Ustilago_m:0.1564451295):0.0775729694):0.0323959951,Glomus_int:0.1573670796):0.0194701292,Chytridiom:0.2228415254):0.0384370601,Encephalit:1.4622174644):0.0416231688,(((Drosophila:0.2160627753,(Mammalians:0.1080484094,Tunicates0:0.1739253014):0.0289624371):0.0346633757,Hydrozoa00:0.2058137032):0.0480963050,Monosiga_b:0.3020637584):0.0654894239):0.0380915725,(Dictyostel:0.3453588998,Mastigamoe:0.3844779231):0.0478795653):0.0129578395):1.7592083381,((Archaeoglo:0.5402784445,Methanococ:0.4088567459):0.0993669265,Pyrococcus:0.4058713829):0.1734405968):0.2193511807,Pyrobaculu:0.7507718047):0.1646616482,Sulfolobus:0.5404967897);"
 
-largeTree :: Tree (PhyloLabel L.ByteString)
-largeTree = harden $ parseByteStringWith "Sample newick byte string" (newick Standard) sampleTreeBS
+largeTree :: Tree Phylo ByteString
+largeTree = parseByteStringWith "Sample newick byte string" (newick Standard) sampleTreeBS
 
-subSampleLargeTree :: Tree (PhyloLabel L.ByteString)
-subSampleLargeTree = fromJust $ subTree ((== 'P') . L.head . label) largeTree
+subSampleLargeTree :: Tree Phylo ByteString
+subSampleLargeTree = fromJust $ subTree ((== 'P') . L.head) largeTree
 
-simpleTree :: Tree (PhyloLabel String)
-simpleTree = Node (pl "i") [Node (pl "j") [Node (pl "x") [], Node (pl "y") []], Node (pl "z") []]
+simpleTree :: Tree Phylo String
+simpleTree = Node pl "i" [Node pl "j" [Node pl "x" [], Node pl "y" []], Node pl "z" []]
 
-simpleSol :: [Tree (PhyloLabel String)]
+simpleSol :: Forest Phylo String
 simpleSol =
-  [ Node (pl "i") [Node (pl "j") [Node (pl "x") [], Node (pl "y") []], Node (pl "z") []],
-    Node (pl "i") [Node (pl "x") [], Node (pl "j") [Node (pl "y") [], Node (pl "z") []]],
-    Node (pl "i") [Node (pl "j") [Node (pl "z") [], Node (pl "x") []], Node (pl "y") []]
+  [ Node pl "i" [Node pl "j" [Node pl "x" [], Node pl "y" []], Node pl "z" []],
+    Node pl "i" [Node pl "x" [], Node pl "j" [Node pl "y" [], Node pl "z" []]],
+    Node pl "i" [Node pl "j" [Node pl "z" [], Node pl "x" []], Node pl "y" []]
   ]
 
 -- XXX: Skip not bifurcating trees. This is ugly, I know.
-prop_roots :: Tree (PhyloLabel a) -> Bool
+prop_roots :: Tree Phylo a -> Bool
 prop_roots t
   | not $ bifurcating t = True
   | length (leaves t) < 3 = length (roots t) == 1
   | otherwise = length (roots t) == 2 * length (leaves t) - 3
 
 -- XXX: Skip not bifurcating trees. This is ugly, I know.
-prop_connect :: PhyloLabel a -> Tree (PhyloLabel a) -> Tree (PhyloLabel a) -> Bool
+prop_connect :: Phylo -> Tree Phylo a -> Tree Phylo a -> Bool
 prop_connect n l r
   | not (bifurcating l) || not (bifurcating r) = True
   | length (leaves l) < 3 || length (leaves r) < 3 = length (connect n l r) == 1
   | otherwise = length (connect n l r) == length (leaves l) * length (leaves r)
 
-type Constraint a = S.Set a
+type Constraint a = Set a
 
-compatibleAll :: (Show a, Ord a) => Tree a -> [Constraint a] -> Bool
-compatibleAll (Node _ [l, r]) cs =
+compatibleAll :: (Show a, Ord a) => Tree e a -> [Constraint a] -> Bool
+compatibleAll (Node _ _ [l, r]) cs =
   all (bpcompatible (bipartition l)) cs && all (bpcompatible (bipartition r)) cs
 compatibleAll _ _ = error "Tree is not bifurcating."
 
 compatibleWith ::
-  (Show b, Ord b) => (a -> b) -> [Constraint a] -> Tree a -> Bool
+  (Show b, Ord b) => (a -> b) -> [Constraint a] -> Tree e a -> Bool
 compatibleWith f cs t = compatibleAll (fmap f t) (map (S.map f) cs)
 
-pl :: a -> PhyloLabel a
-pl x = PhyloLabel x 0 1.0
+pl :: Phylo
+pl = Phylo 0 1.0
 
 spec :: Spec
 spec = do
@@ -116,15 +112,15 @@ spec = do
 
   describe "roots and rootAt" $ do
     it "correctly handles leaves and cherries" $ do
-      let tleaf = Node (pl 0) [] :: Tree (PhyloLabel Int)
-          tcherry = Node (pl 0) [Node (pl 1) [], Node (pl 2) []] :: Tree (PhyloLabel Int)
+      let tleaf = Node (pl 0) [] :: Tree Phylo Int
+          tcherry = Node (pl 0) [Node (pl 1) [], Node (pl 2) []] :: Tree Phylo Int
       roots tleaf `shouldBe` [tleaf]
       roots tcherry `shouldBe` [tcherry]
     it "correctly handles simple trees" $
       roots simpleTree `shouldBe` simpleSol
     modifyMaxSize (* 100) $
       it "returns the correct number of rooted trees for arbitrary trees" $
-        property (prop_roots :: (Tree (PhyloLabel Int) -> Bool))
+        property (prop_roots :: (Tree Phylo Int -> Bool))
 
   describe "rootAt" $
     it "correctly handles simple trees" $ do
@@ -138,13 +134,13 @@ spec = do
   describe "connect" $
     modifyMaxSize (* 100) $ do
       it "returns the correct number of rooted trees for arbitrary trees" $
-        property (prop_connect :: PhyloLabel Int -> Tree (PhyloLabel Int) -> Tree (PhyloLabel Int) -> Bool)
+        property (prop_connect :: Phylo -> Int -> Tree Phylo Int -> Tree Phylo Int -> Bool)
       it "correctly connects sample trees without and with constraints" $ do
         a <- harden <$> parseFileWith (oneNewick Standard) "data/ConnectA.tree"
         b <- harden <$> parseFileWith (oneNewick Standard) "data/ConnectB.tree"
         c <- map harden <$> parseFileWith (manyNewick Standard) "data/ConnectConstraints.tree"
-        let ts = connect (PhyloLabel "" 1.0 1.0) a b
-            cs = concatMap clades c :: [Constraint (PhyloLabel L.ByteString)]
+        let ts = connect (Phylo "" 1.0 1.0) a b
+            cs = concatMap clades c :: [Constraint Phylo]
             ts' = filter (compatibleWith getName cs) ts
         length ts `shouldBe` 63
         length ts' `shouldBe` 15

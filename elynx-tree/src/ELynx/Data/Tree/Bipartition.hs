@@ -101,11 +101,11 @@ bipartition _ = error "Root node is not bifurcating."
 -- | Get all bipartitions of the tree.
 --
 -- Return 'Nothing' if the tree contains duplicate leaves.
-bipartitions :: Ord a => Tree e a -> Maybe (Set (Bipartition a))
+bipartitions :: Ord a => Tree e a -> Either String (Set (Bipartition a))
 bipartitions t
   | valid t =
-    Just $ S.filter bpValid $ bipartitions' S.empty $ S.fromList <$> partitionTree t
-  | otherwise = Nothing
+    Right $ S.filter bpValid $ bipartitions' S.empty $ S.fromList <$> partitionTree t
+  | otherwise = Left "bipartitions: Tree contains duplicate leaves."
 
 -- | Report the complementary leaves for each child.
 getComplementaryLeaves ::
@@ -156,13 +156,13 @@ bipartitions' p t@(Node _ p' ts) =
 bipartitionToBranch ::
   (Monoid e, Ord a) =>
   Tree e a ->
-  Maybe (Map (Bipartition a) e)
+  Either String (Map (Bipartition a) e)
 bipartitionToBranch t
   | valid t =
-    Just $
+    Right $
       M.filterWithKey (const . bpValid) $
         bipartitionToBranch' S.empty pTree
-  | otherwise = Nothing
+  | otherwise = Left "bipartitionToBranch: Tree contains duplicate leaves."
   where
     pTree = S.fromList <$> partitionTree t
 

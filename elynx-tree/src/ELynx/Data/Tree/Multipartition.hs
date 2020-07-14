@@ -78,10 +78,10 @@ mpMap :: (Ord a, Ord b) => (a -> b) -> Multipartition a -> Multipartition b
 mpMap f (Multipartition xs) = Multipartition $ S.map (S.map f) xs
 
 -- | Get all 'Multipartition's of a tree.
-multipartitions :: Ord a => Tree e a -> Maybe (Set (Multipartition a))
+multipartitions :: Ord a => Tree e a -> Either String (Set (Multipartition a))
 multipartitions t
-  | valid t = Just $ multipartitions' S.empty $ S.fromList <$> partitionTree t
-  | otherwise = Nothing
+  | valid t = Right $ multipartitions' S.empty $ S.fromList <$> partitionTree t
+  | otherwise = Left "multipartitions: Tree contains duplicate leaves."
 
 -- See 'multipartitions', but do not check if leaves are unique.
 multipartitions' :: Ord a => Set a -> Tree e (Set a) -> Set (Multipartition a)

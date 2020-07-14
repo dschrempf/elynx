@@ -18,7 +18,6 @@ where
 import Data.ByteString.Lazy (ByteString)
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
 import qualified Data.Set as S
 import Data.Set (Set)
 import ELynx.Data.Tree
@@ -79,11 +78,11 @@ spec = do
         simpleTrees <- getSimpleTrees
         let t1 = head simpleTrees
             t2 = simpleTrees !! 1
-        bipartitions t1 `shouldBe` Just bipartitionsFirstTree
-        bipartitions t2 `shouldBe` Just bipartitionsSecondTree
+        bipartitions t1 `shouldBe` Right bipartitionsFirstTree
+        bipartitions t2 `shouldBe` Right bipartitionsSecondTree
   describe "bipartitionToBranch" $
     it "creates a map from bipartitions to branch lengths" $
       do
         simpleTrees <- getSimpleTrees
-        bipartitionToBranch (fromJust $ phyloToLengthTree $ simpleTrees !! 2)
-          `shouldBe` Just bipartitionToBranchAnswer
+        (phyloToLengthTree (simpleTrees !! 2) >>= bipartitionToBranch)
+          `shouldBe` Right bipartitionToBranchAnswer

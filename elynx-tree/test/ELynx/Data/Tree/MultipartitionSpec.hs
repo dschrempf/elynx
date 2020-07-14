@@ -17,9 +17,8 @@ where
 
 import Data.Set (Set, fromList)
 import ELynx.Data.Tree
-import ELynx.Data.Tree.PhyloTreeArbitraryInstance ()
+import ELynx.Data.Tree.Arbitrary ()
 import Test.Hspec
-import Test.QuickCheck.Instances.Containers ()
 
 ex1 :: Tree () Int
 ex1 = Node () 0 [Node () 1 [], Node () 2 [Node () 4 [], Node () 5 [], Node () 6 []], Node () 3 []]
@@ -50,8 +49,8 @@ spec = describe "multipartitions" $
   it "calculates correct multipartitions for a sample tree" $ do
     -- t <- removeBrInfo <$> getMultifurcatingTree
     -- print $ multipartitions ex1
-    multipartitions ex1 `shouldBe` Just sol1
-    multipartitions ex2 `shouldBe` Just sol2
+    multipartitions ex1 `shouldBe` Right sol1
+    multipartitions ex2 `shouldBe` Right sol2
 
 -- it "is empty for a collection of random bifurcating trees"
 --   $ property (prop_bifurcating_tree :: Tree (PhyloLabel Double) -> Bool)

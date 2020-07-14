@@ -17,16 +17,12 @@ module ELynx.Data.Tree.DistanceSpec
 where
 
 import Data.ByteString.Lazy.Char8 (ByteString)
-import Data.Either
 import ELynx.Data.Tree
-import ELynx.Data.Tree.PhyloTreeArbitraryInstance ()
+import ELynx.Data.Tree.Arbitrary ()
 import ELynx.Import.Tree.Newick
 import ELynx.Tools
 import Test.Hspec
 import Test.QuickCheck
-import Test.QuickCheck.Instances.Containers
-  (
-  )
 
 treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
@@ -210,7 +206,7 @@ spec = do
   describe "symmetric" $ do
     it "calculates correct distances for sample trees" $ do
       simpleTrees <- getSimpleTrees
-      symmetric (head simpleTrees) (simpleTrees !! 1) `shouldBe` 2
+      symmetric (head simpleTrees) (simpleTrees !! 1) `shouldBe` Right 2
       manyTrees <- getManyTrees
       -- Since treedist computes the distance between adjacent pairs, in the
       -- following manner: [tr0, tr1, tr2, tr3] -> [dist tr0 tr1, dist tr2 tr3],
@@ -218,25 +214,27 @@ spec = do
       each 2 (adjacent symmetric manyTrees)
         `shouldBe` map Right symmetricAnswers
     it "is zero for a collection of random trees" $
-      property $ prop_dist_same_tree
-      -- TODO: Types are all wrong here :).
-      (symmetric :: Tree Phylo Double -> Tree Phylo Double -> Either String Int)
+      property $
+        prop_dist_same_tree
+          (symmetric :: Tree Phylo Double -> Tree Phylo Double -> Either String Int)
 
   describe "incompatibleSplit" $ do
     it "calculates correct distances for sample trees" $ do
-      incompatibleSplits multifurcating bifurcatingComp `shouldBe` 0
-      incompatibleSplits bifurcatingComp multifurcating `shouldBe` 0
-      incompatibleSplits bifurcatingIncomp multifurcating `shouldBe` 2
-      incompatibleSplits multifurcating bifurcatingIncomp `shouldBe` 2
+      incompatibleSplits multifurcating bifurcatingComp `shouldBe` Right 0
+      incompatibleSplits bifurcatingComp multifurcating `shouldBe` Right 0
+      incompatibleSplits bifurcatingIncomp multifurcating `shouldBe` Right 2
+      incompatibleSplits multifurcating bifurcatingIncomp `shouldBe` Right 2
     it "calculates correct distances for sample trees with branch support" $ do
-      incompatibleSplits incSplitTree1a incSplitTree2 `shouldBe` 2
-      incompatibleSplits incSplitTree1b incSplitTree2 `shouldBe` 2
-      incompatibleSplits (collapse 0.71 incSplitTree1a) incSplitTree2
-        `shouldBe` 2
-      incompatibleSplits (collapse 0.71 incSplitTree1b) incSplitTree2
-        `shouldBe` 0
-      incompatibleSplits (collapse 0.71 incSplitTree3) incSplitTree4
-        `shouldBe` 0
+      incompatibleSplits incSplitTree1a incSplitTree2 `shouldBe` Right 2
+      incompatibleSplits incSplitTree1b incSplitTree2 `shouldBe` Right 2
+      let t1a = either error id $ phyloToSupportTree incSplitTree1a
+          t1b = either error id $ phyloToSupportTree incSplitTree1b
+          tr2 = either error id $ phyloToSupportTree incSplitTree2
+          tr3 = either error id $ phyloToSupportTree incSplitTree3
+          tr4 = either error id $ phyloToSupportTree incSplitTree4
+      incompatibleSplits (collapse 0.7 t1a) tr2 `shouldBe` Right 2
+      incompatibleSplits (collapse 0.71 t1b) tr2 `shouldBe` Right 0
+      incompatibleSplits (collapse 0.71 tr3) tr4 `shouldBe` Right 0
     it "is zero for a collection of random trees" $
       property $
         prop_dist_same_tree
@@ -245,10 +243,10 @@ spec = do
   describe "branchScore" $ do
     it "calculates correct distances for sample trees" $ do
       manyTrees <- getManyTrees
-      -- print branchScoreAnswers
-      each 2 (adjacent branchScore manyTrees)
-        `shouldSatisfy` nearlyEqListWith 1e-5 branchScoreAnswers
+      let ts = map (either error id . phyloToLengthTree) manyTrees
+      let ds = map (fromLength . either error id) $ adjacent branchScore ts
+      ds `shouldSatisfy` nearlyEqListWith 1e-5 branchScoreAnswers
     it "is zero for a collection of random trees" $
       property $
         prop_dist_same_tree
-          (branchScore :: Tree Phylo Double -> Tree Phylo Double -> Either String Double)
+          (branchScore :: Tree Double Double -> Tree Double Double -> Either String Double)

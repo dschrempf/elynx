@@ -71,4 +71,3 @@ tests:
       - hspec-megaparsec
       - megaparsec
       - QuickCheck
-      - quickcheck-instances

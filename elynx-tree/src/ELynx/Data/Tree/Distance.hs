@@ -58,8 +58,8 @@ symmetric :: Ord a => Tree e a -> Tree e a -> Either String Int
 symmetric t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "symmetric: Trees contain different leaves."
   | otherwise = do
-    bps1 <- maybe (Left "symmetric: Tree 1 contains duplicate leaves.") Right $ bipartitions t1
-    bps2 <- maybe (Left "symmetric: Tree 2 contains duplicate leaves.") Right $ bipartitions t2
+    bps1 <- bipartitions t1
+    bps2 <- bipartitions t2
     return $ length $ symmetricDifference bps1 bps2
 
 countIncompatibilities :: Ord a => Set (Bipartition a) -> Set (Multipartition a) -> Int
@@ -107,14 +107,14 @@ incompatibleSplits t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "incompatibleSplits: Trees do not have equal leaf sets."
   | otherwise = do
     -- Bipartitions.
-    bs1 <- maybe (Left "symmetric: Tree 1 contains duplicate leaves.") Right $ bipartitions t1
-    bs2 <- maybe (Left "symmetric: Tree 2 contains duplicate leaves.") Right $ bipartitions t2
+    bs1 <- bipartitions t1
+    bs2 <- bipartitions t2
     let -- Putative incompatible bipartitions of trees one and two, respectively.
         putIncBs1 = bs1 S.\\ bs2
         putIncBs2 = bs2 S.\\ bs1
     -- Multipartitions.
-    ms1 <- maybe (Left "symmetric: Tree 1 contains duplicate leaves.") Right $ multipartitions t1
-    ms2 <- maybe (Left "symmetric: Tree 2 contains duplicate leaves.") Right $ multipartitions t2
+    ms1 <- multipartitions t1
+    ms2 <- multipartitions t2
     return $ countIncompatibilities putIncBs1 ms2 + countIncompatibilities putIncBs2 ms1
 
 -- | Compute branch score distance between two trees.
@@ -127,8 +127,8 @@ branchScore :: (Floating e, Ord a) => Tree e a -> Tree e a -> Either String e
 branchScore t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "branchScoreWith: Trees do not have equal leaf sets."
   | otherwise = do
-    bpToBr1 <- maybe (Left "symmetric: Tree 1 contains duplicate leaves.") Right $ bipartitionToBranch $ first Sum t1
-    bpToBr2 <- maybe (Left "symmetric: Tree 2 contains duplicate leaves.") Right $ bipartitionToBranch $ first Sum t2
+    bpToBr1 <- bipartitionToBranch $ first Sum t1
+    bpToBr2 <- bipartitionToBranch $ first Sum t2
     let dBs = M.unionWith (-) bpToBr1 bpToBr2
         dsSquared = foldl' (\acc e -> let e' = getSum e in acc + e' * e') 0 dBs
     return $ sqrt dsSquared
