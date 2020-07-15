@@ -52,6 +52,22 @@ prop_connect n l r
   | length (leaves l) < 3 || length (leaves r) < 3 = (length <$> connect n l r) == Right 1
   | otherwise = (length <$> connect n l r) == (Right $ length (leaves l) * length (leaves r))
 
+-- | Determine compatibility between a bipartition and a set.
+--
+-- If both subsets of the bipartition share elements with the given set, the
+-- bipartition is incompatible with this subset. If all elements of the subset
+-- are either not in the bipartition or mapping to one of the two subsets of the
+-- bipartition, the bipartition and the subset are compatible.
+--
+-- See also 'ELynx.Data.Tree.Multipartition.compatible'.
+bipartitionCompatible :: (Show a, Ord a) => Bipartition a -> Set a -> Bool
+-- compatible (Bipartition (l, r)) ss = sintersection l ss `sdisjoint` sintersection r ss
+bipartitionCompatible p s = S.null lOverlap || S.null rOverlap
+  where
+    (l, r) = fromBipartition p
+    lOverlap = S.intersection l s
+    rOverlap = S.intersection r s
+
 compatibleAll :: (Show a, Ord a) => Tree e a -> [Set a] -> Bool
 compatibleAll (Node _ _ [l, r]) cs =
   all (bipartitionCompatible (bipartition l)) cs && all (bipartitionCompatible (bipartition r)) cs

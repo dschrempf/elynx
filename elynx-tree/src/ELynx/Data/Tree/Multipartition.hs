@@ -22,11 +22,10 @@ module ELynx.Data.Tree.Multipartition
 
     -- * Work with 'Multipartition's
     multipartitions,
-    multipartitionCompatible,
+    compatible,
   )
 where
 
-import Data.Foldable
 import Data.List hiding (partition)
 import qualified Data.Set as S
 import Data.Set (Set)
@@ -61,7 +60,12 @@ mp' xs = Multipartition (S.fromList xs)
 
 -- | Convert a bipartition to a multipartition.
 bpToMp :: Ord a => Bipartition a -> Multipartition a
-bpToMp = mp . toList . fromBipartition
+bpToMp = mp . tupleToList . fromBipartition
+  -- Be careful with tuples, because 'toList' does something very weird. It only
+  -- takes the second element of the tuple!
+  --
+  -- toList :: Foldable t => t a -> [a]
+  where tupleToList (x, y) = [x, y]
 
 -- | Show a multipartition in a human readable form. Use a provided function to
 -- extract the valuable information.
@@ -93,56 +97,24 @@ multipartitions' p t@(Node _ _ ts) =
   where
     cs = getComplementaryLeaves p t
 
--- Find the subset of a multipartition containing a given element.
-findSubset :: Ord a => a -> Multipartition a -> Maybe (Set a)
-findSubset l = find (S.member l) . fromMultipartition
-
--- Find and collect the subset of a multipartition which contains a given element.
-addSubset :: Ord a => Multipartition a -> Set (Set a) -> a -> Set (Set a)
-addSubset m acc l = case findSubset l m of
-  Just s -> s `S.insert` acc
-  Nothing -> acc
-
--- Return the subsets of the multipartition overlapping with the given set.
-overlap :: Ord a => Multipartition a -> Set a -> Set (Set a)
-overlap m = foldl' (addSubset m) S.empty
-
 -- | 'Multipartition's are compatible if they do not contain conflicting
 -- information. This function checks if two multipartitions are compatible with
--- each other. Thereby, the following algorithm is used:
+-- each other. Thereby, a variation of the following algorithm is used:
 --
--- 1. Take each subset of the first multipartition.
---
--- 2. Determine the overlap: For each leaf of the chosen subset, add the subset
---    of the second multipartition containing the leaf. The result is a set of
---    subsets, which is the union of the added subsets.
---
---    The data type "set of subsets" is actually the same data type as a
---    multipartition. However, it is not a partition, because it may and will not
---    span the whole set of leaves, and so, I use @Set (Set a)@. One could define
---    a multiset data type to improve comprehensibility.
---
--- 3. Collect the set of subsets from point 2.
---
--- 4. Each set of subsets needs to be either equal or disjoint with any other
---    set of subsets in the collection. If so, the first multipartition is
---    compatible with the second.
---
--- 5. Exchange the first with the second multipartition and go through steps 1
---    to 4.
---
--- See also 'ELynx.Data.Tree.Bipartition.compatible'.
-multipartitionCompatible :: Ord a => Multipartition a -> Multipartition a -> Bool
-multipartitionCompatible l r =
-  and $
-    [x `S.disjoint` y | x <- lOverlaps, y <- lOverlaps, x /= y]
-      ++ [x `S.disjoint` y | x <- rOverlaps, y <- rOverlaps, x /= y]
-  where
-    ls = S.toList $ fromMultipartition l
-    rs = S.toList $ fromMultipartition r
-    -- The subsets on the left multipartition overlap the subsets of the
-    -- right multipartition.
-    lOverlaps = map (overlap r) ls
-    -- The subsets on the left multipartition overlap the subsets of the
-    -- right multipartition.
-    rOverlaps = map (overlap l) rs
+-- @
+-- mp1 `mpCompatible` mp2
+-- for set1 in mp1:
+--   for set2 in mp2:
+--     if set1 `isSubSetOf` set2:
+--       remove set1 from mp1
+--     if set2 `isSubSetOf` set1:
+--       remove set2 from mp2
+-- if either mp2 or mp2 is empty, they are compatible
+-- @
+compatible :: (Show a, Ord a) => Multipartition a -> Multipartition a -> Bool
+compatible l r = S.null (S.filter (`remove` rs) ls) || S.null (S.filter (`remove` ls) rs)
+  where ls = fromMultipartition l
+        rs = fromMultipartition r
+
+remove :: Ord a => Set a -> Set (Set a) -> Bool
+remove s = any (s `S.isSubsetOf`)

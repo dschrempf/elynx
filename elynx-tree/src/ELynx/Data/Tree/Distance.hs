@@ -62,9 +62,9 @@ symmetric t1 t2
     bps2 <- bipartitions t2
     return $ length $ symmetricDifference bps1 bps2
 
-countIncompatibilities :: Ord a => Set (Bipartition a) -> Set (Multipartition a) -> Int
+countIncompatibilities :: (Show a, Ord a) => Set (Bipartition a) -> Set (Multipartition a) -> Int
 countIncompatibilities bs ms =
-  foldl' (\i b -> if any (multipartitionCompatible $ bpToMp b) ms then i else i + 1) 0 bs
+  foldl' (\i b -> if any (compatible $ bpToMp b) ms then i else i + 1) 0 bs
 
 -- | Number of incompatible splits.
 --
@@ -102,19 +102,24 @@ countIncompatibilities bs ms =
 -- induced multifurcations of the tree.
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
-incompatibleSplits :: Ord a => Tree e a -> Tree e a -> Either String Int
+incompatibleSplits :: (Show a, Ord a) => Tree e a -> Tree e a -> Either String Int
 incompatibleSplits t1 t2
-  | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "incompatibleSplits: Trees do not have equal leaf sets."
+  | S.fromList (leaves t1) /= S.fromList (leaves t2) =
+    Left "incompatibleSplits: Trees do not have equal leaf sets."
   | otherwise = do
     -- Bipartitions.
     bs1 <- bipartitions t1
     bs2 <- bipartitions t2
+    -- traceShowM $ "bs1" ++ show (S.map bpHuman bs1)
+    -- traceShowM $ "bs2" ++ show (S.map bpHuman bs2)
     let -- Putative incompatible bipartitions of trees one and two, respectively.
         putIncBs1 = bs1 S.\\ bs2
         putIncBs2 = bs2 S.\\ bs1
     -- Multipartitions.
     ms1 <- multipartitions t1
     ms2 <- multipartitions t2
+    -- traceShowM $ "putIncBs1 " ++ show (S.map bpHuman putIncBs1)
+    -- traceShowM $ "putIncBs2 " ++ show (S.map bpHuman putIncBs2)
     return $ countIncompatibilities putIncBs1 ms2 + countIncompatibilities putIncBs2 ms1
 
 -- | Compute branch score distance between two trees.
