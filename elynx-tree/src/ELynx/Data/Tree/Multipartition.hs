@@ -117,4 +117,4 @@ compatible l r = S.null (S.filter (`remove` rs) ls) || S.null (S.filter (`remove
         rs = fromMultipartition r
 
 remove :: Ord a => Set a -> Set (Set a) -> Bool
-remove s = any (s `S.isSubsetOf`)
+remove s = not . any (s `S.isSubsetOf`)

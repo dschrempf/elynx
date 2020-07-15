@@ -226,8 +226,8 @@ spec = do
 
   describe "incompatibleSplit" $ do
     it "calculates correct distances for sample trees" $ do
-      -- incompatibleSplits multifurcating bifurcatingComp `shouldBe` Right 0
-      -- incompatibleSplits bifurcatingComp multifurcating `shouldBe` Right 0
+      incompatibleSplits multifurcating bifurcatingComp `shouldBe` Right 0
+      incompatibleSplits bifurcatingComp multifurcating `shouldBe` Right 0
       print $ S.map bpHuman <$> bipartitions bifurcatingIncomp
       print $ S.map bpHuman <$> bipartitions multifurcating
       print $ S.map mpHuman <$> multipartitions bifurcatingIncomp
@@ -235,8 +235,8 @@ spec = do
       print $ toNewick $ first (const noPL) bifurcatingIncomp
       print $ toNewick $ first (const noPL) multifurcating
       incompatibleSplits bifurcatingIncomp multifurcating `shouldBe` Right 2
+      incompatibleSplits multifurcating bifurcatingIncomp `shouldBe` Right 2
 
-      -- incompatibleSplits multifurcating bifurcatingIncomp `shouldBe` Right 2
     -- it "calculates correct distances for sample trees with branch support" $ do
     --   incompatibleSplits incSplitTree1a incSplitTree2 `shouldBe` Right 2
     --   incompatibleSplits incSplitTree1b incSplitTree2 `shouldBe` Right 2
