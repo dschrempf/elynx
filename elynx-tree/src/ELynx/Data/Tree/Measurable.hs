@@ -27,6 +27,7 @@ where
 
 import Data.Bifoldable
 import qualified Data.ByteString.Lazy.Char8 as L
+import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Bifunctor
 import ELynx.Data.Tree.Rooted
 import ELynx.Tools
@@ -75,14 +76,14 @@ distancesOriginLeaves (Node br _ ts) = map (getLen br +) (concatMap distancesOri
 totalBranchLength :: Measurable e => Tree e a -> BranchLength
 totalBranchLength = bifoldl' (+) const 0 . first getLen
 
-prettyRow :: String -> String -> L.ByteString
+prettyRow :: String -> String -> ByteString
 prettyRow name val = alignLeft 33 n <> alignRight 8 v
   where
     n = L.pack name
     v = L.pack val
 
 -- | Summarize a tree with measureable branch lengths.
-summarize :: Measurable e => Tree e a -> L.ByteString
+summarize :: Measurable e => Tree e a -> ByteString
 summarize t =
   L.intercalate
     "\n"

@@ -194,15 +194,15 @@ data Phylo = Phylo
   }
   deriving (Read, Show, Eq, Ord)
 
--- TODO: This is fishy.
 instance Semigroup Phylo where
   Phylo mBL mSL <> Phylo mBR mSR =
     Phylo
     (getSum <$> (Sum <$> mBL) <> (Sum <$> mBR))
     (getMin <$> (Min <$> mSL) <> (Min <$> mSR))
 
--- TODO: It would be good to provide this is Measurable. Same for Supported.
--- | Branch length label. For conversion, see 'phyloToLengthTree' and 'lengthToPhyloTree'.
+-- | Branch length label.
+--
+-- For conversion, see 'phyloToLengthTree' and 'lengthToPhyloTree'.
 newtype Length = Length {fromLength :: BranchLength}
   deriving (Read, Show, Eq, Ord, Num, Fractional, Floating)
   deriving (Semigroup, Monoid) via Sum Double

@@ -54,8 +54,11 @@ spec = do
       prune largeTree `shouldBe` largeTree
     it "correctly prunes a small example" $
       prune smallSubTree `shouldBe` smallSubTreePruned
-    it "leaves height constant for Measurable trees" $
-      height (prune subSampleLargeTree) `shouldBe` height subSampleLargeTree
+    it "leaves height constant for Measurable trees" $ do
+      let t' =
+            either (error "could not convert tree") id $
+              phyloToLengthTree subSampleLargeTree
+      height (prune t') `shouldBe` height t'
 
   describe "dropLeavesWith" $ do
     it "returns the same tree if no leaves satisfy predicate" $
@@ -65,5 +68,4 @@ spec = do
     it "returns the correct subtree for a small example" $
       dropLeavesWith (== 1) smallTree `shouldBe` Just smallSubTree
 
-  -- TODO: intersect.
-
+-- TODO: intersect.

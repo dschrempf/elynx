@@ -17,7 +17,6 @@ module ELynx.Import.Tree.NexusSpec
 where
 
 import Data.ByteString.Lazy (ByteString)
-import Data.Tree
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick (NewickFormat (..))
 import ELynx.Import.Tree.Nexus
@@ -27,16 +26,21 @@ import ELynx.Tools
 file :: FilePath
 file = "data/SimpleTree.nex"
 
-res :: Tree (PhyloLabelSoft ByteString)
+noPL :: Phylo
+noPL = Phylo Nothing Nothing
+
+res :: Tree Phylo ByteString
 res =
   Node
-    (PhyloLabelSoft "" Nothing Nothing)
+    noPL
+    ""
     [ Node
-        (PhyloLabelSoft "" Nothing Nothing)
-        [ Node (PhyloLabelSoft "A" Nothing Nothing) [],
-          Node (PhyloLabelSoft "B" Nothing Nothing) []
+        noPL
+        ""
+        [ Node noPL "A" [],
+          Node noPL "B" []
         ],
-      Node (PhyloLabelSoft "C" Nothing Nothing) []
+      Node noPL "C" []
     ]
 
 spec :: Spec

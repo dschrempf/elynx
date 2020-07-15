@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- |
 -- Module      :  ELynx.Data.Tree.PhylogenySpec
 -- Description :  Unit tests for ELynx.Data.Tree.Phylogeny
@@ -14,7 +16,7 @@ module ELynx.Data.Tree.PhylogenySpec
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import Data.Bifunctor
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Set (Set)
 import qualified Data.Set as S
@@ -59,6 +61,14 @@ compatibleWith ::
   (Show b, Ord b) => (a -> b) -> [Set a] -> Tree e a -> Bool
 compatibleWith f cs t = compatibleAll (fmap f t) (map (S.map f) cs)
 
+-- Get groups induced by multifurcations. Collect the leaves of all trees
+-- induced by multifurcations.
+multifurcatingGroups :: Tree e a -> [[a]]
+multifurcatingGroups (Node _ _ []) = []
+multifurcatingGroups (Node _ _ [x]) = multifurcatingGroups x
+multifurcatingGroups (Node _ _ [x, y]) = multifurcatingGroups x ++ multifurcatingGroups y
+multifurcatingGroups t = leaves t : concatMap multifurcatingGroups (forest t)
+
 spec :: Spec
 spec = do
   describe "roots" $ do
@@ -80,9 +90,14 @@ spec = do
       it "correctly connects sample trees without and with constraints" $ do
         a <- parseFileWith (oneNewick Standard) "data/ConnectA.tree"
         b <- parseFileWith (oneNewick Standard) "data/ConnectB.tree"
-        c <- map parseFileWith (manyNewick Standard) "data/ConnectConstraints.tree"
-        let ts = connect "ROOT" a b
-            cs = concatMap clades c :: [Set ByteString]
+        c <- parseFileWith (manyNewick Standard) "data/ConnectConstraints.tree"
+        let ts =
+              either (error "rooting failed") id $
+                connect "ROOT" (first (const ()) a) (first (const ()) b)
+            cs =
+              map S.fromList $
+                concatMap (multifurcatingGroups . first (const ())) c ::
+                [Set ByteString]
             ts' = filter (compatibleWith getName cs) ts
         length ts `shouldBe` 63
         length ts' `shouldBe` 15

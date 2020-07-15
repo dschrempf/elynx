@@ -29,11 +29,6 @@ module ELynx.Import.Tree.Newick
     newick,
     oneNewick,
     manyNewick,
-    forest,
-    leaf,
-    -- node,
-    name,
-    branchLength,
   )
 where
 

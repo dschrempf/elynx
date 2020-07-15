@@ -67,11 +67,8 @@ connectTrees = connect (PhyloLabel "" 0 0)
 
 type Constraint a = S.Set a
 
--- | Get clades induced by multifurcations.
---
--- A multifurcation is a node with three or more children (degree 4 or larger).
---
--- Collect the leaves of all trees induced by multifurcations.
+-- Get groups induced by multifurcations. Collect the leaves of all trees
+-- induced by multifurcations.
 multifurcatingGroups :: Tree e a -> [[a]]
 multifurcatingGroups (Node _ _ []) = []
 multifurcatingGroups (Node _ _ [x]) = multifurcatingGroups x
