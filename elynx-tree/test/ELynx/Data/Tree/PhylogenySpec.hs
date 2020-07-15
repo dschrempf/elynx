@@ -60,9 +60,10 @@ prop_connect n l r
 -- bipartition, the bipartition and the subset are compatible.
 --
 -- See also 'ELynx.Data.Tree.Multipartition.compatible'.
-bipartitionCompatible :: (Show a, Ord a) => Bipartition a -> Set a -> Bool
+bipartitionCompatible :: (Show a, Ord a) => Either String (Bipartition a) -> Set a -> Bool
 -- compatible (Bipartition (l, r)) ss = sintersection l ss `sdisjoint` sintersection r ss
-bipartitionCompatible p s = S.null lOverlap || S.null rOverlap
+bipartitionCompatible (Left _) _ = False
+bipartitionCompatible (Right p) s = S.null lOverlap || S.null rOverlap
   where
     (l, r) = fromBipartition p
     lOverlap = S.intersection l s
@@ -114,8 +115,8 @@ spec = do
         b <- parseFileWith (oneNewick Standard) "data/ConnectB.tree"
         c <- parseFileWith (manyNewick Standard) "data/ConnectConstraints.tree"
         let ts =
-              either (error "rooting failed") id $
-                connect "ROOT" (first (const ()) a) (first (const ()) b)
+              either error id $
+              connect "ROOT" (first (const ()) a) (first (const ()) b)
             cs =
               map S.fromList $
                 concatMap (multifurcatingGroups . first (const ())) c ::

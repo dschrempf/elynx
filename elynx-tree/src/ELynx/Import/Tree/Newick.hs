@@ -91,15 +91,15 @@ manyNewick RevBayes = manyNewickRevBayes
 w :: Char -> Parser Word8
 w = char . c2w
 
--- | Parse a single Newick tree. Also succeeds when more trees follow.
+-- Parse a single Newick tree. Also succeeds when more trees follow.
 newickStandard :: Parser (Tree Phylo ByteString)
 newickStandard = space *> tree <* w ';' <* space <?> "newickStandard"
 
--- | Parse a single Newick tree. Fails when end of file is not reached.
+-- Parse a single Newick tree. Fails when end of file is not reached.
 oneNewickStandard :: Parser (Tree Phylo ByteString)
 oneNewickStandard = newickStandard <* eof <?> "oneNewickStandard"
 
--- | Parse many Newick trees until end of file.
+-- Parse many Newick trees until end of file.
 manyNewickStandard :: Parser (Forest Phylo ByteString)
 manyNewickStandard = some newickStandard <* eof <?> "manyNewickStandard"
 
@@ -113,7 +113,7 @@ branched = label "branched" $ do
   p <- phylo
   return $ Node p n f
 
--- | A 'forest' is a set of trees separated by @,@ and enclosed by parentheses.
+-- A 'forest' is a set of trees separated by @,@ and enclosed by parentheses.
 forestP :: Parser (Forest Phylo ByteString)
 forestP = between (w '(') (w ')') (tree `sepBy1` w ',') <?> "forestP"
 
@@ -126,7 +126,7 @@ branchSupport = label "branchSupport" $
       _ <- w ']'
       return s
 
--- | A 'leaf' is a 'node' without children.
+-- A 'leaf' has a 'name' and a 'phylo' branch.
 leaf :: Parser (Tree Phylo ByteString)
 leaf = label "leaf" $ do
   n <- name
@@ -136,7 +136,7 @@ leaf = label "leaf" $ do
 checkNameCharacter :: Word8 -> Bool
 checkNameCharacter c = c `notElem` map c2w " :;()[],"
 
--- | A name can be any string of printable characters except blanks, colons,
+-- A name can be any string of printable characters except blanks, colons,
 -- semicolons, parentheses, and square brackets (and commas).
 name :: Parser ByteString
 name = L.pack <$> many (satisfy checkNameCharacter) <?> "name"
@@ -144,7 +144,7 @@ name = L.pack <$> many (satisfy checkNameCharacter) <?> "name"
 phylo :: Parser Phylo
 phylo = Phylo <$> branchLength <*> branchSupport <?> "phylo"
 
--- | Branch length.
+-- Branch length.
 branchLength :: Parser (Maybe BranchLength)
 branchLength = optional (w ':' *> branchLengthGiven) <?> "branchLength"
 

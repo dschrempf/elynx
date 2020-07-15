@@ -56,7 +56,7 @@ spec = do
       prune smallSubTree `shouldBe` smallSubTreePruned
     it "leaves height constant for Measurable trees" $ do
       let t' =
-            either (error "could not convert tree") id $
+            either error id $
               phyloToLengthTree subSampleLargeTree
       height (prune t') `shouldBe` height t'
 

@@ -43,6 +43,7 @@ module ELynx.Data.Tree.Phylogeny
     lengthToPhyloTree,
     Support (..),
     phyloToSupportTree,
+    phyloToSupportTreeUnsafe,
     PhyloStrict (..),
     toStrictTree,
     fromStrictTree,
@@ -260,6 +261,12 @@ phyloToSupportTree t =
   where
     m = getMaxSupport t
 
+-- | Set all unavailable branch support values to maximum support.
+phyloToSupportTreeUnsafe :: Tree Phylo a -> Tree Support a
+phyloToSupportTreeUnsafe t = cleanSupport m t
+  where
+    m = getMaxSupport t
+
 -- If all branch support values are below 1.0, set the max support to 1.0.
 getMaxSupport :: Tree Phylo a -> BranchSupport
 getMaxSupport = fromJust . max (Just 1.0) . bimaximum . bimap brSup (const Nothing)
@@ -275,6 +282,9 @@ cleanLeafSupport s (Node b l xs) = Node b l $ map (cleanLeafSupport s) xs
 toSupport :: Phylo -> Maybe Support
 toSupport (Phylo _ Nothing) = Nothing
 toSupport (Phylo _ (Just s)) = Just $ Support s
+
+cleanSupport :: BranchSupport -> Tree Phylo a -> Tree Support a
+cleanSupport maxSup (Node (Phylo _ s) l xs) = Node (Support $ fromMaybe maxSup s) l $ map (cleanSupport maxSup) xs
 
 -- | Strict branch label for phylogenetic trees.
 data PhyloStrict = PhyloStrict

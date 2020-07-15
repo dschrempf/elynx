@@ -16,13 +16,13 @@ module ELynx.Data.Tree.DistanceSpec
   )
 where
 
-import Data.Bifunctor
+-- import Data.Bifunctor
 import Data.ByteString.Lazy.Char8 (ByteString)
 import ELynx.Data.Tree
-import qualified Data.Set as S
+-- import qualified Data.Set as S
 import ELynx.Data.Tree.Arbitrary ()
 import ELynx.Import.Tree.Newick
-import ELynx.Export.Tree.Newick
+-- import ELynx.Export.Tree.Newick
 import ELynx.Tools
 import Test.Hspec
 import Test.QuickCheck
@@ -204,8 +204,8 @@ incSplitTree4 = parseByteStringWith "" (oneNewick IqTree) "(((a,c),b),(d,e));"
 adjacent :: (a -> a -> b) -> [a] -> [b]
 adjacent dist trs = [dist x y | (x, y) <- zip trs (tail trs)]
 
-noPL :: Phylo
-noPL = Phylo Nothing Nothing
+-- noPL :: Phylo
+-- noPL = Phylo Nothing Nothing
 
 spec :: Spec
 spec = do
@@ -228,30 +228,30 @@ spec = do
     it "calculates correct distances for sample trees" $ do
       incompatibleSplits multifurcating bifurcatingComp `shouldBe` Right 0
       incompatibleSplits bifurcatingComp multifurcating `shouldBe` Right 0
-      print $ S.map bpHuman <$> bipartitions bifurcatingIncomp
-      print $ S.map bpHuman <$> bipartitions multifurcating
-      print $ S.map mpHuman <$> multipartitions bifurcatingIncomp
-      print $ S.map mpHuman <$> multipartitions multifurcating
-      print $ toNewick $ first (const noPL) bifurcatingIncomp
-      print $ toNewick $ first (const noPL) multifurcating
+      -- print $ S.map bpHuman <$> bipartitions bifurcatingIncomp
+      -- print $ S.map bpHuman <$> bipartitions multifurcating
+      -- print $ S.map mpHuman <$> multipartitions bifurcatingIncomp
+      -- print $ S.map mpHuman <$> multipartitions multifurcating
+      -- print $ toNewick $ first (const noPL) bifurcatingIncomp
+      -- print $ toNewick $ first (const noPL) multifurcating
       incompatibleSplits bifurcatingIncomp multifurcating `shouldBe` Right 2
       incompatibleSplits multifurcating bifurcatingIncomp `shouldBe` Right 2
 
-    -- it "calculates correct distances for sample trees with branch support" $ do
-    --   incompatibleSplits incSplitTree1a incSplitTree2 `shouldBe` Right 2
-    --   incompatibleSplits incSplitTree1b incSplitTree2 `shouldBe` Right 2
-    --   let t1a = either error id $ phyloToSupportTree incSplitTree1a
-    --       t1b = either error id $ phyloToSupportTree incSplitTree1b
-    --       tr2 = either error id $ phyloToSupportTree incSplitTree2
-    --       tr3 = either error id $ phyloToSupportTree incSplitTree3
-    --       tr4 = either error id $ phyloToSupportTree incSplitTree4
-    --   incompatibleSplits (collapse 0.7 t1a) tr2 `shouldBe` Right 2
-    --   incompatibleSplits (collapse 0.71 t1b) tr2 `shouldBe` Right 0
-    --   incompatibleSplits (collapse 0.71 tr3) tr4 `shouldBe` Right 0
-    -- it "is zero for a collection of random trees" $
-    --   property $
-    --     prop_dist_same_tree
-    --       (incompatibleSplits :: Tree Phylo Double -> Tree Phylo Double -> Either String Int)
+    it "calculates correct distances for sample trees with branch support" $ do
+      incompatibleSplits incSplitTree1a incSplitTree2 `shouldBe` Right 2
+      incompatibleSplits incSplitTree1b incSplitTree2 `shouldBe` Right 2
+      let t1a = phyloToSupportTreeUnsafe incSplitTree1a
+          t1b = phyloToSupportTreeUnsafe incSplitTree1b
+          tr2 = phyloToSupportTreeUnsafe incSplitTree2
+          tr3 = phyloToSupportTreeUnsafe incSplitTree3
+          tr4 = phyloToSupportTreeUnsafe incSplitTree4
+      incompatibleSplits (collapse 0.7 t1a) tr2 `shouldBe` Right 2
+      incompatibleSplits (collapse 0.71 t1b) tr2 `shouldBe` Right 0
+      incompatibleSplits (collapse 0.71 tr3) tr4 `shouldBe` Right 0
+    it "is zero for a collection of random trees" $
+      property $
+        prop_dist_same_tree
+          (incompatibleSplits :: Tree Phylo Double -> Tree Phylo Double -> Either String Int)
 
   describe "branchScore" $ do
     it "calculates correct distances for sample trees" $ do

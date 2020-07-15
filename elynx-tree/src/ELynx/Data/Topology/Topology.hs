@@ -27,6 +27,8 @@ import Data.Tree
 import qualified Data.Set as S
 import Data.Set (Set)
 
+-- TODO.
+-- | Topology.
 data Topology a = TN { children ::Set (Topology a) }
                 | TL { label :: a }
                 deriving (Eq)

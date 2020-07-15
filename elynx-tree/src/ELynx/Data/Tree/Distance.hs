@@ -92,10 +92,8 @@ countIncompatibilities bs ms =
 -- > AC|BD
 -- > AD|BC
 --
--- For an explanation of how compatibility of a bipartition with a
--- multipartition is checked, see
--- 'ELynx.Data.Tree.Multipartition.mulitpartitionCompatible'. Before using
--- 'multipartitionCompatible', bipartitions are simply converted to
+-- For an explanation of how compatibility of multipartitions is checked, see
+-- 'compatible'. Before using 'compatible', bipartitions are simply converted to
 -- multipartitions with two subsets.
 --
 -- A bipartition is incompatible with a tree if it is incompatible with all

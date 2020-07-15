@@ -37,37 +37,37 @@ getSimpleTrees = parseFileWith (manyNewick Standard) treeFileSimple
 bipartitionToBranchAnswer :: Map (Bipartition ByteString) Length
 bipartitionToBranchAnswer =
   M.fromList
-    [ (bp (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]), 0.3),
-      (bp (sfrom ["B", "C", "D", "E"]) (sfrom ["A"]), 0.1),
-      (bp (sfrom ["B", "C", "E"]) (sfrom ["A", "D"]), 5.0e-2),
-      (bp (sfrom ["B", "E"]) (sfrom ["A", "C", "D"]), 0.4),
-      (bp (sfrom ["C"]) (sfrom ["A", "B", "D", "E"]), 1.0e-2),
-      (bp (sfrom ["D"]) (sfrom ["A", "B", "C", "E"]), 0.25),
-      (bp (sfrom ["E"]) (sfrom ["A", "B", "C", "D"]), 0.8)
+    [ (bpUnsafe (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]), 0.3),
+      (bpUnsafe (sfrom ["B", "C", "D", "E"]) (sfrom ["A"]), 0.1),
+      (bpUnsafe (sfrom ["B", "C", "E"]) (sfrom ["A", "D"]), 5.0e-2),
+      (bpUnsafe (sfrom ["B", "E"]) (sfrom ["A", "C", "D"]), 0.4),
+      (bpUnsafe (sfrom ["C"]) (sfrom ["A", "B", "D", "E"]), 1.0e-2),
+      (bpUnsafe (sfrom ["D"]) (sfrom ["A", "B", "C", "E"]), 0.25),
+      (bpUnsafe (sfrom ["E"]) (sfrom ["A", "B", "C", "D"]), 0.8)
     ]
 
 bipartitionsFirstTree :: Set (Bipartition ByteString)
 bipartitionsFirstTree =
   S.fromList
-    [ bp (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]),
-      bp (sfrom ["B", "C", "D", "E"]) (sfrom ["A"]),
-      bp (sfrom ["B", "D", "E"]) (sfrom ["A", "C"]),
-      bp (sfrom ["B", "E"]) (sfrom ["A", "C", "D"]),
-      bp (sfrom ["C"]) (sfrom ["A", "B", "D", "E"]),
-      bp (sfrom ["D"]) (sfrom ["A", "B", "C", "E"]),
-      bp (sfrom ["E"]) (sfrom ["A", "B", "C", "D"])
+    [ bpUnsafe (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]),
+      bpUnsafe (sfrom ["B", "C", "D", "E"]) (sfrom ["A"]),
+      bpUnsafe (sfrom ["B", "D", "E"]) (sfrom ["A", "C"]),
+      bpUnsafe (sfrom ["B", "E"]) (sfrom ["A", "C", "D"]),
+      bpUnsafe (sfrom ["C"]) (sfrom ["A", "B", "D", "E"]),
+      bpUnsafe (sfrom ["D"]) (sfrom ["A", "B", "C", "E"]),
+      bpUnsafe (sfrom ["E"]) (sfrom ["A", "B", "C", "D"])
     ]
 
 bipartitionsSecondTree :: Set (Bipartition ByteString)
 bipartitionsSecondTree =
   S.fromList
-    [ bp (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]),
-      bp (sfrom ["B", "C", "D", "E"]) (sfrom ["A"]),
-      bp (sfrom ["B", "C", "E"]) (sfrom ["A", "D"]),
-      bp (sfrom ["B", "E"]) (sfrom ["A", "C", "D"]),
-      bp (sfrom ["C"]) (sfrom ["A", "B", "D", "E"]),
-      bp (sfrom ["D"]) (sfrom ["A", "B", "C", "E"]),
-      bp (sfrom ["E"]) (sfrom ["A", "B", "C", "D"])
+    [ bpUnsafe (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]),
+      bpUnsafe (sfrom ["B", "C", "D", "E"]) (sfrom ["A"]),
+      bpUnsafe (sfrom ["B", "C", "E"]) (sfrom ["A", "D"]),
+      bpUnsafe (sfrom ["B", "E"]) (sfrom ["A", "C", "D"]),
+      bpUnsafe (sfrom ["C"]) (sfrom ["A", "B", "D", "E"]),
+      bpUnsafe (sfrom ["D"]) (sfrom ["A", "B", "C", "E"]),
+      bpUnsafe (sfrom ["E"]) (sfrom ["A", "B", "C", "D"])
     ]
 
 simpleTree :: Tree () String
@@ -96,7 +96,9 @@ spec = do
 
   describe "rootAt" $
     it "correctly handles simple trees" $ do
-      rootAt (bipartition simpleTree) simpleTree `shouldBe` Right simpleTree
+      let p = either error id $ bipartition simpleTree
+      rootAt p simpleTree `shouldBe` Right simpleTree
       let l = S.singleton "x"
           r = S.fromList ["y", "z"]
-      rootAt (bp l r) simpleTree `shouldBe` Right simpleSol
+          p' = either error id $ bp l r
+      rootAt p' simpleTree `shouldBe` Right simpleSol

@@ -18,13 +18,15 @@ module ELynx.Data.Tree.Multipartition
     mp,
     bpToMp,
     mpHuman,
-    mpMap,
+    -- mpMap,
 
     -- * Work with 'Multipartition's
     multipartitions,
     compatible,
   )
 where
+
+-- TODO: Call this Partition, not Multipartition.
 
 import Data.List hiding (partition)
 import qualified Data.Set as S
@@ -49,6 +51,8 @@ newtype Multipartition a = Multipartition
   { fromMultipartition :: Set (Set a)
   }
   deriving (Eq, Ord, Show, Read)
+
+-- TODO: Check that list is not empty after filtering.
 
 -- | Create a multipartition.
 mp :: Ord a => [Set a] -> Multipartition a
@@ -77,9 +81,9 @@ mpHuman (Multipartition xs) =
 setShow :: Show a => Set a -> String
 setShow = intercalate "," . map show . S.toList
 
--- | Map a function over all elements in the 'Multipartition'.
-mpMap :: (Ord a, Ord b) => (a -> b) -> Multipartition a -> Multipartition b
-mpMap f (Multipartition xs) = Multipartition $ S.map (S.map f) xs
+-- -- | Map a function over all elements in the 'Multipartition'.
+-- mpMap :: (Ord a, Ord b) => (a -> b) -> Multipartition a -> Multipartition b
+-- mpMap f (Multipartition xs) = Multipartition $ S.map (S.map f) xs
 
 -- | Get all 'Multipartition's of a tree.
 multipartitions :: Ord a => Tree e a -> Either String (Set (Multipartition a))
@@ -102,12 +106,12 @@ multipartitions' p t@(Node _ _ ts) =
 -- each other. Thereby, a variation of the following algorithm is used:
 --
 -- @
--- mp1 `mpCompatible` mp2
+-- mp1 `compatible` mp2
 -- for set1 in mp1:
 --   for set2 in mp2:
---     if set1 `isSubSetOf` set2:
+--     if set1 `S.isSubSetOf` set2:
 --       remove set1 from mp1
---     if set2 `isSubSetOf` set1:
+--     if set2 `S.isSubSetOf` set1:
 --       remove set2 from mp2
 -- if either mp2 or mp2 is empty, they are compatible
 -- @

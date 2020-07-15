@@ -27,16 +27,15 @@ module ELynx.Data.Tree.Bipartition
     -- * Data type
     Bipartition (fromBipartition),
     bp,
+    bpUnsafe,
     toSet,
     bpHuman,
-    bpMap,
 
     -- * Work with 'Bipartition's
     bipartition,
     bipartitions,
     getComplementaryLeaves,
     bipartitionToBranch,
-    -- bipartitionCompatible,
     rootAt,
   )
 where
@@ -70,8 +69,19 @@ newtype Bipartition a = Bipartition
 -- | Create a bipartition from two sets.
 --
 -- Ensure that the smaller set comes first.
-bp :: Ord a => Set a -> Set a -> Bipartition a
-bp xs ys = if xs >= ys then Bipartition (xs, ys) else Bipartition (ys, xs)
+--
+-- Return 'Left' if one set is empty.
+bp :: Ord a => Set a -> Set a -> Either String (Bipartition a)
+bp xs ys
+  | S.null xs = Left "bp: Left set empty."
+  | S.null ys = Left "bp: Right set empty."
+  | otherwise = Right $ bpUnsafe xs ys
+
+-- | Create a bipartition from two sets.
+--
+-- Ensure that the smaller set comes first.
+bpUnsafe :: Ord a => Set a -> Set a -> Bipartition a
+bpUnsafe xs ys = if xs >= ys then Bipartition (xs, ys) else Bipartition (ys, xs)
 
 -- | Conversion to a set containing both partitions.
 toSet :: Ord a => Bipartition a -> Set a
@@ -94,27 +104,25 @@ bpHuman (Bipartition (x, y)) = "(" ++ setShow x ++ "|" ++ setShow y ++ ")"
 setShow :: Show a => Set a -> String
 setShow = intercalate "," . map show . S.toList
 
--- | Map a function over all elements in the 'Bipartition'.
-bpMap :: (Ord a, Ord b) => (a -> b) -> Bipartition a -> Bipartition b
-bpMap f (Bipartition (x, y)) = bp (S.map f x) (S.map f y)
-
--- Check if a bipartition is valid. For now, only checks that no set is empty.
-bpValid :: Bipartition a -> Bool
-bpValid (Bipartition (xs, ys)) = not $ S.null xs || S.null ys
+-- -- | Map a function over all elements in the 'Bipartition'.
+-- bpMap :: Ord b => (a -> b) -> Bipartition a -> Bipartition b
+-- bpMap f (Bipartition (x, y)) = bp (S.map f x) (S.map f y)
 
 -- | For a bifurcating root, get the bipartition induced by the root node.
-bipartition :: Ord a => Tree e a -> Bipartition a
-bipartition (Node _ _ [x, y]) =
-  bp (S.fromList $ leaves x) (S.fromList $ leaves y)
-bipartition _ = error "Root node is not bifurcating."
+--
+-- Return 'Left' if
+-- - the root node is not bifurcating;
+-- - a leave set is empty.
+bipartition :: Ord a => Tree e a -> Either String (Bipartition a)
+bipartition (Node _ _ [x, y]) = bp (S.fromList $ leaves x) (S.fromList $ leaves y)
+bipartition _ = Left "bipartition: Root node is not bifurcating."
 
 -- | Get all bipartitions of the tree.
 --
--- Return 'Nothing' if the tree contains duplicate leaves.
+-- Return 'Left' if the tree contains duplicate leaves.
 bipartitions :: Ord a => Tree e a -> Either String (Set (Bipartition a))
 bipartitions t
-  | valid t =
-    Right $ S.filter bpValid $ bipartitions' S.empty $ S.fromList <$> groups t
+  | valid t = Right $ bipartitions' S.empty $ S.fromList <$> groups t
   | otherwise = Left "bipartitions: Tree contains duplicate leaves."
 
 -- | Report the complementary leaves for each child.
@@ -136,10 +144,10 @@ getComplementaryLeaves p (Node _ _ ts) =
 -- See 'bipartitions', but do not check if leaves are unique, nor if
 -- bipartitions are valid.
 bipartitions' :: Ord a => Set a -> Tree e (Set a) -> Set (Bipartition a)
-bipartitions' p (Node _ p' []) = S.singleton $ bp p p'
+bipartitions' p (Node _ p' []) = either (const S.empty) S.singleton $ bp p p'
 bipartitions' p t@(Node _ p' ts) =
   S.unions $
-    S.singleton (bp p p') :
+    either (const S.empty) S.singleton (bp p p') :
       [bipartitions' c s | (c, s) <- zip cs ts]
   where
     cs = getComplementaryLeaves p t
@@ -158,20 +166,15 @@ bipartitions' p t@(Node _ p' ts) =
 -- bipartitions and have to be combined.
 --
 -- For combining branches, a binary function is required. This requirement is
--- encoded in the 'Semigroup' type class constraint (see 'pruneWith'). Further,
--- the 'Monoid' type class constraint has been added because the availability of
--- /null/ branches reduces the complexity of the algorithm.
+-- encoded in the 'Semigroup' type class constraint (see 'prune').
 --
--- Return 'Nothing' if the tree contains duplicate leaves.
+-- Return 'Left' if the tree contains duplicate leaves.
 bipartitionToBranch ::
-  (Monoid e, Ord a) =>
+  (Semigroup e, Ord a) =>
   Tree e a ->
   Either String (Map (Bipartition a) e)
 bipartitionToBranch t
-  | valid t =
-    Right $
-      M.filterWithKey (const . bpValid) $
-        bipartitionToBranch' S.empty pTree
+  | valid t = Right $ bipartitionToBranch' S.empty pTree
   | otherwise = Left "bipartitionToBranch: Tree contains duplicate leaves."
   where
     pTree = S.fromList <$> groups t
@@ -180,7 +183,7 @@ bipartitionToBranch t
 -- to be combined. Hence, not only the complementary leaves, but also the branch
 -- label itself have to be passed along.
 bipartitionToBranch' ::
-  (Monoid e, Ord a) =>
+  (Semigroup e, Ord a) =>
   -- Complementary leaves.
   Set a ->
   -- Partition tree.
@@ -188,10 +191,8 @@ bipartitionToBranch' ::
   Map (Bipartition a) e
 bipartitionToBranch' p t@(Node b p' ts) =
   M.unionsWith (<>) $
-    M.singleton (bp p p') b :
-      [ bipartitionToBranch' c s
-        | (c, s) <- zip cs ts
-      ]
+    either (const M.empty) (`M.singleton` b) (bp p p') :
+      [bipartitionToBranch' c s | (c, s) <- zip cs ts]
   where
     cs = getComplementaryLeaves p t
 
@@ -222,6 +223,6 @@ rootAt b t
 rootAt' :: (Eq a, Ord a) => Bipartition a -> Tree () a -> Either String (Tree () a)
 rootAt' b t = do
   ts <- roots t
-  case find (\x -> b == bipartition x) ts of
+  case find (\x -> Right b == bipartition x) ts of
     Nothing -> Left "rootAt': Bipartition not found on tree."
     Just t' -> Right t'
