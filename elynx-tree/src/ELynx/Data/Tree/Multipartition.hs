@@ -16,6 +16,7 @@ module ELynx.Data.Tree.Multipartition
   ( -- * Data type
     Multipartition (fromMultipartition),
     mp,
+    mpUnsafe,
     bpToMp,
     mpHuman,
     -- mpMap,
@@ -55,21 +56,24 @@ newtype Multipartition a = Multipartition
 -- TODO: Check that list is not empty after filtering.
 
 -- | Create a multipartition.
-mp :: Ord a => [Set a] -> Multipartition a
-mp = mp' . filter (not . S.null)
+mp :: Ord a => [Set a] -> Either String (Multipartition a)
+mp xs = case filter (not . S.null) xs of
+  [] -> Left "mp: Empty list."
+  xs' -> Right $ mpUnsafe xs'
 
--- Unsafe.
-mp' :: Ord a => [Set a] -> Multipartition a
-mp' xs = Multipartition (S.fromList xs)
+-- | Create a multipartition.
+mpUnsafe :: Ord a => [Set a] -> Multipartition a
+mpUnsafe xs = Multipartition (S.fromList xs)
 
 -- | Convert a bipartition to a multipartition.
 bpToMp :: Ord a => Bipartition a -> Multipartition a
-bpToMp = mp . tupleToList . fromBipartition
-  -- Be careful with tuples, because 'toList' does something very weird. It only
-  -- takes the second element of the tuple!
-  --
-  -- toList :: Foldable t => t a -> [a]
-  where tupleToList (x, y) = [x, y]
+bpToMp = mpUnsafe . tupleToList . fromBipartition
+  where
+    -- Be careful with tuples, because 'toList' does something very weird. It only
+    -- takes the second element of the tuple!
+    --
+    -- toList :: Foldable t => t a -> [a]
+    tupleToList (x, y) = [x, y]
 
 -- | Show a multipartition in a human readable form. Use a provided function to
 -- extract the valuable information.
@@ -96,7 +100,7 @@ multipartitions' :: Ord a => Set a -> Tree e (Set a) -> Set (Multipartition a)
 multipartitions' _ (Node _ _ []) = S.empty
 multipartitions' p t@(Node _ _ ts) =
   S.unions $
-    S.singleton (mp (p : map label ts)) :
+    either (const S.empty) S.singleton (mp (p : map label ts)) :
     zipWith multipartitions' cs ts
   where
     cs = getComplementaryLeaves p t
@@ -117,8 +121,9 @@ multipartitions' p t@(Node _ _ ts) =
 -- @
 compatible :: (Show a, Ord a) => Multipartition a -> Multipartition a -> Bool
 compatible l r = S.null (S.filter (`remove` rs) ls) || S.null (S.filter (`remove` ls) rs)
-  where ls = fromMultipartition l
-        rs = fromMultipartition r
+  where
+    ls = fromMultipartition l
+    rs = fromMultipartition r
 
 remove :: Ord a => Set a -> Set (Set a) -> Bool
 remove s = not . any (s `S.isSubsetOf`)

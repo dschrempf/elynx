@@ -26,8 +26,8 @@ ex1 = Node () 0 [Node () 1 [], Node () 2 [Node () 4 [], Node () 5 [], Node () 6 
 sol1 :: Set (Multipartition Int)
 sol1 =
   fromList
-    [ mp [fromList [1], fromList [3], fromList [4, 5, 6]],
-      mp [fromList [1, 3], fromList [4], fromList [5], fromList [6]]
+    [ mpUnsafe [fromList [1], fromList [3], fromList [4, 5, 6]],
+      mpUnsafe [fromList [1, 3], fromList [4], fromList [5], fromList [6]]
     ]
 
 ex2 :: Tree () Int
@@ -35,8 +35,8 @@ ex2 = Node () 0 [Node () 1 [], Node () 2 [], Node () 0 [Node () 3 [], Node () 4 
 
 sol2 :: Set (Multipartition Int)
 sol2 =
-  fromList [mp [fromList [1], fromList [2], fromList [3, 4], fromList [5]],
-            mp [fromList [1,2,5], fromList [3], fromList [4]]]
+  fromList [mpUnsafe [fromList [1], fromList [2], fromList [3, 4], fromList [5]],
+            mpUnsafe [fromList [1,2,5], fromList [3], fromList [4]]]
 
 spec :: Spec
 spec = describe "multipartitions" $
