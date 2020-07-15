@@ -4,6 +4,7 @@
 -- |
 -- Module      :  ELynx.Data.Tree.Rooted
 -- Description :  Rooted trees with labeled branches
+
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -21,8 +22,14 @@
 -- data Tree e a = Node
 --   { branch :: e,
 --     label :: a,
---     forest :: [Tree e a]
+--     forest :: Forest e a
 --   }
+-- @
+--
+-- where
+--
+-- @
+-- type Forest e a = [Tree e a]
 -- @
 --
 -- This means, that the word 'Node' is reserved for the constructor of a tree,
@@ -51,9 +58,9 @@ module ELynx.Data.Tree.Rooted
     leaves,
     flatten,
     labelNodes,
-    pruneWith,
-    dropLeafWith,
-    intersectWith,
+    prune,
+    dropLeaf,
+    intersect,
     zipTreesWith,
     zipTrees,
     partitionTree,
@@ -61,6 +68,8 @@ module ELynx.Data.Tree.Rooted
     bifurcating,
     clades,
     roots,
+    removeMultifurcations,
+    connect,
   )
 where
 
@@ -75,13 +84,11 @@ import Data.Bifunctor
 import Data.Bitraversable
 import Data.Data
 import Data.Foldable
-import Data.List
+import Data.List hiding (intersect)
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import GHC.Generics
-
--- TODO: Check usage of Forest = [Tree].
 
 -- | Rooted rose trees with branch labels.
 --
@@ -133,7 +140,7 @@ instance Bitraversable Tree where
 -- provide only 'Applicative' in zip-like form, or we use the classic instance
 -- for 'Applicative' and 'Monad'.
 
--- -- | NOTE: The 'Applicative' instance of 'Tree' is similar to the one of
+-- -- | Note: The 'Applicative' instance of 'Tree' is similar to the one of
 -- -- 'Control.Applicative.ZipList', and differs from the instance of
 -- -- 'Data.Tree.Tree'!
 -- --
@@ -142,7 +149,7 @@ instance Bitraversable Tree where
 -- -- >>> f <*> t
 -- -- Node {branch = "+3", label = 3, forest = [Node {branch = "*5", label = 5, forest = []},Node {branch = "+10", label = 12, forest = []}]}
 -- --
--- -- NOTE: The 'Monoid' instance of the branch labels determines how the branches
+-- -- Note: The 'Monoid' instance of the branch labels determines how the branches
 -- -- are combined. For example, distances can be summed using the
 -- -- 'Data.Monoid.Sum' monoid.
 -- instance Monoid e => Applicative (Tree e) where
@@ -180,7 +187,7 @@ instance Monoid e => Monad (Tree e) where
   ~(Node br lb ts) >>= f = case f lb of
     Node br' lb' ts' -> Node (br <> br') lb' (ts' ++ map (>>= f) ts)
 
--- -- XXX: Cannot provide MonadZip instance because branch labels cannot be
+-- -- Cannot provide MonadZip instance because branch labels cannot be
 -- -- recovered from combined label.
 -- instance Monoid e => MonadZip (Tree e) where
 --   mzipWith f (Node brL lbL tsL) (Node brR lbR tsR) =
@@ -241,17 +248,15 @@ flatten t = squish t []
 labelNodes :: Traversable t => t a -> t Int
 labelNodes = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
 
--- TODO: Use Monoid instance of @e@, not a dedicaated function.
-
 -- | Prune degree two nodes.
 --
 -- The information stored in a pruned node is lost. The branches are combined
 -- according to their 'Semigroup' instance of the form @\daughterBranch
 -- parentBranch -> combinedBranch@.
-pruneWith :: Semigroup e => Tree e a -> Tree e a
-pruneWith t@(Node _ _ []) = t
-pruneWith (Node paBr _ [Node daBr daLb daXs]) = Node (daBr <> paBr) daLb daXs
-pruneWith (Node paBr paLb paXs) = Node paBr paLb $ map pruneWith paXs
+prune :: Semigroup e => Tree e a -> Tree e a
+prune t@(Node _ _ []) = t
+prune (Node paBr _ [Node daBr daLb daXs]) = Node (daBr <> paBr) daLb daXs
+prune (Node paBr paLb paXs) = Node paBr paLb $ map prune paXs
 
 -- | Drop a leaf from a tree.
 --
@@ -259,14 +264,14 @@ pruneWith (Node paBr paLb paXs) = Node paBr paLb $ map pruneWith paXs
 -- combined using their 'Semigroup' instance (see 'pruneWith').
 --
 -- The same tree is returned, if the leaf is not found on the tree.
-dropLeafWith :: (Semigroup e, Eq a) => a -> Tree e a -> Tree e a
-dropLeafWith l (Node paBr paLb paXs) =
+dropLeaf :: (Semigroup e, Eq a) => a -> Tree e a -> Tree e a
+dropLeaf l (Node paBr paLb paXs) =
   case paXs' of
     [Node daBr daLb daXs] -> Node (daBr <> paBr) daLb daXs
     _ -> Node paBr paLb paXs'
   where
     toRm x = null (forest x) && label x == l
-    paXs' = map (dropLeafWith l) (filter (not . toRm) paXs)
+    paXs' = map (dropLeaf l) (filter (not . toRm) paXs)
 
 -- | Compute the intersection of trees.
 --
@@ -275,12 +280,12 @@ dropLeafWith l (Node paBr paLb paXs) =
 -- and degree two nodes are pruned with 'pruneWith'.
 --
 -- Assume that the trees are valid!
-intersectWith ::
-  (Semigroup e, Eq e, Ord a) => [Tree e a] -> [Tree e a]
-intersectWith ts =
+intersect ::
+  (Semigroup e, Eq e, Ord a) => Forest e a -> Forest e a
+intersect ts =
   if S.null ls
     then error "intersectWith: Intersection of leaves is empty."
-    else map (retainLeavesWith ls) ts
+    else map (retainLeaves ls) ts
   where
     -- Leaf sets.
     lss = map (S.fromList . leaves) ts
@@ -289,9 +294,9 @@ intersectWith ts =
 
 -- Retain all leaves in a provided set; or conversely, drop all leaves not in a
 -- provided set.
-retainLeavesWith ::
+retainLeaves ::
   (Semigroup e, Eq e, Ord a) => Set a -> Tree e a -> Tree e a
-retainLeavesWith ls t = S.foldl' (flip dropLeafWith) t leavesToDrop
+retainLeaves ls t = S.foldl' (flip dropLeaf) t leavesToDrop
   where
     leavesToDrop = S.fromList (leaves t) S.\\ ls
 
@@ -354,12 +359,12 @@ clades (Node _ _ [x]) = clades x
 clades (Node _ _ [x, y]) = clades x ++ clades y
 clades t = leaves t : concatMap clades (forest t)
 
--- -- TODO: Probably provide these functions also for 'Topology'.
-
 -- | For a rooted, bifurcating tree, get all possible rooted (bifurcating) trees.
 --
 -- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
--- is moved. Branch labels are not handled (yet).
+-- is moved. See also 'ELynx.Data.Tree.Bipartition.rootAt'.
+--
+-- Branch labels are not handled.
 --
 -- Return 'Left' if the tree is not 'bifurcating'.
 roots :: Tree () a -> Either String (Forest () a)
@@ -392,59 +397,29 @@ rights (Node _ _ [_, Node _ _ []]) = Right []
 rights (Node _ _ []) = Left "rights: This is a bug. Encountered a leaf."
 rights _ = Left "rights: Tree is not bifurcating."
 
--- TODO: Continue here.
+-- | Remove multifurcations.
+--
+-- A caterpillar like bifurcating tree is used to resolve multifurcations. The
+-- multifurcating nodes are copied.
+--
+-- Branch labels are not handled.
+removeMultifurcations :: Tree () a -> Tree () a
+removeMultifurcations t@(Node _ _ []) = t
+removeMultifurcations (Node _ l [x]) = Node () l [removeMultifurcations x]
+removeMultifurcations (Node _ l [x, y]) = Node () l $ map removeMultifurcations [x, y]
+removeMultifurcations (Node _ l (x : xs)) = Node () l $ map removeMultifurcations [x, Node () l xs]
 
--- -- | Root a bifurcating tree at a given point.
--- --
--- -- Root the tree at the midpoint of the branch defined by the given bipartition.
--- -- The original root node is moved to the new position.
--- --
--- -- - The tree has to be bifurcating (may be relaxed in the future).
--- -- - The leaves of the tree have to be unique.
--- -- - The leaves in the bipartition have to match the leaves of the tree.
--- rootAt :: Ord a => Bipartition (PhyloLabel a) -> Tree (PhyloLabel a) -> Tree (PhyloLabel a)
--- rootAt b t
---   -- Tree is checked for being bifurcating in 'roots'.
---   | length ls /= S.size lS = error "rootAt: Leaves of tree are not unique."
---   | bS /= lS = error "rootAt: Bipartition does not match leaves of tree."
---   | otherwise =
---     fromMaybe
---       (error "rootAt: Bipartition not found on tree.")
---       (rootAt' b t)
---   where
---     bS = toSet b
---     ls = S.fromList $ leaves t
---     lS = S.fromList $ leaves t
-
--- -- Assume the leaves of the tree are unique.
--- rootAt' :: (Eq a, Ord a) => Bipartition (PhyloLabel a) -> Tree (PhyloLabel a) -> Maybe (Tree (PhyloLabel a))
--- rootAt' b t = find (\x -> b == bipartition x) (roots t)
-
--- -- | Connect two trees with a branch in all possible ways.
--- --
--- -- Basically, introduce a branch between two trees. If the trees have n, and m
--- -- branches, respectively, there are n*m ways to connect them.
--- --
--- -- A base node has to be given which will be used wherever the new node is
--- -- introduced.
--- connect :: PhyloLabel a -> Tree (PhyloLabel a) -> Tree (PhyloLabel a) -> [Tree (PhyloLabel a)]
--- connect n l r = [Node n [x, y] | x <- roots l, y <- roots r]
-
--- -- | Remove multifurcations by copying multifurcating nodes and introducing
--- -- branches with length 0 and branch support 0.
--- removeMultifurcations :: Tree (PhyloLabel a) -> Tree (PhyloLabel a)
--- removeMultifurcations t@(Node _ []) = t
--- removeMultifurcations (Node l [x]) = Node l [removeMultifurcations x]
--- removeMultifurcations (Node l [x, y]) = Node l $ map removeMultifurcations [x, y]
--- removeMultifurcations (Node l (x : xs)) = Node l $ map removeMultifurcations [x, Node l' xs]
---   where
---     l' = l {brLen = 0, brSup = 0}
-
--- -- | Add branch lengths. Set branch support to the lower support value. Forget
--- -- the parent node label.
--- extend :: PhyloLabel a -> PhyloLabel a -> PhyloLabel a
--- extend da pa = da {brSup = min (brSup pa) (brSup da), brLen = brLen pa + brLen da}
-
--- -- | Prune degree 2 nodes. Use 'extend' and 'pruneWith'.
--- prune :: Tree (PhyloLabel a) -> Tree (PhyloLabel a)
--- prune = pruneWith extend
+-- | Connect two trees with a branch in all possible ways.
+--
+-- Introduce a branch between two trees. If the trees have n, and m branches,
+-- respectively, there are n*m ways to connect them.
+--
+-- A base node label has to be given which will be used wherever the new node is
+-- introduced.
+--
+-- Branch labels are not handled.
+connect :: a -> Tree () a -> Tree () a -> Either String (Forest () a)
+connect lb l r = do
+  ls <- roots l
+  rs <- roots r
+  return [Node () lb [x, y] | x <- ls, y <- rs]

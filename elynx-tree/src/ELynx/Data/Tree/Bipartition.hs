@@ -35,6 +35,7 @@ module ELynx.Data.Tree.Bipartition
     getComplementaryLeaves,
     bipartitionToBranch,
     bipartitionCompatible,
+    rootAt,
   )
 where
 
@@ -199,3 +200,34 @@ bipartitionCompatible (Bipartition (l, r)) s = S.null lOverlap || S.null rOverla
   where
     lOverlap = S.intersection l s
     rOverlap = S.intersection r s
+
+-- | Root a tree.
+--
+-- Root the tree at the branch defined by the given bipartition. The original
+-- root node is moved to the new position. See also
+-- 'ELynx.Data.Tree.Rooted.roots'.
+--
+-- Branch labels are not handled.
+--
+-- Return 'Left', if:
+-- - the tree is not bifurcating;
+-- - the tree has duplicate leaves;
+-- - the bipartition does not match the leaves of the tree.
+rootAt :: Ord a => Bipartition a -> Tree () a -> Either String (Tree () a)
+rootAt b t
+  -- Tree is checked for being bifurcating in 'roots'.
+  -- Do not use 'valid' here, because we also need to compare the leaf set with the bipartition.
+  | length lvLst /= S.size lvSet = Left "rootAt: Leaves of tree are not unique."
+  | toSet b /= lvSet = Left "rootAt: Bipartition does not match leaves of tree."
+  | otherwise = rootAt' b t
+  where
+    lvLst = leaves t
+    lvSet = S.fromList $ leaves t
+
+-- Assume the leaves of the tree are unique.
+rootAt' :: (Eq a, Ord a) => Bipartition a -> Tree () a -> Either String (Tree () a)
+rootAt' b t = do
+  ts <- roots t
+  case find (\x -> b == bipartition x) ts of
+    Nothing -> Left "rootAt': Bipartition not found on tree."
+    Just t' -> Right t'

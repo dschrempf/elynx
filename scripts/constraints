@@ -59,7 +59,7 @@ isInternal :: Tree a -> Bool
 isInternal (Node _ []) = False
 isInternal _           = True
 
-getOrderedNodeZippers :: Measurable a => Tree a -> [Tree a]
+getOrderedNodeZippers :: Measurable a => Tree a -> Forest a
 getOrderedNodeZippers t = filter isInternal $ map snd $ sortOn (Down . fst)
                                                                labels
  where
@@ -73,7 +73,7 @@ combine n (x, y) = if y `elem` subForest x then n else n + 1
 -- | Get the maximum number of optimal non-trivial (see
 -- 'getMaxNonTrivialConstraints') constraints. A constraint is optimal, if it is
 -- non-trivial and if it relates two consecutive nodes on the time axis.
-getMaxOptimalConstraints :: (Show a, Eq a) => [Tree a] -> Int
+getMaxOptimalConstraints :: (Show a, Eq a) => Forest a -> Int
 getMaxOptimalConstraints xs = foldl' combine 0 pairs
  where
   pairs =

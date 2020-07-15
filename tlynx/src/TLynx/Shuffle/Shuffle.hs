@@ -85,7 +85,7 @@ shuffleT ::
   [Double] -> -- Coalescent times.
   [L.ByteString] -> -- Leave names.
   GenIO ->
-  IO [Tree (PhyloLabel L.ByteString)]
+  IO (Forest (PhyloLabel L.ByteString))
 shuffleT n o cs ls gen = do
   css <- grabble cs n (length cs) gen
   lss <- grabble ls n (length ls) gen

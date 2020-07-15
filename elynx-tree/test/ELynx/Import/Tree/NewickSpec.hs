@@ -35,7 +35,7 @@ sampleLabel = PhyloLabelSoft (L.pack "name") (Just 0.3) Nothing
 sampleForestByteString :: L.ByteString
 sampleForestByteString = L.pack "(l,l,(a,b))"
 
-sampleForest :: [Tree (PhyloLabelSoft L.ByteString)]
+sampleForest :: Forst (PhyloLabelSoft L.ByteString)
 sampleForest =
   [ Node { rootLabel = PhyloLabelSoft (L.pack "l") Nothing Nothing, subForest = [] }
   , Node { rootLabel = PhyloLabelSoft (L.pack "l") Nothing Nothing, subForest = [] }

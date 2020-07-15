@@ -62,7 +62,7 @@ connectCmd = do
 connectTrees
   :: Tree (PhyloLabel L.ByteString)
   -> Tree (PhyloLabel L.ByteString)
-  -> [Tree (PhyloLabel L.ByteString)]
+  -> Forest (PhyloLabel L.ByteString)
 connectTrees = connect (PhyloLabel "" 0 0)
 
 type Constraint a = S.Set a

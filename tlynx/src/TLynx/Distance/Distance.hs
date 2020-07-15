@@ -196,7 +196,7 @@ distance = do
 
   -- The trees can be prepared now.
   let
-    trees' :: [Tree (PhyloLabel L.ByteString)]
+    trees' :: Forest (PhyloLabel L.ByteString)
     trees' = map (collapseF . normalizeF) trees
 
   $(logDebug) "The prepared trees are:"

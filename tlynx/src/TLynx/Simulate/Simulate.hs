@@ -104,7 +104,7 @@ simulateNTreesConcurrently ::
   TimeSpec ->
   [Int] ->
   [GenIO] ->
-  ELynx SimulateArguments [Tree (PhyloLabel Int)]
+  ELynx SimulateArguments (Forest (PhyloLabel Int))
 simulateNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
   let l' = l * r
       m' = m - l * (1.0 - r)
@@ -123,7 +123,7 @@ simulateAndSubSampleNTreesConcurrently ::
   TimeSpec ->
   [Int] ->
   [GenIO] ->
-  ELynx SimulateArguments [Tree (PhyloLabel Int)]
+  ELynx SimulateArguments (Forest (PhyloLabel Int))
 simulateAndSubSampleNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
   let nLeavesBigTree = (round $ fromIntegral nLeaves / r) :: Int
   logNewSection $

@@ -42,3 +42,5 @@ fromTree (Node _ xs) = TN (S.fromList $ map fromTree xs)
 leaves :: Ord a => Topology a -> Set a
 leaves (TN xs) = S.unions $ S.map leaves xs
 leaves (TL x)  = S.singleton x
+
+-- TODO: Probably provide 'roots', 'rootAt', 'connect' also for 'Topology'.

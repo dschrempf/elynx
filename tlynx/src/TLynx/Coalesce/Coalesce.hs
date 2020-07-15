@@ -64,7 +64,7 @@ coalesce = do
   let res = L.unlines ls
   out "simulated trees" res ".tree"
 
-simulateNTreesConcurrently :: ELynx CoalesceArguments [Tree (PhyloLabel Int)]
+simulateNTreesConcurrently :: ELynx CoalesceArguments (Forest (PhyloLabel Int))
 simulateNTreesConcurrently = do
   (CoalesceArguments nT nL _ _ (Fixed s)) <- local <$> ask
   c <- liftIO getNumCapabilities
@@ -78,7 +78,7 @@ simulateNTreesConcurrently = do
   return $ concat trss
 
 simulateAndSubSampleNTreesConcurrently ::
-  ELynx CoalesceArguments [Tree (PhyloLabel Int)]
+  ELynx CoalesceArguments (Forest (PhyloLabel Int))
 simulateAndSubSampleNTreesConcurrently = do
   (CoalesceArguments nT nL mR _ (Fixed s)) <- local <$> ask
   c <- liftIO getNumCapabilities
