@@ -2,6 +2,7 @@
 
 -- |
 -- Module      :  ELynx.Data.Tree.RootedSpec
+-- Description :  Unit tests for ELynx.Data.Tree.Rooted
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -18,20 +19,10 @@ where
 import qualified Data.ByteString.Lazy.Char8 as L
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Maybe
-import qualified Data.Set as S
-import Data.Set (Set)
 import ELynx.Data.Tree
-import ELynx.Data.Tree.Arbitrary ()
 import ELynx.Import.Tree.Newick
 import ELynx.Tools
 import Test.Hspec
-  ( Spec,
-    describe,
-    it,
-    shouldBe,
-  )
-import Test.Hspec.QuickCheck (modifyMaxSize)
-import Test.QuickCheck hiding (label)
 
 node :: Int -> Tree () Int
 node n = Node () n []
@@ -54,93 +45,25 @@ largeTree :: Tree Phylo ByteString
 largeTree = parseByteStringWith "Sample newick byte string" (newick Standard) sampleTreeBS
 
 subSampleLargeTree :: Tree Phylo ByteString
-subSampleLargeTree = fromJust $ subTree ((== 'P') . L.head) largeTree
-
-simpleTree :: Tree Phylo String
-simpleTree = Node pl "i" [Node pl "j" [Node pl "x" [], Node pl "y" []], Node pl "z" []]
-
-simpleSol :: Forest Phylo String
-simpleSol =
-  [ Node pl "i" [Node pl "j" [Node pl "x" [], Node pl "y" []], Node pl "z" []],
-    Node pl "i" [Node pl "x" [], Node pl "j" [Node pl "y" [], Node pl "z" []]],
-    Node pl "i" [Node pl "j" [Node pl "z" [], Node pl "x" []], Node pl "y" []]
-  ]
-
--- XXX: Skip not bifurcating trees. This is ugly, I know.
-prop_roots :: Tree Phylo a -> Bool
-prop_roots t
-  | not $ bifurcating t = True
-  | length (leaves t) < 3 = length (roots t) == 1
-  | otherwise = length (roots t) == 2 * length (leaves t) - 3
-
--- XXX: Skip not bifurcating trees. This is ugly, I know.
-prop_connect :: Phylo -> Tree Phylo a -> Tree Phylo a -> Bool
-prop_connect n l r
-  | not (bifurcating l) || not (bifurcating r) = True
-  | length (leaves l) < 3 || length (leaves r) < 3 = length (connect n l r) == 1
-  | otherwise = length (connect n l r) == length (leaves l) * length (leaves r)
-
-type Constraint a = Set a
-
-compatibleAll :: (Show a, Ord a) => Tree e a -> [Constraint a] -> Bool
-compatibleAll (Node _ _ [l, r]) cs =
-  all (bpcompatible (bipartition l)) cs && all (bpcompatible (bipartition r)) cs
-compatibleAll _ _ = error "Tree is not bifurcating."
-
-compatibleWith ::
-  (Show b, Ord b) => (a -> b) -> [Constraint a] -> Tree e a -> Bool
-compatibleWith f cs t = compatibleAll (fmap f t) (map (S.map f) cs)
-
-pl :: Phylo
-pl = Phylo 0 1.0
+subSampleLargeTree = fromJust $ dropLeavesWith ((/= 'P') . L.head) largeTree
 
 spec :: Spec
 spec = do
-  describe "subTree" $ do
-    it "returns nothing if no leaf satisfies prediacte" $
-      subTree (== 3) smallTree `shouldBe` Nothing
-    it "returns the correct subtree for a small example" $
-      subTree (== 1) smallTree `shouldBe` Just smallSubTree
-
-  describe "pruneWith" $ do
+  describe "prune" $ do
     it "leaves a normal tree untouched" $
-      pruneWith const largeTree `shouldBe` largeTree
+      prune largeTree `shouldBe` largeTree
     it "correctly prunes a small example" $
-      pruneWith const smallSubTree `shouldBe` smallSubTreePruned
+      prune smallSubTree `shouldBe` smallSubTreePruned
     it "leaves height constant for Measurable trees" $
       height (prune subSampleLargeTree) `shouldBe` height subSampleLargeTree
 
-  describe "roots and rootAt" $ do
-    it "correctly handles leaves and cherries" $ do
-      let tleaf = Node (pl 0) [] :: Tree Phylo Int
-          tcherry = Node (pl 0) [Node (pl 1) [], Node (pl 2) []] :: Tree Phylo Int
-      roots tleaf `shouldBe` [tleaf]
-      roots tcherry `shouldBe` [tcherry]
-    it "correctly handles simple trees" $
-      roots simpleTree `shouldBe` simpleSol
-    modifyMaxSize (* 100) $
-      it "returns the correct number of rooted trees for arbitrary trees" $
-        property (prop_roots :: (Tree Phylo Int -> Bool))
+  describe "dropLeavesWith" $ do
+    it "returns the same tree if no leaves satisfy predicate" $
+      dropLeavesWith (const False) smallTree `shouldBe` Just smallTree
+    it "returns nothing if all leaves satisfy predicate" $
+      dropLeavesWith (const True) smallTree `shouldBe` Nothing
+    it "returns the correct subtree for a small example" $
+      dropLeavesWith (== 1) smallTree `shouldBe` Just smallSubTree
 
-  describe "rootAt" $
-    it "correctly handles simple trees" $ do
-      rootAt (bipartition simpleTree) simpleTree `shouldBe` simpleTree
-      let l = S.singleton (pl "x")
-          r = S.fromList [pl "y", pl "z"]
-      rootAt (bp l r) simpleTree `shouldBe` (simpleSol !! 1)
+  -- TODO: intersect.
 
-  -- TODO: dropLeafWith, intersect.
-
-  describe "connect" $
-    modifyMaxSize (* 100) $ do
-      it "returns the correct number of rooted trees for arbitrary trees" $
-        property (prop_connect :: Phylo -> Int -> Tree Phylo Int -> Tree Phylo Int -> Bool)
-      it "correctly connects sample trees without and with constraints" $ do
-        a <- harden <$> parseFileWith (oneNewick Standard) "data/ConnectA.tree"
-        b <- harden <$> parseFileWith (oneNewick Standard) "data/ConnectB.tree"
-        c <- map harden <$> parseFileWith (manyNewick Standard) "data/ConnectConstraints.tree"
-        let ts = connect (Phylo "" 1.0 1.0) a b
-            cs = concatMap clades c :: [Constraint Phylo]
-            ts' = filter (compatibleWith getName cs) ts
-        length ts `shouldBe` 63
-        length ts' `shouldBe` 15

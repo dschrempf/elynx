@@ -38,11 +38,11 @@ sol2 =
   fromList [mp [fromList [1], fromList [2], fromList [3, 4], fromList [5]]]
 
 -- -- TODO.
--- -- removeMultifurcations was moved to 'PhyloTree' (but commented). It didn't
+-- -- resolve was moved to 'PhyloTree' (but commented). It didn't
 -- -- fit into 'MeasurableTree'.
 -- prop_bifurcating_tree
 --   :: (Ord a, Measurable a, Named a, BranchSupported a) => Tree a -> Bool
--- prop_bifurcating_tree t = multipartitions (removeMultifurcations t) == empty
+-- prop_bifurcating_tree t = multipartitions (resolve t) == empty
 
 spec :: Spec
 spec = describe "multipartitions" $

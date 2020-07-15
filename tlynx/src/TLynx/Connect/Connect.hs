@@ -67,6 +67,18 @@ connectTrees = connect (PhyloLabel "" 0 0)
 
 type Constraint a = S.Set a
 
+-- | Get clades induced by multifurcations.
+--
+-- A multifurcation is a node with three or more children (degree 4 or larger).
+--
+-- Collect the leaves of all trees induced by multifurcations.
+multifurcatingGroups :: Tree e a -> [[a]]
+multifurcatingGroups (Node _ _ []) = []
+multifurcatingGroups (Node _ _ [x]) = multifurcatingGroups x
+multifurcatingGroups (Node _ _ [x, y]) = multifurcatingGroups x ++ multifurcatingGroups y
+multifurcatingGroups t = leaves t : concatMap multifurcatingGroups (forest t)
+
+
 compatibleAll :: (Show a, Ord a) => Tree a -> [Constraint a] -> Bool
 compatibleAll (Node _ [l, r]) cs =
   all (bpcompatible (bipartition l)) cs && all (bpcompatible (bipartition r)) cs
@@ -108,7 +120,7 @@ connectAndFilter h c l r = do
   $(logInfo) $ fromBs $ L.intercalate "\n" $ map (toNewick . soften) cts
   (tl, tr) <- parseTrees l r
   let ts  = connectTrees tl tr
-      cs  = concatMap clades cts :: [Constraint (PhyloLabel L.ByteString)]
+      cs  = concatMap multifurcatingGroups cts :: [Constraint (PhyloLabel L.ByteString)]
       -- Only collect trees that are compatible with the constraints.
       ts' = filter (compatibleWith getName cs) ts
   $(logInfo) $ "Connected  trees: " <> tShow (length ts)

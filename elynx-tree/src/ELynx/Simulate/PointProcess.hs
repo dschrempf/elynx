@@ -228,7 +228,7 @@ toReconstructedTree l pp@(PointProcess ps vs o)
     treeOrigin
   where
     (vsSorted, isSorted) = sort pp
-    !lvs = S.fromList [singleton (Length 0) p | p <- ps]
+    !lvs = S.fromList [Node (Length 0) p [] | p <- ps]
     !heights = S.replicate (length ps) 0
     !treeRoot = toReconstructedTree' isSorted vsSorted l lvs heights
     !h = last vsSorted

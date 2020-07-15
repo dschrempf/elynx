@@ -27,7 +27,7 @@ module ELynx.Data.Tree.Multipartition
 where
 
 import Data.Foldable
-import Data.List
+import Data.List hiding (partition)
 import qualified Data.Set as S
 import Data.Set (Set)
 import ELynx.Data.Tree.Bipartition
@@ -80,7 +80,7 @@ mpMap f (Multipartition xs) = Multipartition $ S.map (S.map f) xs
 -- | Get all 'Multipartition's of a tree.
 multipartitions :: Ord a => Tree e a -> Either String (Set (Multipartition a))
 multipartitions t
-  | valid t = Right $ multipartitions' S.empty $ S.fromList <$> partitionTree t
+  | valid t = Right $ multipartitions' S.empty $ S.fromList <$> groups t
   | otherwise = Left "multipartitions: Tree contains duplicate leaves."
 
 -- See 'multipartitions', but do not check if leaves are unique.

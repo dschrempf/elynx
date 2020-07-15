@@ -25,9 +25,18 @@
 --
 -- NOTE: Trees in this library are all rooted.
 module ELynx.Data.Tree.Phylogeny
-  ( equal,
+  (
+    -- * Functions
+    equal,
     equalTopology,
     valid,
+    intersect,
+    bifurcating,
+    resolve,
+    roots,
+    connect,
+
+    -- * Branch labels
     Phylo (..),
     Length (..),
     phyloToLengthTree,
@@ -43,6 +52,7 @@ where
 import Data.Bifoldable
 import Data.Bifunctor
 import Data.Bitraversable
+import Data.List hiding (intersect)
 import Data.Maybe
 import Data.Monoid
 import Data.Semigroup
@@ -75,6 +85,106 @@ hasNoDuplicates = go S.empty
 valid :: Ord a => Tree e a -> Bool
 valid = hasNoDuplicates . leaves
 
+-- | Compute the intersection of trees.
+--
+-- The intersections are the largest subtrees sharing the same leaf set.
+--
+-- Degree two nodes are pruned with 'prune'.
+--
+-- Return 'Left' if:
+-- - any tree has duplicate leaves;
+-- - the intersection of leaves is empty.
+intersect ::
+  (Semigroup e, Eq e, Ord a) => Forest e a -> Either String (Forest e a)
+intersect ts
+  -- any (map (not . valid) ts) = Left "intersect: A tree is invalid."
+  | S.null lvsCommon = Left "intersect: Intersection of leaves is empty."
+  | otherwise = case sequence [dropLeavesWith (predicate ls) t | (ls, t) <- zip leavesToDrop ts] of
+    Nothing -> Left "intersect: A tree is empty."
+    Just ts' -> Right ts'
+  where
+    -- Leaf sets.
+    lvss = map (S.fromList . leaves) ts
+    -- Common leaf set.
+    lvsCommon = foldl1' S.intersection lvss
+    -- Leaves to drop for each tree in the forest.
+    leavesToDrop = map (S.\\ lvsCommon) lvss
+    -- Predicate.
+    predicate lvsToDr l = l `S.member` lvsToDr
+
+-- | Check if a tree is bifurcating.
+--
+-- A Bifurcating tree only contains degree one and degree three nodes.
+bifurcating :: Tree e a -> Bool
+bifurcating (Node _ _ []) = True
+bifurcating (Node _ _ [x, y]) = bifurcating x && bifurcating y
+bifurcating _ = False
+
+-- | Remove multifurcations.
+--
+-- A caterpillar like bifurcating tree is used to resolve multifurcations. The
+-- multifurcating nodes are copied.
+--
+-- Branch labels are not handled.
+resolve :: Tree () a -> Tree () a
+resolve t@(Node _ _ []) = t
+resolve (Node _ l [x]) = Node () l [resolve x]
+resolve (Node _ l [x, y]) = Node () l $ map resolve [x, y]
+resolve (Node _ l (x : xs)) = Node () l $ map resolve [x, Node () l xs]
+
+-- | For a rooted, bifurcating tree, get all possible rooted (bifurcating) trees.
+--
+-- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
+-- is moved. See also 'ELynx.Data.Tree.Bipartition.rootAt'.
+--
+-- Branch labels are not handled.
+--
+-- Return 'Left' if the tree is not 'bifurcating'.
+roots :: Tree () a -> Either String (Forest () a)
+roots t@(Node _ _ []) = Right [t]
+roots t@(Node _ _ [Node _ _ [], Node _ _ []]) = Right [t]
+roots t@(Node _ _ [_, _]) = sequence $ Right t : sequence (lefts t) ++ sequence (rights t)
+roots _ = Left "roots: Tree is not bifurcating."
+
+-- Move the root to the left.
+lefts :: Tree () a -> Either String (Forest () a)
+lefts (Node _ c [Node _ l [Node _ x tsX, Node _ y tsY], Node _ r tsR]) =
+  let -- Left.
+      tl = Node () c [Node () x tsX, Node () l [Node () y tsY, Node () r tsR]]
+      -- Right.
+      tr = Node () c [Node () l [Node () r tsR, Node () x tsX], Node () y tsY]
+   in sequence $ Right tl : Right tr : sequence (lefts tl) ++ sequence (rights tr)
+lefts (Node _ _ [Node _ _ [], _]) = Right []
+lefts (Node _ _ []) = Left "lefts: This is a bug. Encountered a leaf."
+lefts _ = Left "lefts: Tree is not bifurcating."
+
+-- Move the root to the right.
+rights :: Tree () a -> Either String (Forest () a)
+rights (Node _ c [Node _ l tsL, Node _ r [Node _ x tsX, Node _ y tsY]]) =
+  let -- Left.
+      tl = Node () c [Node () x tsX, Node () r [Node () y tsY, Node () l tsL]]
+      -- Right.
+      tr = Node () c [Node () r [Node () l tsL, Node () x tsX], Node () y tsY]
+   in sequence $ Right tl : Right tr : sequence (lefts tl) ++ sequence (rights tr)
+rights (Node _ _ [_, Node _ _ []]) = Right []
+rights (Node _ _ []) = Left "rights: This is a bug. Encountered a leaf."
+rights _ = Left "rights: Tree is not bifurcating."
+
+-- | Connect two trees with a branch in all possible ways.
+--
+-- Introduce a branch between two trees. If the trees have n, and m branches,
+-- respectively, there are n*m ways to connect them.
+--
+-- A base node label has to be given which will be used wherever the new node is
+-- introduced.
+--
+-- Branch labels are not handled.
+connect :: a -> Tree () a -> Tree () a -> Either String (Forest () a)
+connect lb l r = do
+  ls <- roots l
+  rs <- roots r
+  return [Node () lb [x, y] | x <- ls, y <- rs]
+
 -- | Branch label for phylogenetic trees.
 --
 -- Branches may have a length and a support value.
@@ -84,6 +194,14 @@ data Phylo = Phylo
   }
   deriving (Read, Show, Eq, Ord)
 
+-- TODO: This is fishy.
+instance Semigroup Phylo where
+  Phylo mBL mSL <> Phylo mBR mSR =
+    Phylo
+    (getSum <$> (Sum <$> mBL) <> (Sum <$> mBR))
+    (getMin <$> (Min <$> mSL) <> (Min <$> mSR))
+
+-- TODO: It would be good to provide this is Measurable. Same for Supported.
 -- | Branch length label. For conversion, see 'phyloToLengthTree' and 'lengthToPhyloTree'.
 newtype Length = Length {fromLength :: BranchLength}
   deriving (Read, Show, Eq, Ord, Num, Fractional, Floating)

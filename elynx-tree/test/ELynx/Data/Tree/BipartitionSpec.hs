@@ -70,6 +70,12 @@ bipartitionsSecondTree =
       bp (sfrom ["E"]) (sfrom ["A", "B", "C", "D"])
     ]
 
+simpleTree :: Tree () String
+simpleTree = Node () "i" [Node () "j" [Node () "x" [], Node () "y" []], Node () "z" []]
+
+simpleSol :: Tree () String
+simpleSol = Node () "i" [Node () "x" [], Node () "j" [Node () "y" [], Node () "z" []]]
+
 spec :: Spec
 spec = do
   describe "bipartitions" $
@@ -80,9 +86,17 @@ spec = do
             t2 = simpleTrees !! 1
         bipartitions t1 `shouldBe` Right bipartitionsFirstTree
         bipartitions t2 `shouldBe` Right bipartitionsSecondTree
+
   describe "bipartitionToBranch" $
     it "creates a map from bipartitions to branch lengths" $
       do
         simpleTrees <- getSimpleTrees
         (phyloToLengthTree (simpleTrees !! 2) >>= bipartitionToBranch)
           `shouldBe` Right bipartitionToBranchAnswer
+
+  describe "rootAt" $
+    it "correctly handles simple trees" $ do
+      rootAt (bipartition simpleTree) simpleTree `shouldBe` Right simpleTree
+      let l = S.singleton "x"
+          r = S.fromList ["y", "z"]
+      rootAt (bp l r) simpleTree `shouldBe` Right simpleSol

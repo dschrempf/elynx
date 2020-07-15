@@ -22,7 +22,9 @@
 -- > Bipartition x y
 -- we always have @x >= y@.
 module ELynx.Data.Tree.Bipartition
-  ( -- * Data type
+  ( groups,
+
+    -- * Data type
     Bipartition (fromBipartition),
     bp,
     toSet,
@@ -39,13 +41,20 @@ module ELynx.Data.Tree.Bipartition
   )
 where
 
-import Data.List
+import Control.Comonad
+import Data.List hiding (partition)
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted
+
+-- | Each node of a tree is root of an induced subtree. Set the node labels to
+-- the leaves of the induced subtrees.
+groups :: Tree e a -> Tree e [a]
+-- I am proud of this awesome 'Comonad' usage here :).
+groups = extend leaves
 
 -- | Each branch of a tree partitions the leaves of the tree into two subsets,
 -- or a bipartition.
@@ -105,7 +114,7 @@ bipartition _ = error "Root node is not bifurcating."
 bipartitions :: Ord a => Tree e a -> Either String (Set (Bipartition a))
 bipartitions t
   | valid t =
-    Right $ S.filter bpValid $ bipartitions' S.empty $ S.fromList <$> partitionTree t
+    Right $ S.filter bpValid $ bipartitions' S.empty $ S.fromList <$> groups t
   | otherwise = Left "bipartitions: Tree contains duplicate leaves."
 
 -- | Report the complementary leaves for each child.
@@ -165,7 +174,7 @@ bipartitionToBranch t
         bipartitionToBranch' S.empty pTree
   | otherwise = Left "bipartitionToBranch: Tree contains duplicate leaves."
   where
-    pTree = S.fromList <$> partitionTree t
+    pTree = S.fromList <$> groups t
 
 -- When calculating the map, branches separated by various degree two nodes have
 -- to be combined. Hence, not only the complementary leaves, but also the branch

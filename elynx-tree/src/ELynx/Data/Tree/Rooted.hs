@@ -4,7 +4,6 @@
 -- |
 -- Module      :  ELynx.Data.Tree.Rooted
 -- Description :  Rooted trees with labeled branches
-
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -53,23 +52,15 @@
 module ELynx.Data.Tree.Rooted
   ( Tree (..),
     Forest,
-    singleton,
     degree,
     leaves,
     flatten,
-    labelNodes,
+    identify,
     prune,
-    dropLeaf,
-    intersect,
+    dropNodesWith,
+    dropLeavesWith,
     zipTreesWith,
     zipTrees,
-    partitionTree,
-    subTree,
-    bifurcating,
-    clades,
-    roots,
-    removeMultifurcations,
-    connect,
   )
 where
 
@@ -83,21 +74,18 @@ import Data.Bifoldable
 import Data.Bifunctor
 import Data.Bitraversable
 import Data.Data
+import Data.List
 import Data.Foldable
-import Data.List hiding (intersect)
 import Data.Maybe
-import Data.Set (Set)
-import qualified Data.Set as S
+import Prelude
 import GHC.Generics
 
 -- | Rooted rose trees with branch labels.
 --
--- NOTE: This tree is rooted.
---
--- NOTE: Unary instances such as 'Functor' act on node labels, and not on branch
+-- Unary instances such as 'Functor' act on node labels, and not on branch
 -- labels. Binary instances such as 'Bifunctor' act on both labels.
 --
--- NOTE: Lifted instances are not provided.
+-- Lifted instances are not provided.
 data Tree e a = Node
   { branch :: e,
     label :: a,
@@ -135,7 +123,7 @@ instance Traversable (Tree e) where
 instance Bitraversable Tree where
   bitraverse f g ~(Node br lb ts) = Node <$> f br <*> g lb <*> traverse (bitraverse f g) ts
 
--- NOTE: The following code provides a zip-like applicative instance. However,
+-- The following code provides a zip-like applicative instance. However,
 -- the zip-like instance makes the Monad instance meaningless. So, either we
 -- provide only 'Applicative' in zip-like form, or we use the classic instance
 -- for 'Applicative' and 'Monad'.
@@ -224,10 +212,6 @@ instance (ToJSON e, ToJSON a) => ToJSON (Tree e a)
 
 instance (FromJSON e, FromJSON a) => FromJSON (Tree e a)
 
--- | The simplest tree, a leaf.
-singleton :: e -> a -> Tree e a
-singleton br lb = Node br lb []
-
 -- | The degree of the root node.
 degree :: Tree e a -> Int
 degree = (+ 1) . length . forest
@@ -243,10 +227,9 @@ flatten t = squish t []
   where
     squish (Node _ x ts) xs = x : foldr squish xs ts
 
--- | Label the nodes with unique integer ids starting at the root with 0. Works
--- for any 'Traversable' data type.
-labelNodes :: Traversable t => t a -> t Int
-labelNodes = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
+-- | Label the nodes with unique integers starting at the root with 0.
+identify :: Traversable t => t a -> t Int
+identify = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
 
 -- | Prune degree two nodes.
 --
@@ -255,53 +238,39 @@ labelNodes = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
 -- parentBranch -> combinedBranch@.
 prune :: Semigroup e => Tree e a -> Tree e a
 prune t@(Node _ _ []) = t
-prune (Node paBr _ [Node daBr daLb daXs]) = Node (daBr <> paBr) daLb daXs
-prune (Node paBr paLb paXs) = Node paBr paLb $ map prune paXs
+prune (Node paBr _ [Node daBr daLb daTs]) = Node (daBr <> paBr) daLb daTs
+prune (Node paBr paLb paTs) = Node paBr paLb $ map prune paTs
 
--- | Drop a leaf from a tree.
+-- | Drop nodes satisfying predicate.
 --
--- The possibly resulting degree two node is pruned and the branches are
--- combined using their 'Semigroup' instance (see 'pruneWith').
+-- Degree two nodes may arise.
 --
--- The same tree is returned, if the leaf is not found on the tree.
-dropLeaf :: (Semigroup e, Eq a) => a -> Tree e a -> Tree e a
-dropLeaf l (Node paBr paLb paXs) =
-  case paXs' of
-    [Node daBr daLb daXs] -> Node (daBr <> paBr) daLb daXs
-    _ -> Node paBr paLb paXs'
-  where
-    toRm x = null (forest x) && label x == l
-    paXs' = map (dropLeaf l) (filter (not . toRm) paXs)
+-- Return 'Nothing' if the root node satisfies the predicate.
+dropNodesWith :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
+dropNodesWith p (Node br lb ts)
+  | p lb = Nothing
+  | otherwise = if null ts'
+                then Nothing
+                else Just $ Node br lb ts'
+  where ts' = mapMaybe (dropNodesWith p) ts
 
--- | Compute the intersection of trees.
+-- | Drop leaves satisfying predicate.
 --
--- The intersections are the largest subtrees sharing the same leaf set. Leaf
--- are compared using a given function. Leaves are dropped with 'dropLeafWith',
--- and degree two nodes are pruned with 'pruneWith'.
+-- Degree two nodes may arise.
 --
--- Assume that the trees are valid!
-intersect ::
-  (Semigroup e, Eq e, Ord a) => Forest e a -> Forest e a
-intersect ts =
-  if S.null ls
-    then error "intersectWith: Intersection of leaves is empty."
-    else map (retainLeaves ls) ts
-  where
-    -- Leaf sets.
-    lss = map (S.fromList . leaves) ts
-    -- Common leaf set.
-    ls = foldl1' S.intersection lss
+-- Return 'Nothing' if the root node is a leaf and satisfies the predicate.
+dropLeavesWith :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
+dropLeavesWith p (Node br lb [])
+  | p lb = Nothing
+  | otherwise = Just $ Node br lb []
+dropLeavesWith p (Node br lb ts) = if null ts'
+                                   then Nothing
+                                   else Just $ Node br lb ts'
+  where ts' = mapMaybe (dropLeavesWith p) ts
 
--- Retain all leaves in a provided set; or conversely, drop all leaves not in a
--- provided set.
-retainLeaves ::
-  (Semigroup e, Eq e, Ord a) => Set a -> Tree e a -> Tree e a
-retainLeaves ls t = S.foldl' (flip dropLeaf) t leavesToDrop
-  where
-    leavesToDrop = S.fromList (leaves t) S.\\ ls
-
--- | Zip two trees with the same topology. Returns 'Nothing' if the topologies
--- are different.
+-- | Zip two trees with the same topology.
+--
+-- Return 'Nothing' if the topologies are different.
 zipTreesWith ::
   (e1 -> e2 -> e) ->
   (a1 -> a2 -> a) ->
@@ -314,112 +283,8 @@ zipTreesWith f g (Node brL lbL tsL) (Node brR lbR tsR) =
       zipWithM (zipTreesWith f g) tsL tsR >>= Just . Node (f brL brR) (g lbL lbR)
     else Nothing
 
--- | Zip two trees with the same topology. Returns 'Nothing' if the topologies
--- are different.
+-- | Zip two trees with the same topology.
+--
+-- Return 'Nothing' if the topologies are different.
 zipTrees :: Tree e1 a1 -> Tree e2 a2 -> Maybe (Tree (e1, e2) (a1, a2))
 zipTrees = zipTreesWith (,) (,)
-
--- | Each node of a tree is root of an induced subtree. Set the node labels to
--- the leaves of the induced subtrees.
-partitionTree :: Tree e a -> Tree e [a]
--- I am proud of this awesome 'Comonad' usage here :).
-partitionTree = extend leaves
-
--- | Get subtree of 'Tree' including leaves satisfying predicate.
---
--- - The resulting tree may contain degree 2 nodes.
--- - Return 'Nothing', if no leaf satisfies predicate.
-subTree :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
-subTree p leaf@(Node _ lb [])
-  | p lb = Just leaf
-  | otherwise = Nothing
-subTree p (Node br lb ts) =
-  if null subTrees
-    then Nothing
-    else Just $ Node br lb subTrees
-  where
-    subTrees = mapMaybe (subTree p) ts
-
--- | Check if a tree is bifurcating.
---
--- A Bifurcating tree only contains degree one and degree three nodes.
-bifurcating :: Tree e a -> Bool
-bifurcating (Node _ _ []) = True
-bifurcating (Node _ _ [x, y]) = bifurcating x && bifurcating y
-bifurcating _ = False
-
--- | Get clades induced by multifurcations.
---
--- A multifurcation is a node with three or more children (degree 4 or larger).
---
--- Collect the leaves of all trees induced by multifurcations.
-clades :: Tree e a -> [[a]]
-clades (Node _ _ []) = []
-clades (Node _ _ [x]) = clades x
-clades (Node _ _ [x, y]) = clades x ++ clades y
-clades t = leaves t : concatMap clades (forest t)
-
--- | For a rooted, bifurcating tree, get all possible rooted (bifurcating) trees.
---
--- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
--- is moved. See also 'ELynx.Data.Tree.Bipartition.rootAt'.
---
--- Branch labels are not handled.
---
--- Return 'Left' if the tree is not 'bifurcating'.
-roots :: Tree () a -> Either String (Forest () a)
-roots t@(Node _ _ []) = Right [t]
-roots t@(Node _ _ [Node _ _ [], Node _ _ []]) = Right [t]
-roots t@(Node _ _ [_, _]) = sequence $ Right t : sequence (lefts t) ++ sequence (rights t)
-roots _ = Left "roots: Tree is not bifurcating."
-
--- Move the root to the left.
-lefts :: Tree () a -> Either String (Forest () a)
-lefts (Node _ c [Node _ l [Node _ x tsX, Node _ y tsY], Node _ r tsR]) =
-  let -- Left.
-      tl = Node () c [Node () x tsX, Node () l [Node () y tsY, Node () r tsR]]
-      -- Right.
-      tr = Node () c [Node () l [Node () r tsR, Node () x tsX], Node () y tsY]
-   in sequence $ Right tl : Right tr : sequence (lefts tl) ++ sequence (rights tr)
-lefts (Node _ _ [Node _ _ [], _]) = Right []
-lefts (Node _ _ []) = Left "lefts: This is a bug. Encountered a leaf."
-lefts _ = Left "lefts: Tree is not bifurcating."
-
--- Move the root to the right.
-rights :: Tree () a -> Either String (Forest () a)
-rights (Node _ c [Node _ l tsL, Node _ r [Node _ x tsX, Node _ y tsY]]) =
-  let -- Left.
-      tl = Node () c [Node () x tsX, Node () r [Node () y tsY, Node () l tsL]]
-      -- Right.
-      tr = Node () c [Node () r [Node () l tsL, Node () x tsX], Node () y tsY]
-   in sequence $ Right tl : Right tr : sequence (lefts tl) ++ sequence (rights tr)
-rights (Node _ _ [_, Node _ _ []]) = Right []
-rights (Node _ _ []) = Left "rights: This is a bug. Encountered a leaf."
-rights _ = Left "rights: Tree is not bifurcating."
-
--- | Remove multifurcations.
---
--- A caterpillar like bifurcating tree is used to resolve multifurcations. The
--- multifurcating nodes are copied.
---
--- Branch labels are not handled.
-removeMultifurcations :: Tree () a -> Tree () a
-removeMultifurcations t@(Node _ _ []) = t
-removeMultifurcations (Node _ l [x]) = Node () l [removeMultifurcations x]
-removeMultifurcations (Node _ l [x, y]) = Node () l $ map removeMultifurcations [x, y]
-removeMultifurcations (Node _ l (x : xs)) = Node () l $ map removeMultifurcations [x, Node () l xs]
-
--- | Connect two trees with a branch in all possible ways.
---
--- Introduce a branch between two trees. If the trees have n, and m branches,
--- respectively, there are n*m ways to connect them.
---
--- A base node label has to be given which will be used wherever the new node is
--- introduced.
---
--- Branch labels are not handled.
-connect :: a -> Tree () a -> Tree () a -> Either String (Forest () a)
-connect lb l r = do
-  ls <- roots l
-  rs <- roots r
-  return [Node () lb [x, y] | x <- ls, y <- rs]

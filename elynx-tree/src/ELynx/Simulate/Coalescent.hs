@@ -30,7 +30,7 @@ simulate ::
   m (Tree Length Int)
 simulate n = simulate' n 0 trs
   where
-    trs = [singleton (Length 0) i | i <- [0 .. n - 1]]
+    trs = [Node (Length 0) i [] | i <- [0 .. n - 1]]
 
 simulate' ::
   (PrimMonad m) =>
