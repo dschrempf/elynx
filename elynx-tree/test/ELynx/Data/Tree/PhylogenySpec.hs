@@ -69,8 +69,14 @@ multifurcatingGroups (Node _ _ [x]) = multifurcatingGroups x
 multifurcatingGroups (Node _ _ [x, y]) = multifurcatingGroups x ++ multifurcatingGroups y
 multifurcatingGroups t = leaves t : concatMap multifurcatingGroups (forest t)
 
+-- -- TODO.
+-- prop_bifurcating_tree
+--   :: (Ord a, Measurable a, Named a, BranchSupported a) => Tree a -> Bool
+-- prop_bifurcating_tree t = multipartitions (resolve t) == empty
+
 spec :: Spec
 spec = do
+  -- TODO: describe "Resolve"
   describe "roots" $ do
     it "correctly handles leaves and cherries" $ do
       let tleaf = Node () 0 [] :: Tree () Int

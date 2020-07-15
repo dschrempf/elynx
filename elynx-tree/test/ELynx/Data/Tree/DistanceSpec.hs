@@ -16,10 +16,13 @@ module ELynx.Data.Tree.DistanceSpec
   )
 where
 
+import Data.Bifunctor
 import Data.ByteString.Lazy.Char8 (ByteString)
 import ELynx.Data.Tree
+import qualified Data.Set as S
 import ELynx.Data.Tree.Arbitrary ()
 import ELynx.Import.Tree.Newick
+import ELynx.Export.Tree.Newick
 import ELynx.Tools
 import Test.Hspec
 import Test.QuickCheck
@@ -201,6 +204,9 @@ incSplitTree4 = parseByteStringWith "" (oneNewick IqTree) "(((a,c),b),(d,e));"
 adjacent :: (a -> a -> b) -> [a] -> [b]
 adjacent dist trs = [dist x y | (x, y) <- zip trs (tail trs)]
 
+noPL :: Phylo
+noPL = Phylo Nothing Nothing
+
 spec :: Spec
 spec = do
   describe "symmetric" $ do
@@ -222,6 +228,12 @@ spec = do
     it "calculates correct distances for sample trees" $ do
       incompatibleSplits multifurcating bifurcatingComp `shouldBe` Right 0
       incompatibleSplits bifurcatingComp multifurcating `shouldBe` Right 0
+      print $ S.map bpHuman <$> bipartitions bifurcatingIncomp
+      print $ S.map bpHuman <$> bipartitions multifurcating
+      print $ S.map mpHuman <$> multipartitions bifurcatingIncomp
+      print $ S.map mpHuman <$> multipartitions multifurcating
+      print $ toNewick $ first (const noPL) bifurcatingIncomp
+      print $ toNewick $ first (const noPL) multifurcating
       incompatibleSplits bifurcatingIncomp multifurcating `shouldBe` Right 2
       incompatibleSplits multifurcating bifurcatingIncomp `shouldBe` Right 2
     it "calculates correct distances for sample trees with branch support" $ do
@@ -244,7 +256,7 @@ spec = do
     it "calculates correct distances for sample trees" $ do
       manyTrees <- getManyTrees
       let ts = map (either error id . phyloToLengthTree) manyTrees
-      let ds = map (fromLength . either error id) $ adjacent branchScore ts
+      let ds = map (fromLength . either error id) $ each 2 $ adjacent branchScore ts
       ds `shouldSatisfy` nearlyEqListWith 1e-5 branchScoreAnswers
     it "is zero for a collection of random trees" $
       property $

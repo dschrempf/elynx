@@ -35,14 +35,8 @@ ex2 = Node () 0 [Node () 1 [], Node () 2 [], Node () 0 [Node () 3 [], Node () 4 
 
 sol2 :: Set (Multipartition Int)
 sol2 =
-  fromList [mp [fromList [1], fromList [2], fromList [3, 4], fromList [5]]]
-
--- -- TODO.
--- -- resolve was moved to 'PhyloTree' (but commented). It didn't
--- -- fit into 'MeasurableTree'.
--- prop_bifurcating_tree
---   :: (Ord a, Measurable a, Named a, BranchSupported a) => Tree a -> Bool
--- prop_bifurcating_tree t = multipartitions (resolve t) == empty
+  fromList [mp [fromList [1], fromList [2], fromList [3, 4], fromList [5]],
+            mp [fromList [1,2,5], fromList [3], fromList [4]]]
 
 spec :: Spec
 spec = describe "multipartitions" $

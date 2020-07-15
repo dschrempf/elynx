@@ -66,6 +66,6 @@ spec = do
     it "returns nothing if all leaves satisfy predicate" $
       dropLeavesWith (const True) smallTree `shouldBe` Nothing
     it "returns the correct subtree for a small example" $
-      dropLeavesWith (== 1) smallTree `shouldBe` Just smallSubTree
+      dropLeavesWith (== 2) smallTree `shouldBe` Just smallSubTree
 
 -- TODO: intersect.
