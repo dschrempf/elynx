@@ -32,7 +32,7 @@ instance Arbitrary2 Tree where
         -- Sized is the size of the trees.
         br <- arbB
         val <- arbN
-        pars <- arbPartition (n - 1) -- can go negative!
+        pars <- frequency [ (1, pure [1,1]), (3, arbPartition (n - 1))] -- can go negative!
         frst <- for pars $ \i -> resize i go
         return $ Node br val frst
 
@@ -45,9 +45,20 @@ instance Arbitrary2 Tree where
           rest <- arbPartition $ k - first
           return $ first : rest
 
+  liftShrink2 _ shrN = go
+    where
+      go (Node br val frst) =
+        frst
+          ++ [ Node br e fs
+               | (e, fs) <- liftShrink2 shrN (liftShrink go) (val, frst)
+             ]
+
 instance (Arbitrary e, Arbitrary a) => Arbitrary (Tree e a) where
   arbitrary = arbitrary2
 
 instance (CoArbitrary e, CoArbitrary a) => CoArbitrary (Tree e a) where
   coarbitrary (Node br val frst) =
     coarbitrary br . coarbitrary val . coarbitrary frst
+
+instance Arbitrary Length where
+  arbitrary = Length . getPositive <$> arbitrary

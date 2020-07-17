@@ -34,7 +34,7 @@
 -- and a rooted tree is returned.
 --
 -- Trees with multifurcating root nodes can be properly rooted using 'rootAt' or
--- 'rootAtMidpoint'.
+-- 'rootAtWithBranch'.
 module ELynx.Data.Tree.Phylogeny
   ( -- * Functions
     equal,
@@ -44,6 +44,8 @@ module ELynx.Data.Tree.Phylogeny
     resolve,
     roots,
     rootAt,
+    rootsWithBranch,
+    rootAtWithBranch,
     connect,
 
     -- * Branch labels
@@ -134,21 +136,15 @@ resolve (Node _ l [x]) = Node () l [resolve x]
 resolve (Node _ l [x, y]) = Node () l $ map resolve [x, y]
 resolve (Node _ l (x : xs)) = Node () l $ map resolve [x, Node () l xs]
 
--- XXX (or actually better TODO :). Distinguish between
---
--- roots :: Topology a -> ...
--- rootAt :: Topology a -> ...
---
--- and
---
--- roots :: Semigroup e => Tree e a -> ...
--- rootAt :: Semigroup e => Tree e a -> ...
-
 -- | For a rooted tree with a bifurcating root node, get all possible rooted
 -- trees.
 --
--- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
--- is moved.
+-- The root node is moved.
+--
+-- For a tree with @l=2@ leaves, there is one rooted tree. For a bifurcating
+-- tree with @l>2@ leaves, there are @(2l-3)@ rooted trees. For a general tree
+-- with a bifurcating root node, and a total number of @n>2@ nodes, there are
+-- (n-2) rooted trees.
 --
 -- Moving a multifurcating root node to another branch would change the
 -- topology, and so, a bifurcating root is required. To resolve a multifurcating
@@ -162,27 +158,8 @@ resolve (Node _ l (x : xs)) = Node () l $ map resolve [x, Node () l xs]
 roots :: Tree () a -> Either String (Forest () a)
 roots (Node _ _ []) = Left "roots: Root node is a leaf."
 roots (Node _ _ [_]) = Left "roots: Root node has degree two."
-roots t@(Node _ c [tL, tR]) = Right $ t : descend c tR tL ++ descend c tL tR
+roots t@(Node _ c [tL, tR]) = Right $ t : descendWithBranch id () c tR tL ++ descendWithBranch id () c tL tR
 roots _ = Left "roots: Root node is multifurcating."
-
-getComplementaryForests :: Tree () a -> Forest () a -> [Forest () a]
-getComplementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n -1)]]
-  where
-    n = length ts
-
--- descend rootLabel complementaryTree downwards
-descend :: a -> Tree () a -> Tree () a -> Forest () a
-descend _ _ (Node _ _ []) = []
-descend r t (Node _ l ts) =
-  [ Node () r [Node () l f, d]
-    | (d, f) <- zip ts cfs
-  ]
-    ++ concat
-      [ descend r (Node () l f) d
-        | (d, f) <- zip ts cfs
-      ]
-  where
-    cfs = getComplementaryForests t ts
 
 -- | Root a tree at a specific position.
 --
@@ -216,23 +193,57 @@ rootAt' b t = do
     Nothing -> Left "rootAt': Bipartition not found on tree."
     Just t' -> Right t'
 
--- -- | For a rooted, bifurcating tree, get all possible rooted (bifurcating) trees.
--- --
--- -- Connect branches according to the provided 'Semigroup' instance.
--- --
--- -- Split branches into two entities according to a provided function.
--- --
--- -- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
--- -- is moved. See also 'ELynx.Data.Tree.Bipartition.rootAt'.
--- --
--- -- Return 'Left' if the tree is not 'bifurcating'.
--- rootsMidpoint :: Semigroup e => (e -> (e,e)) -> Tree e a -> Either String (Forest e a)
--- rootsMidpoint split t = undefined
+-- | For a rooted tree with a bifurcating root node, get all possible rooted
+-- trees. See 'roots'.
+--
+-- Additionally:
+--
+-- - Connect branches according to the provided 'Semigroup' instance.
+--
+-- - Upon insertion of the root, split the affected branch into one out of two
+-- - equal entities according to a given function.
+rootsWithBranch :: Semigroup e => (e -> e) -> Tree e a -> Either String (Forest e a)
+rootsWithBranch _ (Node _ _ []) = Left "rootsWithBranch: Root node is a leaf."
+rootsWithBranch _ (Node _ _ [_]) = Left "rootsWithBranch: Root node has degree two."
+rootsWithBranch g t@(Node b c [tL, tR]) = Right $ t : descendWithBranch g b c tR tL ++ descendWithBranch g b c tL tR
+rootsWithBranch _ _ = Left "rootsWithBranch: Root node is multifurcating."
+
+getComplementaryForests :: Tree e a -> Forest e a -> [Forest e a]
+getComplementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n -1)]]
+  where
+    n = length ts
+
+-- From the bifurcating root, descend into one of the two pits.
+--
+-- descendWithBranch splitFunction rootBranch rootLabel complementaryTree downwardsTree
+descendWithBranch :: Semigroup e => (e -> e) -> e -> a -> Tree e a -> Tree e a -> Forest e a
+descendWithBranch _ _ _ _ (Node _ _ []) = []
+descendWithBranch g brR lbR tC (Node brD lbD tsD) =
+  [ Node brR lbR [Node (g brDd) lbD f, Node (g brDd) lbDd tsDd]
+    | (Node brDd lbDd tsDd, f) <- zip tsD cfs
+  ]
+    ++ concat
+      [ descendWithBranch g brR lbR (Node (g brDd) lbD f) (Node (g brDd) lbDd tsDd)
+        | (Node brDd lbDd tsDd, f) <- zip tsD cfs
+      ]
+  where
+    brC' = branch tC <> brD
+    tC' = tC {branch = brC'}
+    cfs = getComplementaryForests tC' tsD
+
+-- TODO.
+rootAtWithBranch ::
+  (Semigroup e, Eq a, Ord a) =>
+  (e -> e) ->
+  Bipartition a ->
+  Tree () a ->
+  Either String (Tree () a)
+rootAtWithBranch = undefined
 
 -- | Connect two trees with a branch in all possible ways.
 --
--- Introduce a branch between two trees. If the trees have n, and m branches,
--- respectively, there are n*m ways to connect them.
+-- Introduce a branch between two trees. If the trees have @n>2@, and @m>2@
+-- nodes, respectively, there are (n-2)*(m-2) ways to connect them.
 --
 -- A base node label has to be given which will be used wherever the new node is
 -- introduced.

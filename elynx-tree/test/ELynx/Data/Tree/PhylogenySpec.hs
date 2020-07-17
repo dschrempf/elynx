@@ -42,15 +42,18 @@ simpleSol =
 -- Skip leaves and trees with multifurcating root nodes.
 prop_roots :: Tree () a -> Bool
 prop_roots t@(Node _ _ [_, _])
-  | length (leaves t) < 3 = (length <$> roots t) == Right 1
-  | otherwise = (length <$> roots t) == (Right $ 2 * length (leaves t) - 3)
-prop_roots t = True
+  | length (leaves t) == 2 = (length <$> roots t) == Right 1
+  | otherwise = (length <$> roots t) == (Right $ length (flatten t) - 2)
+prop_roots _ = True
 
 -- Skip leaves and trees with multifurcating root nodes.
 prop_connect :: a -> Tree () a -> Tree () a -> Bool
 prop_connect n l@(Node _ _ [_, _]) r@(Node _ _ [_, _])
-  | length (leaves l) < 3 || length (leaves r) < 3 = (length <$> connect n l r) == Right 1
-  | otherwise = (length <$> connect n l r) == (Right $ length (leaves l) * length (leaves r))
+  | length (leaves l) < 3 = (length <$> connect n l r) == Right (length (flatten r) - 2)
+  | length (leaves r) < 3 = (length <$> connect n l r) == Right (length (flatten l) - 2)
+  | otherwise =
+    (length <$> connect n l r)
+      == (Right $ (length (flatten l) - 2) * (length (flatten r) - 2))
 prop_connect _ _ _ = True
 
 -- | Determine compatibility between a bipartition and a set.
@@ -92,9 +95,18 @@ multifurcatingGroups t = leaves t : concatMap multifurcatingGroups (forest t)
 --   :: (Ord a, Measurable a, Named a, BranchSupported a) => Tree a -> Bool
 -- prop_bifurcating_tree t = partitions (resolve t) == empty
 
+prop_roots_total_length :: Tree Length a -> Bool
+prop_roots_total_length t@(Node _ _ [_, _]) =
+  all (\b -> abs (b - l) < 1e-10) $
+    map totalBranchLength $ either error id $ rootsWithBranch (/ 2) t
+  where
+    l = totalBranchLength t
+prop_roots_total_length _ = True
+
 spec :: Spec
 spec = do
   -- TODO: describe "Resolve"
+
   describe "roots" $ do
     it "correctly handles leaves and cherries" $ do
       let tleaf = Node () 0 [] :: Tree () Int
@@ -108,13 +120,19 @@ spec = do
         property (prop_roots :: (Tree () Int -> Bool))
 
   describe "rootAt" $
-    it "correctly handles simple trees" $ do
-      let p = either error id $ bipartition simpleTree
-      rootAt p simpleTree `shouldBe` Right simpleTree
-      let l = S.singleton "x"
-          r = S.fromList ["y", "z"]
-          p' = either error id $ bp l r
-      either error id (rootAt p' simpleTree) `shouldSatisfy` (`equal` (simpleSol !! 1))
+    modifyMaxSize (* 100) $
+      it "correctly handles simple trees" $ do
+        let p = either error id $ bipartition simpleTree
+        rootAt p simpleTree `shouldBe` Right simpleTree
+        let l = S.singleton "x"
+            r = S.fromList ["y", "z"]
+            p' = either error id $ bp l r
+        either error id (rootAt p' simpleTree) `shouldSatisfy` (`equal` (simpleSol !! 1))
+
+  describe "rootsWithBranch" $
+    modifyMaxSize (* 100) $
+      it "does not change the tree height" $
+        property (prop_roots_total_length :: Tree Length Int -> Bool)
 
   describe "connect" $
     modifyMaxSize (* 100) $ do
@@ -126,7 +144,7 @@ spec = do
         c <- parseFileWith (someNewick Standard) "data/ConnectConstraints.tree"
         let ts =
               either error id $
-              connect "ROOT" (first (const ()) a) (first (const ()) b)
+                connect "ROOT" (first (const ()) a) (first (const ()) b)
             cs =
               map S.fromList $
                 concatMap (multifurcatingGroups . first (const ())) c ::

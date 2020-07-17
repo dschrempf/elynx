@@ -40,7 +40,7 @@ pretty :: BranchLength -> String
 pretty = printf "%.5f"
 
 -- | A 'Node' label with measurable and modifiable branch length to the parent.
-class Measurable e where
+class Semigroup e => Measurable e where
   -- | Length of attached branch.
   getLen :: e -> BranchLength
 
