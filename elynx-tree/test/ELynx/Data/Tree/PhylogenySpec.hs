@@ -113,7 +113,7 @@ spec = do
       it "correctly connects sample trees without and with constraints" $ do
         a <- parseFileWith (oneNewick Standard) "data/ConnectA.tree"
         b <- parseFileWith (oneNewick Standard) "data/ConnectB.tree"
-        c <- parseFileWith (manyNewick Standard) "data/ConnectConstraints.tree"
+        c <- parseFileWith (someNewick Standard) "data/ConnectConstraints.tree"
         let ts =
               either error id $
               connect "ROOT" (first (const ()) a) (first (const ()) b)

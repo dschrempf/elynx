@@ -123,6 +123,16 @@ resolve (Node _ l [x]) = Node () l [resolve x]
 resolve (Node _ l [x, y]) = Node () l $ map resolve [x, y]
 resolve (Node _ l (x : xs)) = Node () l $ map resolve [x, Node () l xs]
 
+-- XXX (or actually better TODO :). Distinguish between
+--
+-- roots :: Topology a -> ...
+-- rootAt :: Topology a -> ...
+--
+-- and
+--
+-- roots :: Semigroup e => Tree e a -> ...
+-- rootAt :: Semigroup e => Tree e a -> ...
+
 -- | For a rooted, bifurcating tree, get all possible rooted (bifurcating) trees.
 --
 -- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node

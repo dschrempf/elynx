@@ -31,13 +31,13 @@ treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
 
 getSimpleTrees :: IO (Forest Phylo ByteString)
-getSimpleTrees = parseFileWith (manyNewick Standard) treeFileSimple
+getSimpleTrees = parseFileWith (someNewick Standard) treeFileSimple
 
 treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"
 
 getManyTrees :: IO (Forest Phylo ByteString)
-getManyTrees = parseFileWith (manyNewick Standard) treeFileMany
+getManyTrees = parseFileWith (someNewick Standard) treeFileMany
 
 -- I used treedist from Phylip to get the correct results.
 -- See http://evolution.genetics.washington.edu/phylip/doc/treedist.html.

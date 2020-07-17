@@ -38,7 +38,7 @@ readTrees :: FilePath -> ELynx ExamineArguments (Forest (PhyloLabelSoft L.ByteSt
 readTrees fp = do
   $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
   nf <- argsNewickFormat . local <$> ask
-  liftIO $ parseFileWith (manyNewick nf) fp
+  liftIO $ parseFileWith (someNewick nf) fp
 
 examineTree :: (Measurable a, Named a) => Handle -> Tree a -> IO ()
 examineTree h t = do

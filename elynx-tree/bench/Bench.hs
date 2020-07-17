@@ -21,7 +21,7 @@ treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"
 
 getManyTrees :: IO (Forest Phylo ByteString)
-getManyTrees = parseFileWith (manyNewick Standard) treeFileMany
+getManyTrees = parseFileWith (someNewick Standard) treeFileMany
 
 main :: IO ()
 main = do

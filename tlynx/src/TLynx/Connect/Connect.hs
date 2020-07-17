@@ -32,7 +32,7 @@ import           TLynx.Connect.Options
 
 import           ELynx.Data.Tree
 import           ELynx.Export.Tree.Newick       ( toNewick )
-import           ELynx.Import.Tree.Newick       ( manyNewick
+import           ELynx.Import.Tree.Newick       ( someNewick
                                                 , oneNewick
                                                 )
 import           ELynx.Tools                    ( outHandle
@@ -112,7 +112,7 @@ connectAndFilter
   :: Handle -> FilePath -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectAndFilter h c l r = do
   nwF <- nwFormat . local <$> ask
-  cts <- liftIO $ map harden <$> parseFileWith (manyNewick nwF) c
+  cts <- liftIO $ map harden <$> parseFileWith (someNewick nwF) c
   $(logInfo) "Constraints:"
   $(logInfo) $ fromBs $ L.intercalate "\n" $ map (toNewick . soften) cts
   (tl, tr) <- parseTrees l r

@@ -58,7 +58,7 @@ treesOneFile
 treesOneFile tf = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse file '" ++ tf ++ "'."
-  ts <- liftIO $ parseFileWith (manyNewick nwF) tf
+  ts <- liftIO $ parseFileWith (someNewick nwF) tf
   let n = length ts
   case compare n 2 of
     LT -> error "Not enough trees in file."

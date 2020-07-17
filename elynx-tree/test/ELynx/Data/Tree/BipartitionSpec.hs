@@ -32,7 +32,7 @@ treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
 
 getSimpleTrees :: IO (Forest Phylo ByteString)
-getSimpleTrees = parseFileWith (manyNewick Standard) treeFileSimple
+getSimpleTrees = parseFileWith (someNewick Standard) treeFileSimple
 
 bipartitionToBranchAnswer :: Map (Bipartition ByteString) Length
 bipartitionToBranchAnswer =

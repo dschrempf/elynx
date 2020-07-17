@@ -131,7 +131,7 @@ distance = do
     []   -> error "No tree input files given."
     [tf] -> do
       $(logInfo) "Read trees from single file."
-      ts <- liftIO $ map harden <$> parseFileWith (manyNewick nwFormat) tf
+      ts <- liftIO $ map harden <$> parseFileWith (someNewick nwFormat) tf
       $(logInfo) $ tShow (length ts) <> " trees found in file."
       $(logInfo) "Trees are indexed with integers."
       return (ts, map show [0 .. length ts - 1])
