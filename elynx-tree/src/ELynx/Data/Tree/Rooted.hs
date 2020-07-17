@@ -13,9 +13,12 @@
 --
 -- Creation date: Thu Jan 17 09:57:29 2019.
 --
--- Rooted rose 'Tree's with labeled branches.
+-- Rooted 'Tree's differes from a classical rose 'Data.Tree.Tree' in that it has
+-- labeled branches.
 --
--- Comment about nomenclature: A 'Tree' is defined as
+-- For rooted topologies, please see 'ELynx.Data.Topology.Rooted'.
+--
+-- A 'Tree' is defined as:
 --
 -- @
 -- data Tree e a = Node
@@ -33,18 +36,17 @@
 --
 -- This means, that the word 'Node' is reserved for the constructor of a tree,
 -- and that a 'Node' has an attached 'branch', a 'label', and a sub-'forest'.
--- The terms /Node/ and /label/ are not to be confused. The elements of the
--- sub-forest are often called /children/.
+-- The value constructor /Node/ and the record function /label/ are not to be
+-- confused. The elements of the sub-forest are often called /children/.
 --
--- Using the 'Tree' data type has some disadvantages:
+-- With respect to phylogenetic analyses, using the 'Tree' data type has some
+-- disadvantages:
 --
 -- 1. All trees are rooted. Unrooted trees can be treated with a rooted data
 -- structure, as it is used here. However, some functions may be meaningless.
 --
 -- 2. Changing branch labels, node labels, or the topology of the tree are slow
 -- operations, especially, when the changes are close to the leaves of the tree.
---
--- Note: 'Tree's are rooted!
 --
 -- In mathematical terms: A 'Tree' is a directed acyclic graph without loops,
 -- with vertex labels, with edge labels. Let me know if this definition is
@@ -79,7 +81,6 @@ import Data.List
 import Data.Foldable
 import Data.Maybe
 import qualified Data.Set as S
-import Prelude
 import GHC.Generics
 
 -- | Rooted rose trees with branch labels.
@@ -221,7 +222,7 @@ degree = (+ 1) . length . forest
 -- | Get leaves.
 leaves :: Tree e a -> [a]
 leaves (Node _ lb []) = [lb]
-leaves (Node _ _ xs) = concatMap leaves xs
+leaves (Node _ _ ts) = concatMap leaves ts
 
 -- | Return node labels in pre-order.
 flatten :: Tree e a -> [a]
