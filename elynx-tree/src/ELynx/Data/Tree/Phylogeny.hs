@@ -136,6 +136,10 @@ resolve (Node _ l [x]) = Node () l [resolve x]
 resolve (Node _ l [x, y]) = Node () l $ map resolve [x, y]
 resolve (Node _ l (x : xs)) = Node () l $ map resolve [x, Node () l xs]
 
+-- TODO: Rename root functions.
+
+-- TODO: Provide function to resolve multifurcation at the root.
+
 -- | For a rooted tree with a bifurcating root node, get all possible rooted
 -- trees.
 --
@@ -148,13 +152,13 @@ resolve (Node _ l (x : xs)) = Node () l $ map resolve [x, Node () l xs]
 --
 -- Moving a multifurcating root node to another branch would change the
 -- topology, and so, a bifurcating root is required. To resolve a multifurcating
--- root, please see TODO.
+-- root, please see and use TODO.
 --
--- Branch labels are not handled.
+-- Branch labels are not handled, but see 'rootsWithBranch'.
 --
--- See also 'rootAt'.
+-- 'rootAt' roots the tree at a specific position.
 --
--- Return 'Left' if the tree is not 'bifurcating'.
+-- Return 'Left' if the root node is not 'bifurcating'.
 roots :: Tree () a -> Either String (Forest () a)
 roots (Node _ _ []) = Left "roots: Root node is a leaf."
 roots (Node _ _ [_]) = Left "roots: Root node has degree two."
@@ -166,42 +170,26 @@ roots _ = Left "roots: Root node is multifurcating."
 -- Root the tree at the branch defined by the given bipartition. The original
 -- root node is moved to the new position.
 --
--- The root node must be bifurcating. See also 'roots'.
+-- The root node must be bifurcating (see 'roots').
 --
--- Branch labels are not handled.
+-- Branch labels are not handled, but see 'rootAtWithBranch'.
 --
 -- Return 'Left', if:
--- - the tree root node is not bifurcating;
+-- - the root node is not bifurcating;
 -- - the tree has duplicate leaves;
 -- - the bipartition does not match the leaves of the tree.
 rootAt :: Ord a => Bipartition a -> Tree () a -> Either String (Tree () a)
-rootAt b t
-  -- Tree is checked for being bifurcating in 'roots'.
-  -- Do not use 'valid' here, because we also need to compare the leaf set with the bipartition.
-  | length lvLst /= S.size lvSet = Left "rootAt: Tree has duplicate leaves."
-  | toSet b /= lvSet = Left "rootAt: Bipartition does not match leaves of tree."
-  | otherwise = rootAt' b t
-  where
-    lvLst = leaves t
-    lvSet = S.fromList $ leaves t
-
--- Assume the leaves of the tree are unique.
-rootAt' :: (Eq a, Ord a) => Bipartition a -> Tree () a -> Either String (Tree () a)
-rootAt' b t = do
-  ts <- roots t
-  case find (\x -> Right b == bipartition x) ts of
-    Nothing -> Left "rootAt': Bipartition not found on tree."
-    Just t' -> Right t'
+rootAt = rootAtWithBranch id
 
 -- | For a rooted tree with a bifurcating root node, get all possible rooted
--- trees. See 'roots'.
+-- trees.
 --
--- Additionally:
+-- See 'roots'. Additionally:
 --
 -- - Connect branches according to the provided 'Semigroup' instance.
 --
 -- - Upon insertion of the root, split the affected branch into one out of two
--- - equal entities according to a given function.
+--   equal entities according to a given function.
 rootsWithBranch :: Semigroup e => (e -> e) -> Tree e a -> Either String (Forest e a)
 rootsWithBranch _ (Node _ _ []) = Left "rootsWithBranch: Root node is a leaf."
 rootsWithBranch _ (Node _ _ [_]) = Left "rootsWithBranch: Root node has degree two."
@@ -231,14 +219,42 @@ descendWithBranch g brR lbR tC (Node brD lbD tsD) =
     tC' = tC {branch = brC'}
     cfs = getComplementaryForests tC' tsD
 
--- TODO.
+-- | Root a tree at a specific position.
+--
+-- See 'rootAt'. Additionally:
+--
+-- - Connect branches according to the provided 'Semigroup' instance.
+--
+-- - Upon insertion of the root, split the affected branch into one out of two
+--   equal entities according to a given function.
 rootAtWithBranch ::
   (Semigroup e, Eq a, Ord a) =>
   (e -> e) ->
   Bipartition a ->
-  Tree () a ->
-  Either String (Tree () a)
-rootAtWithBranch = undefined
+  Tree e a ->
+  Either String (Tree e a)
+rootAtWithBranch g b t
+  -- Tree is checked for being bifurcating in 'roots'.
+  -- Do not use 'valid' here, because we also need to compare the leaf set with the bipartition.
+  | length lvLst /= S.size lvSet = Left "rootAtWithBranch: Tree has duplicate leaves."
+  | toSet b /= lvSet = Left "rootAtWithBranch: Bipartition does not match leaves of tree."
+  | otherwise = rootAtWithBranch' g b t
+  where
+    lvLst = leaves t
+    lvSet = S.fromList $ leaves t
+
+-- Assume the leaves of the tree are unique.
+rootAtWithBranch' ::
+  (Semigroup e, Eq a, Ord a) =>
+  (e -> e) ->
+  Bipartition a ->
+  Tree e a ->
+  Either String (Tree e a)
+rootAtWithBranch' g b t = do
+  ts <- rootsWithBranch g t
+  case find (\x -> Right b == bipartition x) ts of
+    Nothing -> Left "rootAt': Bipartition not found on tree."
+    Just t' -> Right t'
 
 -- | Connect two trees with a branch in all possible ways.
 --
@@ -249,6 +265,8 @@ rootAtWithBranch = undefined
 -- introduced.
 --
 -- Branch labels are not handled.
+--
+-- Return 'Left' if one tree has a non-bifurcating root node.
 connect :: a -> Tree () a -> Tree () a -> Either String (Forest () a)
 connect lb l r = do
   ls <- roots l
