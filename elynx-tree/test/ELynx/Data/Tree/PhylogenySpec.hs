@@ -18,6 +18,7 @@ where
 
 import Data.Bifunctor
 import Data.ByteString.Lazy.Char8 (ByteString)
+import Data.Either
 import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Data.Tree
@@ -34,23 +35,23 @@ simpleTree = Node () "i" [Node () "j" [Node () "x" [], Node () "y" []], Node () 
 simpleSol :: Forest () String
 simpleSol =
   [ Node () "i" [Node () "j" [Node () "x" [], Node () "y" []], Node () "z" []],
-    Node () "i" [Node () "x" [], Node () "j" [Node () "y" [], Node () "z" []]],
+    Node () "i" [Node () "j" [Node () "z" [], Node () "y" []], Node () "x" []],
     Node () "i" [Node () "j" [Node () "z" [], Node () "x" []], Node () "y" []]
   ]
 
--- XXX: Skip not bifurcating trees. This is ugly, I know.
+-- Skip leaves and trees with multifurcating root nodes.
 prop_roots :: Tree () a -> Bool
-prop_roots t
-  | not $ bifurcating t = True
+prop_roots t@(Node _ _ [_, _])
   | length (leaves t) < 3 = (length <$> roots t) == Right 1
   | otherwise = (length <$> roots t) == (Right $ 2 * length (leaves t) - 3)
+prop_roots t = True
 
--- XXX: Skip not bifurcating trees. This is ugly, I know.
+-- Skip leaves and trees with multifurcating root nodes.
 prop_connect :: a -> Tree () a -> Tree () a -> Bool
-prop_connect n l r
-  | not (bifurcating l) || not (bifurcating r) = True
+prop_connect n l@(Node _ _ [_, _]) r@(Node _ _ [_, _])
   | length (leaves l) < 3 || length (leaves r) < 3 = (length <$> connect n l r) == Right 1
   | otherwise = (length <$> connect n l r) == (Right $ length (leaves l) * length (leaves r))
+prop_connect _ _ _ = True
 
 -- | Determine compatibility between a bipartition and a set.
 --
@@ -98,13 +99,22 @@ spec = do
     it "correctly handles leaves and cherries" $ do
       let tleaf = Node () 0 [] :: Tree () Int
           tcherry = Node () 0 [Node () 1 [], Node () 2 []] :: Tree () Int
-      roots tleaf `shouldBe` Right [tleaf]
+      roots tleaf `shouldSatisfy` isLeft
       roots tcherry `shouldBe` Right [tcherry]
     it "correctly handles simple trees" $
-      roots simpleTree `shouldBe` Right simpleSol
+      either error id (roots simpleTree) `shouldBe` simpleSol
     modifyMaxSize (* 100) $
       it "returns the correct number of rooted trees for arbitrary trees" $
         property (prop_roots :: (Tree () Int -> Bool))
+
+  describe "rootAt" $
+    it "correctly handles simple trees" $ do
+      let p = either error id $ bipartition simpleTree
+      rootAt p simpleTree `shouldBe` Right simpleTree
+      let l = S.singleton "x"
+          r = S.fromList ["y", "z"]
+          p' = either error id $ bp l r
+      either error id (rootAt p' simpleTree) `shouldSatisfy` (`equal` (simpleSol !! 1))
 
   describe "connect" $
     modifyMaxSize (* 100) $ do

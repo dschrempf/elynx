@@ -70,12 +70,6 @@ bipartitionsSecondTree =
       bpUnsafe (sfrom ["E"]) (sfrom ["A", "B", "C", "D"])
     ]
 
-simpleTree :: Tree () String
-simpleTree = Node () "i" [Node () "j" [Node () "x" [], Node () "y" []], Node () "z" []]
-
-simpleSol :: Tree () String
-simpleSol = Node () "i" [Node () "x" [], Node () "j" [Node () "y" [], Node () "z" []]]
-
 spec :: Spec
 spec = do
   describe "bipartitions" $
@@ -93,12 +87,3 @@ spec = do
         simpleTrees <- getSimpleTrees
         (phyloToLengthTree (simpleTrees !! 2) >>= bipartitionToBranch)
           `shouldBe` Right bipartitionToBranchAnswer
-
-  describe "rootAt" $
-    it "correctly handles simple trees" $ do
-      let p = either error id $ bipartition simpleTree
-      rootAt p simpleTree `shouldBe` Right simpleTree
-      let l = S.singleton "x"
-          r = S.fromList ["y", "z"]
-          p' = either error id $ bp l r
-      rootAt p' simpleTree `shouldBe` Right simpleSol

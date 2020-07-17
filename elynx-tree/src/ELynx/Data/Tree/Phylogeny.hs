@@ -144,63 +144,64 @@ resolve (Node _ l (x : xs)) = Node () l $ map resolve [x, Node () l xs]
 -- roots :: Semigroup e => Tree e a -> ...
 -- rootAt :: Semigroup e => Tree e a -> ...
 
--- TODO: Relax requirement for bifurcating trees.
-
--- | For a rooted, bifurcating tree, get all possible rooted (bifurcating) trees.
+-- | For a rooted tree with a bifurcating root node, get all possible rooted
+-- trees.
 --
 -- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
--- is moved. See also 'ELynx.Data.Tree.Bipartition.rootAt'.
+-- is moved.
+--
+-- Moving a multifurcating root node to another branch would change the
+-- topology, and so, a bifurcating root is required. To resolve a multifurcating
+-- root, please see TODO.
 --
 -- Branch labels are not handled.
 --
+-- See also 'rootAt'.
+--
 -- Return 'Left' if the tree is not 'bifurcating'.
 roots :: Tree () a -> Either String (Forest () a)
-roots t@(Node _ _ []) = Right [t]
-roots t@(Node _ _ [Node _ _ [], Node _ _ []]) = Right [t]
-roots t@(Node _ _ [_, _]) = sequence $ Right t : sequence (lefts t) ++ sequence (rights t)
-roots _ = Left "roots: Tree is not bifurcating."
+roots (Node _ _ []) = Left "roots: Root node is a leaf."
+roots (Node _ _ [_]) = Left "roots: Root node has degree two."
+roots t@(Node _ c [tL, tR]) = Right $ t : descend c tR tL ++ descend c tL tR
+roots _ = Left "roots: Root node is multifurcating."
 
--- Move the root to the left.
-lefts :: Tree () a -> Either String (Forest () a)
-lefts (Node _ c [Node _ l [Node _ x tsX, Node _ y tsY], Node _ r tsR]) =
-  let -- Left.
-      tl = Node () c [Node () x tsX, Node () l [Node () y tsY, Node () r tsR]]
-      -- Right.
-      tr = Node () c [Node () l [Node () r tsR, Node () x tsX], Node () y tsY]
-   in sequence $ Right tl : Right tr : sequence (lefts tl) ++ sequence (rights tr)
-lefts (Node _ _ [Node _ _ [], _]) = Right []
-lefts (Node _ _ []) = Left "lefts: This is a bug. Encountered a leaf."
-lefts _ = Left "lefts: Tree is not bifurcating."
+getComplementaryForests :: Tree () a -> Forest () a -> [Forest () a]
+getComplementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n -1)]]
+  where
+    n = length ts
 
--- Move the root to the right.
-rights :: Tree () a -> Either String (Forest () a)
-rights (Node _ c [Node _ l tsL, Node _ r [Node _ x tsX, Node _ y tsY]]) =
-  let -- Left.
-      tl = Node () c [Node () x tsX, Node () r [Node () y tsY, Node () l tsL]]
-      -- Right.
-      tr = Node () c [Node () r [Node () l tsL, Node () x tsX], Node () y tsY]
-   in sequence $ Right tl : Right tr : sequence (lefts tl) ++ sequence (rights tr)
-rights (Node _ _ [_, Node _ _ []]) = Right []
-rights (Node _ _ []) = Left "rights: This is a bug. Encountered a leaf."
-rights _ = Left "rights: Tree is not bifurcating."
+-- descend rootLabel complementaryTree downwards
+descend :: a -> Tree () a -> Tree () a -> Forest () a
+descend _ _ (Node _ _ []) = []
+descend r t (Node _ l ts) =
+  [ Node () r [Node () l f, d]
+    | (d, f) <- zip ts cfs
+  ]
+    ++ concat
+      [ descend r (Node () l f) d
+        | (d, f) <- zip ts cfs
+      ]
+  where
+    cfs = getComplementaryForests t ts
 
--- | Root a tree.
+-- | Root a tree at a specific position.
 --
 -- Root the tree at the branch defined by the given bipartition. The original
--- root node is moved to the new position. See also
--- 'ELynx.Data.Tree.Rooted.roots'.
+-- root node is moved to the new position.
+--
+-- The root node must be bifurcating. See also 'roots'.
 --
 -- Branch labels are not handled.
 --
 -- Return 'Left', if:
--- - the tree is not bifurcating;
+-- - the tree root node is not bifurcating;
 -- - the tree has duplicate leaves;
 -- - the bipartition does not match the leaves of the tree.
 rootAt :: Ord a => Bipartition a -> Tree () a -> Either String (Tree () a)
 rootAt b t
   -- Tree is checked for being bifurcating in 'roots'.
   -- Do not use 'valid' here, because we also need to compare the leaf set with the bipartition.
-  | length lvLst /= S.size lvSet = Left "rootAt: Leaves of tree are not unique."
+  | length lvLst /= S.size lvSet = Left "rootAt: Tree has duplicate leaves."
   | toSet b /= lvSet = Left "rootAt: Bipartition does not match leaves of tree."
   | otherwise = rootAt' b t
   where
@@ -215,18 +216,18 @@ rootAt' b t = do
     Nothing -> Left "rootAt': Bipartition not found on tree."
     Just t' -> Right t'
 
--- | For a rooted, bifurcating tree, get all possible rooted (bifurcating) trees.
---
--- Connect branches according to the provided 'Semigroup' instance.
---
--- Split branches into two entities according to a provided function.
---
--- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
--- is moved. See also 'ELynx.Data.Tree.Bipartition.rootAt'.
---
--- Return 'Left' if the tree is not 'bifurcating'.
-rootsMidpoint :: Semigroup e => (e -> (e,e)) -> Tree e a -> Either String (Forest e a)
-rootsMidpoint split t = undefined
+-- -- | For a rooted, bifurcating tree, get all possible rooted (bifurcating) trees.
+-- --
+-- -- Connect branches according to the provided 'Semigroup' instance.
+-- --
+-- -- Split branches into two entities according to a provided function.
+-- --
+-- -- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
+-- -- is moved. See also 'ELynx.Data.Tree.Bipartition.rootAt'.
+-- --
+-- -- Return 'Left' if the tree is not 'bifurcating'.
+-- rootsMidpoint :: Semigroup e => (e -> (e,e)) -> Tree e a -> Either String (Forest e a)
+-- rootsMidpoint split t = undefined
 
 -- | Connect two trees with a branch in all possible ways.
 --
