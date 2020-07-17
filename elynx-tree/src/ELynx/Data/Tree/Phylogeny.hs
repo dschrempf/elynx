@@ -25,8 +25,16 @@
 -- do perform this check, and return 'Left' with an error message, if the tree
 -- has duplicate leaves.
 --
--- Note: Trees in this library are all rooted. See also the
--- 'ELynx.Import.Tree.Newick' module header.
+-- Note: Trees in this library are all rooted.
+--
+-- Note: Trees encoded in Newick format correspond to rooted trees. By
+-- convention only, a tree parsed from Newick format is usually thought to be
+-- unrooted, when the root node is multifurcating and has three children. This
+-- convention is not enforced here. Newick trees are just parsed as they are,
+-- and a rooted tree is returned.
+--
+-- Trees with multifurcating root nodes can be properly rooted using 'rootAt' or
+-- 'rootAtMidpoint'.
 module ELynx.Data.Tree.Phylogeny
   ( -- * Functions
     equal,

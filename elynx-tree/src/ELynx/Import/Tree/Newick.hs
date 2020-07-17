@@ -21,12 +21,8 @@
 --
 -- In particular, no conversion from _ to (space) is done right now.
 --
--- Note: Trees encoded in Newick format correspond to rooted trees. By
--- convention, a tree parsed from Newick format is usually thought to be
--- unrooted, when the root node is multifurcating and has three children. This
--- convention is not enforced here. Newick trees are just parsed as they are,
--- and a rooted tree is returned. See also the 'ELynx.Data.Tree.Rooted' module
--- header.
+-- For a description of rooted 'Tree's, please see the 'ELynx.Data.Tree.Rooted'
+-- module header.
 module ELynx.Import.Tree.Newick
   ( Parser,
 
