@@ -230,8 +230,8 @@ spec = do
       incompatibleSplits bifurcatingComp multifurcating `shouldBe` Right 0
       -- print $ S.map bpHuman <$> bipartitions bifurcatingIncomp
       -- print $ S.map bpHuman <$> bipartitions multifurcating
-      -- print $ S.map mpHuman <$> multipartitions bifurcatingIncomp
-      -- print $ S.map mpHuman <$> multipartitions multifurcating
+      -- print $ S.map mpHuman <$> partitions bifurcatingIncomp
+      -- print $ S.map mpHuman <$> partitions multifurcating
       -- print $ toNewick $ first (const noPL) bifurcatingIncomp
       -- print $ toNewick $ first (const noPL) multifurcating
       incompatibleSplits bifurcatingIncomp multifurcating `shouldBe` Right 2

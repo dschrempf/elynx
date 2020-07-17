@@ -92,9 +92,9 @@ countIncompatibilities bs ms =
 -- > AC|BD
 -- > AD|BC
 --
--- For an explanation of how compatibility of multipartitions is checked, see
+-- For an explanation of how compatibility of partitions is checked, see
 -- 'compatible'. Before using 'compatible', bipartitions are simply converted to
--- multipartitions with two subsets.
+-- partitions with two subsets.
 --
 -- A bipartition is incompatible with a tree if it is incompatible with all
 -- induced multifurcations of the tree.
@@ -114,8 +114,8 @@ incompatibleSplits t1 t2
         putIncBs1 = bs1 S.\\ bs2
         putIncBs2 = bs2 S.\\ bs1
     -- Partitions.
-    ms1 <- multipartitions t1
-    ms2 <- multipartitions t2
+    ms1 <- partitions t1
+    ms2 <- partitions t2
     -- traceShowM $ "putIncBs1 " ++ show (S.map bpHuman putIncBs1)
     -- traceShowM $ "putIncBs2 " ++ show (S.map bpHuman putIncBs2)
     return $ countIncompatibilities putIncBs1 ms2 + countIncompatibilities putIncBs2 ms1

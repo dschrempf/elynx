@@ -39,12 +39,12 @@ sol2 =
             mpUnsafe [fromList [1,2,5], fromList [3], fromList [4]]]
 
 spec :: Spec
-spec = describe "multipartitions" $
-  it "calculates correct multipartitions for a sample tree" $ do
+spec = describe "partitions" $
+  it "calculates correct partitions for a sample tree" $ do
     -- t <- removeBrInfo <$> getMultifurcatingTree
-    -- print $ multipartitions ex1
-    multipartitions ex1 `shouldBe` Right sol1
-    multipartitions ex2 `shouldBe` Right sol2
+    -- print $ partitions ex1
+    partitions ex1 `shouldBe` Right sol1
+    partitions ex2 `shouldBe` Right sol2
 
 -- it "is empty for a collection of random bifurcating trees"
 --   $ property (prop_bifurcating_tree :: Tree (PhyloLabel Double) -> Bool)

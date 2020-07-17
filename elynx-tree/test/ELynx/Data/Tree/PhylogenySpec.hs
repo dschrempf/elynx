@@ -89,7 +89,7 @@ multifurcatingGroups t = leaves t : concatMap multifurcatingGroups (forest t)
 -- -- TODO.
 -- prop_bifurcating_tree
 --   :: (Ord a, Measurable a, Named a, BranchSupported a) => Tree a -> Bool
--- prop_bifurcating_tree t = multipartitions (resolve t) == empty
+-- prop_bifurcating_tree t = partitions (resolve t) == empty
 
 spec :: Spec
 spec = do
