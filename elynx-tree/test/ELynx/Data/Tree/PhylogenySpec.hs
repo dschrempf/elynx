@@ -59,7 +59,7 @@ prop_connect n l r
 -- are either not in the bipartition or mapping to one of the two subsets of the
 -- bipartition, the bipartition and the subset are compatible.
 --
--- See also 'ELynx.Data.Tree.Multipartition.compatible'.
+-- See also 'ELynx.Data.Tree.Partition.compatible'.
 bipartitionCompatible :: (Show a, Ord a) => Either String (Bipartition a) -> Set a -> Bool
 -- compatible (Bipartition (l, r)) ss = sintersection l ss `sdisjoint` sintersection r ss
 bipartitionCompatible (Left _) _ = False

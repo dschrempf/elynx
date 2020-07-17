@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
--- Module      :  ELynx.Data.Tree.MultipartitionSpec
+-- Module      :  ELynx.Data.Tree.PartitionSpec
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -10,7 +10,7 @@
 -- Portability :  portable
 --
 -- Creation date: Fri Aug 30 09:38:50 2019.
-module ELynx.Data.Tree.MultipartitionSpec
+module ELynx.Data.Tree.PartitionSpec
   ( spec,
   )
 where
@@ -23,7 +23,7 @@ import Test.Hspec
 ex1 :: Tree () Int
 ex1 = Node () 0 [Node () 1 [], Node () 2 [Node () 4 [], Node () 5 [], Node () 6 []], Node () 3 []]
 
-sol1 :: Set (Multipartition Int)
+sol1 :: Set (Partition Int)
 sol1 =
   fromList
     [ mpUnsafe [fromList [1], fromList [3], fromList [4, 5, 6]],
@@ -33,7 +33,7 @@ sol1 =
 ex2 :: Tree () Int
 ex2 = Node () 0 [Node () 1 [], Node () 2 [], Node () 0 [Node () 3 [], Node () 4 []], Node () 5 []]
 
-sol2 :: Set (Multipartition Int)
+sol2 :: Set (Partition Int)
 sol2 =
   fromList [mpUnsafe [fromList [1], fromList [2], fromList [3, 4], fromList [5]],
             mpUnsafe [fromList [1,2,5], fromList [3], fromList [4]]]

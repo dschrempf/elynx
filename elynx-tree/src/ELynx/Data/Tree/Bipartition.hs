@@ -36,7 +36,6 @@ module ELynx.Data.Tree.Bipartition
     bipartitions,
     getComplementaryLeaves,
     bipartitionToBranch,
-    rootAt,
   )
 where
 
@@ -46,7 +45,6 @@ import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Set (Set)
 import qualified Data.Set as S
-import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted
 
 -- | Each node of a tree is root of an induced subtree. Set the node labels to
@@ -122,8 +120,8 @@ bipartition _ = Left "bipartition: Root node is not bifurcating."
 -- Return 'Left' if the tree contains duplicate leaves.
 bipartitions :: Ord a => Tree e a -> Either String (Set (Bipartition a))
 bipartitions t
-  | valid t = Right $ bipartitions' S.empty $ S.fromList <$> groups t
-  | otherwise = Left "bipartitions: Tree contains duplicate leaves."
+  | duplicateLeaves t = Left "bipartitions: Tree contains duplicate leaves."
+  | otherwise = Right $ bipartitions' S.empty $ S.fromList <$> groups t
 
 -- | Report the complementary leaves for each child.
 getComplementaryLeaves ::
@@ -174,8 +172,8 @@ bipartitionToBranch ::
   Tree e a ->
   Either String (Map (Bipartition a) e)
 bipartitionToBranch t
-  | valid t = Right $ bipartitionToBranch' S.empty pTree
-  | otherwise = Left "bipartitionToBranch: Tree contains duplicate leaves."
+  | duplicateLeaves t = Left "bipartitionToBranch: Tree contains duplicate leaves."
+  | otherwise = Right $ bipartitionToBranch' S.empty pTree
   where
     pTree = S.fromList <$> groups t
 
@@ -195,34 +193,3 @@ bipartitionToBranch' p t@(Node b p' ts) =
       [bipartitionToBranch' c s | (c, s) <- zip cs ts]
   where
     cs = getComplementaryLeaves p t
-
--- | Root a tree.
---
--- Root the tree at the branch defined by the given bipartition. The original
--- root node is moved to the new position. See also
--- 'ELynx.Data.Tree.Rooted.roots'.
---
--- Branch labels are not handled.
---
--- Return 'Left', if:
--- - the tree is not bifurcating;
--- - the tree has duplicate leaves;
--- - the bipartition does not match the leaves of the tree.
-rootAt :: Ord a => Bipartition a -> Tree () a -> Either String (Tree () a)
-rootAt b t
-  -- Tree is checked for being bifurcating in 'roots'.
-  -- Do not use 'valid' here, because we also need to compare the leaf set with the bipartition.
-  | length lvLst /= S.size lvSet = Left "rootAt: Leaves of tree are not unique."
-  | toSet b /= lvSet = Left "rootAt: Bipartition does not match leaves of tree."
-  | otherwise = rootAt' b t
-  where
-    lvLst = leaves t
-    lvSet = S.fromList $ leaves t
-
--- Assume the leaves of the tree are unique.
-rootAt' :: (Eq a, Ord a) => Bipartition a -> Tree () a -> Either String (Tree () a)
-rootAt' b t = do
-  ts <- roots t
-  case find (\x -> Right b == bipartition x) ts of
-    Nothing -> Left "rootAt': Bipartition not found on tree."
-    Just t' -> Right t'

@@ -25,15 +25,14 @@
 --
 -- NOTE: Trees in this library are all rooted.
 module ELynx.Data.Tree.Phylogeny
-  (
-    -- * Functions
+  ( -- * Functions
     equal,
     equalTopology,
-    valid,
     intersect,
     bifurcating,
     resolve,
     roots,
+    rootAt,
     connect,
 
     -- * Branch labels
@@ -58,6 +57,7 @@ import Data.Maybe
 import Data.Monoid
 import Data.Semigroup
 import qualified Data.Set as S
+import ELynx.Data.Tree.Bipartition
 import ELynx.Data.Tree.Measurable
 import ELynx.Data.Tree.Rooted
 import ELynx.Data.Tree.Supported
@@ -75,16 +75,6 @@ equalTopology :: Eq a => Tree e a -> Tree e a -> Bool
 equalTopology l r = rmBr l == rmBr r
   where
     rmBr = first (const ())
-
-hasNoDuplicates :: Ord a => [a] -> Bool
-hasNoDuplicates = go S.empty
-  where
-    go _ [] = True
-    go seen (x : xs) = x `S.notMember` seen && go (S.insert x seen) xs
-
--- | Check if a tree is valid, that is, if the leaves are unique.
-valid :: Ord a => Tree e a -> Bool
-valid = hasNoDuplicates . leaves
 
 -- | Compute the intersection of trees.
 --
@@ -171,6 +161,37 @@ rights (Node _ _ [_, Node _ _ []]) = Right []
 rights (Node _ _ []) = Left "rights: This is a bug. Encountered a leaf."
 rights _ = Left "rights: Tree is not bifurcating."
 
+-- | Root a tree.
+--
+-- Root the tree at the branch defined by the given bipartition. The original
+-- root node is moved to the new position. See also
+-- 'ELynx.Data.Tree.Rooted.roots'.
+--
+-- Branch labels are not handled.
+--
+-- Return 'Left', if:
+-- - the tree is not bifurcating;
+-- - the tree has duplicate leaves;
+-- - the bipartition does not match the leaves of the tree.
+rootAt :: Ord a => Bipartition a -> Tree () a -> Either String (Tree () a)
+rootAt b t
+  -- Tree is checked for being bifurcating in 'roots'.
+  -- Do not use 'valid' here, because we also need to compare the leaf set with the bipartition.
+  | length lvLst /= S.size lvSet = Left "rootAt: Leaves of tree are not unique."
+  | toSet b /= lvSet = Left "rootAt: Bipartition does not match leaves of tree."
+  | otherwise = rootAt' b t
+  where
+    lvLst = leaves t
+    lvSet = S.fromList $ leaves t
+
+-- Assume the leaves of the tree are unique.
+rootAt' :: (Eq a, Ord a) => Bipartition a -> Tree () a -> Either String (Tree () a)
+rootAt' b t = do
+  ts <- roots t
+  case find (\x -> Right b == bipartition x) ts of
+    Nothing -> Left "rootAt': Bipartition not found on tree."
+    Just t' -> Right t'
+
 -- | Connect two trees with a branch in all possible ways.
 --
 -- Introduce a branch between two trees. If the trees have n, and m branches,
@@ -198,8 +219,8 @@ data Phylo = Phylo
 instance Semigroup Phylo where
   Phylo mBL mSL <> Phylo mBR mSR =
     Phylo
-    (getSum <$> (Sum <$> mBL) <> (Sum <$> mBR))
-    (getMin <$> (Min <$> mSL) <> (Min <$> mSR))
+      (getSum <$> (Sum <$> mBL) <> (Sum <$> mBR))
+      (getMin <$> (Min <$> mSL) <> (Min <$> mSR))
 
 -- | Branch length label.
 --

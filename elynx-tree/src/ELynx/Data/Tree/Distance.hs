@@ -39,7 +39,7 @@ import Data.Monoid
 import qualified Data.Set as S
 import Data.Set (Set)
 import ELynx.Data.Tree.Bipartition
-import ELynx.Data.Tree.Multipartition
+import ELynx.Data.Tree.Partition
 import ELynx.Data.Tree.Rooted
 
 -- Symmetric difference between two 'Set's.
@@ -62,7 +62,7 @@ symmetric t1 t2
     bps2 <- bipartitions t2
     return $ length $ symmetricDifference bps1 bps2
 
-countIncompatibilities :: (Show a, Ord a) => Set (Bipartition a) -> Set (Multipartition a) -> Int
+countIncompatibilities :: (Show a, Ord a) => Set (Bipartition a) -> Set (Partition a) -> Int
 countIncompatibilities bs ms =
   foldl' (\i b -> if any (compatible $ bpToMp b) ms then i else i + 1) 0 bs
 
@@ -113,7 +113,7 @@ incompatibleSplits t1 t2
     let -- Putative incompatible bipartitions of trees one and two, respectively.
         putIncBs1 = bs1 S.\\ bs2
         putIncBs2 = bs2 S.\\ bs1
-    -- Multipartitions.
+    -- Partitions.
     ms1 <- multipartitions t1
     ms2 <- multipartitions t2
     -- traceShowM $ "putIncBs1 " ++ show (S.map bpHuman putIncBs1)

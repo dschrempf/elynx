@@ -26,7 +26,7 @@ module ELynx.Data.Tree
 
     -- * Partitions and distances
     module ELynx.Data.Tree.Bipartition,
-    module ELynx.Data.Tree.Multipartition,
+    module ELynx.Data.Tree.Partition,
     module ELynx.Data.Tree.Distance,
   )
 where
@@ -34,7 +34,7 @@ where
 import ELynx.Data.Tree.Bipartition
 import ELynx.Data.Tree.Distance
 import ELynx.Data.Tree.Measurable
-import ELynx.Data.Tree.Multipartition
+import ELynx.Data.Tree.Partition
 import ELynx.Data.Tree.Named
 import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted

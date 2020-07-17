@@ -28,7 +28,7 @@ module ELynx.Import.Tree.Newick
     description,
     newick,
     oneNewick,
-    manyNewick,
+    someNewick,
   )
 where
 
@@ -82,11 +82,11 @@ oneNewick Standard = oneNewickStandard
 oneNewick IqTree = oneNewickIqTree
 oneNewick RevBayes = oneNewickRevBayes
 
--- | Parse many Newick trees until end of file.
-manyNewick :: NewickFormat -> Parser (Forest Phylo ByteString)
-manyNewick Standard = manyNewickStandard
-manyNewick IqTree = manyNewickIqTree
-manyNewick RevBayes = manyNewickRevBayes
+-- | Parse one or more Newick trees until end of file.
+someNewick :: NewickFormat -> Parser (Forest Phylo ByteString)
+someNewick Standard = someNewickStandard
+someNewick IqTree = someNewickIqTree
+someNewick RevBayes = someNewickRevBayes
 
 w :: Char -> Parser Word8
 w = char . c2w
@@ -99,9 +99,9 @@ newickStandard = space *> tree <* w ';' <* space <?> "newickStandard"
 oneNewickStandard :: Parser (Tree Phylo ByteString)
 oneNewickStandard = newickStandard <* eof <?> "oneNewickStandard"
 
--- Parse many Newick trees until end of file.
-manyNewickStandard :: Parser (Forest Phylo ByteString)
-manyNewickStandard = some newickStandard <* eof <?> "manyNewickStandard"
+-- Parse one ore more Newick trees until end of file.
+someNewickStandard :: Parser (Forest Phylo ByteString)
+someNewickStandard = some newickStandard <* eof <?> "manyNewickStandard"
 
 tree :: Parser (Tree Phylo ByteString)
 tree = branched <|> leaf <?> "tree"
@@ -167,9 +167,9 @@ newickIqTree = space *> treeIqTree <* w ';' <* space <?> "newickIqTree"
 oneNewickIqTree :: Parser (Tree Phylo ByteString)
 oneNewickIqTree = newickIqTree <* eof <?> "oneNewickIqTree"
 
--- See 'newickIqTree'. Parse many Newick trees until end of file.
-manyNewickIqTree :: Parser (Forest Phylo ByteString)
-manyNewickIqTree = some newickIqTree <* eof <?> "manyNewickIqTree"
+-- See 'newickIqTree'. Parse one ore more Newick trees until end of file.
+someNewickIqTree :: Parser (Forest Phylo ByteString)
+someNewickIqTree = some newickIqTree <* eof <?> "manyNewickIqTree"
 
 -- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
 treeIqTree :: Parser (Tree Phylo ByteString)
@@ -214,9 +214,9 @@ newickRevBayes =
 oneNewickRevBayes :: Parser (Tree Phylo ByteString)
 oneNewickRevBayes = newickRevBayes <* eof <?> "oneNewickRevBayes"
 
--- See 'newickRevBayes'. Parse many Newick trees until end of file.
-manyNewickRevBayes :: Parser (Forest Phylo ByteString)
-manyNewickRevBayes = some newickRevBayes <* eof <?> "manyNewickRevBayes"
+-- See 'newickRevBayes'. Parse one ore more Newick trees until end of file.
+someNewickRevBayes :: Parser (Forest Phylo ByteString)
+someNewickRevBayes = some newickRevBayes <* eof <?> "manyNewickRevBayes"
 
 treeRevBayes :: Parser (Tree Phylo ByteString)
 treeRevBayes = branchedRevBayes <|> leafRevBayes <?> "treeRevBayes"

@@ -61,6 +61,7 @@ module ELynx.Data.Tree.Rooted
     dropLeavesWith,
     zipTreesWith,
     zipTrees,
+    duplicateLeaves,
   )
 where
 
@@ -77,6 +78,7 @@ import Data.Data
 import Data.List
 import Data.Foldable
 import Data.Maybe
+import qualified Data.Set as S
 import Prelude
 import GHC.Generics
 
@@ -288,3 +290,13 @@ zipTreesWith f g (Node brL lbL tsL) (Node brR lbR tsR) =
 -- Return 'Nothing' if the topologies are different.
 zipTrees :: Tree e1 a1 -> Tree e2 a2 -> Maybe (Tree (e1, e2) (a1, a2))
 zipTrees = zipTreesWith (,) (,)
+
+duplicates :: Ord a => [a] -> Bool
+duplicates = go S.empty
+  where
+    go _ [] = False
+    go seen (x : xs) = x `S.member` seen || go (S.insert x seen) xs
+
+-- | Check if a tree has duplicate leaves.
+duplicateLeaves :: Ord a => Tree e a -> Bool
+duplicateLeaves = duplicates . leaves
