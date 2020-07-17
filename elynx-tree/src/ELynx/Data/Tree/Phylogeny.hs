@@ -21,9 +21,12 @@
 -- tricks when comparing trees, and tree comparison is slow.
 --
 -- Also, the uniqueness of the leaves is not ensured by the data type, but has
--- to be checked at runtime.
+-- to be checked at runtime. Functions relying on the tree to have unique leaves
+-- do perform this check, and return 'Left' with an error message, if the tree
+-- has duplicate leaves.
 --
--- NOTE: Trees in this library are all rooted.
+-- Note: Trees in this library are all rooted. See also the
+-- 'ELynx.Import.Tree.Newick' module header.
 module ELynx.Data.Tree.Phylogeny
   ( -- * Functions
     equal,
@@ -133,6 +136,8 @@ resolve (Node _ l (x : xs)) = Node () l $ map resolve [x, Node () l xs]
 -- roots :: Semigroup e => Tree e a -> ...
 -- rootAt :: Semigroup e => Tree e a -> ...
 
+-- TODO: Relax requirement for bifurcating trees.
+
 -- | For a rooted, bifurcating tree, get all possible rooted (bifurcating) trees.
 --
 -- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
@@ -201,6 +206,19 @@ rootAt' b t = do
   case find (\x -> Right b == bipartition x) ts of
     Nothing -> Left "rootAt': Bipartition not found on tree."
     Just t' -> Right t'
+
+-- | For a rooted, bifurcating tree, get all possible rooted (bifurcating) trees.
+--
+-- Connect branches according to the provided 'Semigroup' instance.
+--
+-- Split branches into two entities according to a provided function.
+--
+-- For a tree with @n>2@ leaves, there are @(2n-3)@ rooted trees. The root node
+-- is moved. See also 'ELynx.Data.Tree.Bipartition.rootAt'.
+--
+-- Return 'Left' if the tree is not 'bifurcating'.
+rootsMidpoint :: Semigroup e => (e -> (e,e)) -> Tree e a -> Either String (Forest e a)
+rootsMidpoint split t = undefined
 
 -- | Connect two trees with a branch in all possible ways.
 --
