@@ -47,6 +47,15 @@ class Semigroup e => Measurable e where
   -- | Set attached branch length.
   setLen :: BranchLength -> e -> e
 
+  -- | Split the branch into one of two equal identities.
+  --
+  -- The following equality should hold:
+  --
+  -- @
+  -- split x <> split x = x
+  -- @
+  split :: e -> e
+
 -- Apply a function to a branch support label.
 apply :: Measurable e => (BranchLength -> BranchLength) -> e -> e
 apply f l = setLen (f s) l where s = getLen l

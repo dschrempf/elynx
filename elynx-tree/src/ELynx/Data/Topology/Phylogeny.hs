@@ -1,0 +1,41 @@
+-- |
+-- Module      :  ELynx.Data.Topology.Phylogeny
+-- Description :  Phylogenetic topologies
+-- Copyright   :  (c) Dominik Schrempf, 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Sat Jul 18 13:15:49 2020.
+--
+-- A topology, as it is used in phylogenetics is a 'Topology' with unique leaf
+-- labels, and the order of the topologies in the sub-forest is considered to be
+-- meaningless.
+--
+-- Internally, however, the underlying 'Topology' data structure stores the
+-- sub-forest as a (non-empty) list, which has a specific order. Hence, we have
+-- to do some tricks when comparing topologies, and topology comparison is slow.
+--
+-- Also, the uniqueness of the leaves is not ensured by the data type, but has
+-- to be checked at runtime. Functions relying on the tree to have unique leaves
+-- do perform this check, and return 'Left' with an error message, if the tree
+-- has duplicate leaves.
+--
+-- Note: Topologies are rooted.
+--
+-- Note: Topologies encoded in Newick format correspond to rooted topologies. By
+-- convention only, a topology parsed from Newick format is usually thought to
+-- be unrooted, when the root node is multifurcating and has three children.
+-- This convention is not enforced here. Newick topologies are just parsed as
+-- they are, and a rooted topology is returned.
+--
+-- The bifurcating root of a topology can be changed with 'roots', or 'rootAt'.
+--
+-- Topologies with multifurcating root nodes can be properly rooted using
+-- 'outgroup'.
+module ELynx.Data.Topology.Phylogeny
+  (
+  )
+where

@@ -43,6 +43,23 @@ import           ELynx.Tools                    ( outHandle
                                                 , tShow
                                                 )
 
+-- -- | Connect two trees with a branch in all possible ways.
+-- --
+-- -- Introduce a branch between two trees. If the trees have @n>2@, and @m>2@
+-- -- nodes, respectively, there are (n-2)*(m-2) ways to connect them.
+-- --
+-- -- A base node label has to be given which will be used wherever the new node is
+-- -- introduced.
+-- --
+-- -- Branch labels are not handled.
+-- --
+-- -- Return 'Left' if one tree has a non-bifurcating root node.
+-- connect :: a -> Tree () a -> Tree () a -> Either String (Forest () a)
+-- connect lb l r = do
+--   ls <- roots l
+--   rs <- roots r
+--   return [Node () lb [x, y] | x <- ls, y <- rs]
+
 -- | Connect two trees honoring possible constraints. See 'connect'.
 connectCmd :: ELynx ConnectArguments ()
 connectCmd = do

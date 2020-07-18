@@ -134,21 +134,22 @@ spec = do
       it "does not change the tree height" $
         property (prop_roots_total_length :: Tree Length Int -> Bool)
 
-  describe "connect" $
-    modifyMaxSize (* 100) $ do
-      it "returns the correct number of rooted trees for arbitrary trees" $
-        property (prop_connect :: Int -> Tree () Int -> Tree () Int -> Bool)
-      it "correctly connects sample trees without and with constraints" $ do
-        a <- parseFileWith (oneNewick Standard) "data/ConnectA.tree"
-        b <- parseFileWith (oneNewick Standard) "data/ConnectB.tree"
-        c <- parseFileWith (someNewick Standard) "data/ConnectConstraints.tree"
-        let ts =
-              either error id $
-                connect "ROOT" (first (const ()) a) (first (const ()) b)
-            cs =
-              map S.fromList $
-                concatMap (multifurcatingGroups . first (const ())) c ::
-                [Set ByteString]
-            ts' = filter (compatibleWith getName cs) ts
-        length ts `shouldBe` 63
-        length ts' `shouldBe` 15
+  -- -- TODO: Move this test to the executable.
+  -- describe "connect" $
+  --   modifyMaxSize (* 100) $ do
+  --     it "returns the correct number of rooted trees for arbitrary trees" $
+  --       property (prop_connect :: Int -> Tree () Int -> Tree () Int -> Bool)
+  --     it "correctly connects sample trees without and with constraints" $ do
+  --       a <- parseFileWith (oneNewick Standard) "data/ConnectA.tree"
+  --       b <- parseFileWith (oneNewick Standard) "data/ConnectB.tree"
+  --       c <- parseFileWith (someNewick Standard) "data/ConnectConstraints.tree"
+  --       let ts =
+  --             either error id $
+  --               connect "ROOT" (first (const ()) a) (first (const ()) b)
+  --           cs =
+  --             map S.fromList $
+  --               concatMap (multifurcatingGroups . first (const ())) c ::
+  --               [Set ByteString]
+  --           ts' = filter (compatibleWith getName cs) ts
+  --       length ts `shouldBe` 63
+  --       length ts' `shouldBe` 15

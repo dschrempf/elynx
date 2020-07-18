@@ -52,8 +52,10 @@
 -- with vertex labels, with edge labels. Let me know if this definition is
 -- incomplete.
 module ELynx.Data.Tree.Rooted
-  ( Tree (..),
+  ( -- * Data type
+    Tree (..),
     Forest,
+    -- * Functions
     degree,
     leaves,
     flatten,
@@ -261,7 +263,7 @@ dropNodesWith p (Node br lb ts)
 --
 -- Degree two nodes may arise.
 --
--- Return 'Nothing' if the root node is a leaf and satisfies the predicate.
+-- Return 'Nothing' if all leaves satisfy the predicate.
 dropLeavesWith :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
 dropLeavesWith p (Node br lb [])
   | p lb = Nothing

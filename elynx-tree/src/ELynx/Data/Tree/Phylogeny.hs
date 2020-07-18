@@ -13,8 +13,8 @@
 --
 -- Creation date: Thu Jan 17 16:08:54 2019.
 --
--- A phylogeny is a 'Tree' with branch and node labels. The node labels are
--- unique, and the order of the trees in the sub-forest is meaningless.
+-- A phylogeny is a 'Tree' with unique leaf labels, and the order of the trees
+-- in the sub-forest is considered to be meaningless.
 --
 -- Internally, however, the underlying 'Tree' data structure stores the
 -- sub-forest as a list, which has a specific order. Hence, we have to do some
@@ -25,21 +25,20 @@
 -- do perform this check, and return 'Left' with an error message, if the tree
 -- has duplicate leaves.
 --
--- Note: Trees in this library are all rooted.
+-- Note: 'Tree's are rooted.
 --
--- Note: Trees encoded in Newick format correspond to rooted trees. By
+-- Note: 'Tree's encoded in Newick format correspond to rooted trees. By
 -- convention only, a tree parsed from Newick format is usually thought to be
 -- unrooted, when the root node is multifurcating and has three children. This
 -- convention is not enforced here. Newick trees are just parsed as they are,
 -- and a rooted tree is returned.
 --
--- The root can be changed with 'roots', or 'rootAt'.
+-- The bifurcating root of a tree can be changed with 'roots', or 'rootAt'.
 --
 -- Trees with multifurcating root nodes can be properly rooted using 'outgroup'.
 module ELynx.Data.Tree.Phylogeny
   ( -- * Functions
     equal,
-    equalTopology,
     intersect,
     bifurcating,
     -- resolve,
@@ -73,19 +72,14 @@ import ELynx.Data.Tree.Measurable
 import ELynx.Data.Tree.Rooted
 import ELynx.Data.Tree.Supported
 
--- | The equality check is slow because the order of children is arbitrary.
+-- | The equality check is slow because the order of children is considered to
+-- be arbitrary.
 equal :: (Eq e, Eq a) => Tree e a -> Tree e a -> Bool
 equal ~(Node brL lbL tsL) ~(Node brR lbR tsR) =
   (brL == brR)
     && (lbL == lbR)
     && (length tsL == length tsR)
     && all (`elem` tsR) tsL
-
--- | Check if two trees have the same topology.
-equalTopology :: Eq a => Tree e a -> Tree e a -> Bool
-equalTopology l r = rmBr l == rmBr r
-  where
-    rmBr = first (const ())
 
 -- | Compute the intersection of trees.
 --
@@ -148,11 +142,11 @@ outgroup = undefined
 --
 -- - Upon insertion of the root, split the affected branch into one out of two
 --   equal entities according to a given function.
-roots :: Semigroup e => (e -> e) -> Tree e a -> Either String (Forest e a)
-roots _ (Node _ _ []) = Left "roots: Root node is a leaf."
-roots _ (Node _ _ [_]) = Left "roots: Root node has degree two."
-roots g t@(Node b c [tL, tR]) = Right $ t : descend g b c tR tL ++ descend g b c tL tR
-roots _ _ = Left "roots: Root node is multifurcating."
+roots :: Measurable e => Tree e a -> Either String (Forest e a)
+roots (Node _ _ []) = Left "roots: Root node is a leaf."
+roots (Node _ _ [_]) = Left "roots: Root node has degree two."
+roots t@(Node b c [tL, tR]) = Right $ t : descend b c tR tL ++ descend b c tL tR
+roots _ = Left "roots: Root node is multifurcating."
 
 complementaryForests :: Tree e a -> Forest e a -> [Forest e a]
 complementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n -1)]]
@@ -162,14 +156,14 @@ complementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n -1
 -- From the bifurcating root, descend into one of the two pits.
 --
 -- descend splitFunction rootBranch rootLabel complementaryTree downwardsTree
-descend :: Semigroup e => (e -> e) -> e -> a -> Tree e a -> Tree e a -> Forest e a
-descend _ _ _ _ (Node _ _ []) = []
-descend g brR lbR tC (Node brD lbD tsD) =
-  [ Node brR lbR [Node (g brDd) lbD f, Node (g brDd) lbDd tsDd]
+descend :: Measurable e => e -> a -> Tree e a -> Tree e a -> Forest e a
+descend _ _ _ (Node _ _ []) = []
+descend brR lbR tC (Node brD lbD tsD) =
+  [ Node brR lbR [Node (split brDd) lbD f, Node (split brDd) lbDd tsDd]
     | (Node brDd lbDd tsDd, f) <- zip tsD cfs
   ]
     ++ concat
-      [ descend g brR lbR (Node (g brDd) lbD f) (Node (g brDd) lbDd tsDd)
+      [ descend brR lbR (Node (split brDd) lbD f) (Node (split brDd) lbDd tsDd)
         | (Node brDd lbDd tsDd, f) <- zip tsD cfs
       ]
   where
@@ -186,30 +180,28 @@ descend g brR lbR tC (Node brD lbD tsD) =
 -- - Upon insertion of the root, split the affected branch into one out of two
 --   equal entities according to a given function.
 rootAt ::
-  (Semigroup e, Eq a, Ord a) =>
-  (e -> e) ->
+  (Measurable e, Eq a, Ord a) =>
   Bipartition a ->
   Tree e a ->
   Either String (Tree e a)
-rootAt g b t
+rootAt b t
   -- Tree is checked for being bifurcating in 'roots'.
   -- Do not use 'valid' here, because we also need to compare the leaf set with the bipartition.
   | length lvLst /= S.size lvSet = Left "rootAt: Tree has duplicate leaves."
   | toSet b /= lvSet = Left "rootAt: Bipartition does not match leaves of tree."
-  | otherwise = rootAt' g b t
+  | otherwise = rootAt' b t
   where
     lvLst = leaves t
     lvSet = S.fromList $ leaves t
 
 -- Assume the leaves of the tree are unique.
 rootAt' ::
-  (Semigroup e, Eq a, Ord a) =>
-  (e -> e) ->
+  (Measurable e, Ord a) =>
   Bipartition a ->
   Tree e a ->
   Either String (Tree e a)
-rootAt' g b t = do
-  ts <- roots g t
+rootAt' b t = do
+  ts <- roots t
   case find (\x -> Right b == bipartition x) ts of
     Nothing -> Left "rootAt': Bipartition not found on tree."
     Just t' -> Right t'
@@ -239,6 +231,7 @@ newtype Length = Length {fromLength :: BranchLength}
 instance Measurable Length where
   getLen = fromLength
   setLen b _ = Length b
+  split = Length . (/ 2.0) . fromLength
 
 -- | If root branch length is not available, set it to 0.
 --
@@ -327,6 +320,8 @@ instance Semigroup PhyloStrict where
 instance Measurable PhyloStrict where
   getLen = sBrLen
   setLen b l = l {sBrLen = b}
+  split l = l { sBrLen = b' }
+    where b' = sBrLen l / 2.0
 
 instance Supported PhyloStrict where
   getSup = sBrSup
