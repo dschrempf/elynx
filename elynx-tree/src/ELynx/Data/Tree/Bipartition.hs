@@ -1,3 +1,5 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 -- |
 -- Module      :  ELynx.Data.Tree.Bipartition
 -- Description :  Bipartitions on trees
@@ -40,6 +42,7 @@ module ELynx.Data.Tree.Bipartition
 where
 
 import Control.Comonad
+import Control.DeepSeq
 import Data.List hiding (partition)
 import qualified Data.Map as M
 import Data.Map (Map)
@@ -62,7 +65,7 @@ groups = extend leaves
 newtype Bipartition a = Bipartition
   { fromBipartition :: (Set a, Set a)
   }
-  deriving (Eq, Ord, Show, Read)
+  deriving (Eq, Ord, Show, Read, NFData)
 
 -- | Create a bipartition from two sets.
 --

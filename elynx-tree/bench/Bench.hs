@@ -27,4 +27,4 @@ main :: IO ()
 main = do
   ts <- getManyTrees
   defaultMain
-    [bgroup "bipartition" [bench "manyTrees" $ whnf (map bipartitions) ts]]
+    [bgroup "bipartition" [bench "manyTrees" $ nf (map bipartitions) ts]]

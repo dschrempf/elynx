@@ -19,9 +19,9 @@
 -- For rooted trees, please see 'ELynx.Data.Tree.Rooted'.
 --
 -- In phylogenetics, the order of children of a topology node is arbitrary.
--- Internally, however, the underlying 'Tree' data structure stores the
--- sub-forest as a list, which has a specific order. Hence, we have to do some
--- tricks when comparing topologies, and topology comparison is slow.
+-- Internally, however, the underlying 'Topology' data structure stores the
+-- sub-forest as a (non-empty) list, which has a specific order. Hence, we have
+-- to do some tricks when comparing topologies, and topology comparison is slow.
 module ELynx.Data.Topology.Rooted
   ( -- * Data type
     Topology (..),
@@ -66,6 +66,7 @@ data Topology a
   | Leaf {label :: a}
   deriving (Eq, Read, Show, Data, Generic)
 
+-- | A shortcut.
 type Forest a = NonEmpty (Topology a)
 
 instance Functor Topology where
@@ -203,60 +204,5 @@ duplicates = go S.empty
     go seen (x : xs) = x `S.member` seen || go (S.insert x seen) xs
 
 -- | Check if a topology has duplicate leaves.
-duplicateLeaves :: Topology a -> Bool
+duplicateLeaves :: Ord a => Topology a -> Bool
 duplicateLeaves = duplicates . leaves
-
--- -- | Remove multifurcations.
--- --
--- -- A caterpillar like bifurcating tree is used to resolve all multifurcations on
--- -- a tree. The multifurcating nodes are copied.
--- --
--- -- Branch labels are not handled.
--- resolve :: Tree () a -> Tree () a
--- resolve t@(Node _ _ []) = t
--- resolve (Node _ l [x]) = Node () l [resolve x]
--- resolve (Node _ l [x, y]) = Node () l $ map resolve [x, y]
--- resolve (Node _ l (x : xs)) = Node () l $ map resolve [x, Node () l xs]
-
--- outgroup :: Tree () a -> Tree () a
-
--- -- | For a rooted tree with a bifurcating root node, get all possible rooted
--- -- trees.
--- --
--- -- The root node is moved.
--- --
--- -- For a tree with @l=2@ leaves, there is one rooted tree. For a bifurcating
--- -- tree with @l>2@ leaves, there are @(2l-3)@ rooted trees. For a general tree
--- -- with a bifurcating root node, and a total number of @n>2@ nodes, there are
--- -- (n-2) rooted trees.
--- --
--- -- Moving a multifurcating root node to another branch would change the
--- -- topology, and so, a bifurcating root is required. To resolve a multifurcating
--- -- root, please see and use TODO.
--- --
--- -- Branch labels are not handled, but see 'rootsBranch'.
--- --
--- -- 'rootAt' roots the tree at a specific position.
--- --
--- -- Return 'Left' if the root node is not 'bifurcating'.
--- roots :: Tree () a -> Either String (Forest () a)
--- roots (Node _ _ []) = Left "roots: Root node is a leaf."
--- roots (Node _ _ [_]) = Left "roots: Root node has degree two."
--- roots t@(Node _ c [tL, tR]) = Right $ t : descend id () c tR tL ++ descend id () c tL tR
--- roots _ = Left "roots: Root node is multifurcating."
-
--- -- | Root a tree at a specific position.
--- --
--- -- Root the tree at the branch defined by the given bipartition. The original
--- -- root node is moved to the new position.
--- --
--- -- The root node must be bifurcating (see 'roots').
--- --
--- -- Branch labels are not handled, but see 'rootAtBranch'.
--- --
--- -- Return 'Left', if:
--- -- - the root node is not bifurcating;
--- -- - the tree has duplicate leaves;
--- -- - the bipartition does not match the leaves of the tree.
--- rootAt :: Ord a => Bipartition a -> Tree () a -> Either String (Tree () a)
--- rootAt = rootAtBranch id

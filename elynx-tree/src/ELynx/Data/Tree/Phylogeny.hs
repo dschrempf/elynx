@@ -42,6 +42,7 @@ module ELynx.Data.Tree.Phylogeny
     intersect,
     bifurcating,
     -- resolve,
+    outgroup,
     roots,
     rootAt,
 
@@ -67,9 +68,11 @@ import Data.Maybe
 import Data.Monoid
 import Data.Semigroup
 import qualified Data.Set as S
+import Data.Set (Set)
 import ELynx.Data.Tree.Bipartition
 import ELynx.Data.Tree.Measurable
 import ELynx.Data.Tree.Rooted
+import ELynx.Data.Tree.Splittable
 import ELynx.Data.Tree.Supported
 
 -- | The equality check is slow because the order of children is considered to
@@ -88,12 +91,10 @@ equal ~(Node brL lbL tsL) ~(Node brR lbR tsR) =
 -- Degree two nodes are pruned with 'prune'.
 --
 -- Return 'Left' if:
--- - any tree has duplicate leaves;
 -- - the intersection of leaves is empty.
 intersect ::
   (Semigroup e, Eq e, Ord a) => Forest e a -> Either String (Forest e a)
 intersect ts
-  -- any (map (not . valid) ts) = Left "intersect: A tree is invalid."
   | S.null lvsCommon = Left "intersect: Intersection of leaves is empty."
   | otherwise = case sequence [dropLeavesWith (predicate ls) t | (ls, t) <- zip leavesToDrop ts] of
     Nothing -> Left "intersect: A tree is empty."
@@ -110,13 +111,14 @@ intersect ts
 
 -- | Check if a tree is bifurcating.
 --
--- A Bifurcating tree only contains degree one and degree three nodes.
+-- A Bifurcating tree only contains degree one (leaves) and degree three nodes
+-- (internal bifurcating nodes).
 bifurcating :: Tree e a -> Bool
 bifurcating (Node _ _ []) = True
 bifurcating (Node _ _ [x, y]) = bifurcating x && bifurcating y
 bifurcating _ = False
 
--- TODO.
+-- TODO. Adapt for trees with branches.
 -- -- | Remove multifurcations.
 -- --
 -- -- A caterpillar like bifurcating tree is used to resolve all multifurcations on
@@ -129,20 +131,54 @@ bifurcating _ = False
 -- resolve (Node _ l [x, y]) = Node () l $ map resolve [x, y]
 -- resolve (Node _ l (x : xs)) = Node () l $ map resolve [x, Node () l xs]
 
--- | TODO. Resolve multifurcation at the root.
-outgroup :: Tree e a -> Tree e a
-outgroup = undefined
+-- | Resolve a multifurcation at the root using an outgroup.
+--
+-- A bifurcating root node is introduced at the branch leading towards the given
+-- outgroup. The respective branch is 'split'. The provided label and the former
+-- root branch are used to build the root node. Note, the degree of the former
+-- root node is decreased by one.
+--
+-- Return 'Left' if
+-- - the tree has duplicate leaves;
+-- - the root node is not multifurcating;
+-- - no daughter branch of the multifurcating root node is leading to the
+--   provided outgroup.
+outgroup :: (Splittable e, Ord a) => Set a -> a -> Tree e a -> Either String (Tree e a)
+outgroup _ _ (Node _ _ []) = Left "outgroup: Root node is a leaf."
+outgroup _ _ (Node _ _ [_]) = Left "outgroup: Root node has degree two."
+outgroup _ _ (Node _ _ [_, _]) = Left "outgroup: Root node is bifurcating."
+outgroup o r t@(Node b l ts)
+  | duplicateLeaves t = Left "outgroup: Tree has duplicate leaves."
+  | otherwise = case mI of
+      Nothing -> Left "outgroup: Outgroup not found on tree."
+      Just i ->
+        let (Node brO lbO tsO) = ts !! i
+            tO = Node (split brO) lbO tsO
+        in Right $ Node b r [tO, Node (split brO) l $ take i ts ++ drop (i+1) ts]
+  where lvsS = map (S.fromList . leaves) ts
+        mI = elemIndex o lvsS
 
 -- | For a rooted tree with a bifurcating root node, get all possible rooted
 -- trees.
 --
--- See 'ELynx.Data.Topology.roots'. Additionally:
+-- The root node is moved.
 --
--- - Connect branches according to the provided 'Semigroup' instance.
+-- For a tree with @l=2@ leaves, there is one rooted tree. For a bifurcating
+-- tree with @l>2@ leaves, there are @(2l-3)@ rooted trees. For a general tree
+-- with a bifurcating root node, and a total number of @n>2@ nodes, there are
+-- (n-2) rooted trees.
 --
--- - Upon insertion of the root, split the affected branch into one out of two
---   equal entities according to a given function.
-roots :: Measurable e => Tree e a -> Either String (Forest e a)
+-- Moving a multifurcating root node to another branch would change the
+-- topology, and so, a bifurcating root is required. To resolve a multifurcating
+-- root, please use 'outgroup'.
+--
+-- Connect branches according to the provided 'Semigroup' instance.
+--
+-- Upon insertion of the root, split the affected branch into one out of two
+-- equal entities according to a given function.
+--
+-- Return 'Left' if the root node is not 'bifurcating'.
+roots :: Splittable e => Tree e a -> Either String (Forest e a)
 roots (Node _ _ []) = Left "roots: Root node is a leaf."
 roots (Node _ _ [_]) = Left "roots: Root node has degree two."
 roots t@(Node b c [tL, tR]) = Right $ t : descend b c tR tL ++ descend b c tL tR
@@ -156,7 +192,7 @@ complementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n -1
 -- From the bifurcating root, descend into one of the two pits.
 --
 -- descend splitFunction rootBranch rootLabel complementaryTree downwardsTree
-descend :: Measurable e => e -> a -> Tree e a -> Tree e a -> Forest e a
+descend :: Splittable e => e -> a -> Tree e a -> Tree e a -> Forest e a
 descend _ _ _ (Node _ _ []) = []
 descend brR lbR tC (Node brD lbD tsD) =
   [ Node brR lbR [Node (split brDd) lbD f, Node (split brDd) lbDd tsDd]
@@ -173,20 +209,30 @@ descend brR lbR tC (Node brD lbD tsD) =
 
 -- | Root a tree at a specific position.
 --
--- See 'ELynx.Data.Topology.Rooted.rootAt'. Additionally:
+-- Root the tree at the branch defined by the given bipartition. The original
+-- root node is moved to the new position.
 --
--- - Connect branches according to the provided 'Semigroup' instance.
+-- The root node must be bifurcating (see 'roots').
 --
--- - Upon insertion of the root, split the affected branch into one out of two
---   equal entities according to a given function.
+-- Connect branches according to the provided 'Semigroup' instance.
+--
+-- Upon insertion of the root, split the affected branch into one out of two
+-- equal entities according to a given function.
+--
+-- Return 'Left', if:
+-- - the root node is not bifurcating;
+-- - the tree has duplicate leaves;
+-- - the bipartition does not match the leaves of the tree.
 rootAt ::
-  (Measurable e, Eq a, Ord a) =>
+  (Splittable e, Eq a, Ord a) =>
   Bipartition a ->
   Tree e a ->
   Either String (Tree e a)
 rootAt b t
   -- Tree is checked for being bifurcating in 'roots'.
-  -- Do not use 'valid' here, because we also need to compare the leaf set with the bipartition.
+  --
+  -- Do not use 'duplicateLeaves' here, because we also need to compare the leaf
+  -- set with the bipartition.
   | length lvLst /= S.size lvSet = Left "rootAt: Tree has duplicate leaves."
   | toSet b /= lvSet = Left "rootAt: Bipartition does not match leaves of tree."
   | otherwise = rootAt' b t
@@ -196,7 +242,7 @@ rootAt b t
 
 -- Assume the leaves of the tree are unique.
 rootAt' ::
-  (Measurable e, Ord a) =>
+  (Splittable e, Ord a) =>
   Bipartition a ->
   Tree e a ->
   Either String (Tree e a)
@@ -231,6 +277,8 @@ newtype Length = Length {fromLength :: BranchLength}
 instance Measurable Length where
   getLen = fromLength
   setLen b _ = Length b
+
+instance Splittable Length where
   split = Length . (/ 2.0) . fromLength
 
 -- | If root branch length is not available, set it to 0.
@@ -268,6 +316,9 @@ newtype Support = Support {fromSupport :: BranchSupport}
 instance Supported Support where
   getSup = fromSupport
   setSup s _ = Support s
+
+instance Splittable Support where
+  split = id
 
 -- | Set branch support values of branches leading to the leaves and of the root
 -- branch to maximum support.
@@ -320,6 +371,8 @@ instance Semigroup PhyloStrict where
 instance Measurable PhyloStrict where
   getLen = sBrLen
   setLen b l = l {sBrLen = b}
+
+instance Splittable PhyloStrict where
   split l = l { sBrLen = b' }
     where b' = sBrLen l / 2.0
 

@@ -16,15 +16,15 @@ module ELynx.Data.Tree.PhylogenySpec
   )
 where
 
-import Data.Bifunctor
-import Data.ByteString.Lazy.Char8 (ByteString)
+-- import Data.Bifunctor
+-- import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Either
 import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Data.Tree
 import ELynx.Data.Tree.Arbitrary ()
-import ELynx.Import.Tree.Newick
-import ELynx.Tools
+-- import ELynx.Import.Tree.Newick
+-- import ELynx.Tools
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
@@ -46,49 +46,49 @@ prop_roots t@(Node _ _ [_, _])
   | otherwise = (length <$> roots t) == (Right $ length (flatten t) - 2)
 prop_roots _ = True
 
--- Skip leaves and trees with multifurcating root nodes.
-prop_connect :: a -> Tree () a -> Tree () a -> Bool
-prop_connect n l@(Node _ _ [_, _]) r@(Node _ _ [_, _])
-  | length (leaves l) < 3 = (length <$> connect n l r) == Right (length (flatten r) - 2)
-  | length (leaves r) < 3 = (length <$> connect n l r) == Right (length (flatten l) - 2)
-  | otherwise =
-    (length <$> connect n l r)
-      == (Right $ (length (flatten l) - 2) * (length (flatten r) - 2))
-prop_connect _ _ _ = True
+-- -- Skip leaves and trees with multifurcating root nodes.
+-- prop_connect :: a -> Tree () a -> Tree () a -> Bool
+-- prop_connect n l@(Node _ _ [_, _]) r@(Node _ _ [_, _])
+--   | length (leaves l) < 3 = (length <$> connect n l r) == Right (length (flatten r) - 2)
+--   | length (leaves r) < 3 = (length <$> connect n l r) == Right (length (flatten l) - 2)
+--   | otherwise =
+--     (length <$> connect n l r)
+--       == (Right $ (length (flatten l) - 2) * (length (flatten r) - 2))
+-- prop_connect _ _ _ = True
 
--- | Determine compatibility between a bipartition and a set.
---
--- If both subsets of the bipartition share elements with the given set, the
--- bipartition is incompatible with this subset. If all elements of the subset
--- are either not in the bipartition or mapping to one of the two subsets of the
--- bipartition, the bipartition and the subset are compatible.
---
--- See also 'ELynx.Data.Tree.Partition.compatible'.
-bipartitionCompatible :: (Show a, Ord a) => Either String (Bipartition a) -> Set a -> Bool
--- compatible (Bipartition (l, r)) ss = sintersection l ss `sdisjoint` sintersection r ss
-bipartitionCompatible (Left _) _ = False
-bipartitionCompatible (Right p) s = S.null lOverlap || S.null rOverlap
-  where
-    (l, r) = fromBipartition p
-    lOverlap = S.intersection l s
-    rOverlap = S.intersection r s
+-- -- | Determine compatibility between a bipartition and a set.
+-- --
+-- -- If both subsets of the bipartition share elements with the given set, the
+-- -- bipartition is incompatible with this subset. If all elements of the subset
+-- -- are either not in the bipartition or mapping to one of the two subsets of the
+-- -- bipartition, the bipartition and the subset are compatible.
+-- --
+-- -- See also 'ELynx.Data.Tree.Partition.compatible'.
+-- bipartitionCompatible :: (Show a, Ord a) => Either String (Bipartition a) -> Set a -> Bool
+-- -- compatible (Bipartition (l, r)) ss = sintersection l ss `sdisjoint` sintersection r ss
+-- bipartitionCompatible (Left _) _ = False
+-- bipartitionCompatible (Right p) s = S.null lOverlap || S.null rOverlap
+--   where
+--     (l, r) = fromBipartition p
+--     lOverlap = S.intersection l s
+--     rOverlap = S.intersection r s
 
-compatibleAll :: (Show a, Ord a) => Tree e a -> [Set a] -> Bool
-compatibleAll (Node _ _ [l, r]) cs =
-  all (bipartitionCompatible (bipartition l)) cs && all (bipartitionCompatible (bipartition r)) cs
-compatibleAll _ _ = error "Tree is not bifurcating."
+-- compatibleAll :: (Show a, Ord a) => Tree e a -> [Set a] -> Bool
+-- compatibleAll (Node _ _ [l, r]) cs =
+--   all (bipartitionCompatible (bipartition l)) cs && all (bipartitionCompatible (bipartition r)) cs
+-- compatibleAll _ _ = error "Tree is not bifurcating."
 
-compatibleWith ::
-  (Show b, Ord b) => (a -> b) -> [Set a] -> Tree e a -> Bool
-compatibleWith f cs t = compatibleAll (fmap f t) (map (S.map f) cs)
+-- compatibleWith ::
+--   (Show b, Ord b) => (a -> b) -> [Set a] -> Tree e a -> Bool
+-- compatibleWith f cs t = compatibleAll (fmap f t) (map (S.map f) cs)
 
--- Get groups induced by multifurcations. Collect the leaves of all trees
--- induced by multifurcations.
-multifurcatingGroups :: Tree e a -> [[a]]
-multifurcatingGroups (Node _ _ []) = []
-multifurcatingGroups (Node _ _ [x]) = multifurcatingGroups x
-multifurcatingGroups (Node _ _ [x, y]) = multifurcatingGroups x ++ multifurcatingGroups y
-multifurcatingGroups t = leaves t : concatMap multifurcatingGroups (forest t)
+-- -- Get groups induced by multifurcations. Collect the leaves of all trees
+-- -- induced by multifurcations.
+-- multifurcatingGroups :: Tree e a -> [[a]]
+-- multifurcatingGroups (Node _ _ []) = []
+-- multifurcatingGroups (Node _ _ [x]) = multifurcatingGroups x
+-- multifurcatingGroups (Node _ _ [x, y]) = multifurcatingGroups x ++ multifurcatingGroups y
+-- multifurcatingGroups t = leaves t : concatMap multifurcatingGroups (forest t)
 
 -- -- TODO.
 -- prop_bifurcating_tree
@@ -98,7 +98,7 @@ multifurcatingGroups t = leaves t : concatMap multifurcatingGroups (forest t)
 prop_roots_total_length :: Tree Length a -> Bool
 prop_roots_total_length t@(Node _ _ [_, _]) =
   all (\b -> abs (b - l) < 1e-10) $
-    map totalBranchLength $ either error id $ rootsWithBranch (/ 2) t
+    map totalBranchLength $ either error id $ roots t
   where
     l = totalBranchLength t
 prop_roots_total_length _ = True

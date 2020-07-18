@@ -2,7 +2,7 @@
 
 -- |
 -- Module      :  ELynx.Data.Tree.Measurable
--- Description :  Functions on trees with branch lengths
+-- Description :  Measurable branch labels
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -46,15 +46,6 @@ class Semigroup e => Measurable e where
 
   -- | Set attached branch length.
   setLen :: BranchLength -> e -> e
-
-  -- | Split the branch into one of two equal identities.
-  --
-  -- The following equality should hold:
-  --
-  -- @
-  -- split x <> split x = x
-  -- @
-  split :: e -> e
 
 -- Apply a function to a branch support label.
 apply :: Measurable e => (BranchLength -> BranchLength) -> e -> e
