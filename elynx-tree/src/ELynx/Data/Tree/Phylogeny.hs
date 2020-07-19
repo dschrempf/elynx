@@ -133,30 +133,31 @@ bifurcating _ = False
 
 -- | Resolve a multifurcation at the root using an outgroup.
 --
--- A bifurcating root node is introduced at the branch leading towards the given
--- outgroup. The respective branch is 'split'. The provided label and the former
--- root branch are used to build the root node. Note, the degree of the former
--- root node is decreased by one.
+-- A bifurcating root node with the provided label is introduced. The affected
+-- branch is 'split'.
+--
+-- Note, the degree of the former root node is decreased by one.
+--
+-- If the root node is bifurcating, use 'rootAt'.
 --
 -- Return 'Left' if
 -- - the tree has duplicate leaves;
 -- - the root node is not multifurcating;
--- - no daughter branch of the multifurcating root node is leading to the
---   provided outgroup.
+-- - the provided outgroup is not found on the tree or is polyphyletic.
 outgroup :: (Splittable e, Ord a) => Set a -> a -> Tree e a -> Either String (Tree e a)
 outgroup _ _ (Node _ _ []) = Left "outgroup: Root node is a leaf."
 outgroup _ _ (Node _ _ [_]) = Left "outgroup: Root node has degree two."
 outgroup _ _ (Node _ _ [_, _]) = Left "outgroup: Root node is bifurcating."
 outgroup o r t@(Node b l ts)
   | duplicateLeaves t = Left "outgroup: Tree has duplicate leaves."
-  | otherwise = case mI of
-      Nothing -> Left "outgroup: Outgroup not found on tree."
-      Just i ->
-        let (Node brO lbO tsO) = ts !! i
-            tO = Node (split brO) lbO tsO
-        in Right $ Node b r [tO, Node (split brO) l $ take i ts ++ drop (i+1) ts]
-  where lvsS = map (S.fromList . leaves) ts
-        mI = elemIndex o lvsS
+  | otherwise = do
+    bip <- bp o (S.fromList lvs S.\\ o)
+    rootAt bip t'
+  where
+    lvs = leaves t
+    (Node brO lbO tsO) = head ts
+    -- Introduce a bifurcating root node.
+    t' = Node b r [Node (split brO) lbO tsO, Node (split brO) l (tail ts)]
 
 -- | For a rooted tree with a bifurcating root node, get all possible rooted
 -- trees.
@@ -168,9 +169,9 @@ outgroup o r t@(Node b l ts)
 -- with a bifurcating root node, and a total number of @n>2@ nodes, there are
 -- (n-2) rooted trees.
 --
--- Moving a multifurcating root node to another branch would change the
--- topology, and so, a bifurcating root is required. To resolve a multifurcating
--- root, please use 'outgroup'.
+-- Moving a multifurcating root node to another branch would change the degree
+-- of the root node. Hence, a bifurcating root is required. To resolve a
+-- multifurcating root, please use 'outgroup'.
 --
 -- Connect branches according to the provided 'Semigroup' instance.
 --
@@ -212,12 +213,12 @@ descend brR lbR tC (Node brD lbD tsD) =
 -- Root the tree at the branch defined by the given bipartition. The original
 -- root node is moved to the new position.
 --
--- The root node must be bifurcating (see 'roots').
+-- The root node must be bifurcating (see 'roots' and 'outgroup').
 --
 -- Connect branches according to the provided 'Semigroup' instance.
 --
--- Upon insertion of the root, split the affected branch into one out of two
--- equal entities according to a given function.
+-- Upon insertion of the root, split the affected branch according to the
+-- provided 'Splittable' instance.
 --
 -- Return 'Left', if:
 -- - the root node is not bifurcating;
@@ -373,8 +374,9 @@ instance Measurable PhyloStrict where
   setLen b l = l {sBrLen = b}
 
 instance Splittable PhyloStrict where
-  split l = l { sBrLen = b' }
-    where b' = sBrLen l / 2.0
+  split l = l {sBrLen = b'}
+    where
+      b' = sBrLen l / 2.0
 
 instance Supported PhyloStrict where
   getSup = sBrSup
