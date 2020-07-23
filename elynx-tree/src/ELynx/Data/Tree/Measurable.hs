@@ -15,6 +15,7 @@ module ELynx.Data.Tree.Measurable
   ( BranchLength,
     Measurable (..),
     lengthenStem,
+    getStem,
     setStem,
     height,
     distancesOriginLeaves,
@@ -53,7 +54,11 @@ apply f l = setLen (f s) l where s = getLen l
 
 -- | Lengthen the stem of a tree.
 lengthenStem :: Measurable e => BranchLength -> Tree e a -> Tree e a
-lengthenStem dx t = setStem (dx + getLen (branch t)) t
+lengthenStem dx t = setStem (dx + getStem t) t
+
+-- | Get the length of the stem of a tree.
+getStem :: Measurable e => Tree e a -> BranchLength
+getStem (Node br _ _) = getLen br
 
 -- | Set the length of the stem of a tree.
 setStem :: Measurable e => BranchLength -> Tree e a -> Tree e a
