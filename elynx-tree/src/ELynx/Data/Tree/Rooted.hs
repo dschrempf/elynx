@@ -1,5 +1,5 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 -- |
 -- Module      :  ELynx.Data.Tree.Rooted
@@ -55,6 +55,7 @@ module ELynx.Data.Tree.Rooted
   ( -- * Data type
     Tree (..),
     Forest,
+
     -- * Functions
     degree,
     leaves,
@@ -79,8 +80,8 @@ import Data.Bifoldable
 import Data.Bifunctor
 import Data.Bitraversable
 import Data.Data
-import Data.List
 import Data.Foldable
+import Data.List
 import Data.Maybe
 import qualified Data.Set as S
 import GHC.Generics
@@ -185,7 +186,7 @@ instance Monoid e => Monad (Tree e) where
 -- instance Monoid e => MonadZip (Tree e) where
 --   mzipWith f (Node brL lbL tsL) (Node brR lbR tsR) =
 --     Node (brL <> brR) (f lbL lbR) (mzipWith (mzipWith f) tsL tsR)
-
+--
 --   munzip (Node br (lbL, lbR) ts) = (Node ? lbL tsL, Node ? lbR tsR)
 --     where
 --       (tsL, tsR) = munzip (map munzip ts)
@@ -254,10 +255,12 @@ prune (Node paBr paLb paTs) = Node paBr paLb $ map prune paTs
 dropNodesWith :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
 dropNodesWith p (Node br lb ts)
   | p lb = Nothing
-  | otherwise = if null ts'
-                then Nothing
-                else Just $ Node br lb ts'
-  where ts' = mapMaybe (dropNodesWith p) ts
+  | otherwise =
+    if null ts'
+      then Nothing
+      else Just $ Node br lb ts'
+  where
+    ts' = mapMaybe (dropNodesWith p) ts
 
 -- | Drop leaves satisfying predicate.
 --
@@ -268,10 +271,12 @@ dropLeavesWith :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
 dropLeavesWith p (Node br lb [])
   | p lb = Nothing
   | otherwise = Just $ Node br lb []
-dropLeavesWith p (Node br lb ts) = if null ts'
-                                   then Nothing
-                                   else Just $ Node br lb ts'
-  where ts' = mapMaybe (dropLeavesWith p) ts
+dropLeavesWith p (Node br lb ts) =
+  if null ts'
+    then Nothing
+    else Just $ Node br lb ts'
+  where
+    ts' = mapMaybe (dropLeavesWith p) ts
 
 -- | Zip two trees with the same topology.
 --
