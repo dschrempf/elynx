@@ -1,4 +1,5 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
 -- |
@@ -60,6 +61,7 @@ module ELynx.Data.Tree.Phylogeny
   )
 where
 
+import Control.DeepSeq
 import Data.Bifoldable
 import Data.Bifunctor
 import Data.Bitraversable
@@ -67,12 +69,13 @@ import Data.List hiding (intersect)
 import Data.Maybe
 import Data.Monoid
 import Data.Semigroup
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import ELynx.Data.Tree.Bipartition
 import ELynx.Data.Tree.Measurable
 import ELynx.Data.Tree.Rooted
 import ELynx.Data.Tree.Splittable
+import GHC.Generics
 import ELynx.Data.Tree.Supported
 
 -- | The equality check is slow because the order of children is considered to
@@ -260,7 +263,7 @@ data Phylo = Phylo
   { brLen :: Maybe BranchLength,
     brSup :: Maybe BranchSupport
   }
-  deriving (Read, Show, Eq, Ord)
+  deriving (Read, Show, Eq, Ord, Generic, NFData)
 
 instance Semigroup Phylo where
   Phylo mBL mSL <> Phylo mBR mSR =
@@ -272,7 +275,8 @@ instance Semigroup Phylo where
 --
 -- For conversion, see 'phyloToLengthTree' and 'lengthToPhyloTree'.
 newtype Length = Length {fromLength :: BranchLength}
-  deriving (Read, Show, Eq, Ord, Num, Fractional, Floating)
+  deriving (Read, Show, Eq, Ord, Generic, NFData)
+  deriving (Num, Fractional, Floating) via Double
   deriving (Semigroup, Monoid) via Sum Double
 
 instance Measurable Length where
@@ -311,7 +315,8 @@ fromLengthLabel (Length b) = Phylo (Just b) Nothing
 --
 -- For conversion, see 'phyloToSupportTree'.
 newtype Support = Support {fromSupport :: BranchSupport}
-  deriving (Read, Show, Eq, Ord, Num, Fractional, Floating)
+  deriving (Read, Show, Eq, Ord, Generic, NFData)
+  deriving (Num, Fractional, Floating) via Double
   deriving (Semigroup) via Min Double
 
 instance Supported Support where
@@ -364,7 +369,7 @@ data PhyloStrict = PhyloStrict
   { sBrLen :: BranchLength,
     sBrSup :: BranchSupport
   }
-  deriving (Read, Show, Eq, Ord)
+  deriving (Read, Show, Eq, Ord, Generic)
 
 instance Semigroup PhyloStrict where
   PhyloStrict bL sL <> PhyloStrict bR sR = PhyloStrict (bL + bR) (min sL sR)

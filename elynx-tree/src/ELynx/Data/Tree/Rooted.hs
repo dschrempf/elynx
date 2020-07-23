@@ -59,7 +59,8 @@ module ELynx.Data.Tree.Rooted
     -- * Functions
     degree,
     leaves,
-    flatten,
+    branches,
+    labels,
     identify,
     prune,
     dropNodesWith,
@@ -112,12 +113,12 @@ instance Bifunctor Tree where
   first f ~(Node br lb ts) = Node (f br) lb $ map (first f) ts
   second g ~(Node br lb ts) = Node br (g lb) $ map (second g) ts
 
--- | Combine node labels.
+-- | Combine node labels in pre-order.
 instance Foldable (Tree e) where
   foldMap f ~(Node _ lb ts) = f lb <> foldMap (foldMap f) ts
   null _ = False
   {-# INLINE null #-}
-  toList = flatten
+  toList = labels
   {-# INLINE toList #-}
 
 instance Bifoldable Tree where
@@ -227,11 +228,17 @@ leaves :: Tree e a -> [a]
 leaves (Node _ lb []) = [lb]
 leaves (Node _ _ ts) = concatMap leaves ts
 
--- | Return node labels in pre-order.
-flatten :: Tree e a -> [a]
-flatten t = squish t []
+-- | Return branch labels in pre-order.
+branches :: Tree e a -> [e]
+branches t = squish t []
   where
-    squish (Node _ x ts) xs = x : foldr squish xs ts
+    squish (Node br _ ts) xs = br : foldr squish xs ts
+
+-- | Return node labels in pre-order.
+labels :: Tree e a -> [a]
+labels t = squish t []
+  where
+    squish (Node _ lb ts) xs = lb : foldr squish xs ts
 
 -- | Label the nodes with unique integers starting at the root with 0.
 identify :: Traversable t => t a -> t Int
