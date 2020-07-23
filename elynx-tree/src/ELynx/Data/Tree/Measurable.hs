@@ -23,12 +23,13 @@ module ELynx.Data.Tree.Measurable
     summarize,
     normalizeBranchLength,
     ultrametric,
+    makeUltrametric,
   )
 where
 
 import Data.Bifoldable
-import qualified Data.ByteString.Lazy.Char8 as L
 import Data.ByteString.Lazy.Char8 (ByteString)
+import qualified Data.ByteString.Lazy.Char8 as L
 import Data.Bifunctor
 import ELynx.Data.Tree.Rooted
 import ELynx.Tools
@@ -112,3 +113,12 @@ normalizeBranchLength t = first (apply (/ s)) t
 -- | Check if a tree is ultrametric.
 ultrametric :: Measurable e => Tree e a -> Bool
 ultrametric = allNearlyEqual . distancesOriginLeaves
+
+-- | Elongate terminal branches such that the tree becomes ultrametric.
+makeUltrametric :: Measurable e => Tree e a -> Tree e a
+makeUltrametric t = go 0 t
+  where
+    h = height t
+    go :: Measurable e => BranchLength -> Tree e a -> Tree e a
+    go h' (Node br lb []) = let dh = h - h' - getLen br in Node (apply (+dh) br) lb []
+    go h' (Node br lb ts) = let h'' = h' + getLen br in Node br lb $ map (go h'') ts

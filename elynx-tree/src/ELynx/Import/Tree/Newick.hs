@@ -210,7 +210,7 @@ branchSupportIqTree = label "branchSupportIqTree" $ optional $ try float <|> try
 -- XXX: Key value pairs are ignored at the moment.
 newickRevBayes :: Parser (Tree Phylo ByteString)
 newickRevBayes =
-  space *> brackets *> treeRevBayes <* w ';' <* space <?> "newickRevBayes"
+  space *> optional brackets *> treeRevBayes <* w ';' <* space <?> "newickRevBayes"
 
 -- See 'newickRevBayes'. Parse a single Newick tree. Fails when end of file is
 -- not reached.
