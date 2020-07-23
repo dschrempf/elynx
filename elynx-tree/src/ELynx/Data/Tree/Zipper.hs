@@ -21,14 +21,14 @@ module ELynx.Data.Tree.Zipper
     goLeft,
     goRight,
     goChild,
-    goFocus,
+    goPath,
     -- * Modification
     insertTree,
     insertBranch,
     insertLabel,
-    modifyTree,
-    modifyBranch,
-    modifyLabel,
+    -- modifyTree,
+    -- modifyBranch,
+    -- modifyLabel,
   )
 where
 
@@ -95,8 +95,8 @@ goRight pos =
           }
     [] -> Nothing
 
-goChild :: TreePos e a -> Int -> Maybe (TreePos e a)
-goChild pos n = case current pos of
+goChild :: Int -> TreePos e a -> Maybe (TreePos e a)
+goChild n pos = case current pos of
   (Node br lb ts)
     | null ts -> Nothing
     | length ts <= n -> Nothing
@@ -111,8 +111,8 @@ goChild pos n = case current pos of
     where
       (ls', rs') = splitAt n ts
 
-goFocus :: TreePos e a -> [Int] -> Maybe (TreePos e a)
-goFocus = foldlM goChild
+goPath :: [Int] -> TreePos e a -> Maybe (TreePos e a)
+goPath pos pth = foldlM (flip goChild) pth pos
 
 insertTree :: Tree e a -> TreePos e a -> TreePos e a
 insertTree t pos = pos {current = t}
@@ -125,13 +125,13 @@ insertLabel :: a -> TreePos e a -> TreePos e a
 insertLabel lb pos = case current pos of
   Node br _ ts -> pos {current = Node br lb ts}
 
-modifyTree :: (Tree e a -> Tree e a) -> TreePos e a -> TreePos e a
-modifyTree f pos = insertTree (f $ current pos) pos
+-- modifyTree :: (Tree e a -> Tree e a) -> TreePos e a -> TreePos e a
+-- modifyTree f pos = insertTree (f $ current pos) pos
 
-modifyBranch :: (e -> e) -> TreePos e a -> TreePos e a
-modifyBranch f pos = case current pos of
-  Node br lb ts -> pos {current = Node (f br) lb ts}
+-- modifyBranch :: (e -> e) -> TreePos e a -> TreePos e a
+-- modifyBranch f pos = case current pos of
+--   Node br lb ts -> pos {current = Node (f br) lb ts}
 
-modifyLabel :: (a -> a) -> TreePos e a -> TreePos e a
-modifyLabel f pos = case current pos of
-  Node br lb ts -> pos {current = Node br (f lb) ts}
+-- modifyLabel :: (a -> a) -> TreePos e a -> TreePos e a
+-- modifyLabel f pos = case current pos of
+--   Node br lb ts -> pos {current = Node br (f lb) ts}
