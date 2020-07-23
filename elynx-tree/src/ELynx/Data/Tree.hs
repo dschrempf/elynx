@@ -15,7 +15,7 @@
 module ELynx.Data.Tree
   ( -- * Rooted trees
     module ELynx.Data.Tree.Rooted,
-    module ELynx.Data.Tree.Phylogeny,
+    module ELynx.Data.Tree.Zipper,
 
     -- * Branch label classes
     module ELynx.Data.Tree.Measurable,
@@ -23,6 +23,9 @@ module ELynx.Data.Tree
 
     -- * Node label classes
     module ELynx.Data.Tree.Named,
+
+    -- * Phylogenies
+    module ELynx.Data.Tree.Phylogeny,
 
     -- * Partitions and distances
     module ELynx.Data.Tree.Bipartition,
@@ -39,6 +42,7 @@ import ELynx.Data.Tree.Named
 import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted
 import ELynx.Data.Tree.Supported
+import ELynx.Data.Tree.Zipper
 
 -- -- | An evolutionary label has some information about where the corresponding
 -- -- node is on the tree, and if the node is 'extant', 'extinct', 'internal', or

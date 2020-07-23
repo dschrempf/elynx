@@ -33,7 +33,7 @@ module ELynx.Data.Tree.Zipper
 where
 
 import Data.Foldable
-import ELynx.Data.Tree
+import ELynx.Data.Tree.Rooted
 
 data TreePos e a = Pos
   { -- | The currently selected tree.
