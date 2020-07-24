@@ -41,13 +41,17 @@ type BranchLength = Double
 pretty :: BranchLength -> String
 pretty = printf "%.5f"
 
--- | A 'Node' label with measurable and modifiable branch length to the parent.
-class Semigroup e => Measurable e where
+-- | A branch label with measurable and modifiable branch length.
+class Measurable e where
   -- | Length of attached branch.
   getLen :: e -> BranchLength
 
   -- | Set attached branch length.
   setLen :: BranchLength -> e -> e
+
+instance Measurable Double where
+  getLen = id
+  setLen = const
 
 -- Apply a function to a branch support label.
 apply :: Measurable e => (BranchLength -> BranchLength) -> e -> e
