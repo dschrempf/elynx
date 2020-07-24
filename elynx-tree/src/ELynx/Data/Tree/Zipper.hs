@@ -12,18 +12,22 @@
 module ELynx.Data.Tree.Zipper
   ( -- * Data type
     TreePos (..),
+
     -- * Conversion
     fromTree,
     toTree,
     -- * Movement
+
     goUp,
     goRoot,
     goLeft,
     goRight,
     goChild,
     goPath,
+    unsafeGoPath,
     -- * Modification
     insertTree,
+
     insertBranch,
     insertLabel,
     -- modifyTree,
@@ -113,6 +117,24 @@ goChild n pos = case current pos of
 
 goPath :: [Int] -> TreePos e a -> Maybe (TreePos e a)
 goPath pos pth = foldlM (flip goChild) pth pos
+
+unsafeGoChild :: Int -> TreePos e a -> TreePos e a
+unsafeGoChild n pos = case current pos of
+  (Node br lb ts)
+    | null ts -> error "unsafeGoChild: Forest is empty."
+    | length ts <= n -> error "unsafeGoChild: Forest is too short."
+    | otherwise ->
+      Pos
+        { current = head rs',
+          before = reverse ls',
+          after = tail rs',
+          parents = (before pos, br, lb, after pos) : parents pos
+        }
+    where
+      (ls', rs') = splitAt n ts
+
+unsafeGoPath :: [Int] -> TreePos e a -> TreePos e a
+unsafeGoPath pos pth = foldl (flip unsafeGoChild) pth pos
 
 insertTree :: Tree e a -> TreePos e a -> TreePos e a
 insertTree t pos = pos {current = t}

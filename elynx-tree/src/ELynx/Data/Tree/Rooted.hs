@@ -258,6 +258,8 @@ prune (Node paBr paLb paTs) = Node paBr paLb $ map prune paTs
 --
 -- Degree two nodes may arise.
 --
+-- Also drop parent nodes of which all daughter nodes are dropped.
+--
 -- Return 'Nothing' if the root node satisfies the predicate.
 dropNodesWith :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
 dropNodesWith p (Node br lb ts)
@@ -272,6 +274,8 @@ dropNodesWith p (Node br lb ts)
 -- | Drop leaves satisfying predicate.
 --
 -- Degree two nodes may arise.
+--
+-- Also drop parent nodes of which all leaves are dropped.
 --
 -- Return 'Nothing' if all leaves satisfy the predicate.
 dropLeavesWith :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)

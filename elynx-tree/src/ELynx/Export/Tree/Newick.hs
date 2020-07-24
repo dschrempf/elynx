@@ -19,17 +19,15 @@ module ELynx.Export.Tree.Newick
   )
 where
 
+import Data.ByteString.Lazy.Builder (Builder)
 import qualified Data.ByteString.Lazy.Builder as L
-import qualified Data.ByteString.Lazy.Char8 as L
+import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.List (intersperse)
 import ELynx.Data.Tree
 import ELynx.Tools
 
--- | General conversion of a tree into a Newick 'L.Bytestring'. Use provided
--- functions to extract node labels and branch lengths builder objects. See also
--- Biobase.Newick.Export.
-toNewick :: Named a => Tree Phylo a -> L.ByteString
-toNewick t = L.toLazyByteString $ go t <> L.word8 (c2w ';')
+toNewickBuilder :: Named a => Tree Phylo a -> Builder
+toNewickBuilder t = go t <> L.word8 (c2w ';')
   where
     go (Node b l []) = lbl b l
     go (Node b l ts) =
@@ -45,3 +43,9 @@ toNewick t = L.toLazyByteString $ go t <> L.word8 (c2w ';')
         -- After reading several discussion, I go for the "more semantical
         -- form" with branch support values in square brackets.
         <> mBrSupBuilder x
+
+-- | General conversion of a tree into a Newick 'L.Bytestring'. Use provided
+-- functions to extract node labels and branch lengths builder objects. See also
+-- Biobase.Newick.Export.
+toNewick :: Named a => Tree Phylo a -> ByteString
+toNewick = L.toLazyByteString . toNewickBuilder
