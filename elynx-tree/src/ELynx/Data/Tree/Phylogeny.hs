@@ -42,8 +42,8 @@ module ELynx.Data.Tree.Phylogeny
     equal,
     intersect,
     bifurcating,
-    -- resolve,
     outgroup,
+    midpoint,
     roots,
     rootAt,
 
@@ -161,6 +161,49 @@ outgroup o r t@(Node b l ts)
     (Node brO lbO tsO) = head ts
     -- Introduce a bifurcating root node.
     t' = Node b r [Node (split brO) lbO tsO, Node (split brO) l (tail ts)]
+
+-- XXX: The 'midpoint' algorithm is pretty stupid because it calculates all
+-- rooted trees and then finds the one minimizing the difference between the
+-- heights of the left and right sub tree. Actually, one just needs to move left
+-- or right, with the aim to minimize the height difference between the left and
+-- right sub tree.
+
+-- | Root tree at the midpoint.
+--
+-- Return 'Left' if
+-- - the root node is not bifurcating.
+midpoint :: (Splittable e, Measurable e) => Tree e a -> Either String (Tree e a)
+midpoint (Node _ _ []) = Left "midpoint: Root node is a leaf."
+midpoint (Node _ _ [_]) = Left "midpoint: Root node has degree two."
+midpoint t@(Node _ _ [_, _]) = getMidpoint <$> roots t
+midpoint _ = Left "midpoint: Root node is multifurcating."
+
+findMinIndex :: Ord a => [a] -> Int
+findMinIndex (x:xs) = go (0, x) 1 xs
+  where go (i, _) _ [] = i
+        go (i, z) j (y:ys) = if z < y then go (i, z) (j+1) ys else go (j, y) (j+1) ys
+findMinIndex [] = error "findMinIndex: Empty list."
+
+getMidpoint :: Measurable e => [Tree e a] -> Tree e a
+getMidpoint ts = case t of
+  (Node br lb [l, r]) -> let hl = height l
+                             hr = height r
+                             dh = (hl - hr) / 2
+                         in Node br lb [applyStem (subtract dh) l, applyStem (+dh) r]
+  -- Explicitly use 'error' here, because roots is supposed to return trees with
+  -- bifurcating root nodes.
+  _ -> error "getMidpoint: Root node is not bifurcating."
+  where dhs = map getDeltaHeight ts
+        i = findMinIndex dhs
+        t = ts !! i
+-- find index of minimum; take this tree and move root to the midpoint of the branch
+
+-- Get delta height of left and right sub tree.
+getDeltaHeight :: Measurable e => Tree e a -> Double
+getDeltaHeight (Node _ _ [l, r]) = abs $ height l - height r
+-- Explicitly use 'error' here, because roots is supposed to return trees with
+-- bifurcating root nodes.
+getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating."
 
 -- | For a rooted tree with a bifurcating root node, get all possible rooted
 -- trees.

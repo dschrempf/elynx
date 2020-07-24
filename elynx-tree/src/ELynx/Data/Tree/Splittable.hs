@@ -25,6 +25,6 @@ where
 class Semigroup e => Splittable e where
   split :: e -> e
 
--- XXX: Should not be needed, when Topology is properly used.
+-- TODO: Should not be needed, when Topology is properly used.
 instance Splittable () where
   split = id

@@ -14,7 +14,7 @@
 module ELynx.Data.Tree.Measurable
   ( BranchLength,
     Measurable (..),
-    lengthenStem,
+    applyStem,
     getStem,
     setStem,
     height,
@@ -54,8 +54,9 @@ apply :: Measurable e => (BranchLength -> BranchLength) -> e -> e
 apply f l = setLen (f s) l where s = getLen l
 
 -- | Lengthen the stem of a tree.
-lengthenStem :: Measurable e => BranchLength -> Tree e a -> Tree e a
-lengthenStem dx t = setStem (dx + getStem t) t
+applyStem :: Measurable e => (BranchLength -> BranchLength) -> Tree e a -> Tree e a
+applyStem f t = t { branch = apply f b }
+  where b = branch t
 
 -- | Get the length of the stem of a tree.
 getStem :: Measurable e => Tree e a -> BranchLength
@@ -63,13 +64,19 @@ getStem (Node br _ _) = getLen br
 
 -- | Set the length of the stem of a tree.
 setStem :: Measurable e => BranchLength -> Tree e a -> Tree e a
-setStem x (Node br lb ts) = Node (setLen x br) lb ts
+setStem x = applyStem (const x)
 
 -- | The maximum distance between origin and leaves.
 --
 -- The height includes the length of the stem.
 height :: Measurable e => Tree e a -> BranchLength
 height = maximum . distancesOriginLeaves
+
+-- -- | The maximum distance between root and leaves.
+-- --
+-- -- Does not include the length of the stem, see 'height'.
+-- rootHeight :: Measurable e => Tree e a -> BranchLength
+-- rootHeight t = subtract (getStem t) $ height t
 
 -- | Distances from the origin of a tree to the leaves.
 --
