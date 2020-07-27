@@ -16,8 +16,8 @@ module ELynx.Data.Tree.Zipper
     -- * Conversion
     fromTree,
     toTree,
-    -- * Movement
 
+    -- * Movement
     goUp,
     goRoot,
     goLeft,
@@ -25,9 +25,9 @@ module ELynx.Data.Tree.Zipper
     goChild,
     goPath,
     unsafeGoPath,
+
     -- * Modification
     insertTree,
-
     insertBranch,
     insertLabel,
     -- modifyTree,

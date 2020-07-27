@@ -147,7 +147,7 @@ bifurcating _ = False
 -- - the tree has duplicate leaves;
 -- - the root node is not multifurcating;
 -- - the provided outgroup is not found on the tree or is polyphyletic.
-outgroup :: (Splittable e, Ord a) => Set a -> a -> Tree e a -> Either String (Tree e a)
+outgroup :: (Semigroup e, Splittable e, Ord a) => Set a -> a -> Tree e a -> Either String (Tree e a)
 outgroup _ _ (Node _ _ []) = Left "outgroup: Root node is a leaf."
 outgroup _ _ (Node _ _ [_]) = Left "outgroup: Root node has degree two."
 outgroup _ _ (Node _ _ [_, _]) = Left "outgroup: Root node is bifurcating."
@@ -172,7 +172,7 @@ outgroup o r t@(Node b l ts)
 --
 -- Return 'Left' if
 -- - the root node is not bifurcating.
-midpoint :: (Splittable e, Measurable e) => Tree e a -> Either String (Tree e a)
+midpoint :: (Semigroup e, Splittable e, Measurable e) => Tree e a -> Either String (Tree e a)
 midpoint (Node _ _ []) = Left "midpoint: Root node is a leaf."
 midpoint (Node _ _ [_]) = Left "midpoint: Root node has degree two."
 midpoint t@(Node _ _ [_, _]) = getMidpoint <$> roots t
@@ -225,7 +225,7 @@ getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating."
 -- equal entities according to a given function.
 --
 -- Return 'Left' if the root node is not 'bifurcating'.
-roots :: Splittable e => Tree e a -> Either String (Forest e a)
+roots :: (Semigroup e, Splittable e) => Tree e a -> Either String (Forest e a)
 roots (Node _ _ []) = Left "roots: Root node is a leaf."
 roots (Node _ _ [_]) = Left "roots: Root node has degree two."
 roots t@(Node b c [tL, tR]) = Right $ t : descend b c tR tL ++ descend b c tL tR
@@ -239,7 +239,7 @@ complementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n -1
 -- From the bifurcating root, descend into one of the two pits.
 --
 -- descend splitFunction rootBranch rootLabel complementaryTree downwardsTree
-descend :: Splittable e => e -> a -> Tree e a -> Tree e a -> Forest e a
+descend :: (Semigroup e, Splittable e) => e -> a -> Tree e a -> Tree e a -> Forest e a
 descend _ _ _ (Node _ _ []) = []
 descend brR lbR tC (Node brD lbD tsD) =
   [ Node brR lbR [Node (split brDd) lbD f, Node (split brDd) lbDd tsDd]
@@ -271,7 +271,7 @@ descend brR lbR tC (Node brD lbD tsD) =
 -- - the tree has duplicate leaves;
 -- - the bipartition does not match the leaves of the tree.
 rootAt ::
-  (Splittable e, Eq a, Ord a) =>
+  (Semigroup e, Splittable e, Eq a, Ord a) =>
   Bipartition a ->
   Tree e a ->
   Either String (Tree e a)
@@ -289,7 +289,7 @@ rootAt b t
 
 -- Assume the leaves of the tree are unique.
 rootAt' ::
-  (Splittable e, Ord a) =>
+  (Semigroup e, Splittable e, Ord a) =>
   Bipartition a ->
   Tree e a ->
   Either String (Tree e a)

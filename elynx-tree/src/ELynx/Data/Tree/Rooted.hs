@@ -56,18 +56,22 @@ module ELynx.Data.Tree.Rooted
     Tree (..),
     Forest,
 
-    -- * Functions
-    degree,
+    -- * Access leaves, branches and labels
     leaves,
+    duplicateLeaves,
     branches,
+    setBranches,
     labels,
+    setLabels,
     identify,
+
+    -- * Change structure
+    degree,
     prune,
     dropNodesWith,
     dropLeavesWith,
     zipTreesWith,
     zipTrees,
-    duplicateLeaves,
   )
 where
 
@@ -219,20 +223,31 @@ instance (ToJSON e, ToJSON a) => ToJSON (Tree e a)
 
 instance (FromJSON e, FromJSON a) => FromJSON (Tree e a)
 
--- | The degree of the root node.
-degree :: Tree e a -> Int
-degree = (+ 1) . length . forest
-
 -- | Get leaves.
 leaves :: Tree e a -> [a]
 leaves (Node _ lb []) = [lb]
 leaves (Node _ _ ts) = concatMap leaves ts
 
--- | Return branch labels in pre-order.
+-- | Check if a tree has duplicate leaves.
+duplicateLeaves :: Ord a => Tree e a -> Bool
+duplicateLeaves = duplicates . leaves
+
+-- | Get branch labels in pre-order.
 branches :: Tree e a -> [e]
 branches t = squish t []
   where
     squish (Node br _ ts) xs = br : foldr squish xs ts
+
+-- | Set branch labels in pre-order.
+--
+-- Return 'Nothing' if the provided list of branch labels is too short.
+setBranches :: Bitraversable t => [f] -> t e a -> Maybe (t f a)
+setBranches xs = bisequenceA . snd . bimapAccumL setBranch noChange xs
+  where
+    setBranch [] _ = ([], Nothing)
+    setBranch (y : ys) _ = (ys, Just y)
+    noChange ys z = (ys, Just z)
+
 
 -- | Return node labels in pre-order.
 labels :: Tree e a -> [a]
@@ -240,9 +255,22 @@ labels t = squish t []
   where
     squish (Node _ lb ts) xs = lb : foldr squish xs ts
 
+-- | Set node labels in pre-order.
+--
+-- Return 'Nothing' if the provided list of node labels is too short.
+setLabels :: Traversable t => [b] -> t a -> Maybe (t b)
+setLabels xs = sequenceA . snd . mapAccumL setLabel xs
+  where
+    setLabel [] _ = ([], Nothing)
+    setLabel (y : ys) _ = (ys, Just y)
+
 -- | Label the nodes with unique integers starting at the root with 0.
 identify :: Traversable t => t a -> t Int
 identify = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
+
+-- | The degree of the root node.
+degree :: Tree e a -> Int
+degree = (+ 1) . length . forest
 
 -- | Prune degree two nodes.
 --
@@ -315,7 +343,3 @@ duplicates = go S.empty
   where
     go _ [] = False
     go seen (x : xs) = x `S.member` seen || go (S.insert x seen) xs
-
--- | Check if a tree has duplicate leaves.
-duplicateLeaves :: Ord a => Tree e a -> Bool
-duplicateLeaves = duplicates . leaves
