@@ -28,8 +28,8 @@ module ELynx.Data.Tree.Partition
 where
 
 import Data.List hiding (partition)
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import ELynx.Data.Tree.Bipartition
 import ELynx.Data.Tree.Rooted
 

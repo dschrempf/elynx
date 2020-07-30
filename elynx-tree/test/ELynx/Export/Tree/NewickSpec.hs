@@ -14,8 +14,8 @@ module ELynx.Export.Tree.NewickSpec
 where
 
 import Data.Bifunctor
-import qualified Data.ByteString.Lazy.Char8 as L
 import Data.ByteString.Lazy.Char8 (ByteString)
+import qualified Data.ByteString.Lazy.Char8 as L
 import ELynx.Data.Tree
 import ELynx.Data.Tree.Arbitrary ()
 import ELynx.Export.Tree.Newick
@@ -50,5 +50,4 @@ spec = describe "parseByteStringWith newick $ toNewickPhyloByteString" $ do
       (newick Standard)
       bs
       `shouldBe` samplePhyloByteStringTree
-
   it "should be an invariant for a sample tree" $ property prop_invariant

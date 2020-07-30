@@ -1,30 +1,25 @@
-{- |
-Module      :  ELynx.Export.Sequence.Fasta
-Description :  Export Fasta sequences
-Copyright   :  (c) Dominik Schrempf 2018
-License     :  GPL-3.0-or-later
-
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Write FASTA files.
-
-[NCBI file specifications](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp).
-
--}
-
-
+-- |
+-- Module      :  ELynx.Export.Sequence.Fasta
+-- Description :  Export Fasta sequences
+-- Copyright   :  (c) Dominik Schrempf 2018
+-- License     :  GPL-3.0-or-later
+--
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Write FASTA files.
+--
+-- [NCBI file specifications](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp).
 module ELynx.Export.Sequence.Fasta
-  ( sequenceToFasta
-  , sequencesToFasta
+  ( sequenceToFasta,
+    sequencesToFasta,
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8    as L
-
-import           ELynx.Data.Sequence.Sequence
+import qualified Data.ByteString.Lazy.Char8 as L
+import ELynx.Data.Sequence.Sequence
 
 fastaHeader :: L.ByteString -> L.ByteString -> L.ByteString
 fastaHeader n d =

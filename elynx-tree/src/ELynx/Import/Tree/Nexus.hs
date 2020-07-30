@@ -18,12 +18,12 @@ where
 
 import Data.ByteString.Internal (c2w)
 import Data.ByteString.Lazy (ByteString, pack)
-import ELynx.Data.Tree.Rooted
 import ELynx.Data.Tree.Phylogeny
+import ELynx.Data.Tree.Rooted
+import ELynx.Import.Nexus hiding (Parser)
 import ELynx.Import.Tree.Newick
 import Text.Megaparsec
 import Text.Megaparsec.Byte
-import ELynx.Import.Nexus hiding (Parser)
 
 -- | Parse a Nexus files with a TREES block.
 nexusTrees :: NewickFormat -> Parser [(ByteString, Tree Phylo ByteString)]

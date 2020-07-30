@@ -18,8 +18,8 @@ where
 import Data.ByteString.Lazy (ByteString)
 import Data.Map (Map)
 import qualified Data.Map as M
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick
 import ELynx.Tools
@@ -80,7 +80,6 @@ spec = do
             t2 = simpleTrees !! 1
         bipartitions t1 `shouldBe` Right bipartitionsFirstTree
         bipartitions t2 `shouldBe` Right bipartitionsSecondTree
-
   describe "bipartitionToBranch" $
     it "creates a map from bipartitions to branch lengths" $
       do

@@ -1,40 +1,36 @@
-{-# LANGUAGE DeriveGeneric       #-}
+{-# LANGUAGE DeriveGeneric #-}
 
-{- |
-Module      :  Options
-Description :  Options for elynx validation and redo sub commands
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Thu Apr 23 19:17:17 2020.
-
--}
-
+-- |
+-- Module      :  Options
+-- Description :  Options for elynx validation and redo sub commands
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Thu Apr 23 19:17:17 2020.
 module Options
-  ( AllReproductions(..)
-  , getProgName
-  , getArgs
-  , ValidateArguments(..)
-  , RedoArguments(..)
-  , CommandArguments(..)
-  , commandArguments
+  ( AllReproductions (..),
+    getProgName,
+    getArgs,
+    ValidateArguments (..),
+    RedoArguments (..),
+    CommandArguments (..),
+    commandArguments,
   )
 where
 
-import           Options.Applicative
-
-import           ELynx.Tools
-
-import qualified SLynx.Options                 as S
-import qualified TLynx.Options                 as T
+import ELynx.Tools
+import Options.Applicative
+import qualified SLynx.Options as S
+import qualified TLynx.Options as T
 
 -- | Collect all reproductions in one data type.
-data AllReproductions = S (Reproduction (Arguments S.CommandArguments))
-                      | T (Reproduction (Arguments T.CommandArguments))
+data AllReproductions
+  = S (Reproduction (Arguments S.CommandArguments))
+  | T (Reproduction (Arguments T.CommandArguments))
 
 -- | Get program name irrespective of which program has been run.
 getProgName :: AllReproductions -> String
@@ -47,7 +43,7 @@ getArgs (S x) = argsStr x
 getArgs (T x) = argsStr x
 
 newtype ValidateArguments = ValidateArguments
-  { vElynxFile :: FilePath }
+  {vElynxFile :: FilePath}
   deriving (Eq, Show, Generic)
 
 validateArguments :: Parser ValidateArguments
@@ -57,8 +53,9 @@ validateDsc :: [String]
 validateDsc = ["Validate an ELynx analysis"]
 
 data RedoArguments = RedoArguments
-  { rElynxFile :: FilePath
-  , rForce :: Force }
+  { rElynxFile :: FilePath,
+    rForce :: Force
+  }
   deriving (Eq, Show, Generic)
 
 redoArguments :: Parser RedoArguments
@@ -70,8 +67,9 @@ redoDsc = ["Redo an ELynx analysis"]
 inFileArg :: Parser FilePath
 inFileArg = strArgument $ metavar "ELYNX-FILE"
 
-data CommandArguments = Validate ValidateArguments
-                      | Redo RedoArguments
+data CommandArguments
+  = Validate ValidateArguments
+  | Redo RedoArguments
 
 validateCommand :: Mod CommandFields CommandArguments
 validateCommand =

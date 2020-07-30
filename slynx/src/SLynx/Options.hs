@@ -1,41 +1,36 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-{- |
-Module      :  SLynx.Options
-Description :  SLynx general options
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Sat Sep  7 18:55:03 2019.
-
--}
-
+-- |
+-- Module      :  SLynx.Options
+-- Description :  SLynx general options
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Sat Sep  7 18:55:03 2019.
 module SLynx.Options
-  ( Arguments(..)
-  , CommandArguments(..)
-  , parseArguments
+  ( Arguments (..),
+    CommandArguments (..),
+    parseArguments,
   )
 where
 
-import           Options.Applicative
-
-import           ELynx.Data.Alphabet.Alphabet
-import           ELynx.Tools
-
-import           SLynx.Concatenate.Options
-import           SLynx.Examine.Options
-import           SLynx.Filter.Options
-import           SLynx.Simulate.Options
-import           SLynx.SubSample.Options
-import           SLynx.Translate.Options
+import ELynx.Data.Alphabet.Alphabet
+import ELynx.Tools
+import Options.Applicative
+import SLynx.Concatenate.Options
+import SLynx.Examine.Options
+import SLynx.Filter.Options
+import SLynx.Simulate.Options
+import SLynx.SubSample.Options
+import SLynx.Translate.Options
 
 -- | The different SLynx commands and their arguments.
-data CommandArguments =
-  Concatenate ConcatenateArguments
+data CommandArguments
+  = Concatenate ConcatenateArguments
   | Examine ExamineArguments
   | FilterCols FilterColsArguments
   | FilterRows FilterRowsArguments
@@ -46,53 +41,54 @@ data CommandArguments =
 
 instance Reproducible CommandArguments where
   inFiles (Concatenate a) = inFiles a
-  inFiles (Examine     a) = inFiles a
-  inFiles (FilterCols  a) = inFiles a
-  inFiles (FilterRows  a) = inFiles a
-  inFiles (Simulate    a) = inFiles a
-  inFiles (SubSample   a) = inFiles a
-  inFiles (Translate   a) = inFiles a
+  inFiles (Examine a) = inFiles a
+  inFiles (FilterCols a) = inFiles a
+  inFiles (FilterRows a) = inFiles a
+  inFiles (Simulate a) = inFiles a
+  inFiles (SubSample a) = inFiles a
+  inFiles (Translate a) = inFiles a
 
   outSuffixes (Concatenate a) = outSuffixes a
-  outSuffixes (Examine     a) = outSuffixes a
-  outSuffixes (FilterCols  a) = outSuffixes a
-  outSuffixes (FilterRows  a) = outSuffixes a
-  outSuffixes (Simulate    a) = outSuffixes a
-  outSuffixes (SubSample   a) = outSuffixes a
-  outSuffixes (Translate   a) = outSuffixes a
+  outSuffixes (Examine a) = outSuffixes a
+  outSuffixes (FilterCols a) = outSuffixes a
+  outSuffixes (FilterRows a) = outSuffixes a
+  outSuffixes (Simulate a) = outSuffixes a
+  outSuffixes (SubSample a) = outSuffixes a
+  outSuffixes (Translate a) = outSuffixes a
 
   getSeed (Concatenate a) = getSeed a
-  getSeed (Examine     a) = getSeed a
-  getSeed (FilterCols  a) = getSeed a
-  getSeed (FilterRows  a) = getSeed a
-  getSeed (Simulate    a) = getSeed a
-  getSeed (SubSample   a) = getSeed a
-  getSeed (Translate   a) = getSeed a
+  getSeed (Examine a) = getSeed a
+  getSeed (FilterCols a) = getSeed a
+  getSeed (FilterRows a) = getSeed a
+  getSeed (Simulate a) = getSeed a
+  getSeed (SubSample a) = getSeed a
+  getSeed (Translate a) = getSeed a
 
   setSeed (Concatenate a) = Concatenate . setSeed a
-  setSeed (Examine     a) = Examine . setSeed a
-  setSeed (FilterCols  a) = FilterCols . setSeed a
-  setSeed (FilterRows  a) = FilterRows . setSeed a
-  setSeed (Simulate    a) = Simulate . setSeed a
-  setSeed (SubSample   a) = SubSample . setSeed a
-  setSeed (Translate   a) = Translate . setSeed a
+  setSeed (Examine a) = Examine . setSeed a
+  setSeed (FilterCols a) = FilterCols . setSeed a
+  setSeed (FilterRows a) = FilterRows . setSeed a
+  setSeed (Simulate a) = Simulate . setSeed a
+  setSeed (SubSample a) = SubSample . setSeed a
+  setSeed (Translate a) = Translate . setSeed a
 
-  parser  = commandArguments
+  parser = commandArguments
 
   cmdName = "slynx"
 
-  cmdDsc  = ["Analyze, and simulate multi sequence alignments."]
+  cmdDsc = ["Analyze, and simulate multi sequence alignments."]
 
   cmdFtr =
-    [ ""
-    , "Available sequence file formats:"]
-    ++ fs
-    ++ ["", "Available alphabets:"]
-    ++ as
-   where
-    toListItem = ("  - " ++)
-    fs = map toListItem ["FASTA"]
-    as = map (toListItem . alphabetDescription) (allValues :: [Alphabet])
+    [ "",
+      "Available sequence file formats:"
+    ]
+      ++ fs
+      ++ ["", "Available alphabets:"]
+      ++ as
+    where
+      toListItem = ("  - " ++)
+      fs = map toListItem ["FASTA"]
+      as = map (toListItem . alphabetDescription) (allValues :: [Alphabet])
 
 instance FromJSON CommandArguments
 
@@ -121,11 +117,11 @@ translateCommand = createCommandReproducible Translate
 
 commandArguments :: Parser CommandArguments
 commandArguments =
-  hsubparser
-    $  concatenateCommand
-    <> examineCommand
-    <> filterColumnsCommand
-    <> filterRowsCommand
-    <> simulateCommand
-    <> subSampleCommand
-    <> translateCommand
+  hsubparser $
+    concatenateCommand
+      <> examineCommand
+      <> filterColumnsCommand
+      <> filterRowsCommand
+      <> simulateCommand
+      <> subSampleCommand
+      <> translateCommand

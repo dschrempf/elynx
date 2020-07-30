@@ -1,40 +1,35 @@
-{- |
-Module      :  ELynx.Tools.LinearAlgebra
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Thu Feb 14 13:33:13 2019.
-
-Tools for matrices from 'Numeric.LinearAlgebra'.
-
--}
-
+-- |
+-- Module      :  ELynx.Tools.LinearAlgebra
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Thu Feb 14 13:33:13 2019.
+--
+-- Tools for matrices from 'Numeric.LinearAlgebra'.
 module ELynx.Tools.LinearAlgebra
-  (
-    -- * Linear Algebra
-    matrixSeparateSymSkew
-  , matrixSetDiagToZero
-  , dispv
-  , dispm
-  , dispmi
+  ( -- * Linear Algebra
+    matrixSeparateSymSkew,
+    matrixSetDiagToZero,
+    dispv,
+    dispm,
+    dispmi,
   )
 where
 
-import           Data.List
-
-import           Numeric.LinearAlgebra
+import Data.List
+import Numeric.LinearAlgebra
 
 -- | Separate a square matrix into a symmetric and a skew-symmetric matrix.
 matrixSeparateSymSkew :: Matrix R -> (Matrix R, Matrix R)
 matrixSeparateSymSkew m = (mSym, mSkew)
- where
-  trM   = tr m
-  mSym  = scale 0.5 $ m + trM
-  mSkew = scale 0.5 $ m - trM
+  where
+    trM = tr m
+    mSym = scale 0.5 $ m + trM
+    mSkew = scale 0.5 $ m - trM
 
 -- | Set the diagonal entries of a matrix to zero.
 matrixSetDiagToZero :: Matrix R -> Matrix R

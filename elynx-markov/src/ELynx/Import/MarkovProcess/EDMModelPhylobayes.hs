@@ -1,36 +1,32 @@
-{- |
-Module      :  ELynx.Import.MarkovProcess.EDMModelPhylobayes
-Description :  Import stationary distributions from Phylobayes format
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Tue Jan 29 12:12:55 2019.
-
--}
-
+-- |
+-- Module      :  ELynx.Import.MarkovProcess.EDMModelPhylobayes
+-- Description :  Import stationary distributions from Phylobayes format
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Tue Jan 29 12:12:55 2019.
 module ELynx.Import.MarkovProcess.EDMModelPhylobayes
-  ( Parser
-  , EDMComponent
-  , phylobayes
+  ( Parser,
+    EDMComponent,
+    phylobayes,
   )
 where
 
-import           Control.Monad
-import qualified Data.ByteString.Lazy.Char8    as L
-import qualified Data.Vector.Storable          as V
-import           Data.Void
-import           Text.Megaparsec
-import           Text.Megaparsec.Byte
-import           Text.Megaparsec.Byte.Lexer hiding (space)
-
-import           ELynx.Data.MarkovProcess.MixtureModel
-                                                ( Weight )
-
-import           ELynx.Tools
+import Control.Monad
+import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.Vector.Storable as V
+import Data.Void
+import ELynx.Data.MarkovProcess.MixtureModel
+  ( Weight,
+  )
+import ELynx.Tools
+import Text.Megaparsec
+import Text.Megaparsec.Byte
+import Text.Megaparsec.Byte.Lexer hiding (space)
 
 -- | Shortcut.
 type Parser = Parsec Void L.ByteString
@@ -42,10 +38,10 @@ type EDMComponent = (Weight, V.Vector Double)
 -- | Parse stationary distributions from Phylobayes format.
 phylobayes :: Parser [EDMComponent]
 phylobayes = do
-  n  <- headerLine
-  k  <- kComponentsLine
+  n <- headerLine
+  k <- kComponentsLine
   cs <- count k $ dataLine n
-  _  <- many newline *> eof <?> "phylobayes"
+  _ <- many newline *> eof <?> "phylobayes"
   return cs
 
 horizontalSpace :: Parser ()
@@ -57,8 +53,9 @@ headerLine = do
   _ <- horizontalSpace
   -- XXX: This should be more general, but then we also want to ensure that the
   -- order of states is correct.
-  _ <- chunk (L.pack "A C D E F G H I K L M N P Q R S T V W Y")
-    <|> chunk (L.pack "A C G T")
+  _ <-
+    chunk (L.pack "A C D E F G H I K L M N P Q R S T V W Y")
+      <|> chunk (L.pack "A C G T")
   _ <- many newline <?> "headerLine"
   return n
 
@@ -68,8 +65,8 @@ kComponentsLine = decimal <* newline <?> "kComponentsLine"
 dataLine :: Int -> Parser EDMComponent
 dataLine n = do
   weight <- float
-  _      <- horizontalSpace
-  vals   <- float `sepEndBy1` horizontalSpace
+  _ <- horizontalSpace
+  vals <- float `sepEndBy1` horizontalSpace
   when (length vals /= n) (error "Did not find correct number of entries.")
   _ <- space <?> "dataLine"
   return (weight, V.fromList vals)

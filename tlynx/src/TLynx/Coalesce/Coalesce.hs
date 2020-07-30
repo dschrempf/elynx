@@ -4,6 +4,7 @@
 
 -- TODO: Merge this command into the 'simulate' command and give two options
 -- (e.g., simulate c, simulate bd).
+
 -- |
 --   Description :  Simulate reconstructed trees using the coalescent process
 --   Copyright   :  (c) Dominik Schrempf 2020
@@ -14,7 +15,6 @@
 --   Portability :  portable
 --
 -- Creation date: Tue Feb 3 17:00:00 2020.
-
 module TLynx.Coalesce.Coalesce
   ( coalesce,
   )
@@ -92,20 +92,20 @@ simulateAndSubSampleNTreesConcurrently = do
   gs <- liftIO $ initialize s >>= \g -> splitGen c g
   let chunks = getChunks c nT
   tr <- liftIO $ simulate nLeavesBigTree (head gs)
-  logNewSection
-    $ T.pack
-    $ "Simulate one big tree with "
-      <> show nLeavesBigTree
-      <> " leaves."
+  logNewSection $
+    T.pack $
+      "Simulate one big tree with "
+        <> show nLeavesBigTree
+        <> " leaves."
   -- Log the base tree.
   $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ soften tr
-  logNewSection
-    $ T.pack
-    $ "Sub sample "
-      <> show nT
-      <> " trees with "
-      <> show nL
-      <> " leaves."
+  logNewSection $
+    T.pack $
+      "Sub sample "
+        <> show nT
+        <> " trees with "
+        <> show nL
+        <> " leaves."
   let lvs = Seq.fromList $ leaves tr
   trss <-
     liftIO $

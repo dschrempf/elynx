@@ -1,37 +1,33 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-{- |
-Module      :  TLynx.Connect.Options
-Description :  Options for the connect subcommand
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Thu Sep 19 15:02:21 2019.
-
--}
-
+-- |
+-- Module      :  TLynx.Connect.Options
+-- Description :  Options for the connect subcommand
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Thu Sep 19 15:02:21 2019.
 module TLynx.Connect.Options
-  ( ConnectArguments(..)
-  , connectArguments
+  ( ConnectArguments (..),
+    connectArguments,
   )
 where
 
-import           Options.Applicative
-
-import           ELynx.Tools
-
-import           TLynx.Parsers
+import ELynx.Tools
+import Options.Applicative
+import TLynx.Parsers
 
 -- | Arguments of connect command.
 data ConnectArguments = ConnectArguments
-  { nwFormat    :: NewickFormat
-  , constraints :: Maybe FilePath
-  , inFileA     :: FilePath
-  , inFileB     :: FilePath }
+  { nwFormat :: NewickFormat,
+    constraints :: Maybe FilePath,
+    inFileA :: FilePath,
+    inFileB :: FilePath
+  }
   deriving (Eq, Show, Generic)
 
 instance Reproducible ConnectArguments where
@@ -39,7 +35,7 @@ instance Reproducible ConnectArguments where
   outSuffixes _ = [".out"]
   getSeed _ = Nothing
   setSeed a _ = a
-  parser  = connectArguments
+  parser = connectArguments
   cmdName = "connect"
   cmdDsc =
     [ "Connect two phylogenetic trees in all ways (possibly honoring constraints)."
@@ -56,17 +52,23 @@ connectArguments =
 
 constraintsFile :: Parser (Maybe FilePath)
 constraintsFile =
-  optional
-    $  strOption
-    $  metavar "CONSTRAINTS"
-    <> short 'c'
-    <> long "contraints"
-    <> help "File containing one or more Newick trees to be used as constraints"
+  optional $
+    strOption $
+      metavar "CONSTRAINTS"
+        <> short 'c'
+        <> long "contraints"
+        <> help "File containing one or more Newick trees to be used as constraints"
 
 fileA :: Parser FilePath
-fileA = strArgument $ metavar "TREE-FILE-A" <> help
-  "File containing the first Newick tree"
+fileA =
+  strArgument $
+    metavar "TREE-FILE-A"
+      <> help
+        "File containing the first Newick tree"
 
 fileB :: Parser FilePath
-fileB = strArgument $ metavar "TREE-FILE-B" <> help
-  "File containing the second Newick tree"
+fileB =
+  strArgument $
+    metavar "TREE-FILE-B"
+      <> help
+        "File containing the second Newick tree"

@@ -1,39 +1,35 @@
-{- |
-Module      :  ELynx.Tools.Equality
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Thu Feb 14 13:27:05 2019.
-
-Equality tests.
-
--}
-
+-- |
+-- Module      :  ELynx.Tools.Equality
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Thu Feb 14 13:27:05 2019.
+--
+-- Equality tests.
 module ELynx.Tools.Equality
   ( -- * Equality
-    allEqual
-  , allNearlyEqualWith
-  , allNearlyEqual
-  , nearlyEqWith
-  , eps
-  , nearlyEq
-  , (=~=)
-  , nearlyEqListWith
-  , nearlyEqList
-  , nearlyEqVecWith
-  , nearlyEqVec
-  , nearlyEqMatWith
-  , nearlyEqMat
+    allEqual,
+    allNearlyEqualWith,
+    allNearlyEqual,
+    nearlyEqWith,
+    eps,
+    nearlyEq,
+    (=~=),
+    nearlyEqListWith,
+    nearlyEqList,
+    nearlyEqVecWith,
+    nearlyEqVec,
+    nearlyEqMatWith,
+    nearlyEqMat,
   )
 where
 
-import           Numeric.LinearAlgebra
-
-import           ELynx.Tools.Definitions
+import ELynx.Tools.Definitions
+import Numeric.LinearAlgebra
 
 -- | Test if all elements of a list are equal; returns True for empty list.
 allEqual :: Eq a => [a] -> Bool
@@ -44,7 +40,7 @@ allEqual xs = all (== head xs) (tail xs)
 
 -- | Test if all elements of a list are nearly equal; returns True for empty list.
 allNearlyEqualWith :: Double -> [Double] -> Bool
-allNearlyEqualWith _   [] = True
+allNearlyEqualWith _ [] = True
 allNearlyEqualWith tol xs = all (nearlyEqWith tol $ head xs) (tail xs)
 
 -- | Test if all elements of a list are nearly equal; returns True for empty list.

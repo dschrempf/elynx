@@ -1,30 +1,27 @@
-{- |
-Module      :  ELynx.Tools.Misc
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Thu Feb 14 13:32:19 2019.
-
-Miscellaneous tools that do not have their own category (yet).
-
--}
-
+-- |
+-- Module      :  ELynx.Tools.Misc
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Thu Feb 14 13:32:19 2019.
+--
+-- Miscellaneous tools that do not have their own category (yet).
 module ELynx.Tools.Misc
-  (
-    -- * Not yet classified stuff
-    ensure
+  ( -- * Not yet classified stuff
+    ensure,
+
     -- * Weird stuff
-  , compose
-  , allValues
-  , horizontalConcat
+    compose,
+    allValues,
+    horizontalConcat,
   )
 where
 
-import           Data.List
+import Data.List
 
 -- | Chain a list of functions together. See https://wiki.haskell.org/Compose.
 compose :: [a -> a] -> a -> a
@@ -40,9 +37,10 @@ allValues = [minBound ..]
 -- checks are performed!
 horizontalConcat :: [[[a]]] -> [[a]]
 horizontalConcat [xs] = xs
-horizontalConcat xss  = foldl' (zipWith (++)) (head xss) (tail xss)
+horizontalConcat xss = foldl' (zipWith (++)) (head xss) (tail xss)
 
 -- | Ensure that a value satisfies a given predicate.
 ensure :: (a -> Bool) -> a -> Maybe a
-ensure p v | p v       = Just v
-           | otherwise = Nothing
+ensure p v
+  | p v = Just v
+  | otherwise = Nothing

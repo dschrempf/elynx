@@ -1,28 +1,25 @@
-{- |
-Module      :  ELynx.Tools.Definitions
-Description :  Some global definitions
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Fri Jan 25 17:17:41 2019.
-
--}
-
+-- |
+-- Module      :  ELynx.Tools.Definitions
+-- Description :  Some global definitions
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Fri Jan 25 17:17:41 2019.
 module ELynx.Tools.Definitions
   ( -- * Definitions
-    chunksize
-  , eps
-  , eps'
-  , precision
-  , version
+    chunksize,
+    eps,
+    eps',
+    precision,
+    version,
   )
 where
 
-import           Data.Version
+import Data.Version
 
 -- XXX: Manually handled, because automatic handling with @Paths_...@ modules
 -- results in errors during source tarball creation and upload.

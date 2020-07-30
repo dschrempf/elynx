@@ -45,7 +45,6 @@ spec = describe "simulateNSitesAlongTree" $ do
     gen <- create
     tr <- simulate 1 d e nullTree gen
     fmap head tr `shouldBe` nullStateTree
-
   it "simulates some sites along a harder tree" $ do
     gen <- create
     tr <- simulate 10 d e testTree gen

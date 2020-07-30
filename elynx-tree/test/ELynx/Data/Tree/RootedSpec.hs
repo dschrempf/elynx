@@ -16,8 +16,8 @@ module ELynx.Data.Tree.RootedSpec
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8 as L
 import Data.ByteString.Lazy.Char8 (ByteString)
+import qualified Data.ByteString.Lazy.Char8 as L
 import Data.Maybe
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick
@@ -59,7 +59,6 @@ spec = do
             either error id $
               phyloToLengthTree subSampleLargeTree
       height (prune t') `shouldBe` height t'
-
   describe "dropLeavesWith" $ do
     it "returns the same tree if no leaves satisfy predicate" $
       dropLeavesWith (const False) smallTree `shouldBe` Just smallTree

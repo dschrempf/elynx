@@ -1,60 +1,58 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
 
-{- |
-Module      :  ELynx.Data.NucleotideX
-Description :  Extended nucleotides including gaps and unknowns
-Copyright   :  (c) Dominik Schrempf 2018
-
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-See header of 'ELynx.Data.Alphabet'.
-
-Extended nucleotides with gaps. See also
-https://www.bioinformatics.org/sms/iupac.html or
-https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry.
-
-@
-Symbol  Description  Bases represented  Complement
-------  -----------  -----------------  ----------
-A       Adenine      A                  T
-C       Cytosine        C               G
-G       Guanine            G            C
-T       Thymine               T         A
-------  -----------  -----------------  ----------
-- or .  Gap (Zero)                      -
-@
-
-
--}
-
+-- |
+-- Module      :  ELynx.Data.NucleotideX
+-- Description :  Extended nucleotides including gaps and unknowns
+-- Copyright   :  (c) Dominik Schrempf 2018
+--
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- See header of 'ELynx.Data.Alphabet'.
+--
+-- Extended nucleotides with gaps. See also
+-- https://www.bioinformatics.org/sms/iupac.html or
+-- https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry.
+--
+-- @
+-- Symbol  Description  Bases represented  Complement
+-- ------  -----------  -----------------  ----------
+-- A       Adenine      A                  T
+-- C       Cytosine        C               G
+-- G       Guanine            G            C
+-- T       Thymine               T         A
+-- ------  -----------  -----------------  ----------
+-- - or .  Gap (Zero)                      -
+-- @
 module ELynx.Data.Character.NucleotideX
-  ( NucleotideX(..)
+  ( NucleotideX (..),
   )
 where
 
-import           Data.Vector.Unboxed.Deriving
-import           Data.Word8
-
-import qualified ELynx.Data.Character.Character
-                                               as C
-import           ELynx.Tools
+import Data.Vector.Unboxed.Deriving
+import Data.Word8
+import qualified ELynx.Data.Character.Character as C
+import ELynx.Tools
 
 -- | Extended nucleotides.
-data NucleotideX = A | C | G | T
-                 | Gap
+data NucleotideX
+  = A
+  | C
+  | G
+  | T
+  | Gap
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 toWord :: NucleotideX -> Word8
-toWord A   = c2w 'A'
-toWord C   = c2w 'C'
-toWord G   = c2w 'G'
-toWord T   = c2w 'T'
+toWord A = c2w 'A'
+toWord C = c2w 'C'
+toWord G = c2w 'G'
+toWord T = c2w 'T'
 toWord Gap = c2w '-'
 
 fromWord :: Word8 -> NucleotideX
@@ -65,15 +63,16 @@ fromWord w = case w2c w of
   'T' -> T
   '-' -> Gap
   '.' -> Gap
-  c   -> error $ "fromWord: Cannot convert " ++ show c ++ " to NucleotideX."
+  c -> error $ "fromWord: Cannot convert " ++ show c ++ " to NucleotideX."
 
-derivingUnbox "NucleotideX"
-    [t| NucleotideX -> Word8 |]
-    [| toWord |]
-    [| fromWord |]
+derivingUnbox
+  "NucleotideX"
+  [t|NucleotideX -> Word8|]
+  [|toWord|]
+  [|fromWord|]
 
 instance C.Character NucleotideX where
-  toWord   = toWord
+  toWord = toWord
   fromWord = fromWord
 
 instance C.CharacterX NucleotideX where

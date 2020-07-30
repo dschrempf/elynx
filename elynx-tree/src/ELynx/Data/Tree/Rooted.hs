@@ -248,7 +248,6 @@ setBranches xs = bisequenceA . snd . bimapAccumL setBranch noChange xs
     setBranch (y : ys) _ = (ys, Just y)
     noChange ys z = (ys, Just z)
 
-
 -- | Return node labels in pre-order.
 labels :: Tree e a -> [a]
 labels t = squish t []

@@ -34,9 +34,9 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
+import Control.Parallel.Strategies
 import qualified Data.ByteString.Builder as L
 import qualified Data.ByteString.Lazy.Char8 as L
-import Control.Parallel.Strategies
 import Data.Foldable (toList)
 import Data.Maybe
 import qualified Data.Sequence as Seq

@@ -1,35 +1,31 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-{- |
-Module      :  TLynx.Examine.Options
-Description :  Tree analysis options
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Thu Aug 29 08:16:45 2019.
-
--}
-
+-- |
+-- Module      :  TLynx.Examine.Options
+-- Description :  Tree analysis options
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Thu Aug 29 08:16:45 2019.
 module TLynx.Examine.Options
-  ( ExamineArguments(..)
-  , examineArguments
+  ( ExamineArguments (..),
+    examineArguments,
   )
 where
 
-import           Options.Applicative
-
-import           ELynx.Tools
-
-import           TLynx.Parsers
+import ELynx.Tools
+import Options.Applicative
+import TLynx.Parsers
 
 -- | Arguments needed to examine phylogenetic trees.
 data ExamineArguments = ExamineArguments
-  { argsInFile       :: FilePath
-  , argsNewickFormat :: NewickFormat }
+  { argsInFile :: FilePath,
+    argsNewickFormat :: NewickFormat
+  }
   deriving (Eq, Show, Generic)
 
 instance Reproducible ExamineArguments where
@@ -37,9 +33,9 @@ instance Reproducible ExamineArguments where
   outSuffixes _ = [".out"]
   getSeed _ = Nothing
   setSeed = const
-  parser  = examineArguments
+  parser = examineArguments
   cmdName = "examine"
-  cmdDsc  = ["Compute summary statistics of phylogenetic trees."]
+  cmdDsc = ["Compute summary statistics of phylogenetic trees."]
 
 instance FromJSON ExamineArguments
 

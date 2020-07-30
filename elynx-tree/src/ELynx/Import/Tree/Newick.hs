@@ -39,10 +39,10 @@ import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as L
 import Data.Void
 import Data.Word
-import ELynx.Data.Tree.Rooted hiding (label)
-import ELynx.Data.Tree.Phylogeny
-import ELynx.Data.Tree.Supported
 import ELynx.Data.Tree.Measurable
+import ELynx.Data.Tree.Phylogeny
+import ELynx.Data.Tree.Rooted hiding (label)
+import ELynx.Data.Tree.Supported
 import ELynx.Tools
 import Text.Megaparsec
 import Text.Megaparsec.Byte
@@ -126,11 +126,12 @@ forestP = between (w '(') (w ')') (tree `sepBy1` w ',') <?> "forestP"
 branchSupport :: Parser (Maybe BranchSupport)
 branchSupport = label "branchSupport" $
   optional $
-    try $ do
-      _ <- w '['
-      s <- float <|> decimalAsDouble
-      _ <- w ']'
-      return s
+    try $
+      do
+        _ <- w '['
+        s <- float <|> decimalAsDouble
+        _ <- w ']'
+        return s
 
 -- A 'leaf' has a 'name' and a 'phylo' branch.
 leaf :: Parser (Tree Phylo ByteString)

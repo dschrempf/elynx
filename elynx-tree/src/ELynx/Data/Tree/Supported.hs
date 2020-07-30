@@ -38,16 +38,19 @@ apply f l = setSup (f s) l where s = getSup l
 -- set to 1.0.
 normalizeBranchSupport :: Supported e => Tree e a -> Tree e a
 normalizeBranchSupport t = first (apply (/ m)) t
-  where m = bimaximum $ bimap getSup (const 0) t
+  where
+    m = bimaximum $ bimap getSup (const 0) t
 
 -- TODO: Something was wrong here. @collapse 1.0 t@ should be a star tree but it
 -- was a leaf. Is this still so?
+
 -- | Collapse branches with support lower than given value.
 --
 -- The branch and node labels of the collapsed branches are discarded.
 collapse :: (Eq e, Eq a, Supported e) => BranchSupport -> Tree e a -> Tree e a
-collapse th tr = let tr' = collapse' th tr in
-  if tr == tr' then tr else collapse th tr'
+collapse th tr =
+  let tr' = collapse' th tr
+   in if tr == tr' then tr else collapse th tr'
 
 -- See 'collapse'.
 collapse' :: Supported e => BranchSupport -> Tree e a -> Tree e a

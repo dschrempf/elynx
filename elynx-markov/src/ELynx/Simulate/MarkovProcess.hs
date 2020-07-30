@@ -1,31 +1,27 @@
-{- |
-Module      :  ELynx.Simulate.MarkovProcess
-Description :  Markov process helpers
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Thu Jan 24 09:02:25 2019.
-
--}
-
+-- |
+-- Module      :  ELynx.Simulate.MarkovProcess
+-- Description :  Markov process helpers
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Thu Jan 24 09:02:25 2019.
 module ELynx.Simulate.MarkovProcess
-  ( ProbMatrix
-  , State
-  , probMatrix
-  , jump
+  ( ProbMatrix,
+    State,
+    probMatrix,
+    jump,
   )
 where
 
-import           Control.Monad.Primitive
-import           Numeric.LinearAlgebra
-import           System.Random.MWC
-import           System.Random.MWC.Distributions
-
-import           ELynx.Data.MarkovProcess.RateMatrix
+import Control.Monad.Primitive
+import ELynx.Data.MarkovProcess.RateMatrix
+import Numeric.LinearAlgebra
+import System.Random.MWC
+import System.Random.MWC.Distributions
 
 -- | A probability matrix, P_ij(t) = Pr (X_t = j | X_0 = i).
 type ProbMatrix = Matrix R
@@ -37,9 +33,10 @@ type State = Int
 -- another in a specific time (branch length).
 probMatrix :: RateMatrix -> Double -> ProbMatrix
 probMatrix q t
-  | t == 0 = if rows q == cols q
-    then ident (rows q)
-    else error "probMatrix: Matrix is not square."
+  | t == 0 =
+    if rows q == cols q
+      then ident (rows q)
+      else error "probMatrix: Matrix is not square."
   | t < 0 = error "probMatrix: Time is negative."
   | otherwise = expm $ scale t q
 

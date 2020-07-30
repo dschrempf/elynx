@@ -1,46 +1,43 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-{- |
-Module      :  SLynx.Examine.Options
-Description :  ELynxSeq argument parsing
-Copyright   :  (c) Dominik Schrempf 2018
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Sun Oct  7 17:29:45 2018.
-
--}
-
+-- |
+-- Module      :  SLynx.Examine.Options
+-- Description :  ELynxSeq argument parsing
+-- Copyright   :  (c) Dominik Schrempf 2018
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Sun Oct  7 17:29:45 2018.
 module SLynx.Examine.Options
-  ( ExamineArguments(..)
-  , examineArguments
+  ( ExamineArguments (..),
+    examineArguments,
   )
 where
 
-import           Options.Applicative
-
-import           SLynx.Tools
-
-import           ELynx.Data.Alphabet.Alphabet
-import           ELynx.Tools
+import ELynx.Data.Alphabet.Alphabet
+import ELynx.Tools
+import Options.Applicative
+import SLynx.Tools
 
 -- | Arguments needed to examine sequences.
 data ExamineArguments = ExamineArguments
-    { exAlphabet :: Alphabet
-    , exInFile   :: FilePath
-    , exPerSite  :: Bool }
+  { exAlphabet :: Alphabet,
+    exInFile :: FilePath,
+    exPerSite :: Bool
+  }
   deriving (Eq, Show, Generic)
 
 instance Reproducible ExamineArguments where
   inFiles = pure . exInFile
   outSuffixes _ = [".out"]
   getSeed _ = Nothing
--- XXX: Probably throw error when seed is set.
+
+  -- XXX: Probably throw error when seed is set.
   setSeed = const
-  parser  = examineArguments
+  parser = examineArguments
   cmdName = "examine"
   cmdDsc =
     [ "Examine sequences. If data is a multi sequence alignment, additionally analyze columns."

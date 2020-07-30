@@ -1,61 +1,56 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
 
-{- |
-Module      :  ELynx.Data.AminoAcid
-Description :  Amino acid related types and functions
-Copyright   :  (c) Dominik Schrempf 2018
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Thu Oct  4 18:26:35 2018.
-
-See header of 'ELynx.Data.Alphabet.Alphabet'.
-
-Amino acids in alphabetical order.
-
-@
-Amino Acid Code:  Three letter Code:  Amino Acid:
-----------------  ------------------  -----------
-A                 Ala                 Alanine
-C                 Cys                 Cysteine
-D                 Asp                 Aspartic Acid
-E                 Glu                 Glutamic Acid
-F                 Phe                 Phenylalanine
-G                 Gly                 Glycine
-H                 His                 Histidine
-I                 Ile                 Isoleucine
-K                 Lys                 Lysine
-L                 Leu                 Leucine
-M                 Met                 Methionine
-N                 Asn                 Asparagine
-P                 Pro                 Proline
-Q                 Gln                 Glutamine
-R                 Arg                 Arginine
-S                 Ser                 Serine
-T                 Thr                 Threonine
-V                 Val                 Valine
-W                 Trp                 Tryptophan
-Y                 Tyr                 Tyrosine
-@
-
--}
-
+-- |
+-- Module      :  ELynx.Data.AminoAcid
+-- Description :  Amino acid related types and functions
+-- Copyright   :  (c) Dominik Schrempf 2018
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Thu Oct  4 18:26:35 2018.
+--
+-- See header of 'ELynx.Data.Alphabet.Alphabet'.
+--
+-- Amino acids in alphabetical order.
+--
+-- @
+-- Amino Acid Code:  Three letter Code:  Amino Acid:
+-- ----------------  ------------------  -----------
+-- A                 Ala                 Alanine
+-- C                 Cys                 Cysteine
+-- D                 Asp                 Aspartic Acid
+-- E                 Glu                 Glutamic Acid
+-- F                 Phe                 Phenylalanine
+-- G                 Gly                 Glycine
+-- H                 His                 Histidine
+-- I                 Ile                 Isoleucine
+-- K                 Lys                 Lysine
+-- L                 Leu                 Leucine
+-- M                 Met                 Methionine
+-- N                 Asn                 Asparagine
+-- P                 Pro                 Proline
+-- Q                 Gln                 Glutamine
+-- R                 Arg                 Arginine
+-- S                 Ser                 Serine
+-- T                 Thr                 Threonine
+-- V                 Val                 Valine
+-- W                 Trp                 Tryptophan
+-- Y                 Tyr                 Tyrosine
+-- @
 module ELynx.Data.Character.AminoAcid
-  ( AminoAcid(..)
+  ( AminoAcid (..),
   )
 where
 
-import           Data.Vector.Unboxed.Deriving
-import           Data.Word8
-
-import qualified ELynx.Data.Character.Character
-                                               as C
-import           ELynx.Tools
+import Data.Vector.Unboxed.Deriving
+import Data.Word8
+import qualified ELynx.Data.Character.Character as C
+import ELynx.Tools
 
 -- | Amino acids.
 data AminoAcid = A | C | D | E | F | G | H | I | K | L | M | N | P | Q | R | S | T | V | W | Y
@@ -105,13 +100,14 @@ fromWord w = case w2c w of
   'V' -> V
   'W' -> W
   'Y' -> Y
-  _   -> error "fromWord: Cannot convert to AminoAcid."
+  _ -> error "fromWord: Cannot convert to AminoAcid."
 
-derivingUnbox "AminoAcid"
-    [t| AminoAcid -> Word8 |]
-    [| toWord |]
-    [| fromWord |]
+derivingUnbox
+  "AminoAcid"
+  [t|AminoAcid -> Word8|]
+  [|toWord|]
+  [|fromWord|]
 
 instance C.Character AminoAcid where
-  toWord   = toWord
+  toWord = toWord
   fromWord = fromWord

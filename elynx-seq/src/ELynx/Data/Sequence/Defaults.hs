@@ -1,23 +1,19 @@
-{- |
-Module      :  ELynx.Defaults
-Description :  Various default values
-Copyright   :  (c) Dominik Schrempf 2018
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Fri Oct  5 23:00:17 2018.
-
--}
-
-
+-- |
+-- Module      :  ELynx.Defaults
+-- Description :  Various default values
+-- Copyright   :  (c) Dominik Schrempf 2018
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Fri Oct  5 23:00:17 2018.
 module ELynx.Data.Sequence.Defaults
-  ( nameWidth
-  , summaryLength
-  , summaryNSequences
-  , fieldWidth
+  ( nameWidth,
+    summaryLength,
+    summaryNSequences,
+    fieldWidth,
   )
 where
 

@@ -1,77 +1,80 @@
-{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 
-{- |
-Module      :  ELynx.Tools.Logger
-Description :  Monad logger utility functions
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Fri Sep  6 14:43:19 2019.
-
--}
-
+-- |
+-- Module      :  ELynx.Tools.Logger
+-- Description :  Monad logger utility functions
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Fri Sep  6 14:43:19 2019.
 module ELynx.Tools.Logger
   ( -- * Logger
-    logNewSection
-  , eLynxWrapper
+    logNewSection,
+    eLynxWrapper,
   )
 where
 
-import           Control.Monad.Base             ( liftBase )
-import           Control.Monad.IO.Class         ( MonadIO
-                                                , liftIO
-                                                )
-import           Control.Monad.Logger           ( Loc
-                                                , LogLevel
-                                                , LogSource
-                                                , LoggingT
-                                                , MonadLogger
-                                                , filterLogger
-                                                , logInfo
-                                                , runLoggingT
-                                                )
-import           Control.Monad.Trans.Control    ( MonadBaseControl )
-import           Control.Monad.Trans.Reader     ( ReaderT(runReaderT) )
-import qualified Data.ByteString.Char8         as B
-import           Data.Text                      ( Text
-                                                , pack
-                                                )
-import           System.IO                      ( BufferMode(LineBuffering)
-                                                , Handle
-                                                , IOMode(WriteMode)
-                                                , hClose
-                                                , hSetBuffering
-                                                , stderr
-                                                )
-import           System.Log.FastLogger          ( LogStr
-                                                , fromLogStr
-                                                )
-import           System.Random.MWC              ( createSystemRandom
-                                                , save
-                                                , fromSeed
-                                                )
-
-import           ELynx.Tools.Reproduction       ( Reproducible(..)
-                                                , writeReproduction
-                                                , ToJSON
-                                                , toLogLevel
-                                                , ELynx
-                                                , Arguments(..)
-                                                , Force
-                                                , GlobalArguments(..)
-                                                , Seed(..)
-                                                , logHeader
-                                                , logFooter
-                                                )
-import           ELynx.Tools.InputOutput        ( openFile' )
+import Control.Monad.Base (liftBase)
+import Control.Monad.IO.Class
+  ( MonadIO,
+    liftIO,
+  )
+import Control.Monad.Logger
+  ( Loc,
+    LogLevel,
+    LogSource,
+    LoggingT,
+    MonadLogger,
+    filterLogger,
+    logInfo,
+    runLoggingT,
+  )
+import Control.Monad.Trans.Control (MonadBaseControl)
+import Control.Monad.Trans.Reader (ReaderT (runReaderT))
+import qualified Data.ByteString.Char8 as B
+import Data.Text
+  ( Text,
+    pack,
+  )
+import ELynx.Tools.InputOutput (openFile')
+import ELynx.Tools.Reproduction
+  ( Arguments (..),
+    ELynx,
+    Force,
+    GlobalArguments (..),
+    Reproducible (..),
+    Seed (..),
+    ToJSON,
+    logFooter,
+    logHeader,
+    toLogLevel,
+    writeReproduction,
+  )
+import System.IO
+  ( BufferMode (LineBuffering),
+    Handle,
+    IOMode (WriteMode),
+    hClose,
+    hSetBuffering,
+    stderr,
+  )
+import System.Log.FastLogger
+  ( LogStr,
+    fromLogStr,
+  )
+import System.Random.MWC
+  ( createSystemRandom,
+    fromSeed,
+    save,
+  )
 
 -- | Unified way of creating a new section in the log.
 logNewSection :: MonadLogger m => Text -> m ()
@@ -80,20 +83,20 @@ logNewSection s = $(logInfo) $ "== " <> s
 -- | The 'ReaderT' and 'LoggingT' wrapper for ELynx. Prints a header and a
 -- footer, logs to 'stderr' if no file is provided. Initializes the seed if none
 -- is provided. If a log file is provided, log to the file and to 'stderr'.
-eLynxWrapper
-  :: forall a b
-   . (Eq a, Show a, Reproducible a, ToJSON a)
-  => Arguments a
-  -> (Arguments a -> Arguments b)
-  -> ELynx b ()
-  -> IO ()
+eLynxWrapper ::
+  forall a b.
+  (Eq a, Show a, Reproducible a, ToJSON a) =>
+  Arguments a ->
+  (Arguments a -> Arguments b) ->
+  ELynx b () ->
+  IO ()
 eLynxWrapper args f worker = do
   -- Arguments.
   let gArgs = global args
       lArgs = local args
-  let lvl     = toLogLevel $ verbosity gArgs
-      rd      = forceReanalysis gArgs
-      outBn   = outFileBaseName gArgs
+  let lvl = toLogLevel $ verbosity gArgs
+      rd = forceReanalysis gArgs
+      outBn = outFileBaseName gArgs
       logFile = (++ ".log") <$> outBn
   runELynxLoggingT lvl rd logFile $ do
     -- Header.
@@ -101,7 +104,7 @@ eLynxWrapper args f worker = do
     $(logInfo) $ pack $ h ++ "\n"
     -- Fix seed.
     lArgs' <- case getSeed lArgs of
-      Nothing     -> return lArgs
+      Nothing -> return lArgs
       Just Random -> do
         -- XXX: Have to go via a generator here, since creation of seed is not
         -- supported.
@@ -127,20 +130,20 @@ eLynxWrapper args f worker = do
     ftr <- liftIO logFooter
     $(logInfo) $ pack ftr
 
-runELynxLoggingT
-  :: (MonadBaseControl IO m, MonadIO m)
-  => LogLevel
-  -> Force
-  -> Maybe FilePath
-  -> LoggingT m a
-  -> m a
+runELynxLoggingT ::
+  (MonadBaseControl IO m, MonadIO m) =>
+  LogLevel ->
+  Force ->
+  Maybe FilePath ->
+  LoggingT m a ->
+  m a
 runELynxLoggingT lvl _ Nothing =
   runELynxStderrLoggingT . filterLogger (\_ l -> l >= lvl)
 runELynxLoggingT lvl frc (Just fn) =
   runELynxFileLoggingT frc fn . filterLogger (\_ l -> l >= lvl)
 
-runELynxFileLoggingT
-  :: MonadBaseControl IO m => Force -> FilePath -> LoggingT m a -> m a
+runELynxFileLoggingT ::
+  MonadBaseControl IO m => Force -> FilePath -> LoggingT m a -> m a
 runELynxFileLoggingT frc fp logger = do
   h <- liftBase $ openFile' frc fp WriteMode
   liftBase (hSetBuffering h LineBuffering)
@@ -158,4 +161,5 @@ output2H :: Handle -> Handle -> Loc -> LogSource -> LogLevel -> LogStr -> IO ()
 output2H h1 h2 _ _ _ msg = do
   B.hPutStrLn h1 ls
   B.hPutStrLn h2 ls
-  where ls = fromLogStr msg
+  where
+    ls = fromLogStr msg

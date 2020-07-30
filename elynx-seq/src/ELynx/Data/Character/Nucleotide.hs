@@ -1,43 +1,38 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
 
-{- |
-Module      :  ELynx.Data.Nucleotide
-Description :  Nucleotides
-Copyright   :  (c) Dominik Schrempf 2018
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Thu Oct  4 18:26:35 2018.
-
-See header of 'ELynx.Data.Alphabet.Alphabet'.
-
-@
-Symbol  Description  Bases represented  Complement
-------  -----------  -----------------  ----------
-A       Adenine      A                  T
-C       Cytosine        C               G
-G       Guanine            G            C
-T       Thymine               T         A
-@
-
--}
-
+-- |
+-- Module      :  ELynx.Data.Nucleotide
+-- Description :  Nucleotides
+-- Copyright   :  (c) Dominik Schrempf 2018
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Thu Oct  4 18:26:35 2018.
+--
+-- See header of 'ELynx.Data.Alphabet.Alphabet'.
+--
+-- @
+-- Symbol  Description  Bases represented  Complement
+-- ------  -----------  -----------------  ----------
+-- A       Adenine      A                  T
+-- C       Cytosine        C               G
+-- G       Guanine            G            C
+-- T       Thymine               T         A
+-- @
 module ELynx.Data.Character.Nucleotide
-  ( Nucleotide(..)
+  ( Nucleotide (..),
   )
 where
 
-import           Data.Vector.Unboxed.Deriving
-import           Data.Word8
-
-import qualified ELynx.Data.Character.Character
-                                               as C
-import           ELynx.Tools
+import Data.Vector.Unboxed.Deriving
+import Data.Word8
+import qualified ELynx.Data.Character.Character as C
+import ELynx.Tools
 
 -- | Nucleotides.
 data Nucleotide = A | C | G | T
@@ -59,13 +54,14 @@ fromWord w = case w2c w of
   'C' -> C
   'G' -> G
   'T' -> T
-  c   -> error $ "fromWord: Cannot convert " ++ show c ++ " to Nucleotide."
+  c -> error $ "fromWord: Cannot convert " ++ show c ++ " to Nucleotide."
 
-derivingUnbox "Nucleotide"
-    [t| Nucleotide -> Word8 |]
-    [| toWord |]
-    [| fromWord |]
+derivingUnbox
+  "Nucleotide"
+  [t|Nucleotide -> Word8|]
+  [|toWord|]
+  [|fromWord|]
 
 instance C.Character Nucleotide where
-  toWord   = toWord
+  toWord = toWord
   fromWord = fromWord

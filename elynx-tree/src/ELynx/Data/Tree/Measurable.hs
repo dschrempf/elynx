@@ -30,9 +30,9 @@ module ELynx.Data.Tree.Measurable
 where
 
 import Data.Bifoldable
+import Data.Bifunctor
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as L
-import Data.Bifunctor
 import ELynx.Data.Tree.Rooted
 import ELynx.Tools
 import Text.Printf
@@ -61,8 +61,9 @@ apply f l = setLen (f s) l where s = getLen l
 
 -- | Lengthen the stem of a tree.
 applyStem :: Measurable e => (BranchLength -> BranchLength) -> Tree e a -> Tree e a
-applyStem f t = t { branch = apply f b }
-  where b = branch t
+applyStem f t = t {branch = apply f b}
+  where
+    b = branch t
 
 -- | Get the length of the stem of a tree.
 getStem :: Measurable e => Tree e a -> BranchLength
@@ -144,5 +145,5 @@ makeUltrametric t = go 0 t
   where
     h = height t
     go :: Measurable e => BranchLength -> Tree e a -> Tree e a
-    go h' (Node br lb []) = let dh = h - h' - getLen br in Node (apply (+dh) br) lb []
+    go h' (Node br lb []) = let dh = h - h' - getLen br in Node (apply (+ dh) br) lb []
     go h' (Node br lb ts) = let h'' = h' + getLen br in Node br lb $ map (go h'') ts

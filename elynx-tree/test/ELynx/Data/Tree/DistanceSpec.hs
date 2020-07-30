@@ -223,7 +223,6 @@ spec = do
       property $
         prop_dist_same_tree
           (symmetric :: Tree Phylo Double -> Tree Phylo Double -> Either String Int)
-
   describe "incompatibleSplit" $ do
     it "calculates correct distances for sample trees" $ do
       incompatibleSplits multifurcating bifurcatingComp `shouldBe` Right 0
@@ -236,7 +235,6 @@ spec = do
       -- print $ toNewick $ first (const noPL) multifurcating
       incompatibleSplits bifurcatingIncomp multifurcating `shouldBe` Right 2
       incompatibleSplits multifurcating bifurcatingIncomp `shouldBe` Right 2
-
     it "calculates correct distances for sample trees with branch support" $ do
       incompatibleSplits incSplitTree1a incSplitTree2 `shouldBe` Right 2
       incompatibleSplits incSplitTree1b incSplitTree2 `shouldBe` Right 2
@@ -252,7 +250,6 @@ spec = do
       property $
         prop_dist_same_tree
           (incompatibleSplits :: Tree Phylo Double -> Tree Phylo Double -> Either String Int)
-
   describe "branchScore" $ do
     it "calculates correct distances for sample trees" $ do
       manyTrees <- getManyTrees

@@ -53,7 +53,6 @@ shuffleCmd = do
   $(logInfo) $ fromBs $ toNewick tSoft
   -- Check if all branches have a given length. However, the length of the stem is not important.
   let t = hardenPedantic tSoft
-
   -- Check if tree is ultrametric enough.
   let dh = sum $ map (height t -) (distancesOriginLeaves t)
   $(logDebug) $ "Distance in branch length to being ultrametric: " <> tShow dh
@@ -62,21 +61,17 @@ shuffleCmd = do
     $(logInfo)
       "Tree is nearly ultrametric, ignore branch length differences smaller than 2e-4."
   when (dh < eps) $ $(logInfo) "Tree is ultrametric."
-
   let cs = filter (> 0) $ flatten $ C.extend rootHeight t
       ls = map getName $ leaves t
   $(logDebug) $ "Number of coalescent times: " <> tShow (length cs)
   $(logDebug) $ "Number of leaves: " <> tShow (length ls)
   $(logDebug) "The coalescent times are: "
   $(logDebug) $ tShow cs
-
   gen <- case argsSeed l of
     Random -> error "Seed not available; please contact maintainer."
     Fixed s -> liftIO $ initialize s
-
   ts <- liftIO $ shuffleT (nReplicates l) (height t) cs ls gen
   liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . soften) ts
-
   liftIO $ hClose h
 
 shuffleT ::

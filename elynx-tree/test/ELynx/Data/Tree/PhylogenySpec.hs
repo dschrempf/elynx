@@ -98,7 +98,9 @@ prop_roots _ = True
 prop_roots_total_length :: Tree Length a -> Bool
 prop_roots_total_length t@(Node _ _ [_, _]) =
   all (\b -> abs (b - l) < 1e-10) $
-    map totalBranchLength $ either error id $ roots t
+    map totalBranchLength $
+      either error id $
+        roots t
   where
     l = totalBranchLength t
 prop_roots_total_length _ = True
@@ -118,38 +120,37 @@ spec = do
     modifyMaxSize (* 100) $
       it "returns the correct number of rooted trees for arbitrary trees" $
         property (prop_roots :: (Tree () Int -> Bool))
-
   describe "rootAt" $
     modifyMaxSize (* 100) $
-      it "correctly handles simple trees" $ do
-        let p = either error id $ bipartition simpleTree
-        rootAt p simpleTree `shouldBe` Right simpleTree
-        let l = S.singleton "x"
-            r = S.fromList ["y", "z"]
-            p' = either error id $ bp l r
-        either error id (rootAt p' simpleTree) `shouldSatisfy` (`equal` (simpleSol !! 1))
-
+      it "correctly handles simple trees" $
+        do
+          let p = either error id $ bipartition simpleTree
+          rootAt p simpleTree `shouldBe` Right simpleTree
+          let l = S.singleton "x"
+              r = S.fromList ["y", "z"]
+              p' = either error id $ bp l r
+          either error id (rootAt p' simpleTree) `shouldSatisfy` (`equal` (simpleSol !! 1))
   describe "rootsWithBranch" $
     modifyMaxSize (* 100) $
       it "does not change the tree height" $
         property (prop_roots_total_length :: Tree Length Int -> Bool)
 
-  -- -- TODO: Move this test to the executable.
-  -- describe "connect" $
-  --   modifyMaxSize (* 100) $ do
-  --     it "returns the correct number of rooted trees for arbitrary trees" $
-  --       property (prop_connect :: Int -> Tree () Int -> Tree () Int -> Bool)
-  --     it "correctly connects sample trees without and with constraints" $ do
-  --       a <- parseFileWith (oneNewick Standard) "data/ConnectA.tree"
-  --       b <- parseFileWith (oneNewick Standard) "data/ConnectB.tree"
-  --       c <- parseFileWith (someNewick Standard) "data/ConnectConstraints.tree"
-  --       let ts =
-  --             either error id $
-  --               connect "ROOT" (first (const ()) a) (first (const ()) b)
-  --           cs =
-  --             map S.fromList $
-  --               concatMap (multifurcatingGroups . first (const ())) c ::
-  --               [Set ByteString]
-  --           ts' = filter (compatibleWith getName cs) ts
-  --       length ts `shouldBe` 63
-  --       length ts' `shouldBe` 15
+-- -- TODO: Move this test to the executable.
+-- describe "connect" $
+--   modifyMaxSize (* 100) $ do
+--     it "returns the correct number of rooted trees for arbitrary trees" $
+--       property (prop_connect :: Int -> Tree () Int -> Tree () Int -> Bool)
+--     it "correctly connects sample trees without and with constraints" $ do
+--       a <- parseFileWith (oneNewick Standard) "data/ConnectA.tree"
+--       b <- parseFileWith (oneNewick Standard) "data/ConnectB.tree"
+--       c <- parseFileWith (someNewick Standard) "data/ConnectConstraints.tree"
+--       let ts =
+--             either error id $
+--               connect "ROOT" (first (const ()) a) (first (const ()) b)
+--           cs =
+--             map S.fromList $
+--               concatMap (multifurcatingGroups . first (const ())) c ::
+--               [Set ByteString]
+--           ts' = filter (compatibleWith getName cs) ts
+--       length ts `shouldBe` 63
+--       length ts' `shouldBe` 15

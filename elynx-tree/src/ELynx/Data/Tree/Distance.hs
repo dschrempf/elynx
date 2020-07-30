@@ -28,16 +28,17 @@ module ELynx.Data.Tree.Distance
   ( symmetric,
     incompatibleSplits,
     branchScore,
-    -- adjacent,
   )
 where
+
+-- adjacent,
 
 import Data.Bifunctor
 import Data.List
 import qualified Data.Map as M
 import Data.Monoid
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import ELynx.Data.Tree.Bipartition
 import ELynx.Data.Tree.Partition
 import ELynx.Data.Tree.Rooted

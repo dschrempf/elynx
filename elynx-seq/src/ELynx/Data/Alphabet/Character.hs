@@ -1,41 +1,36 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
 
-{- |
-Module      :  ELynx.Data.Alphabet.Character
-Description :  Alphabet characters
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Sun May 19 21:06:38 2019.
-
--}
-
+-- |
+-- Module      :  ELynx.Data.Alphabet.Character
+-- Description :  Alphabet characters
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Sun May 19 21:06:38 2019.
 module ELynx.Data.Alphabet.Character
-  ( Character
-  , toWord
-  , fromWord
-  , toChar
-  , fromChar
-  , toString
-  , fromString
-  , toCVec
-  , fromCVec
+  ( Character,
+    toWord,
+    fromWord,
+    toChar,
+    fromChar,
+    toString,
+    fromString,
+    toCVec,
+    fromCVec,
   )
 where
 
-import qualified Data.Vector.Unboxed           as V
-import           Data.Vector.Unboxed.Deriving
-import           Data.Word8
-
-import qualified ELynx.Data.Character.Character
-                                               as C
-import           ELynx.Tools
+import qualified Data.Vector.Unboxed as V
+import Data.Vector.Unboxed.Deriving
+import Data.Word8
+import qualified ELynx.Data.Character.Character as C
+import ELynx.Tools
 
 -- | Alphabet characters; abstracted so that representation can be changed at
 -- some point.
@@ -74,8 +69,8 @@ toCVec = V.map (C.fromWord . toWord)
 fromCVec :: C.Character a => V.Vector a -> V.Vector Character
 fromCVec = V.map (fromWord . C.toWord)
 
-derivingUnbox "Character"
-    [t| Character -> Word8 |]
-    [| \(Character w) -> w |]
-    [| Character |]
-
+derivingUnbox
+  "Character"
+  [t|Character -> Word8|]
+  [|\(Character w) -> w|]
+  [|Character|]

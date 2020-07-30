@@ -1,48 +1,43 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-{- |
-Description :  Rate matrix helper functions
-Copyright   :  (c) Dominik Schrempf 2017
-License     :  GPLv3
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  non-portable (not tested)
-
-Some helper functions that come handy when working with rate matrices of
-continuous-time discrete-state Markov processes.
-
-* Changelog
-
-To be imported qualified.
-
--}
-
+-- |
+-- Description :  Rate matrix helper functions
+-- Copyright   :  (c) Dominik Schrempf 2017
+-- License     :  GPLv3
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  non-portable (not tested)
+--
+-- Some helper functions that come handy when working with rate matrices of
+-- continuous-time discrete-state Markov processes.
+--
+-- * Changelog
+--
+-- To be imported qualified.
 module ELynx.Data.MarkovProcess.RateMatrix
-  ( RateMatrix
-  , ExchangeabilityMatrix
-  , StationaryDistribution
-  , isValid
-  , normalizeSD
-  , totalRate
-  , totalRateWith
-  , normalize
-  , normalizeWith
-  , setDiagonal
-  , toExchangeabilityMatrix
-  , fromExchangeabilityMatrix
-  , getStationaryDistribution
-  , exchFromListLower
-  , exchFromListUpper
+  ( RateMatrix,
+    ExchangeabilityMatrix,
+    StationaryDistribution,
+    isValid,
+    normalizeSD,
+    totalRate,
+    totalRateWith,
+    normalize,
+    normalizeWith,
+    setDiagonal,
+    toExchangeabilityMatrix,
+    fromExchangeabilityMatrix,
+    getStationaryDistribution,
+    exchFromListLower,
+    exchFromListUpper,
   )
 where
 
-import           Prelude                 hiding ( (<>) )
-
-import           Numeric.LinearAlgebra   hiding ( normalize )
-import           Numeric.SpecFunctions
-
-import           ELynx.Tools
+import ELynx.Tools
+import Numeric.LinearAlgebra hiding (normalize)
+import Numeric.SpecFunctions
+import Prelude hiding ((<>))
 
 -- | A rate matrix is just a real matrix.
 type RateMatrix = Matrix R
@@ -84,19 +79,20 @@ normalizeWith d m = scale (1.0 / totalRateWith d m) m
 -- | Set the diagonal entries of a matrix such that the rows sum to 0.
 setDiagonal :: RateMatrix -> RateMatrix
 setDiagonal m = diagZeroes - diag (fromList rowSums)
- where
-  diagZeroes = matrixSetDiagToZero m
-  rowSums    = map norm_1 $ toRows diagZeroes
+  where
+    diagZeroes = matrixSetDiagToZero m
+    rowSums = map norm_1 $ toRows diagZeroes
 
 -- | Extract the exchangeability matrix from a rate matrix.
-toExchangeabilityMatrix
-  :: RateMatrix -> StationaryDistribution -> ExchangeabilityMatrix
+toExchangeabilityMatrix ::
+  RateMatrix -> StationaryDistribution -> ExchangeabilityMatrix
 toExchangeabilityMatrix m f = m <> diag oneOverF
-  where oneOverF = cmap (1.0 /) f
+  where
+    oneOverF = cmap (1.0 /) f
 
 -- | Convert exchangeability matrix to rate matrix.
-fromExchangeabilityMatrix
-  :: ExchangeabilityMatrix -> StationaryDistribution -> RateMatrix
+fromExchangeabilityMatrix ::
+  ExchangeabilityMatrix -> StationaryDistribution -> RateMatrix
 fromExchangeabilityMatrix em d = setDiagonal $ em <> diag d
 
 -- | Get stationary distribution from 'RateMatrix'. Involves eigendecomposition.
@@ -107,15 +103,17 @@ fromExchangeabilityMatrix em d = setDiagonal $ em <> diag d
 -- Maybe monad, but then the error report is just delayed to the calling
 -- function)?
 getStationaryDistribution :: RateMatrix -> StationaryDistribution
-getStationaryDistribution m = if magnitude (eVals ! i) `nearlyEq` 0
-  then normalizeSumVec 1.0 distReal
-  else error
-    "getStationaryDistribution: Could not retrieve stationary distribution."
- where
-  (eVals, eVecs) = eig (tr m)
-  i              = minIndex eVals
-  distComplex    = toColumns eVecs !! i
-  distReal       = cmap realPart distComplex
+getStationaryDistribution m =
+  if magnitude (eVals ! i) `nearlyEq` 0
+    then normalizeSumVec 1.0 distReal
+    else
+      error
+        "getStationaryDistribution: Could not retrieve stationary distribution."
+  where
+    (eVals, eVecs) = eig (tr m)
+    i = minIndex eVals
+    distComplex = toColumns eVecs !! i
+    distReal = cmap realPart distComplex
 
 -- The next functions tackle the somewhat trivial, but not easily solvable
 -- problem of converting a triangular matrix (excluding the diagonal) given as a
@@ -138,9 +136,8 @@ getStationaryDistribution m = if magnitude (eVals ! i) `nearlyEq` 0
 -- k = (i choose 2) + j.
 ijToKLower :: Int -> Int -> Int
 ijToKLower i j
-  | i > j     = round (i `choose` 2) + j
+  | i > j = round (i `choose` 2) + j
   | otherwise = error "ijToKLower: not defined for upper triangular matrix."
-
 
 -- Upper triangular matrix. Conversion from matrix indices (i,j) to list index
 -- k. Matrix is square of size n.
@@ -157,7 +154,7 @@ ijToKLower i j
 -- k = i*(n-2) - (i choose 2) + (j - 1)
 ijToKUpper :: Int -> Int -> Int -> Int
 ijToKUpper n i j
-  | i < j     = i * (n - 2) - round (i `choose` 2) + j - 1
+  | i < j = i * (n - 2) - round (i `choose` 2) + j - 1
   | otherwise = error "ijToKUpper: not defined for lower triangular matrix."
 
 -- The function is a little weird because HMatrix uses Double indices for Matrix
@@ -167,11 +164,12 @@ fromListBuilderLower es i j
   | i > j = es !! ijToKLower iI jI
   | i == j = 0.0
   | i < j = es !! ijToKLower jI iI
-  | otherwise = error
-    "Float indices could not be compared during matrix creation."
- where
-  iI = round i :: Int
-  jI = round j :: Int
+  | otherwise =
+    error
+      "Float indices could not be compared during matrix creation."
+  where
+    iI = round i :: Int
+    jI = round j :: Int
 
 -- The function is a little weird because HMatrix uses Double indices for Matrix
 -- Double builders.
@@ -180,23 +178,26 @@ fromListBuilderUpper n es i j
   | i < j = es !! ijToKUpper n iI jI
   | i == j = 0.0
   | i > j = es !! ijToKUpper n jI iI
-  | otherwise = error
-    "Float indices could not be compared during matrix creation."
- where
-  iI = round i :: Int
-  jI = round j :: Int
+  | otherwise =
+    error
+      "Float indices could not be compared during matrix creation."
+  where
+    iI = round i :: Int
+    jI = round j :: Int
 
 checkEs :: RealFrac a => Int -> [a] -> [a]
-checkEs n es | length es == nExp = es
-             | otherwise         = error eStr
- where
-  nExp = round (n `choose` 2)
-  eStr = unlines
-    [ "exchFromListlower: the number of exchangeabilities does not match the matrix size"
-    , "matrix size: " ++ show n
-    , "expected number of exchangeabilities: " ++ show nExp
-    , "received number of exchangeabilities: " ++ show (length es)
-    ]
+checkEs n es
+  | length es == nExp = es
+  | otherwise = error eStr
+  where
+    nExp = round (n `choose` 2)
+    eStr =
+      unlines
+        [ "exchFromListlower: the number of exchangeabilities does not match the matrix size",
+          "matrix size: " ++ show n,
+          "expected number of exchangeabilities: " ++ show nExp,
+          "received number of exchangeabilities: " ++ show (length es)
+        ]
 
 -- | Build exchangeability matrix from list denoting lower triangular matrix,
 -- and excluding diagonal. This is how the exchangeabilities are specified in

@@ -11,7 +11,10 @@
 -- Portability :  portable
 --
 -- Creation date: Tue Apr 21 17:13:23 2020.
-module ELynx.Data.Tree.Arbitrary () where
+module ELynx.Data.Tree.Arbitrary
+  (
+  )
+where
 
 import Data.Traversable
 import ELynx.Data.Tree
@@ -32,10 +35,9 @@ instance Arbitrary2 Tree where
         -- Sized is the size of the trees.
         br <- arbB
         val <- arbN
-        pars <- frequency [ (1, pure [1,1]), (3, arbPartition (n - 1))] -- can go negative!
+        pars <- frequency [(1, pure [1, 1]), (3, arbPartition (n - 1))] -- can go negative!
         frst <- for pars $ \i -> resize i go
         return $ Node br val frst
-
       arbPartition :: Int -> Gen [Int]
       arbPartition k = case compare k 1 of
         LT -> pure []

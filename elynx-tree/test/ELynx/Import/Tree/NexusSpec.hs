@@ -20,8 +20,8 @@ import Data.ByteString.Lazy (ByteString)
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick (NewickFormat (..))
 import ELynx.Import.Tree.Nexus
-import Test.Hspec
 import ELynx.Tools
+import Test.Hspec
 
 file :: FilePath
 file = "data/SimpleTree.nex"
@@ -45,6 +45,7 @@ res =
 
 spec :: Spec
 spec = describe "trees" $
-  it "parses a nexus file with a TREES block" $ do
-    ts <- parseFileWith (nexusTrees Standard) file
-    head ts `shouldBe` ("tree1", res)
+  it "parses a nexus file with a TREES block" $
+    do
+      ts <- parseFileWith (nexusTrees Standard) file
+      head ts `shouldBe` ("tree1", res)

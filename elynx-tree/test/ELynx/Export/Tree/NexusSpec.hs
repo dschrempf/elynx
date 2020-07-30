@@ -18,11 +18,11 @@ where
 
 import Data.ByteString.Lazy (ByteString)
 import ELynx.Data.Tree
+import ELynx.Export.Tree.Nexus
 import ELynx.Import.Tree.Newick (NewickFormat (..))
 import ELynx.Import.Tree.Nexus
-import ELynx.Export.Tree.Nexus
-import Test.Hspec
 import ELynx.Tools
+import Test.Hspec
 
 tree :: Tree Phylo ByteString
 tree =
@@ -40,6 +40,7 @@ tree =
 
 spec :: Spec
 spec = describe "toNexusTrees" $
-  it "exports a nexus file with a TREES block" $ do
-    let ts = parseByteStringWith "NexusTrees" (nexusTrees Standard) (toNexusTrees [("tree1", tree)])
-    head ts `shouldBe` ("tree1", tree)
+  it "exports a nexus file with a TREES block" $
+    do
+      let ts = parseByteStringWith "NexusTrees" (nexusTrees Standard) (toNexusTrees [("tree1", tree)])
+      head ts `shouldBe` ("tree1", tree)

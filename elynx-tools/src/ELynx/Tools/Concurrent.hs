@@ -1,43 +1,41 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{- |
-Module      :  ELynx.Tools.Concurrent
-Description :  Tools for concurrent random calculations
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
 
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Tue May  7 10:33:24 2019.
-
--}
-
+-- |
+-- Module      :  ELynx.Tools.Concurrent
+-- Description :  Tools for concurrent random calculations
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Tue May  7 10:33:24 2019.
 module ELynx.Tools.Concurrent
-  (
-    -- * MWC
-    splitGen
+  ( -- * MWC
+    splitGen,
+
     -- * Concurrent calculations
-  , parComp
-  , getChunks
+    parComp,
+    getChunks,
   )
 where
 
-import           Control.Concurrent
-import           Control.Concurrent.Async
-import           Control.Monad
-import           Control.Monad.Primitive
-import qualified Data.Vector                   as V
-import           Data.Word
-import           System.Random.MWC
+import Control.Concurrent
+import Control.Concurrent.Async
+import Control.Monad
+import Control.Monad.Primitive
+import qualified Data.Vector as V
+import Data.Word
+import System.Random.MWC
 
 -- | Split a generator.
 splitGen :: PrimMonad m => Int -> Gen (PrimState m) -> m [Gen (PrimState m)]
 splitGen n gen
   | n <= 0 = return []
   | otherwise = do
-    seeds :: [V.Vector Word32] <- replicateM (n-1) $ uniformVector gen 256
-    fmap (gen:) (mapM initialize seeds)
+    seeds :: [V.Vector Word32] <- replicateM (n -1) $ uniformVector gen 256
+    fmap (gen :) (mapM initialize seeds)
 
 -- -- XXX: This just doesn't work... The only thing I found:
 -- -- https://stackoverflow.com/a/16250010.
@@ -62,7 +60,7 @@ parComp num fun gen = do
 -- to the number of calculations.
 getChunks :: Int -> Int -> [Int]
 getChunks c n = ns
- where
-  n' = n `div` c
-  r  = n `mod` c
-  ns = replicate r (n' + 1) ++ replicate (c - r) n'
+  where
+    n' = n `div` c
+    r = n `mod` c
+    ns = replicate r (n' + 1) ++ replicate (c - r) n'

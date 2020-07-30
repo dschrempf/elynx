@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
+
 -- |
 -- Description :  Analyze trees
 -- Copyright   :  (c) Dominik Schrempf 2020
@@ -10,7 +11,6 @@
 -- Portability :  portable
 --
 -- Creation date: Fri May 24 13:47:56 2019.
-
 module TLynx.Examine.Examine
   ( examine,
   )

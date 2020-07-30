@@ -1,34 +1,29 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TemplateHaskell #-}
 
-{- |
-Module      :  Analyze.Analyze
-Description :  Parse sequence file formats and analyze them
-Copyright   :  (c) Dominik Schrempf 2018
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Fri Oct  5 08:41:05 2018.
-
--}
-
+-- |
+-- Module      :  Analyze.Analyze
+-- Description :  Parse sequence file formats and analyze them
+-- Copyright   :  (c) Dominik Schrempf 2018
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Fri Oct  5 08:41:05 2018.
 module SLynx.Concatenate.Concatenate
-  ( concatenateCmd
+  ( concatenateCmd,
   )
 where
 
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader     ( ask )
-
-import           SLynx.Concatenate.Options
-import           SLynx.Tools
-
-import qualified ELynx.Data.Sequence.Sequence  as S
-import           ELynx.Export.Sequence.Fasta
-import           ELynx.Tools
+import Control.Monad.Logger
+import Control.Monad.Trans.Reader (ask)
+import qualified ELynx.Data.Sequence.Sequence as S
+import ELynx.Export.Sequence.Fasta
+import ELynx.Tools
+import SLynx.Concatenate.Options
+import SLynx.Tools
 
 -- | Concatenate sequences.
 concatenateCmd :: ELynx ConcatenateArguments ()

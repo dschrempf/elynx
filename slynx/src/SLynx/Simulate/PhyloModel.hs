@@ -1,51 +1,46 @@
-{- |
-Module      :  SLynx.Simulate.PhyloModel
-Description :  Parse and interpret the model string
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Fri Feb  1 13:32:16 2019.
-
--}
-
+-- |
+-- Module      :  SLynx.Simulate.PhyloModel
+-- Description :  Parse and interpret the model string
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Fri Feb  1 13:32:16 2019.
 module SLynx.Simulate.PhyloModel
-  ( getPhyloModel
+  ( getPhyloModel,
   )
 where
 
-import           Control.Monad                  ( when )
-import qualified Data.ByteString.Lazy.Char8    as L
-import           Data.Either                    ( rights )
-import           Data.List.NonEmpty             ( fromList )
-import           Data.Maybe
-import           Data.Scientific         hiding ( scientific )
-import           Data.Void
-import           Data.Word                      ( Word8 )
-import           Numeric.LinearAlgebra          ( norm_1
-                                                , size
-                                                , vector
-                                                )
-import           Text.Megaparsec
-import           Text.Megaparsec.Byte
-import           Text.Megaparsec.Byte.Lexer
-
-import           ELynx.Data.MarkovProcess.AminoAcid
-import           ELynx.Data.MarkovProcess.CXXModels
-import qualified ELynx.Data.MarkovProcess.MixtureModel
-                                               as M
-import           ELynx.Data.MarkovProcess.Nucleotide
-import qualified ELynx.Data.MarkovProcess.PhyloModel
-                                               as P
-import           ELynx.Data.MarkovProcess.RateMatrix
-import qualified ELynx.Data.MarkovProcess.SubstitutionModel
-                                               as S
-import           ELynx.Import.MarkovProcess.EDMModelPhylobayes
-                                                ( EDMComponent )
-import           ELynx.Tools
+import Control.Monad (when)
+import qualified Data.ByteString.Lazy.Char8 as L
+import Data.Either (rights)
+import Data.List.NonEmpty (fromList)
+import Data.Maybe
+import Data.Scientific hiding (scientific)
+import Data.Void
+import Data.Word (Word8)
+import ELynx.Data.MarkovProcess.AminoAcid
+import ELynx.Data.MarkovProcess.CXXModels
+import qualified ELynx.Data.MarkovProcess.MixtureModel as M
+import ELynx.Data.MarkovProcess.Nucleotide
+import qualified ELynx.Data.MarkovProcess.PhyloModel as P
+import ELynx.Data.MarkovProcess.RateMatrix
+import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
+import ELynx.Import.MarkovProcess.EDMModelPhylobayes
+  ( EDMComponent,
+  )
+import ELynx.Tools
+import Numeric.LinearAlgebra
+  ( norm_1,
+    size,
+    vector,
+  )
+import Text.Megaparsec
+import Text.Megaparsec.Byte
+import Text.Megaparsec.Byte.Lexer
 
 type Parser = Parsec Void L.ByteString
 
@@ -85,48 +80,56 @@ separator :: Word8
 separator = c2w ','
 
 name :: Parser String
-name = L.unpack <$> takeWhile1P
-  (Just "Model name")
-  (`notElem` [paramsStart, paramsEnd, sdStart, sdEnd, mmStart, mmEnd, separator]
-  )
+name =
+  L.unpack
+    <$> takeWhile1P
+      (Just "Model name")
+      ( `notElem` [paramsStart, paramsEnd, sdStart, sdEnd, mmStart, mmEnd, separator]
+      )
 
 params :: Parser [Double]
-params = map toRealFloat <$> between (char paramsStart)
-                                     (char paramsEnd)
-                                     (sepBy1 scientific (char separator))
+params =
+  map toRealFloat
+    <$> between
+      (char paramsStart)
+      (char paramsEnd)
+      (sepBy1 scientific (char separator))
 
 stationaryDistribution :: Parser StationaryDistribution
 stationaryDistribution = do
-  f <- vector . map toRealFloat <$> between
-    (char sdStart)
-    (char sdEnd)
-    (sepBy1 scientific (char separator))
+  f <-
+    vector . map toRealFloat
+      <$> between
+        (char sdStart)
+        (char sdEnd)
+        (sepBy1 scientific (char separator))
   if nearlyEq (norm_1 f) 1.0
     then return f
     else
-      error
-      $  "Sum of stationary distribution is "
-      ++ show (norm_1 f)
-      ++ " but should be 1.0."
+      error $
+        "Sum of stationary distribution is "
+          ++ show (norm_1 f)
+          ++ " but should be 1.0."
 
 assertLength :: StationaryDistribution -> Int -> a -> a
-assertLength d n r = if size d /= n
-  then
-    error
-    $  "Length of stationary distribution is "
-    ++ show (size d)
-    ++ " but should be "
-    ++ show n
-    ++ "."
-  else r
+assertLength d n r =
+  if size d /= n
+    then
+      error $
+        "Length of stationary distribution is "
+          ++ show (size d)
+          ++ " but should be "
+          ++ show n
+          ++ "."
+    else r
 
 -- This is the main function that connects the model string, the parameters and
 -- the stationary distribution. It should check that the model is valid.
-assembleSubstitutionModel
-  :: String
-  -> Maybe S.Params
-  -> Maybe StationaryDistribution
-  -> Either String S.SubstitutionModel
+assembleSubstitutionModel ::
+  String ->
+  Maybe S.Params ->
+  Maybe StationaryDistribution ->
+  Either String S.SubstitutionModel
 -- DNA models.
 assembleSubstitutionModel "JC" Nothing Nothing = Right jc
 assembleSubstitutionModel "F81" Nothing (Just d) =
@@ -148,41 +151,44 @@ assembleSubstitutionModel "WAG-Custom" Nothing (Just d) =
 assembleSubstitutionModel "GTR20" (Just es) (Just d) =
   Right $ assertLength d nAA $ gtr20 es d
 -- Ohterwisse, we cannot assemble the model.
-assembleSubstitutionModel n mps mf = Left $ unlines
-  [ "Cannot assemble substitution model."
-  , "Name: " ++ show n
-  , "Parameters: " ++ show mps
-  , "Stationary distribution: " ++ show mf
-  ]
+assembleSubstitutionModel n mps mf =
+  Left $
+    unlines
+      [ "Cannot assemble substitution model.",
+        "Name: " ++ show n,
+        "Parameters: " ++ show mps,
+        "Stationary distribution: " ++ show mf
+      ]
 
 parseSubstitutionModel :: Parser S.SubstitutionModel
 parseSubstitutionModel = do
-  n   <- name
+  n <- name
   mps <- optional params
-  mf  <- optional stationaryDistribution
+  mf <- optional stationaryDistribution
   let esm = assembleSubstitutionModel n mps mf
   case esm of
-    Left  err -> fail err
-    Right sm  -> return sm
+    Left err -> fail err
+    Right sm -> return sm
 
 edmModel :: [EDMComponent] -> Maybe [M.Weight] -> Parser M.MixtureModel
 edmModel cs mws = do
-  _   <- chunk (bs "EDM")
-  _   <- char mmStart
-  n   <- name
+  _ <- chunk (bs "EDM")
+  _ <- char mmStart
+  n <- name
   mps <- optional params
-  _   <- char mmEnd
+  _ <- char mmEnd
   when (null cs) $ error "edmModel: no EDM components given."
-  let sms     = map (\c -> assembleSubstitutionModel n mps (Just $ snd c)) cs
+  let sms = map (\c -> assembleSubstitutionModel n mps (Just $ snd c)) cs
       edmName = "EDM" ++ show (length cs)
-      ws      = fromMaybe (map fst cs) mws
-      errs    = [ e | (Left e) <- sms ]
-  when (length sms /= length ws)
-    $ error "edmModel: number of substitution models and weights differs."
+      ws = fromMaybe (map fst cs) mws
+      errs = [e | (Left e) <- sms]
+  when (length sms /= length ws) $
+    error "edmModel: number of substitution models and weights differs."
   if not $ null errs
     then fail $ head errs
-    else return
-      $ M.fromSubstitutionModels edmName (fromList ws) (fromList $ rights sms)
+    else
+      return $
+        M.fromSubstitutionModels edmName (fromList ws) (fromList $ rights sms)
 
 cxxModel :: Maybe [M.Weight] -> Parser M.MixtureModel
 cxxModel mws = do
@@ -192,15 +198,15 @@ cxxModel mws = do
 
 standardMixtureModel :: [M.Weight] -> Parser M.MixtureModel
 standardMixtureModel ws = do
-  _   <- chunk (bs "MIXTURE")
-  _   <- char mmStart
+  _ <- chunk (bs "MIXTURE")
+  _ <- char mmStart
   sms <- parseSubstitutionModel `sepBy1` char separator
-  _   <- char mmEnd
+  _ <- char mmEnd
   -- XXX: The use of `Data.List.NonEmpty.fromList` leads to uninformative error messages.
   return $ M.fromSubstitutionModels "MIXTURE" (fromList ws) (fromList sms)
 
-mixtureModel
-  :: Maybe [EDMComponent] -> Maybe [M.Weight] -> Parser M.MixtureModel
+mixtureModel ::
+  Maybe [EDMComponent] -> Maybe [M.Weight] -> Parser M.MixtureModel
 mixtureModel Nothing Nothing =
   try (cxxModel Nothing) <|> fail "No weights provided."
 mixtureModel Nothing mws@(Just ws) =
@@ -214,25 +220,31 @@ mixtureModel (Just cs) mws = edmModel cs mws
 -- @
 -- getPhyloModel maybeSubstitutionModelString maybeMixtureModelString maybeEDMComponents
 -- @
-getPhyloModel
-  :: Maybe String
-  -> Maybe String
-  -> Maybe [M.Weight]
-  -> Maybe [EDMComponent]
-  -> Either String P.PhyloModel
+getPhyloModel ::
+  Maybe String ->
+  Maybe String ->
+  Maybe [M.Weight] ->
+  Maybe [EDMComponent] ->
+  Either String P.PhyloModel
 getPhyloModel Nothing Nothing _ _ = Left "No model was given. See help."
 getPhyloModel (Just _) (Just _) _ _ =
   Left "Both, substitution and mixture model string given; use only one."
 getPhyloModel (Just s) Nothing Nothing Nothing =
-  Right $ P.SubstitutionModel $ parseStringWith "Substitution model string"
-                                                parseSubstitutionModel
-                                                s
+  Right $
+    P.SubstitutionModel $
+      parseStringWith
+        "Substitution model string"
+        parseSubstitutionModel
+        s
 getPhyloModel (Just _) Nothing (Just _) _ =
   Left "Weights given; but cannot be used with substitution model."
 getPhyloModel (Just _) Nothing _ (Just _) =
   Left
     "Empirical distribution mixture model components given; but cannot be used with substitution model."
 getPhyloModel Nothing (Just m) mws mcs =
-  Right $ P.MixtureModel $ parseStringWith "Mixture model string"
-                                           (mixtureModel mcs mws)
-                                           m
+  Right $
+    P.MixtureModel $
+      parseStringWith
+        "Mixture model string"
+        (mixtureModel mcs mws)
+        m

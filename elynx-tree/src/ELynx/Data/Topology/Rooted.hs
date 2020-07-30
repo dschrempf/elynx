@@ -1,5 +1,5 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 -- |
 -- Module      :  ELynx.Data.Topology.Rooted
@@ -173,8 +173,8 @@ dropLeavesWith p (Leaf lb)
 dropLeavesWith p (Node ts) =
   if null ts'
     then Nothing
-    -- XXX: May be slow, unnecessary conversion to and from list.
-    else Just $ Node $ N.fromList ts'
+    else -- XXX: May be slow, unnecessary conversion to and from list.
+      Just $ Node $ N.fromList ts'
   where
     ts' = catMaybes $ N.toList $ fmap (dropLeavesWith p) ts
 
@@ -184,8 +184,7 @@ dropLeavesWith p (Node ts) =
 zipTreesWith :: (a1 -> a2 -> a) -> Topology a1 -> Topology a2 -> Maybe (Topology a)
 zipTreesWith f (Node tsL) (Node tsR) =
   if N.length tsL == N.length tsR
-    then
-      -- XXX: May be slow, unnecessary conversion to and from list.
+    then -- XXX: May be slow, unnecessary conversion to and from list.
       zipWithM (zipTreesWith f) (N.toList tsL) (N.toList tsR) >>= Just . Node . N.fromList
     else Nothing
 zipTreesWith f (Leaf lbL) (Leaf lbR) = Just $ Leaf $ f lbL lbR

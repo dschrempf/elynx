@@ -35,16 +35,19 @@ ex2 = Node () 0 [Node () 1 [], Node () 2 [], Node () 0 [Node () 3 [], Node () 4 
 
 sol2 :: Set (Partition Int)
 sol2 =
-  fromList [mpUnsafe [fromList [1], fromList [2], fromList [3, 4], fromList [5]],
-            mpUnsafe [fromList [1,2,5], fromList [3], fromList [4]]]
+  fromList
+    [ mpUnsafe [fromList [1], fromList [2], fromList [3, 4], fromList [5]],
+      mpUnsafe [fromList [1, 2, 5], fromList [3], fromList [4]]
+    ]
 
 spec :: Spec
 spec = describe "partitions" $
-  it "calculates correct partitions for a sample tree" $ do
-    -- t <- removeBrInfo <$> getMultifurcatingTree
-    -- print $ partitions ex1
-    partitions ex1 `shouldBe` Right sol1
-    partitions ex2 `shouldBe` Right sol2
+  it "calculates correct partitions for a sample tree" $
+    do
+      -- t <- removeBrInfo <$> getMultifurcatingTree
+      -- print $ partitions ex1
+      partitions ex1 `shouldBe` Right sol1
+      partitions ex2 `shouldBe` Right sol2
 
 -- it "is empty for a collection of random bifurcating trees"
 --   $ property (prop_bifurcating_tree :: Tree (PhyloLabel Double) -> Bool)

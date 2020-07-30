@@ -30,4 +30,4 @@ class Splittable e where
 --   split = id
 
 instance Splittable Double where
-  split = (/2)
+  split = (/ 2)

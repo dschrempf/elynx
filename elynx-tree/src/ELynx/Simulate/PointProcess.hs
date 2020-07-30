@@ -33,8 +33,8 @@ import Data.List (mapAccumL)
 import Data.Sequence (Seq)
 import qualified Data.Sequence as S
 import ELynx.Data.Tree.Measurable
-import ELynx.Data.Tree.Rooted
 import ELynx.Data.Tree.Phylogeny
+import ELynx.Data.Tree.Rooted
 import ELynx.Distribution.BirthDeath
 import ELynx.Distribution.BirthDeathCritical
 import ELynx.Distribution.BirthDeathCriticalNoTime
@@ -259,8 +259,8 @@ toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
     !hr = hs `S.index` (i + 1)
     !dvl = v - hl
     !dvr = v - hr
-    !tl = applyStem (+dvl) $ trs `S.index` i
-    !tr = applyStem (+dvr) $ trs `S.index` (i + 1)
+    !tl = applyStem (+ dvl) $ trs `S.index` i
+    !tr = applyStem (+ dvr) $ trs `S.index` (i + 1)
     !h' = hl + dvl -- Should be the same as 'hr + dvr'.
     !tm = Node (Length 0) l [tl, tr]
     !trs'' = (S.take i trs S.|> tm) S.>< S.drop (i + 2) trs

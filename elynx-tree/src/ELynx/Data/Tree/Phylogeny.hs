@@ -76,8 +76,8 @@ import ELynx.Data.Tree.Bipartition
 import ELynx.Data.Tree.Measurable
 import ELynx.Data.Tree.Rooted
 import ELynx.Data.Tree.Splittable
-import GHC.Generics
 import ELynx.Data.Tree.Supported
+import GHC.Generics
 
 -- | The equality check is slow because the order of children is considered to
 -- be arbitrary.
@@ -395,7 +395,9 @@ phyloToSupportTree t =
   maybe
     (Left "phyloToSupportTree: Support unavailable for some branches.")
     Right
-    $ bitraverse toSupport pure $ cleanLeafSupport m $ cleanRootSupport m t
+    $ bitraverse toSupport pure $
+      cleanLeafSupport m $
+        cleanRootSupport m t
   where
     m = getMaxSupport t
 

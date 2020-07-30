@@ -23,9 +23,9 @@ import Data.ByteString.Lazy.Builder (Builder)
 import qualified Data.ByteString.Lazy.Builder as L
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.List (intersperse)
-import ELynx.Data.Tree.Rooted
-import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Named
+import ELynx.Data.Tree.Phylogeny
+import ELynx.Data.Tree.Rooted
 import ELynx.Tools
 
 toNewickBuilder :: Named a => Tree Phylo a -> Builder

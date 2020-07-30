@@ -1,37 +1,32 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TemplateHaskell #-}
 
-{- |
-Module      :  Analyze.Analyze
-Description :  Parse sequence file formats and analyze them
-Copyright   :  (c) Dominik Schrempf 2018
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Fri Oct  5 08:41:05 2018.
-
--}
-
+-- |
+-- Module      :  Analyze.Analyze
+-- Description :  Parse sequence file formats and analyze them
+-- Copyright   :  (c) Dominik Schrempf 2018
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Fri Oct  5 08:41:05 2018.
 module SLynx.Translate.Translate
-  ( translateCmd
+  ( translateCmd,
   )
 where
 
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Reader     ( ask )
-import qualified Data.Text                     as T
-
-import           SLynx.Tools
-import           SLynx.Translate.Options
-
-import           ELynx.Data.Character.Codon
-import           ELynx.Data.Sequence.Sequence
-import           ELynx.Data.Sequence.Translate
-import           ELynx.Export.Sequence.Fasta
-import           ELynx.Tools
+import Control.Monad.Logger
+import Control.Monad.Trans.Reader (ask)
+import qualified Data.Text as T
+import ELynx.Data.Character.Codon
+import ELynx.Data.Sequence.Sequence
+import ELynx.Data.Sequence.Translate
+import ELynx.Export.Sequence.Fasta
+import ELynx.Tools
+import SLynx.Tools
+import SLynx.Translate.Options
 
 translateSeqs :: Int -> UniversalCode -> [Sequence] -> [Sequence]
 translateSeqs rf uc = map (translateSeq uc rf)

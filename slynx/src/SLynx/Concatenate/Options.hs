@@ -1,37 +1,33 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-{- |
-Module      :  SLynx.Concatenate.Options
-Description :  ELynxSeq argument parsing
-Copyright   :  (c) Dominik Schrempf 2018
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Sun Oct  7 17:29:45 2018.
-
--}
-
+-- |
+-- Module      :  SLynx.Concatenate.Options
+-- Description :  ELynxSeq argument parsing
+-- Copyright   :  (c) Dominik Schrempf 2018
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Sun Oct  7 17:29:45 2018.
 module SLynx.Concatenate.Options
-  ( ConcatenateArguments(..)
-  , concatenateArguments
+  ( ConcatenateArguments (..),
+    concatenateArguments,
   )
 where
 
-import           Control.Applicative
-import           Options.Applicative
-
-import           SLynx.Tools
-
-import           ELynx.Data.Alphabet.Alphabet
-import           ELynx.Tools
+import Control.Applicative
+import ELynx.Data.Alphabet.Alphabet
+import ELynx.Tools
+import Options.Applicative
+import SLynx.Tools
 
 -- | Arguments needed to concatenate multi sequence alignments.
 data ConcatenateArguments = ConcatenateArguments
-    { ccAlphabet :: Alphabet
-    , ccInFiles  :: [FilePath] }
+  { ccAlphabet :: Alphabet,
+    ccInFiles :: [FilePath]
+  }
   deriving (Eq, Show, Generic)
 
 instance Reproducible ConcatenateArguments where
@@ -39,9 +35,9 @@ instance Reproducible ConcatenateArguments where
   outSuffixes _ = [".fasta"]
   getSeed _ = Nothing
   setSeed = const
-  parser  = concatenateArguments
+  parser = concatenateArguments
   cmdName = "concatenate"
-  cmdDsc  = ["Concatenate sequences found in input files."]
+  cmdDsc = ["Concatenate sequences found in input files."]
 
 instance FromJSON ConcatenateArguments
 

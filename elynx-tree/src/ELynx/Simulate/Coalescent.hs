@@ -16,8 +16,8 @@ where
 
 import Control.Monad.Primitive
 import ELynx.Data.Tree.Measurable
-import ELynx.Data.Tree.Rooted
 import ELynx.Data.Tree.Phylogeny
+import ELynx.Data.Tree.Rooted
 import ELynx.Distribution.CoalescentContinuous
 import Statistics.Distribution
 import System.Random.MWC
@@ -50,7 +50,7 @@ simulate' n a trs g
     i <- uniformR (1, n - 1) g
     -- The time of the coalescent event.
     t <- genContVar (coalescentDistributionCont n) g
-    let trs' = map (applyStem (+t)) trs -- Move time 't' up on the tree.
+    let trs' = map (applyStem (+ t)) trs -- Move time 't' up on the tree.
         tl = trs' !! (i - 1)
         tr = trs' !! i
         -- Join the two chosen trees.

@@ -1,48 +1,46 @@
-{- |
-Module      :  Character
-Description :  Character interface
-Copyright   :  (c) Dominik Schrempf 2018
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-Portability :  portable
-
-Creation date: Fri Oct 12 16:24:02 2018.
-
-See header of 'ELynx.Data.Alphabet.Alphabet'.
-
--}
-
+-- |
+-- Module      :  Character
+-- Description :  Character interface
+-- Copyright   :  (c) Dominik Schrempf 2018
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+-- Portability :  portable
+--
+-- Creation date: Fri Oct 12 16:24:02 2018.
+--
+-- See header of 'ELynx.Data.Alphabet.Alphabet'.
 module ELynx.Data.Character.Character
-  ( Character(..)
-  , fromChar
-  , toChar
-  , fromString
-  , toString
-  , CharacterX(..)
-  , isGap
-  , CharacterI(..)
-  , isUnknown
-  , isIUPAC
-  , isStandard
-  , convert
+  ( Character (..),
+    fromChar,
+    toChar,
+    fromString,
+    toString,
+    CharacterX (..),
+    isGap,
+    CharacterI (..),
+    isUnknown,
+    isIUPAC,
+    isStandard,
+    convert,
   )
 where
 
-import qualified Data.Set                      as S
-import           Data.Vector.Unboxed.Base       ( Unbox )
-import           Data.Word8                     ( Word8 )
-
-import           ELynx.Tools
+import qualified Data.Set as S
+import Data.Vector.Unboxed.Base (Unbox)
+import Data.Word8 (Word8)
+import ELynx.Tools
 
 -- XXX: Remove name clash with ELynx.Data.Alphabet.Alphabet.Character?
+
 -- | A set of characters forms an 'ELynx.Data.Alphabet.Alphabet'. At the
 -- moment, 'Word8' is used, since none of the alphabets has more than 255
 -- characters.
 class (Show a, Read a, Eq a, Ord a, Enum a, Bounded a, Unbox a) => Character a where
   -- | Write characters.
-  toWord   :: a -> Word8
+  toWord :: a -> Word8
+
   -- | Read characters.
   fromWord :: Word8 -> a
 
@@ -64,7 +62,7 @@ fromString = map fromChar
 
 -- | An extended character type with gaps and unknowns.
 class Character a => CharacterX a where
-  gap     :: a
+  gap :: a
 
 -- | Is the character a gap or unknown?
 isGap :: CharacterX a => a -> Bool
@@ -72,8 +70,8 @@ isGap c = c == gap
 
 -- | IUPAC characters with a mapping to extended characters.
 class CharacterX a => CharacterI a where
-  unknown    :: a
-  iupac      :: [a]
+  unknown :: a
+  iupac :: [a]
   toStandard :: a -> [a]
 
 -- | Check if a IUPAC 'CharacterI' is unknown (e.g., N for nucleotides).

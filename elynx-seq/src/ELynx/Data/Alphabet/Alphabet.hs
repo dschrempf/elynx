@@ -1,62 +1,65 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-{- |
-Module      :  ELynx.Data.Alphabet.Alphabet
-Description :  Alphabets store hereditary information
-Copyright   :  (c) Dominik Schrempf 2020
-License     :  GPL-3.0-or-later
-
-Maintainer  :  dominik.schrempf@gmail.com
-Stability   :  unstable
-
-Portability :  portable
-
-Creation date: Fri May 10 11:10:32 2019.
-
-Hierarchy:
-
-1. 'Character' type.
-
-2. Sets of 'Character's form 'Alphabet's; each 'Alphabet' has a specification
-'AlphabetSpec'.
-
-New alphabets have to be added manually in this module.
-
-This way of handling characters and alphabets IS NOT TYPE SAFE, but much, much
-faster. A second layer of modules such as 'ELynx.Data.Character.Nucleotide'
-depend on a 'ELynx.Data.Character.Character.Character' type class. Hence, they
-provide a type safe way of handling alphabets. Conversion is possible, for
-instance, with 'ELynx.Data.Alphabet.Character.fromCVec', and
-'ELynx.Data.Alphabet.Character.toCVec'.
-
--}
-
+-- |
+-- Module      :  ELynx.Data.Alphabet.Alphabet
+-- Description :  Alphabets store hereditary information
+-- Copyright   :  (c) Dominik Schrempf 2020
+-- License     :  GPL-3.0-or-later
+--
+-- Maintainer  :  dominik.schrempf@gmail.com
+-- Stability   :  unstable
+--
+-- Portability :  portable
+--
+-- Creation date: Fri May 10 11:10:32 2019.
+--
+-- Hierarchy:
+--
+-- 1. 'Character' type.
+--
+-- 2. Sets of 'Character's form 'Alphabet's; each 'Alphabet' has a specification
+-- 'AlphabetSpec'.
+--
+-- New alphabets have to be added manually in this module.
+--
+-- This way of handling characters and alphabets IS NOT TYPE SAFE, but much, much
+-- faster. A second layer of modules such as 'ELynx.Data.Character.Nucleotide'
+-- depend on a 'ELynx.Data.Character.Character.Character' type class. Hence, they
+-- provide a type safe way of handling alphabets. Conversion is possible, for
+-- instance, with 'ELynx.Data.Alphabet.Character.fromCVec', and
+-- 'ELynx.Data.Alphabet.Character.toCVec'.
 module ELynx.Data.Alphabet.Alphabet
-  ( Alphabet(..)
-  , AlphabetSpec(..)
-  , alphabetSpec
-  , alphabetDescription
-  , isStd
-  , isGap
-  , isUnknown
-  , isIUPAC
-  , isMember
+  ( Alphabet (..),
+    AlphabetSpec (..),
+    alphabetSpec,
+    alphabetDescription,
+    isStd,
+    isGap,
+    isUnknown,
+    isIUPAC,
+    isMember,
   )
 where
 
-import qualified Data.Set                      as S
-import           Prelude                 hiding ( all )
-import           Data.Aeson                     ( FromJSON
-                                                , ToJSON
-                                                )
-import           GHC.Generics                   ( Generic )
-
-import           ELynx.Data.Alphabet.Character
+import Data.Aeson
+  ( FromJSON,
+    ToJSON,
+  )
+import qualified Data.Set as S
+import ELynx.Data.Alphabet.Character
+import GHC.Generics (Generic)
+import Prelude hiding (all)
 
 -- | Available alphabets; for details see 'alphabetSpec'.
-data Alphabet = DNA | DNAX | DNAI
-              | Protein | ProteinX | ProteinS | ProteinI
-              deriving (Show, Read, Eq, Ord, Enum, Bounded, Generic)
+data Alphabet
+  = DNA
+  | DNAX
+  | DNAI
+  | Protein
+  | ProteinX
+  | ProteinS
+  | ProteinI
+  deriving (Show, Read, Eq, Ord, Enum, Bounded, Generic)
 
 instance FromJSON Alphabet
 
@@ -64,11 +67,11 @@ instance ToJSON Alphabet
 
 -- | Verbose alphabet name.
 alphabetDescription :: Alphabet -> String
-alphabetDescription DNA  = "DNA (nucleotides)"
+alphabetDescription DNA = "DNA (nucleotides)"
 alphabetDescription DNAX = "DNAX (nucleotides; including gaps)"
 alphabetDescription DNAI =
   "DNAI (nucleotides; including gaps, and IUPAC codes)"
-alphabetDescription Protein  = "Protein (amino acids)"
+alphabetDescription Protein = "Protein (amino acids)"
 alphabetDescription ProteinX = "ProteinX (amino acids; including gaps)"
 alphabetDescription ProteinS =
   "ProteinS (amino acids; including gaps, and translation stops)"
@@ -76,43 +79,45 @@ alphabetDescription ProteinI =
   "ProteinI (amino acids; including gaps, translation stops, and IUPAC codes)"
 
 -- | Alphabet specification. 'S.Set' is used because it provides fast lookups.
-data AlphabetSpec = AlphabetSpec {
-  -- | Standard characters.
-  std       :: !(S.Set Character)
-  -- | Gap characters.
-  , gap     :: !(S.Set Character)
-  -- | Unknown characters.
-  , unknown :: !(S.Set Character)
-  -- | Other IUPAC codes.
-  , iupac   :: !(S.Set Character)
-  -- | All characters in the alphabet.
-  , all     :: !(S.Set Character)
-  -- | Convert from IUPAC to the corresponding standard characters.
-  , toStd   :: Character -> [Character]
+data AlphabetSpec = AlphabetSpec
+  { -- | Standard characters.
+    std :: !(S.Set Character),
+    -- | Gap characters.
+    gap :: !(S.Set Character),
+    -- | Unknown characters.
+    unknown :: !(S.Set Character),
+    -- | Other IUPAC codes.
+    iupac :: !(S.Set Character),
+    -- | All characters in the alphabet.
+    all :: !(S.Set Character),
+    -- | Convert from IUPAC to the corresponding standard characters.
+    toStd :: Character -> [Character]
   }
 
 -- Create alphabet spec.
-fromChars
-  :: String -> String -> String -> String -> (Char -> String) -> AlphabetSpec
-fromChars st ga un iu to = AlphabetSpec st'
-                                        ga'
-                                        un'
-                                        iu'
-                                        al
-                                        (fromString . to . toChar)
- where
-  st' = S.fromList $ fromString st
-  ga' = S.fromList $ fromString ga
-  un' = S.fromList $ fromString un
-  iu' = S.fromList $ fromString iu
-  al  = S.unions [st', ga', un', iu']
+fromChars ::
+  String -> String -> String -> String -> (Char -> String) -> AlphabetSpec
+fromChars st ga un iu to =
+  AlphabetSpec
+    st'
+    ga'
+    un'
+    iu'
+    al
+    (fromString . to . toChar)
+  where
+    st' = S.fromList $ fromString st
+    ga' = S.fromList $ fromString ga
+    un' = S.fromList $ fromString un
+    iu' = S.fromList $ fromString iu
+    al = S.unions [st', ga', un', iu']
 
 -- | Get the alphabet specification for a given alphabet.
 alphabetSpec :: Alphabet -> AlphabetSpec
-alphabetSpec DNA      = dna
-alphabetSpec DNAX     = dnaX
-alphabetSpec DNAI     = dnaI
-alphabetSpec Protein  = protein
+alphabetSpec DNA = dna
+alphabetSpec DNAX = dnaX
+alphabetSpec DNAI = dnaI
+alphabetSpec Protein = protein
 alphabetSpec ProteinX = proteinX
 alphabetSpec ProteinS = proteinS
 alphabetSpec ProteinI = proteinI
@@ -148,7 +153,7 @@ toStdDNA 'A' = "A"
 toStdDNA 'C' = "C"
 toStdDNA 'G' = "G"
 toStdDNA 'T' = "T"
-toStdDNA _   = error "tostdDNA: Cannot convert to standard nucleotide."
+toStdDNA _ = error "tostdDNA: Cannot convert to standard nucleotide."
 
 dnaX :: AlphabetSpec
 dnaX = fromChars "ACGT" "-." [] [] toStdDNAX
@@ -160,7 +165,7 @@ toStdDNAX 'G' = "G"
 toStdDNAX 'T' = "T"
 toStdDNAX '-' = []
 toStdDNAX '.' = []
-toStdDNAX _   = error "toStdDNAX: Cannot convert to standard nucleotide."
+toStdDNAX _ = error "toStdDNAX: Cannot convert to standard nucleotide."
 
 dnaI :: AlphabetSpec
 dnaI = fromChars "ACGT" "-." "N?" "UWSMKRYBDHV" toStdDNAI
@@ -185,7 +190,7 @@ toStdDNAI 'N' = "ACGT"
 toStdDNAI '?' = "ACGT"
 toStdDNAI '-' = []
 toStdDNAI '.' = []
-toStdDNAI _   = error "toStdDNAI: Cannot convert to standard nucleotide."
+toStdDNAI _ = error "toStdDNAI: Cannot convert to standard nucleotide."
 
 protein :: AlphabetSpec
 protein = fromChars "ACDEFGHIKLMNPQRSTVWY" [] [] [] toStdP
@@ -211,7 +216,7 @@ toStdP 'T' = "T"
 toStdP 'V' = "V"
 toStdP 'W' = "W"
 toStdP 'Y' = "Y"
-toStdP _   = error "toStdP: Cannot convert to standard amino acid."
+toStdP _ = error "toStdP: Cannot convert to standard amino acid."
 
 proteinX :: AlphabetSpec
 proteinX = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." [] [] toStdPX
@@ -239,7 +244,7 @@ toStdPX 'W' = "W"
 toStdPX 'Y' = "Y"
 toStdPX '-' = ""
 toStdPX '.' = ""
-toStdPX _   = error "toStdPX: Cannot convert to standard amino acid."
+toStdPX _ = error "toStdPX: Cannot convert to standard amino acid."
 
 proteinS :: AlphabetSpec
 proteinS = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." [] "*" toStdPS
@@ -268,7 +273,7 @@ toStdPS 'Y' = "Y"
 toStdPS '-' = ""
 toStdPS '.' = ""
 toStdPS '*' = ""
-toStdPS _   = error "toStdPX: Cannot convert to standard amino acid."
+toStdPS _ = error "toStdPX: Cannot convert to standard amino acid."
 
 proteinI :: AlphabetSpec
 proteinI = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." "X?" "*JBZ" toStdPI
@@ -302,4 +307,4 @@ toStdPI 'B' = "DN"
 toStdPI 'Z' = "EQ"
 toStdPI 'X' = "ACDEFGHIKLMNPQRSTVWY"
 toStdPI '?' = "ACDEFGHIKLMNPQRSTVWY"
-toStdPI _   = error "toStdPX: Cannot convert to standard amino acid."
+toStdPI _ = error "toStdPX: Cannot convert to standard amino acid."
