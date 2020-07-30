@@ -32,7 +32,9 @@ import Control.Monad.Primitive
 import Data.List (mapAccumL)
 import Data.Sequence (Seq)
 import qualified Data.Sequence as S
-import ELynx.Data.Tree
+import ELynx.Data.Tree.Measurable
+import ELynx.Data.Tree.Rooted
+import ELynx.Data.Tree.Phylogeny
 import ELynx.Distribution.BirthDeath
 import ELynx.Distribution.BirthDeathCritical
 import ELynx.Distribution.BirthDeathCriticalNoTime

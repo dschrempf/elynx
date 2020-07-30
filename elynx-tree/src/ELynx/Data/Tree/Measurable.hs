@@ -18,10 +18,12 @@ module ELynx.Data.Tree.Measurable
     getStem,
     setStem,
     height,
+    rootHeight,
     distancesOriginLeaves,
     totalBranchLength,
     summarize,
-    normalizeBranchLength,
+    normalizeBranchLengths,
+    normalizeHeight,
     ultrametric,
     makeUltrametric,
   )
@@ -76,6 +78,11 @@ setStem x = applyStem (const x)
 height :: Measurable e => Tree e a -> BranchLength
 height = maximum . distancesOriginLeaves
 
+-- | The maximum distance between root node and leaves.
+rootHeight :: Measurable e => Tree e a -> BranchLength
+rootHeight (Node _ _ []) = 0
+rootHeight t = maximum $ concatMap distancesOriginLeaves (forest t)
+
 -- -- | The maximum distance between root and leaves.
 -- --
 -- -- Does not include the length of the stem, see 'height'.
@@ -116,10 +123,16 @@ summarize t =
     b = totalBranchLength t
 
 -- | Normalize branch lengths so that the sum is 1.0.
-normalizeBranchLength :: Measurable e => Tree e a -> Tree e a
-normalizeBranchLength t = first (apply (/ s)) t
+normalizeBranchLengths :: Measurable e => Tree e a -> Tree e a
+normalizeBranchLengths t = first (apply (/ s)) t
   where
     s = totalBranchLength t
+
+-- | Normalize height of tree to 1.0.
+normalizeHeight :: Measurable e => Tree e a -> Tree e a
+normalizeHeight t = first (apply (/ h)) t
+  where
+    h = height t
 
 -- | Check if a tree is ultrametric.
 ultrametric :: Measurable e => Tree e a -> Bool

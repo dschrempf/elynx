@@ -18,7 +18,8 @@ where
 
 import Data.ByteString.Internal (c2w)
 import Data.ByteString.Lazy (ByteString, pack)
-import ELynx.Data.Tree
+import ELynx.Data.Tree.Rooted
+import ELynx.Data.Tree.Phylogeny
 import ELynx.Import.Tree.Newick
 import Text.Megaparsec
 import Text.Megaparsec.Byte

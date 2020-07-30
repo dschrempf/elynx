@@ -17,7 +17,9 @@ module ELynx.Export.Tree.Nexus
 where
 
 import Data.ByteString.Lazy (ByteString)
-import ELynx.Data.Tree
+import ELynx.Data.Tree.Phylogeny
+import ELynx.Data.Tree.Rooted
+import ELynx.Data.Tree.Named
 import ELynx.Export.Nexus
 import ELynx.Export.Tree.Newick
 

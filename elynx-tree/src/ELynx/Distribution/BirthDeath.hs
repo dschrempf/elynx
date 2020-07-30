@@ -80,7 +80,7 @@ quantile (BDD t l m) p
   = res
   | otherwise
   = error
-    $  "PointProcess.quantile: p must be in [0,1] range. Got: "
+    $  "PointProcess.quantile: p must be in range [0,1] but got "
     ++ show p
     ++ "."
  where

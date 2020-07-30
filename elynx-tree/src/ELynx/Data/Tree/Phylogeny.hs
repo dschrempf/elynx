@@ -62,6 +62,7 @@ module ELynx.Data.Tree.Phylogeny
 where
 
 import Control.DeepSeq
+import Data.Aeson
 import Data.Bifoldable
 import Data.Bifunctor
 import Data.Bitraversable
@@ -179,23 +180,27 @@ midpoint t@(Node _ _ [_, _]) = getMidpoint <$> roots t
 midpoint _ = Left "midpoint: Root node is multifurcating."
 
 findMinIndex :: Ord a => [a] -> Int
-findMinIndex (x:xs) = go (0, x) 1 xs
-  where go (i, _) _ [] = i
-        go (i, z) j (y:ys) = if z < y then go (i, z) (j+1) ys else go (j, y) (j+1) ys
+findMinIndex (x : xs) = go (0, x) 1 xs
+  where
+    go (i, _) _ [] = i
+    go (i, z) j (y : ys) = if z < y then go (i, z) (j + 1) ys else go (j, y) (j + 1) ys
 findMinIndex [] = error "findMinIndex: Empty list."
 
 getMidpoint :: Measurable e => [Tree e a] -> Tree e a
 getMidpoint ts = case t of
-  (Node br lb [l, r]) -> let hl = height l
-                             hr = height r
-                             dh = (hl - hr) / 2
-                         in Node br lb [applyStem (subtract dh) l, applyStem (+dh) r]
+  (Node br lb [l, r]) ->
+    let hl = height l
+        hr = height r
+        dh = (hl - hr) / 2
+     in Node br lb [applyStem (subtract dh) l, applyStem (+ dh) r]
   -- Explicitly use 'error' here, because roots is supposed to return trees with
   -- bifurcating root nodes.
   _ -> error "getMidpoint: Root node is not bifurcating."
-  where dhs = map getDeltaHeight ts
-        i = findMinIndex dhs
-        t = ts !! i
+  where
+    dhs = map getDeltaHeight ts
+    i = findMinIndex dhs
+    t = ts !! i
+
 -- find index of minimum; take this tree and move root to the midpoint of the branch
 
 -- Get delta height of left and right sub tree.
@@ -314,8 +319,12 @@ instance Semigroup Phylo where
       (getSum <$> (Sum <$> mBL) <> (Sum <$> mBR))
       (getMin <$> (Min <$> mSL) <> (Min <$> mSR))
 
+instance ToJSON Phylo
+
+instance FromJSON Phylo
+
 -- | Branch length label.
---
+
 -- For conversion, see 'phyloToLengthTree' and 'lengthToPhyloTree'.
 newtype Length = Length {fromLength :: BranchLength}
   deriving (Read, Show, Eq, Ord, Generic, NFData)
@@ -328,6 +337,10 @@ instance Measurable Length where
 
 instance Splittable Length where
   split = Length . (/ 2.0) . fromLength
+
+instance ToJSON Length
+
+instance FromJSON Length
 
 -- | If root branch length is not available, set it to 0.
 --
@@ -368,6 +381,10 @@ instance Supported Support where
 
 instance Splittable Support where
   split = id
+
+instance ToJSON Support
+
+instance FromJSON Support
 
 -- | Set branch support values of branches leading to the leaves and of the root
 -- branch to maximum support.
@@ -429,6 +446,10 @@ instance Splittable PhyloStrict where
 instance Supported PhyloStrict where
   getSup = sBrSup
   setSup s l = l {sBrSup = s}
+
+instance ToJSON PhyloStrict
+
+instance FromJSON PhyloStrict
 
 -- | Conversion to a 'PhyloStrict' tree.
 --

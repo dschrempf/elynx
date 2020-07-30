@@ -39,7 +39,10 @@ import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as L
 import Data.Void
 import Data.Word
-import ELynx.Data.Tree hiding (label)
+import ELynx.Data.Tree.Rooted hiding (label)
+import ELynx.Data.Tree.Phylogeny
+import ELynx.Data.Tree.Supported
+import ELynx.Data.Tree.Measurable
 import ELynx.Tools
 import Text.Megaparsec
 import Text.Megaparsec.Byte
