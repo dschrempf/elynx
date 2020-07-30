@@ -53,7 +53,7 @@ Create source distribution tarballs.
 
 #+NAME: HackageCreateTarballs
 #+BEGIN_SRC sh :exports both :results output verbatim
-stack sdist --pvp-bounds both
+stack sdist
 #+END_SRC
 
 #+RESULTS: HackageCreateTarballs
@@ -69,12 +69,21 @@ each package.
 for p in elynx-markov elynx-nexus elynx-seq elynx-tools elynx-tree slynx tlynx elynx
 do
     (cd "$p" || exit 1
-    stack upload --pvp-bounds both .)
+    stack upload .)
 done
 #+END_SRC
 
-# [2020-04-28 Tue] The Hackage server is out of date, and documentation has to be
-# built manually.
+#+RESULTS: HackageUploadTarballs
+: Uploading elynx-markov-0.3.0.tar.gz... done!
+: Uploading elynx-nexus-0.3.0.tar.gz... done!
+: Uploading elynx-seq-0.3.0.tar.gz... done!
+: Uploading elynx-tools-0.3.0.tar.gz... done!
+: Uploading elynx-tree-0.3.0.tar.gz... done!
+: Uploading slynx-0.3.0.tar.gz... done!
+: Uploading tlynx-0.3.0.tar.gz... done!
+: Uploading elynx-0.3.0.tar.gz... done!
+
+# NOTE: Documentation can be built manually.
 
 # #+NAME: HackageUploadDocumentation
 # #+BEGIN_SRC sh :exports both :results output verbatim
