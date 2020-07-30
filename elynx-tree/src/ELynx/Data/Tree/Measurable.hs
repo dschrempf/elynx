@@ -21,7 +21,7 @@ module ELynx.Data.Tree.Measurable
     rootHeight,
     distancesOriginLeaves,
     totalBranchLength,
-    summarize,
+    summarizeBranchLengths,
     normalizeBranchLengths,
     normalizeHeight,
     ultrametric,
@@ -107,13 +107,12 @@ prettyRow name val = alignLeft 33 n <> alignRight 8 v
     n = L.pack name
     v = L.pack val
 
--- | Summarize a tree with measureable branch lengths.
-summarize :: Measurable e => Tree e a -> ByteString
-summarize t =
+-- | Examine branches of a tree.
+summarizeBranchLengths :: Measurable e => Tree e a -> ByteString
+summarizeBranchLengths t =
   L.intercalate
     "\n"
-    [ prettyRow "Leaves: " $ show n,
-      prettyRow "Origin height: " $ pretty h,
+    [ prettyRow "Origin height: " $ pretty h,
       prettyRow "Average distance origin to leaves: " $ pretty h',
       prettyRow "Total branch length: " $ pretty b
     ]

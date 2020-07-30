@@ -21,15 +21,14 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
+import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as L
 import Data.List (intercalate)
 import qualified Data.Map as M
-import Data.Monoid
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 import qualified Data.Text.IO as T
-import Data.Tree
 import ELynx.Data.Tree
 import ELynx.Export.Tree.Newick (toNewick)
 import ELynx.Import.Tree.Newick
@@ -49,7 +48,7 @@ treesOneFile ::
   FilePath ->
   ELynx
     CompareArguments
-    (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
+    (Tree PhyloStrict ByteString, Tree PhyloStrict ByteString)
 treesOneFile tf = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse file '" ++ tf ++ "'."
@@ -58,21 +57,25 @@ treesOneFile tf = do
   case compare n 2 of
     LT -> error "Not enough trees in file."
     GT -> error "Too many trees in file."
-    EQ -> return (harden $ head ts, harden $ head . tail $ ts)
+    EQ ->
+      return
+        ( either error id $ toStrictTree $ head ts,
+          either error id $ toStrictTree $ head . tail $ ts
+        )
 
 treesTwoFiles ::
   FilePath ->
   FilePath ->
   ELynx
     CompareArguments
-    (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
+    (Tree PhyloStrict ByteString, Tree PhyloStrict ByteString)
 treesTwoFiles tf1 tf2 = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse first tree file '" ++ tf1 ++ "'."
   t1 <- liftIO $ parseFileWith (oneNewick nwF) tf1
   $(logInfo) $ T.pack $ "Parse second tree file '" ++ tf2 ++ "'."
   t2 <- liftIO $ parseFileWith (oneNewick nwF) tf2
-  return (harden t1, harden t2)
+  return (either error id $ toStrictTree t1, either error id $ toStrictTree t2)
 
 -- | More detailed comparison of two trees.
 compareCmd :: ELynx CompareArguments ()
@@ -90,18 +93,18 @@ compareCmd = do
       error
         "Need two input files with one tree each or one input file with two trees."
   liftIO $ hPutStrLn outH "Tree 1:"
-  liftIO $ L.hPutStrLn outH $ toNewick $ soften tr1
+  liftIO $ L.hPutStrLn outH $ toNewick $ fromStrictTree tr1
   liftIO $ hPutStrLn outH "Tree 2:"
-  liftIO $ L.hPutStrLn outH $ toNewick $ soften tr2
+  liftIO $ L.hPutStrLn outH $ toNewick $ fromStrictTree tr2
   liftIO $ hPutStrLn outH ""
   -- Intersect trees.
   (t1, t2) <-
     if argsIntersect l
       then do
-        let [x, y] = intersectWith getName extend [tr1, tr2]
+        let [x, y] = either error id $ intersect [tr1, tr2]
         liftIO $ hPutStrLn outH "Intersected trees are:"
-        liftIO $ L.hPutStrLn outH $ toNewick $ soften x
-        liftIO $ L.hPutStrLn outH $ toNewick $ soften y
+        liftIO $ L.hPutStrLn outH $ toNewick $ fromStrictTree x
+        liftIO $ L.hPutStrLn outH $ toNewick $ fromStrictTree y
         return (x, y)
       else return (tr1, tr2)
   -- Check input (moved to library functions).
@@ -128,12 +131,12 @@ compareCmd = do
     T.hPutStrLn outH $
       formatD
         "Branch score"
-        (T.pack $ show $ branchScoreWith getName getLen t1 t2)
+        (T.pack $ show $ branchScore t1 t2)
   let t1' = normalizeBranchSupport t1
       t2' = normalizeBranchSupport t2
   $(logDebug) "Trees with normalized branch support values:"
-  $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick $ soften t1'
-  $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick $ soften t2'
+  $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick $ fromStrictTree t1'
+  $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick $ fromStrictTree t2'
   liftIO $
     T.hPutStrLn outH $
       formatD
@@ -171,8 +174,8 @@ compareCmd = do
   when
     (argsBipartitions l)
     ( do
-        let bp1 = bipartitions (fmap getName t1)
-            bp2 = bipartitions (fmap getName t2)
+        let bp1 = either error id $ bipartitions (fmap getName t1)
+            bp2 = either error id $ bipartitions (fmap getName t2)
             bp1Only = bp1 S.\\ bp2
             bp2Only = bp2 S.\\ bp1
         unless
@@ -182,7 +185,7 @@ compareCmd = do
               liftIO $
                 hPutStrLn outH "Bipartitions in Tree 1 that are not in Tree 2."
               -- let bp1Strs = map (bphuman L.unpack . bpmap getName) (S.toList bp1Only)
-              forM_ bp1Only (liftIO . hPutStrLn outH . bphuman L.unpack)
+              forM_ bp1Only (liftIO . hPutStrLn outH . bpHuman)
           )
         -- let bp1Strs = map (bphuman L.unpack) (S.toList bp1Only)
         -- liftIO $ hPutStrLn outH $ intercalate "\n" bp1Strs)
@@ -192,7 +195,7 @@ compareCmd = do
               liftIO $ hPutStrLn outH ""
               liftIO $
                 hPutStrLn outH "Bipartitions in Tree 2 that are not in Tree 1."
-              forM_ bp2Only (liftIO . hPutStrLn outH . bphuman L.unpack)
+              forM_ bp2Only (liftIO . hPutStrLn outH . bpHuman)
           )
         -- Common bipartitions and their respective differences in branch lengths.
         liftIO $ hPutStrLn outH ""
@@ -202,10 +205,8 @@ compareCmd = do
             liftIO $ hPutStrLn outH "There are no common bipartitions."
             liftIO $ hPutStrLn outH "No plots have been generated."
           else do
-            let bpToBrLen1 =
-                  M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t1
-                bpToBrLen2 =
-                  M.map getSum $ bipartitionToBranchLength getName (Sum . getLen) t2
+            let bpToBrLen1 = M.map getLen $ either error id $ bipartitionToBranch t1
+                bpToBrLen2 = M.map getLen $ either error id $ bipartitionToBranch t2
             liftIO $
               hPutStrLn
                 outH
@@ -216,7 +217,7 @@ compareCmd = do
               bpCommon
               ( liftIO
                   . hPutStrLn outH
-                  . getCommonBpStr L.unpack bpToBrLen1 bpToBrLen2
+                  . getCommonBpStr bpToBrLen1 bpToBrLen2
               )
             -- XXX: This circumvents the extension checking, and hash creation for
             -- elynx files.
@@ -244,13 +245,12 @@ header = intercalate "  " $ cols ++ ["Bipartition"]
         ["Length 1", "Length 2", "Delta", "Relative [%]"]
 
 getCommonBpStr ::
-  (Ord a, Fractional b, PrintfArg b) =>
-  (a -> String) ->
+  (Ord a, Show a, Fractional b, PrintfArg b) =>
   M.Map (Bipartition a) b ->
   M.Map (Bipartition a) b ->
   Bipartition a ->
   String
-getCommonBpStr f m1 m2 p =
+getCommonBpStr m1 m2 p =
   intercalate
     "  "
     [ printf "% 12.7f" l1,
@@ -264,7 +264,7 @@ getCommonBpStr f m1 m2 p =
     l2 = m2 M.! p
     d = l1 - l2
     rd = 2 * d / (l1 + l2)
-    s = bphuman f p
+    s = bpHuman p
 
 plotBps :: [(Double, Double)] -> [Attribute] -> IO ()
 plotBps xs as = plotPathsStyle as' [(ps1, xs), (ps2, line)]

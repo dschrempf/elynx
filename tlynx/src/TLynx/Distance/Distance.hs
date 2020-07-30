@@ -23,47 +23,30 @@ import Control.Monad
   ( unless,
     when,
   )
-import Control.Monad.IO.Class (liftIO)
+import Control.Monad.IO.Class
 import Control.Monad.Logger
   ( logDebug,
     logInfo,
   )
-import Control.Monad.Trans.Class (lift)
-import Control.Monad.Trans.Reader (ask)
+import Control.Monad.Trans.Class
+import Control.Monad.Trans.Reader hiding (local)
+import Data.Bifunctor
 import qualified Data.ByteString.Lazy.Char8 as L
-import Data.List (sort)
-import Data.Maybe (isNothing)
+import Data.List hiding (intersect)
+import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Encoding as LT
-import Data.Tree (Tree)
 import qualified Data.Vector.Unboxed as V
 import ELynx.Data.Tree
 import ELynx.Export.Tree.Newick
 import ELynx.Import.Tree.Newick
 import ELynx.Tools
-  ( Arguments (..),
-    ELynx,
-    alignLeft,
-    alignRight,
-    outHandle,
-    parseFileWith,
-    tShow,
-  )
 import Statistics.Sample
-  ( mean,
-    variance,
-  )
 import System.IO
-  ( hClose,
-    hPutStrLn,
-  )
 import TLynx.Distance.Options
 import Text.Printf
-  ( PrintfArg,
-    printf,
-  )
 
 median :: Ord a => [a] -> a
 median xs = sort xs !! l2 where l2 = length xs `div` 2
@@ -102,15 +85,15 @@ pairwise dist trs =
       (j, y) <- zip is xs
   ]
 
--- Compute distances between adjacent pairs of a list of input trees. Use given
--- distance measure.
-adjacent ::
-  -- | Distance function.
-  (a -> a -> b) ->
-  -- | Input values.
-  [a] ->
-  [b]
-adjacent dist trs = [dist x y | (x, y) <- zip trs (tail trs)]
+-- -- Compute distances between adjacent pairs of a list of input trees. Use given
+-- -- distance measure.
+-- adjacent ::
+--   -- | Distance function.
+--   (a -> a -> b) ->
+--   -- | Input values.
+--   [a] ->
+--   [b]
+-- adjacent dist trs = [dist x y | (x, y) <- zip trs (tail trs)]
 
 -- | Compute distance functions between phylogenetic trees.
 distance :: ELynx DistanceArguments ()
@@ -125,7 +108,7 @@ distance = do
     Nothing -> return Nothing
     Just f -> do
       $(logInfo) $ T.pack $ "Read master tree from file: " <> f <> "."
-      t <- liftIO $ harden <$> parseFileWith (oneNewick nwFormat) f
+      t <- liftIO $ parseFileWith (oneNewick nwFormat) f
       $(logInfo) "Compute distances between all trees and master tree."
       return $ Just t
   let tfps = argsInFiles l
@@ -133,13 +116,13 @@ distance = do
     [] -> error "No tree input files given."
     [tf] -> do
       $(logInfo) "Read trees from single file."
-      ts <- liftIO $ map harden <$> parseFileWith (someNewick nwFormat) tf
+      ts <- liftIO $ parseFileWith (someNewick nwFormat) tf
       $(logInfo) $ tShow (length ts) <> " trees found in file."
       $(logInfo) "Trees are indexed with integers."
       return (ts, map show [0 .. length ts - 1])
     _ -> do
       $(logInfo) "Read trees from files."
-      ts <- liftIO $ map harden <$> mapM (parseFileWith (oneNewick nwFormat)) tfps
+      ts <- liftIO $ mapM (parseFileWith (oneNewick nwFormat)) tfps
       $(logInfo) "Trees are named according to their file names."
       return (ts, tfps)
   when (null trees) (error "Not enough trees found in files.")
@@ -149,7 +132,7 @@ distance = do
   -- when (isNothing mtree) $ $(logInfo)
   --   "Compute pairwise distances between trees from different files."
   $(logDebug) "The trees are:"
-  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map (toNewick . soften) trees
+  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees
   -- Set the distance measure.
   let dist = argsDistance l
   case argsDistance l of
@@ -163,14 +146,14 @@ distance = do
             ++ "."
     BranchScore -> $(logInfo) "Use branch score distance."
   let distanceMeasure' ::
-        Tree (PhyloLabel L.ByteString) ->
-        Tree (PhyloLabel L.ByteString) ->
+        (Measurable e1, Measurable e2) =>
+        Tree e1 L.ByteString ->
+        Tree e2 L.ByteString ->
         Double
-      distanceMeasure' = case dist of
-        Symmetric -> \t1 t2 -> fromIntegral $ symmetric t1 t2
-        IncompatibleSplit _ ->
-          \t1 t2 -> fromIntegral $ incompatibleSplits t1 t2
-        BranchScore -> branchScore
+      distanceMeasure' t1 t2 = either error id $ case dist of
+        Symmetric -> second fromIntegral $ symmetric t1 t2
+        IncompatibleSplit _ -> second fromIntegral $ incompatibleSplits t1 t2
+        BranchScore -> branchScore t1 t2
   -- Possibly intersect trees before distance calculation.
   when (argsIntersect l) $
     $(logInfo) "Intersect trees before calculation of distances."
@@ -178,14 +161,14 @@ distance = do
         if argsIntersect l
           then
             ( \t1 t2 ->
-                let [t1', t2'] = intersectWith getName extend [t1, t2]
+                let [t1', t2'] = either error id $ intersect [t1, t2]
                  in distanceMeasure' t1' t2'
             )
           else distanceMeasure'
   -- Possibly normalize trees.
   when (argsNormalize l) $
     $(logInfo) "Normalize trees before calculation of distances."
-  let normalizeF = if argsNormalize l then normalizeBranchLength else id
+  let normalizeF = if argsNormalize l then normalizeBranchLengths else id
   -- Possibly collapse unsupported nodes.
   let collapseF = case dist of
         -- For the incompatible split distance we have to collapse branches with
@@ -194,14 +177,15 @@ distance = do
         IncompatibleSplit val -> collapse val . normalizeBranchSupport
         _ -> id
   -- The trees can be prepared now.
-  let trees' :: Forest (PhyloLabel L.ByteString)
-      trees' = map (collapseF . normalizeF) trees
+  let trees' :: Forest PhyloStrict L.ByteString
+      trees' = map (collapseF . normalizeF . either error id . toStrictTree) trees
   $(logDebug) "The prepared trees are:"
-  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map (toNewick . soften) trees'
+  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map (toNewick . fromStrictTree) trees'
   let dsTriplets = case mtree of
         Nothing -> pairwise distanceMeasure trees'
-        Just t ->
-          [(0, i, distanceMeasure t t') | (i, t') <- zip [1 ..] trees']
+        Just pt ->
+          let t = (either error id . toStrictTree) pt
+           in [(0, i, distanceMeasure t t') | (i, t') <- zip [1 ..] trees']
       ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds
   liftIO $

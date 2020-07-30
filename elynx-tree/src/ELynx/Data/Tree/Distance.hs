@@ -40,6 +40,7 @@ import Data.Monoid
 import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Data.Tree.Bipartition
+import ELynx.Data.Tree.Measurable
 import ELynx.Data.Tree.Partition
 import ELynx.Data.Tree.Rooted
 
@@ -55,7 +56,7 @@ symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
 -- Return 'Nothing' if the trees contain different leaves.
 --
 -- XXX: Comparing a list of trees may recompute bipartitions.
-symmetric :: Ord a => Tree e a -> Tree e a -> Either String Int
+symmetric :: Ord a => Tree e1 a -> Tree e2 a -> Either String Int
 symmetric t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "symmetric: Trees contain different leaves."
   | otherwise = do
@@ -101,7 +102,7 @@ countIncompatibilities bs ms =
 -- induced multifurcations of the tree.
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
-incompatibleSplits :: (Show a, Ord a) => Tree e a -> Tree e a -> Either String Int
+incompatibleSplits :: (Show a, Ord a) => Tree e1 a -> Tree e2 a -> Either String Int
 incompatibleSplits t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) =
     Left "incompatibleSplits: Trees do not have equal leaf sets."
@@ -127,12 +128,12 @@ incompatibleSplits t1 t2
 -- trees is returned.
 --
 -- XXX: Comparing a list of trees with this function recomputes bipartitions.
-branchScore :: (Floating e, Ord a) => Tree e a -> Tree e a -> Either String e
+branchScore :: (Measurable e1, Measurable e2, Ord a) => Tree e1 a -> Tree e2 a -> Either String Double
 branchScore t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "branchScoreWith: Trees do not have equal leaf sets."
   | otherwise = do
-    bpToBr1 <- bipartitionToBranch $ first Sum t1
-    bpToBr2 <- bipartitionToBranch $ first Sum t2
+    bpToBr1 <- bipartitionToBranch $ first (Sum . getLen) t1
+    bpToBr2 <- bipartitionToBranch $ first (Sum . getLen) t2
     let dBs = M.unionWith (-) bpToBr1 bpToBr2
-        dsSquared = foldl' (\acc e -> let e' = getSum e in acc + e' * e') 0 dBs
-    return $ sqrt dsSquared
+        dsSquared = foldl' (\acc e -> acc + e * e) 0 dBs
+    return $ sqrt $ getSum dsSquared

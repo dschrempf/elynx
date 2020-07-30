@@ -26,7 +26,6 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Logger (logDebug, logInfo)
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as L
-import Data.Tree
 import ELynx.Data.Tree
 import ELynx.Export.Tree.Newick (toNewick)
 import ELynx.Import.Tree.Newick (oneNewick)
@@ -48,11 +47,10 @@ shuffleCmd = do
   l <- local <$> ask
   h <- outHandle "results" ".tree"
   let nwF = nwFormat l
-  tSoft <- liftIO $ parseFileWith (oneNewick nwF) (inFile l)
+  tPhylo <- liftIO $ parseFileWith (oneNewick nwF) (inFile l)
   $(logInfo) "Input tree:"
-  $(logInfo) $ fromBs $ toNewick tSoft
-  -- Check if all branches have a given length. However, the length of the stem is not important.
-  let t = hardenPedantic tSoft
+  $(logInfo) $ fromBs $ toNewick tPhylo
+  let t = either error id $ phyloToLengthTree tPhylo
   -- Check if tree is ultrametric enough.
   let dh = sum $ map (height t -) (distancesOriginLeaves t)
   $(logDebug) $ "Distance in branch length to being ultrametric: " <> tShow dh
@@ -61,7 +59,7 @@ shuffleCmd = do
     $(logInfo)
       "Tree is nearly ultrametric, ignore branch length differences smaller than 2e-4."
   when (dh < eps) $ $(logInfo) "Tree is ultrametric."
-  let cs = filter (> 0) $ flatten $ C.extend rootHeight t
+  let cs = filter (> 0) $ labels $ C.extend rootHeight t
       ls = map getName $ leaves t
   $(logDebug) $ "Number of coalescent times: " <> tShow (length cs)
   $(logDebug) $ "Number of leaves: " <> tShow (length ls)
@@ -71,7 +69,7 @@ shuffleCmd = do
     Random -> error "Seed not available; please contact maintainer."
     Fixed s -> liftIO $ initialize s
   ts <- liftIO $ shuffleT (nReplicates l) (height t) cs ls gen
-  liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . soften) ts
+  liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . lengthToPhyloTree) ts
   liftIO $ hClose h
 
 shuffleT ::
@@ -80,7 +78,7 @@ shuffleT ::
   [Double] -> -- Coalescent times.
   [L.ByteString] -> -- Leave names.
   GenIO ->
-  IO (Forest (PhyloLabel L.ByteString))
+  IO (Forest Length L.ByteString)
 shuffleT n o cs ls gen = do
   css <- grabble cs n (length cs) gen
   lss <- grabble ls n (length ls) gen
@@ -88,6 +86,3 @@ shuffleT n o cs ls gen = do
     [ toReconstructedTree "" (PointProcess names times o)
       | (times, names) <- zip css lss
     ]
-
-rootHeight :: Measurable a => Tree a -> Double
-rootHeight (Node _ xs) = maximum $ map height xs

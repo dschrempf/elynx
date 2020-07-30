@@ -24,7 +24,6 @@ import qualified Data.ByteString.Lazy.Char8 as L
 import Data.Containers.ListUtils (nubOrd)
 import Data.List ((\\))
 import qualified Data.Text as T
-import Data.Tree
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick
 import ELynx.Tools
@@ -34,15 +33,19 @@ import System.IO
   )
 import TLynx.Examine.Options
 
-readTrees :: FilePath -> ELynx ExamineArguments (Forest (PhyloLabelSoft L.ByteString))
+readTrees :: FilePath -> ELynx ExamineArguments (Forest Phylo L.ByteString)
 readTrees fp = do
   $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
   nf <- argsNewickFormat . local <$> ask
   liftIO $ parseFileWith (someNewick nf) fp
 
-examineTree :: (Measurable a, Named a) => Handle -> Tree a -> IO ()
+examineTree :: Named a => Handle -> Tree Phylo a -> IO ()
 examineTree h t = do
-  L.hPutStrLn h $ summarize t
+  hPutStrLn h $ "Number of leaves: " ++ show (length lvs)
+  let l = phyloToLengthTree t
+  case l of
+    Left _ -> hPutStrLn h "Branch lengths not available."
+    Right t' -> L.hPutStrLn h $ summarizeBranchLengths t'
   unless (null dups) $
     hPutStrLn h ""
       >> hPutStrLn
@@ -59,4 +62,4 @@ examine = do
   let inFn = argsInFile l
   trs <- readTrees inFn
   outH <- outHandle "results" ".out"
-  liftIO $ mapM_ (examineTree outH . harden) trs
+  liftIO $ mapM_ (examineTree outH) trs

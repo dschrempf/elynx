@@ -36,7 +36,6 @@ import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Encoding as LT
-import Data.Tree
 import qualified Data.Vector.Unboxed as V
 import ELynx.Data.Alphabet.Alphabet as A
 import ELynx.Data.MarkovProcess.GammaRateHeterogeneity
@@ -53,9 +52,7 @@ import ELynx.Import.MarkovProcess.EDMModelPhylobayes hiding
   ( Parser,
   )
 import ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
-import ELynx.Import.Tree.Newick hiding
-  ( name,
-  )
+import ELynx.Import.Tree.Newick
 import ELynx.Simulate.MarkovProcessAlongTree
 import ELynx.Tools
 import Numeric.LinearAlgebra hiding
@@ -69,14 +66,14 @@ import System.Random.MWC
 -- Simulate a 'Alignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
 simulateAlignment ::
-  (Measurable a, Named a) =>
+  (Measurable e, Named a) =>
   P.PhyloModel ->
-  Tree a ->
+  Tree e a ->
   Int ->
   GenIO ->
   IO A.Alignment
 simulateAlignment pm t' n g = do
-  let t = fmap getLen t'
+  let t = getLen <$> toTreeBranchLabels t'
   c <- getNumCapabilities
   gs <- splitGen c g
   let chunks = getChunks c n
@@ -102,7 +99,7 @@ simulateAlignment pm t' n g = do
   -- 'concatenateSeqs' or 'concatenateAlignments' can be used, which directly
   -- appends vectors.
   let leafStates = horizontalConcat leafStatesS
-      leafNames = map getName $ leaves t
+      leafNames = map getName $ leaves t'
       code = P.getAlphabet pm
       -- XXX: Probably use type safe stuff here?
       alph = A.all $ alphabetSpec code
@@ -140,8 +137,9 @@ simulateCmd = do
   let treeFile = argsTreeFile l
   $(logInfo) ""
   $(logInfo) $ T.pack $ "Read tree from file '" ++ treeFile ++ "'."
-  tree <- liftIO $ harden <$> parseFileWith (newick Standard) treeFile
-  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarize tree
+  tree <- liftIO $ parseFileWith (newick Standard) treeFile
+  let t' = either error id $ phyloToLengthTree tree
+  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarizeBranchLengths t'
   let edmFile = argsEDMFile l
   let sProfileFiles = argsSiteprofilesFiles l
   $(logInfo) ""
@@ -220,7 +218,7 @@ simulateCmd = do
     Random ->
       error "simulateCmd: seed not available; please contact maintainer."
     Fixed s -> liftIO $ initialize s
-  alignment <- liftIO $ simulateAlignment phyloModel tree alignmentLength gen
+  alignment <- liftIO $ simulateAlignment phyloModel t' alignmentLength gen
   let output = (sequencesToFasta . A.toSequences) alignment
   $(logInfo) ""
   out "simulated multi sequence alignment" output ".fasta"

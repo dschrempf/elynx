@@ -44,9 +44,7 @@ import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Encoding as LT
-import Data.Tree
 import ELynx.Data.Tree
-import ELynx.Data.Tree.Measurable
 import ELynx.Export.Tree.Newick (toNewick)
 import ELynx.Simulate.PointProcess
   ( TimeSpec,
@@ -92,7 +90,7 @@ simulate = do
   let ls =
         if sumS
           then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
-          else parMap rpar toNewick (map soften trs)
+          else parMap rpar toNewick $ map lengthToPhyloTree trs
   let res = L.unlines ls
   out "simulated trees" res ".tree"
 
@@ -104,7 +102,7 @@ simulateNTreesConcurrently ::
   TimeSpec ->
   [Int] ->
   [GenIO] ->
-  ELynx SimulateArguments (Forest (PhyloLabel Int))
+  ELynx SimulateArguments (Forest Length Int)
 simulateNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
   let l' = l * r
       m' = m - l * (1.0 - r)
@@ -123,7 +121,7 @@ simulateAndSubSampleNTreesConcurrently ::
   TimeSpec ->
   [Int] ->
   [GenIO] ->
-  ELynx SimulateArguments (Forest (PhyloLabel Int))
+  ELynx SimulateArguments (Forest Length Int)
 simulateAndSubSampleNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
   let nLeavesBigTree = (round $ fromIntegral nLeaves / r) :: Int
   logNewSection $
@@ -133,7 +131,7 @@ simulateAndSubSampleNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
         <> " leaves."
   tr <- liftIO $ simulateReconstructedTree nLeavesBigTree timeSpec l m (head gs)
   -- Log the base tree.
-  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ soften tr
+  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ lengthToPhyloTree tr
   logNewSection $
     T.pack $
       "Sub sample "
@@ -160,9 +158,9 @@ nSubSamples ::
   Int ->
   Seq.Seq a ->
   Int ->
-  Tree a ->
+  Tree e a ->
   GenIO ->
-  IO [Maybe (Tree a)]
+  IO [Maybe (Tree e a)]
 nSubSamples m lvs n tree g
   | Seq.length lvs < n =
     error
@@ -170,7 +168,7 @@ nSubSamples m lvs n tree g
   | otherwise = do
     lss <- grabble (toList lvs) m n g
     let lsSets = map Set.fromList lss
-    return [subTree (`Set.member` ls) tree | ls <- lsSets]
+    return [dropLeavesWith (`Set.notMember` ls) tree | ls <- lsSets]
 
 -- | Pair of branch length with number of extant children.
 type BrLnNChildren = (BranchLength, Int)
@@ -193,9 +191,9 @@ formatNChildSumStatLine (l, n) =
   L.intDec n <> L.char8 ' ' <> L.doubleDec l <> L.char8 '\n'
 
 -- | Compute NChilSumStat for a phylogenetic tree.
-toNChildSumStat :: Measurable a => Tree a -> NChildSumStat
-toNChildSumStat (Node lbl []) = [(getLen lbl, 1)]
-toNChildSumStat (Node lbl ts) = (getLen lbl, sumCh) : concat nChSS
+toNChildSumStat :: Measurable e => Tree e a -> NChildSumStat
+toNChildSumStat (Node br _ []) = [(getLen br, 1)]
+toNChildSumStat (Node br _ ts) = (getLen br, sumCh) : concat nChSS
   where
     nChSS = map toNChildSumStat ts
     sumCh = sum $ map (snd . head) nChSS

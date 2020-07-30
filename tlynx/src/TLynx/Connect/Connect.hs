@@ -20,9 +20,9 @@ where
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
+import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Set as S
-import Data.Tree
 import ELynx.Data.Tree
 import ELynx.Export.Tree.Newick (toNewick)
 import ELynx.Import.Tree.Newick
@@ -40,22 +40,20 @@ import ELynx.Tools
 import System.IO
 import TLynx.Connect.Options
 
--- -- | Connect two trees with a branch in all possible ways.
--- --
--- -- Introduce a branch between two trees. If the trees have @n>2@, and @m>2@
--- -- nodes, respectively, there are (n-2)*(m-2) ways to connect them.
--- --
--- -- A base node label has to be given which will be used wherever the new node is
--- -- introduced.
--- --
--- -- Branch labels are not handled.
--- --
--- -- Return 'Left' if one tree has a non-bifurcating root node.
--- connect :: a -> Tree () a -> Tree () a -> Either String (Forest () a)
--- connect lb l r = do
---   ls <- roots l
---   rs <- roots r
---   return [Node () lb [x, y] | x <- ls, y <- rs]
+-- | Connect two trees with a branch in all possible ways.
+--
+-- Introduce a branch between two trees. If the trees have @n>2@, and @m>2@
+-- nodes, respectively, there are (n-2)*(m-2) ways to connect them.
+--
+-- A base node label has to be given which will be used wherever the new node is
+-- introduced.
+--
+-- Return 'Left' if one tree has a non-bifurcating root node.
+connect :: (Semigroup e, Splittable e) => e -> a -> Tree e a -> Tree e a -> Either String (Forest e a)
+connect br lb l r = do
+  ls <- roots l
+  rs <- roots r
+  return [Node br lb [x, y] | x <- ls, y <- rs]
 
 -- | Connect two trees honoring possible constraints. See 'connect'.
 connectCmd :: ELynx ConnectArguments ()
@@ -72,10 +70,10 @@ connectCmd = do
   liftIO $ hClose outH
 
 connectTrees ::
-  Tree (PhyloLabel L.ByteString) ->
-  Tree (PhyloLabel L.ByteString) ->
-  Forest (PhyloLabel L.ByteString)
-connectTrees = connect (PhyloLabel "" 0 0)
+  Tree Length ByteString ->
+  Tree Length ByteString ->
+  Forest Length ByteString
+connectTrees t = either error id . connect 0 "root" t
 
 type Constraint a = S.Set a
 
@@ -87,13 +85,17 @@ multifurcatingGroups (Node _ _ [x]) = multifurcatingGroups x
 multifurcatingGroups (Node _ _ [x, y]) = multifurcatingGroups x ++ multifurcatingGroups y
 multifurcatingGroups t = leaves t : concatMap multifurcatingGroups (forest t)
 
-compatibleAll :: (Show a, Ord a) => Tree a -> [Constraint a] -> Bool
-compatibleAll (Node _ [l, r]) cs =
-  all (bpcompatible (bipartition l)) cs && all (bpcompatible (bipartition r)) cs
+compatibleAll :: (Show a, Ord a) => Tree e a -> [Constraint a] -> Bool
+compatibleAll t@(Node _ _ [l, r]) cs =
+  all (compatible (either error id $ partition l)) (map getP cs)
+    && all (compatible (either error id $ partition r)) (map getP cs)
+  where
+    lvs = S.fromList $ leaves t
+    getP x = either error id $ mp [x, lvs S.\\ x]
 compatibleAll _ _ = error "Tree is not bifurcating."
 
 compatibleWith ::
-  (Show b, Ord b) => (a -> b) -> [Constraint a] -> Tree a -> Bool
+  (Show b, Ord b) => (a -> b) -> [Constraint a] -> Tree e a -> Bool
 compatibleWith f cs t = compatibleAll (fmap f t) (map (S.map f) cs)
 
 parseTrees ::
@@ -101,7 +103,7 @@ parseTrees ::
   FilePath ->
   ELynx
     ConnectArguments
-    (Tree (PhyloLabel L.ByteString), Tree (PhyloLabel L.ByteString))
+    (Tree Length ByteString, Tree Length ByteString)
 parseTrees l r = do
   nwF <- nwFormat . local <$> ask
   tl <- liftIO $ parseFileWith (oneNewick nwF) l
@@ -110,27 +112,27 @@ parseTrees l r = do
   $(logInfo) $ fromBs $ toNewick tl
   $(logInfo) "Tree 2:"
   $(logInfo) $ fromBs $ toNewick tr
-  return (harden tl, harden tr)
+  return (either error id $ phyloToLengthTree tl, either error id $ phyloToLengthTree tr)
 
 connectOnly :: Handle -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectOnly h l r = do
   (tl, tr) <- parseTrees l r
   let ts = connectTrees tl tr
   $(logInfo) $ "Connected trees: " <> tShow (length ts)
-  liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . soften) ts
+  liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . lengthToPhyloTree) ts
 
 connectAndFilter ::
   Handle -> FilePath -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectAndFilter h c l r = do
   nwF <- nwFormat . local <$> ask
-  cts <- liftIO $ map harden <$> parseFileWith (someNewick nwF) c
+  cts <- liftIO $ parseFileWith (someNewick nwF) c
   $(logInfo) "Constraints:"
-  $(logInfo) $ fromBs $ L.intercalate "\n" $ map (toNewick . soften) cts
+  $(logInfo) $ fromBs $ L.intercalate "\n" $ map toNewick cts
   (tl, tr) <- parseTrees l r
   let ts = connectTrees tl tr
-      cs = concatMap multifurcatingGroups cts :: [Constraint (PhyloLabel L.ByteString)]
+      cs = map S.fromList $ concatMap multifurcatingGroups cts :: [Constraint ByteString]
       -- Only collect trees that are compatible with the constraints.
       ts' = filter (compatibleWith getName cs) ts
   $(logInfo) $ "Connected  trees: " <> tShow (length ts)
   $(logInfo) $ "Compatible trees: " <> tShow (length ts')
-  liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . soften) ts'
+  liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . lengthToPhyloTree) ts'

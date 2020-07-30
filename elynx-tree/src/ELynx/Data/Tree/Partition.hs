@@ -19,9 +19,9 @@ module ELynx.Data.Tree.Partition
     mpUnsafe,
     bpToMp,
     mpHuman,
-    -- mpMap,
 
     -- * Work with 'Partition's
+    partition,
     partitions,
     compatible,
   )
@@ -51,6 +51,8 @@ newtype Partition a = Partition
   deriving (Eq, Ord, Show, Read)
 
 -- TODO: Check that list is not empty after filtering.
+
+-- TODO: Rename these functions; don't use 'multi'.
 
 -- | Create a partition.
 mp :: Ord a => [Set a] -> Either String (Partition a)
@@ -82,11 +84,20 @@ mpHuman (Partition xs) =
 setShow :: Show a => Set a -> String
 setShow = intercalate "," . map show . S.toList
 
--- -- | Map a function over all elements in the 'Partition'.
--- mpMap :: (Ord a, Ord b) => (a -> b) -> Partition a -> Partition b
--- mpMap f (Partition xs) = Partition $ S.map (S.map f) xs
+-- | Get partition defined by the root of the tree.
+--
+-- Return 'Left' if:
+-- - the tree is a leaf;
+-- - the tree contains duplicate leaves.
+partition :: Ord a => Tree e a -> Either String (Partition a)
+partition (Node _ _ []) = Left "partition: Encountered a leaf."
+partition t@(Node _ _ ts)
+  | duplicateLeaves t = Left "partition: Tree contains duplicate leaves."
+  | otherwise = mp $ map (S.fromList . leaves) ts
 
 -- | Get all 'Partition's of a tree.
+--
+-- Return 'Left' if tree contains duplicate leaves.
 partitions :: Ord a => Tree e a -> Either String (Set (Partition a))
 partitions t
   | duplicateLeaves t = Left "partitions: Tree contains duplicate leaves."

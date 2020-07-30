@@ -55,6 +55,8 @@ module ELynx.Data.Tree.Rooted
   ( -- * Data type
     Tree (..),
     Forest,
+    toTreeBranchLabels,
+    toTreeNodeLabels,
 
     -- * Access leaves, branches and labels
     leaves,
@@ -89,6 +91,7 @@ import Data.Foldable
 import Data.List
 import Data.Maybe
 import qualified Data.Set as S
+import qualified Data.Tree as T
 import GHC.Generics
 
 -- | Rooted rose trees with branch labels.
@@ -222,6 +225,14 @@ instance (NFData e, NFData a) => NFData (Tree e a) where
 instance (ToJSON e, ToJSON a) => ToJSON (Tree e a)
 
 instance (FromJSON e, FromJSON a) => FromJSON (Tree e a)
+
+-- | Conversion to 'T.Tree' using branch labels.
+toTreeBranchLabels :: Tree e a -> T.Tree e
+toTreeBranchLabels (Node br _ ts) = T.Node br (map toTreeBranchLabels ts)
+
+-- | Conversion to 'T.Tree' using node labels.
+toTreeNodeLabels :: Tree e a -> T.Tree a
+toTreeNodeLabels (Node _ lb ts) = T.Node lb (map toTreeNodeLabels ts)
 
 -- | Get leaves.
 leaves :: Tree e a -> [a]

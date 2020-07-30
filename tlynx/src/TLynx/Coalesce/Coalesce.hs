@@ -2,8 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 
--- TODO: Merge this command into the 'simulate' command and give two options
--- (e.g., simulate c, simulate bd).
+-- TODO: MERGE WITH SIMULATE.
 
 -- |
 --   Description :  Simulate reconstructed trees using the coalescent process
@@ -29,13 +28,13 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
 import Control.Parallel.Strategies
+import qualified Data.ByteString.Builder as L
 import qualified Data.ByteString.Lazy.Char8 as L
 import Data.Maybe
 import qualified Data.Sequence as Seq
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Encoding as LT
-import Data.Tree
 import ELynx.Data.Tree
 import ELynx.Export.Tree.Newick (toNewick)
 import ELynx.Simulate.Coalescent (simulate)
@@ -60,11 +59,11 @@ coalesce = do
   let ls =
         if s
           then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
-          else parMap rpar toNewick (map soften trs)
+          else parMap rpar toNewick (map lengthToPhyloTree trs)
   let res = L.unlines ls
   out "simulated trees" res ".tree"
 
-simulateNTreesConcurrently :: ELynx CoalesceArguments (Forest (PhyloLabel Int))
+simulateNTreesConcurrently :: ELynx CoalesceArguments (Forest Length Int)
 simulateNTreesConcurrently = do
   (CoalesceArguments nT nL _ _ (Fixed s)) <- local <$> ask
   c <- liftIO getNumCapabilities
@@ -78,7 +77,7 @@ simulateNTreesConcurrently = do
   return $ concat trss
 
 simulateAndSubSampleNTreesConcurrently ::
-  ELynx CoalesceArguments (Forest (PhyloLabel Int))
+  ELynx CoalesceArguments (Forest Length Int)
 simulateAndSubSampleNTreesConcurrently = do
   (CoalesceArguments nT nL mR _ (Fixed s)) <- local <$> ask
   c <- liftIO getNumCapabilities
@@ -98,7 +97,7 @@ simulateAndSubSampleNTreesConcurrently = do
         <> show nLeavesBigTree
         <> " leaves."
   -- Log the base tree.
-  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ soften tr
+  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ lengthToPhyloTree tr
   logNewSection $
     T.pack $
       "Sub sample "
@@ -114,3 +113,33 @@ simulateAndSubSampleNTreesConcurrently = do
         (zip chunks gs)
   let trs = catMaybes $ concat trss
   return $ map prune trs
+
+-- | Pair of branch length with number of extant children.
+type BrLnNChildren = (BranchLength, Int)
+
+-- | Possible summary statistic of phylogenetic trees. A list of tuples
+-- (BranchLength, NumberOfExtantChildrenBelowThisBranch).
+type NChildSumStat = [BrLnNChildren]
+
+-- | Format the summary statistics in the following form:
+-- @
+--    nLeaves1 branchLength1
+--    nLeaves2 branchLength2
+--    ....
+formatNChildSumStat :: NChildSumStat -> L.ByteString
+formatNChildSumStat s =
+  L.toLazyByteString . mconcat $ map formatNChildSumStatLine s
+
+formatNChildSumStatLine :: BrLnNChildren -> L.Builder
+formatNChildSumStatLine (l, n) =
+  L.intDec n <> L.char8 ' ' <> L.doubleDec l <> L.char8 '\n'
+
+-- | Compute NChilSumStat for a phylogenetic tree.
+toNChildSumStat :: Measurable e => Tree e a -> NChildSumStat
+toNChildSumStat (Node br _ []) = [(getLen br, 1)]
+toNChildSumStat (Node br _ ts) = (getLen br, sumCh) : concat nChSS
+  where
+    nChSS = map toNChildSumStat ts
+    sumCh = sum $ map (snd . head) nChSS
+
+-- TODO: MERGE WITH SIMULATE.

@@ -19,6 +19,7 @@ module ELynx.Data.Tree
 
     -- * Branch label classes
     module ELynx.Data.Tree.Measurable,
+    module ELynx.Data.Tree.Splittable,
     module ELynx.Data.Tree.Supported,
 
     -- * Node label classes
@@ -41,6 +42,7 @@ import ELynx.Data.Tree.Named
 import ELynx.Data.Tree.Partition
 import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted
+import ELynx.Data.Tree.Splittable
 import ELynx.Data.Tree.Supported
 import ELynx.Data.Tree.Zipper
 
