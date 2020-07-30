@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- |
 -- Module      :  ELynx.Data.Tree.PhylogenySpec
@@ -19,7 +20,6 @@ where
 -- import Data.Bifunctor
 -- import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Either
-import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Data.Tree
 import ELynx.Data.Tree.Arbitrary ()
@@ -27,7 +27,7 @@ import ELynx.Data.Tree.Arbitrary ()
 -- import ELynx.Tools
 import Test.Hspec
 import Test.Hspec.QuickCheck
-import Test.QuickCheck
+import Test.QuickCheck hiding (labels)
 
 simpleTree :: Tree () String
 simpleTree = Node () "i" [Node () "j" [Node () "x" [], Node () "y" []], Node () "z" []]
@@ -39,11 +39,14 @@ simpleSol =
     Node () "i" [Node () "j" [Node () "z" [], Node () "x" []], Node () "y" []]
   ]
 
+instance Splittable () where
+  split = id
+
 -- Skip leaves and trees with multifurcating root nodes.
 prop_roots :: Tree () a -> Bool
 prop_roots t@(Node _ _ [_, _])
   | length (leaves t) == 2 = (length <$> roots t) == Right 1
-  | otherwise = (length <$> roots t) == (Right $ length (flatten t) - 2)
+  | otherwise = (length <$> roots t) == (Right $ length (labels t) - 2)
 prop_roots _ = True
 
 -- -- Skip leaves and trees with multifurcating root nodes.

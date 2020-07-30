@@ -25,9 +25,5 @@ where
 class Splittable e where
   split :: e -> e
 
--- -- TODO: Should not be needed, when Topology is properly used.
--- instance Splittable () where
---   split = id
-
 instance Splittable Double where
   split = (/ 2)

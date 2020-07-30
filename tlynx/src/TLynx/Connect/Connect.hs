@@ -40,7 +40,7 @@ import ELynx.Tools
 import System.IO
 import TLynx.Connect.Options
 
--- | Connect two trees with a branch in all possible ways.
+-- Connect two trees with a branch in all possible ways.
 --
 -- Introduce a branch between two trees. If the trees have @n>2@, and @m>2@
 -- nodes, respectively, there are (n-2)*(m-2) ways to connect them.
@@ -55,7 +55,10 @@ connect br lb l r = do
   rs <- roots r
   return [Node br lb [x, y] | x <- ls, y <- rs]
 
--- | Connect two trees honoring possible constraints. See 'connect'.
+-- | Connect two trees honoring possible constraints.
+--
+-- Introduce a branch between two trees. If the trees have @n>2@, and @m>2@
+-- nodes, respectively, there are (n-2)*(m-2) ways to connect them.
 connectCmd :: ELynx ConnectArguments ()
 connectCmd = do
   lArgs <- local <$> ask

@@ -254,9 +254,9 @@ spec = do
     it "calculates correct distances for sample trees" $ do
       manyTrees <- getManyTrees
       let ts = map (either error id . phyloToLengthTree) manyTrees
-      let ds = map (fromLength . either error id) $ each 2 $ adjacent branchScore ts
+      let ds = map (either error id) $ each 2 $ adjacent branchScore ts
       ds `shouldSatisfy` nearlyEqListWith 1e-5 branchScoreAnswers
     it "is zero for a collection of random trees" $
       property $
         prop_dist_same_tree
-          (branchScore :: Tree Double Double -> Tree Double Double -> Either String Double)
+          (branchScore :: Tree Length Double -> Tree Length Double -> Either String Double)
