@@ -29,32 +29,19 @@ Bump version.
 
 Recompile project.
 
-* README and Change Log
-Update help in [[file:README.org][README.org]] (=, b b=), and [[file:ChangeLog.org][ChangeLog.org]]; export them to Markdown.
-
-Copy files to package directories.
-#+NAME: CopyFiles
-#+BEGIN_SRC sh :exports both :results output verbatim
-for p in elynx-markov elynx-nexus elynx-seq elynx-tools elynx-tree slynx tlynx elynx
-do
-    for f in README.md ChangeLog.md
-    do
-        cp $f $p/$f
-    done
-done
-#+END_SRC
-
-#+RESULTS: CopyFiles
-
 * Build
 Build project, perform tests, build documentation.
 
 #+NAME: Build
 #+BEGIN_SRC sh :exports both :results output verbatim
-stack build --test --haddock
+stack build --test --haddock --bench
 #+END_SRC
 
 #+RESULTS: Build
+
+* README and Change Log
+Update help in [[file:README.org][README.org]] (don't forget to update the help text with =, b b=),
+and [[file:ChangeLog.org][ChangeLog.org]]; export them to Markdown.
 
 * Git
 Commit all changes.

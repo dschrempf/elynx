@@ -2,8 +2,10 @@
 
 # The ELynx Suite
 
-Version: 0.2.2.
+Version: 0.3.0.
 Reproducible evolution made easy.
+
+<p align="center"><img src="https://travis-ci.org/dschrempf/elynx.svg?branch=master"/></p>
 
 A Haskell library and tool set for computational biology. The goal of ELynx is
 reproducible research. Evolutionary sequences and phylogenetic trees can be
@@ -71,7 +73,7 @@ Handle evolutionary sequences.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
                  [-f|--force] COMMAND
@@ -117,7 +119,7 @@ Concatenate multi sequence alignments.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: slynx concatenate (-a|--alphabet NAME) INPUT-FILE
       Concatenate sequences found in input files.
@@ -138,7 +140,7 @@ Examine sequence with `slynx examine`.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: slynx examine (-a|--alphabet NAME) INPUT-FILE [--per-site]
       Examine sequences. If data is a multi sequence alignment, additionally analyze columns.
@@ -160,7 +162,7 @@ Filter sequences with `filer-rows`.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: slynx filter-rows (-a|--alphabet NAME) INPUT-FILE [--longer-than LENGTH] 
                              [--shorter-than LENGTH] [--standard-characters]
@@ -183,7 +185,7 @@ Filter columns of multi sequence alignments with `filter-columns`.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: slynx filter-columns (-a|--alphabet NAME) INPUT-FILE 
                                 [--standard-chars DOUBLE]
@@ -207,7 +209,7 @@ Simulate sequences with `slynx simulate`.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL] 
                           [-m|--mixture-model MODEL] [-e|--edm-file NAME] 
@@ -269,10 +271,12 @@ Simulate sequences with `slynx simulate`.
        where XX is 10, 20, 30, 40, 50, or 60; CXX models, Quang et al., 2008.
     -m "EDM(EXCHANGEABILITIES)"
        Arbitrary empirical distribution mixture (EDM) models.
-       Stationary distributions have to be provided with the -e option.
+       Stationary distributions have to be provided with the -e or -p option.
        For example,
          LG exchangeabilities with stationary distributions given in FILE.
          -m "EDM(LG-Custom)" -e FILE
+         LG exchangeabilities with site profiles (Phylobayes) given in FILES.
+         -m "EDM(LG-Custom)" -p FILES
     For special mixture models, mixture weights are optional.
 
 
@@ -284,7 +288,7 @@ Sub-sample columns from multi sequence alignments.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: slynx sub-sample (-a|--alphabet NAME) INPUT-FILE
                             (-n|--number-of-sites INT)
@@ -314,7 +318,7 @@ Translate sequences.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: slynx translate (-a|--alphabet NAME) INPUT-FILE (-r|--reading-frame INT)
                            (-u|--universal-code CODE)
@@ -339,7 +343,7 @@ Handle phylogenetic trees in Newick format.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
                  [-f|--force] COMMAND
@@ -378,10 +382,10 @@ Compute distances between phylogenetic trees.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: tlynx compare [-n|--normalize] [-b|--bipartitions] [-t|--intersect] 
-                         [-f|--newick-format FORMAT] NAME
+                         [-f|--newick-format FORMAT] NAMES
       Compare two phylogenetic trees (compute distances and branch-wise differences).
     
     Available options:
@@ -395,7 +399,7 @@ Compute distances between phylogenetic trees.
                                Newick tree format: Standard, IqTree, or RevBayes;
                                default: Standard; for detailed help, see 'tlynx
                                --help'
-      NAME                     Tree file
+      NAMES                    Tree files
       -h,--help                Show this help text
 
 
@@ -407,7 +411,7 @@ Compute summary statistics of phylogenetic trees.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: tlynx examine INPUT-FILE [-f|--newick-format FORMAT]
       Compute summary statistics of phylogenetic trees.
@@ -431,7 +435,7 @@ Simulate phylogenetic trees using birth and death processes.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: tlynx simulate [-t|--nTrees INT] [-n|--nLeaves INT] [-H|--height DOUBLE] 
                           [-M|--condition-on-mrca] [-l|--lambda DOUBLE] 
@@ -470,7 +474,7 @@ Validate and (optionally) redo past ELynx analyses.
 
     ELynx Suite version 0.2.2.
     Developed by Dominik Schrempf.
-    Compiled on April 29, 2020, at 10:12 am, UTC.
+    Compiled on July 30, 2020, at 11:40 am, UTC.
     
     Usage: elynx COMMAND
       Validate and redo past ELynx analyses

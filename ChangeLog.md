@@ -2,9 +2,15 @@
 # Changelog for ELynx
 
 
-## Version 0.2.3; in development
+## Version 0.3.1; in development
 
--   `elynx-nexus` library to import and export Nexus files.
+
+## Version 0.3.0
+
+-   **`elynx-nexus`:** library to import and export Nexus files.
+-   **`elynx-tree`:** major refactor and big cleanup; use rose trees with branch
+    labels.
+-   **`elynx-tree`:** provide zippers.
 
 
 ## Version 0.2.2
