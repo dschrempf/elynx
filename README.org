@@ -83,6 +83,21 @@ ELynx is written in [[https://www.haskell.org/][Haskell]] and can be installed w
    The binaries are installed into =~/.local/bin/= which has to be added to the
    [[https://en.wikipedia.org/wiki/PATH_(variable)][PATH]] environment variable. Then, they can be used directly.
 
+* Documentation
+Documentation is available on [[https://hackage.haskell.org/][Hackage]].
+
+Libraries:
+- [[https://hackage.haskell.org/package/elynx-nexus][elynx-nexus]]
+- [[https://hackage.haskell.org/package/elynx-markov][elynx-markov]]
+- [[https://hackage.haskell.org/package/elynx-seq][elynx-seq]]
+- [[https://hackage.haskell.org/package/elynx-tools][elynx-tools]]
+- [[https://hackage.haskell.org/package/elynx-tree][elynx-tree]]
+
+Executables:
+- [[https://hackage.haskell.org/package/elynx][elynx]]
+- [[https://hackage.haskell.org/package/slynx][slynx]]
+- [[https://hackage.haskell.org/package/tlynx][tlynx]]
+
 * SLynx 
 Handle evolutionary sequences.
 
@@ -92,9 +107,9 @@ slynx --help | head -n -16
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
              [-f|--force] COMMAND
@@ -141,9 +156,9 @@ slynx concatenate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: slynx concatenate (-a|--alphabet NAME) INPUT-FILE
   Concatenate sequences found in input files.
@@ -165,9 +180,9 @@ slynx examine --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: slynx examine (-a|--alphabet NAME) INPUT-FILE [--per-site]
   Examine sequences. If data is a multi sequence alignment, additionally analyze columns.
@@ -190,9 +205,9 @@ slynx filter-rows --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: slynx filter-rows (-a|--alphabet NAME) INPUT-FILE [--longer-than LENGTH] 
                          [--shorter-than LENGTH] [--standard-characters]
@@ -218,9 +233,9 @@ slynx filter-columns --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: slynx filter-columns (-a|--alphabet NAME) INPUT-FILE 
                             [--standard-chars DOUBLE]
@@ -245,9 +260,9 @@ slynx simulate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL] 
                       [-m|--mixture-model MODEL] [-e|--edm-file NAME] 
@@ -327,9 +342,9 @@ slynx sub-sample --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: slynx sub-sample (-a|--alphabet NAME) INPUT-FILE
                         (-n|--number-of-sites INT)
@@ -360,9 +375,9 @@ slynx translate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: slynx translate (-a|--alphabet NAME) INPUT-FILE (-r|--reading-frame INT)
                        (-u|--universal-code CODE)
@@ -388,9 +403,9 @@ tlynx --help | head -n -16
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
              [-f|--force] COMMAND
@@ -430,9 +445,9 @@ tlynx compare --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: tlynx compare [-n|--normalize] [-b|--bipartitions] [-t|--intersect] 
                      [-f|--newick-format FORMAT] NAMES
@@ -462,9 +477,9 @@ tlynx examine --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: tlynx examine INPUT-FILE [-f|--newick-format FORMAT]
   Compute summary statistics of phylogenetic trees.
@@ -489,9 +504,9 @@ tlynx simulate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: tlynx simulate [-t|--nTrees INT] [-n|--nLeaves INT] [-H|--height DOUBLE] 
                       [-M|--condition-on-mrca] [-l|--lambda DOUBLE] 
@@ -531,9 +546,9 @@ elynx --help | head -n -16
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.2.2.
+ELynx Suite version 0.3.0.
 Developed by Dominik Schrempf.
-Compiled on July 30, 2020, at 11:40 am, UTC.
+Compiled on July 30, 2020, at 12:40 pm, UTC.
 
 Usage: elynx COMMAND
   Validate and redo past ELynx analyses
@@ -547,15 +562,3 @@ Available commands:
   redo                     Redo an ELynx analysis
 #+end_example
 
-* Library documentation
-Documentation of the libraries can be found on [[https://hackage.haskell.org/][Hackage]]:
-- [[https://hackage.haskell.org/package/elynx-nexus][elynx-nexus]]
-- [[https://hackage.haskell.org/package/elynx-markov][elynx-markov]]
-- [[https://hackage.haskell.org/package/elynx-seq][elynx-seq]]
-- [[https://hackage.haskell.org/package/elynx-tools][elynx-tools]]
-- [[https://hackage.haskell.org/package/elynx-tree][elynx-tree]]
-
-Documentation of the executables is also available:
-- [[https://hackage.haskell.org/package/elynx][elynx]]
-- [[https://hackage.haskell.org/package/slynx][slynx]]
-- [[https://hackage.haskell.org/package/tlynx][tlynx]]

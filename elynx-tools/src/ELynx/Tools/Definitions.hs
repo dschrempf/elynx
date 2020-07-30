@@ -21,6 +21,8 @@ where
 
 import Data.Version
 
+-- TODO: Move back to automatic version handling.
+
 -- XXX: Manually handled, because automatic handling with @Paths_...@ modules
 -- results in errors during source tarball creation and upload.
 
@@ -29,7 +31,7 @@ import Data.Version
 
 -- | ELynx version.
 version :: Version
-version = makeVersion [0, 2, 2]
+version = makeVersion [0, 3, 0]
 
 -- | Required precision when comparing 'Double' values.
 eps :: Double
