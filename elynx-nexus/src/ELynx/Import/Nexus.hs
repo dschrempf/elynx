@@ -12,21 +12,13 @@
 --
 -- Creation date: Tue Apr 28 17:10:05 2020.
 module ELynx.Import.Nexus
-  ( Parser,
-    Block (..),
+  ( Block (..),
     nexus,
   )
 where
 
-import Control.Monad (void)
-import Data.ByteString.Internal (c2w)
-import Data.ByteString.Lazy.Char8 (ByteString)
-import Data.Void (Void)
-import Text.Megaparsec
-import Text.Megaparsec.Byte
-
--- | Megaparsec shortcut.
-type Parser = Parsec Void ByteString
+import Data.ByteString.Char8 (ByteString)
+import Data.Attoparsec.ByteString.Char8
 
 -- | A Nexus block has a name (e.g., TREES), and parser for the entry.
 data Block a = Block
@@ -39,24 +31,28 @@ data Block a = Block
 
 -- | Parse a Nexus file with a given 'Block'.
 nexus :: Block a -> Parser a
-nexus b = start *> block b
+nexus b = start *> block b <?> "nexus"
 
 start :: Parser ()
-start = void $ string "#NEXUS" <* space
+start = (<?> "start") $ do
+  _ <- string "#NEXUS"
+  _ <- space
+  return ()
 
 block :: Block a -> Parser a
-block b = between (begin $ name b) end (parser b)
+block b = begin (name b) *> parser b <* end <?> "block"
 
 begin :: ByteString -> Parser ()
-begin n = do
+begin n = (<?> "begin") $ do
   _ <- string "BEGIN"
   _ <- space
   _ <- string n
-  _ <- char (c2w ';')
-  _ <-
-    space
-      <?> "block-begin"
+  _ <- char ';'
+  _ <- space
   return ()
 
 end :: Parser ()
-end = void $ string "END;" <* space
+end = (<?> "end") $ do
+  _ <- string "END;"
+  _ <- space
+  return ()

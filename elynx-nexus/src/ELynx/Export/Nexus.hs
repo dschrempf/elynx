@@ -19,7 +19,7 @@ where
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as L
 
--- This has to be refined. Like this, only one block can be parsed, and the
+-- XXX: This has to be refined. Like this, only one block can be parsed, and the
 -- block type has to be known beforehand.
 
 -- | Create nexus file with block name and block body.

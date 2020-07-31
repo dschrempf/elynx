@@ -16,14 +16,14 @@ module ELynx.Import.Tree.Nexus
   )
 where
 
-import Data.ByteString.Internal (c2w)
-import Data.ByteString.Lazy (ByteString, pack)
+import Control.Applicative
+import Data.ByteString (ByteString)
 import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted
-import ELynx.Import.Nexus hiding (Parser)
+import ELynx.Import.Nexus
 import ELynx.Import.Tree.Newick
-import Text.Megaparsec
-import Text.Megaparsec.Byte
+import Data.Attoparsec.ByteString.Char8
+import Prelude hiding (takeWhile)
 
 -- | Parse a Nexus files with a TREES block.
 nexusTrees :: NewickFormat -> Parser [(ByteString, Tree Phylo ByteString)]
@@ -34,12 +34,12 @@ trees f = Block "TREES" (some $ namedNewick f)
 
 namedNewick :: NewickFormat -> Parser (ByteString, Tree Phylo ByteString)
 namedNewick f = do
-  _ <- space
+  _ <- skipWhile isSpace
   _ <- string "TREE"
-  _ <- space
-  n <- some alphaNumChar
-  _ <- space
-  _ <- char $ c2w '='
-  _ <- space
+  _ <- skipWhile isSpace
+  n <- takeWhile1 (\x -> isAlpha_ascii x || isDigit x)
+  _ <- skipWhile isSpace
+  _ <- char '='
+  _ <- skipWhile isSpace
   t <- newick f
-  return (pack n, t)
+  return (n, t)

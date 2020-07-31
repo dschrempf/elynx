@@ -29,9 +29,9 @@ ghc-options:
 library:
   source-dirs: src
   dependencies:
+    - attoparsec
     - base >=4.7 && <5
     - bytestring
-    - megaparsec
   generated-other-modules: Paths_elynx_nexus
 
 tests:
