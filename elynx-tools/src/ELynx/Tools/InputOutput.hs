@@ -45,6 +45,7 @@ import Control.Monad ((<=<))
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
+import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as L
 import Data.List (isSuffixOf)
 import Data.Maybe
@@ -59,7 +60,7 @@ import ELynx.Tools.Reproduction
   )
 import System.Directory (doesFileExist)
 import System.IO
-import Text.Megaparsec
+import Data.Attoparsec.ByteString.Lazy
 
 -- | Get out file path with extension.
 getOutFilePath ::
@@ -91,88 +92,54 @@ openFile' frc fp md = checkFile frc fp >> openFile fp md
 
 -- XXX: For now, all files are read strictly (see help of
 -- Control.DeepSeq.force).
-readFile' :: FilePath -> IO L.ByteString
+readFile' :: FilePath -> IO ByteString
 readFile' fn = withFile fn ReadMode $ (evaluate . force) <=< L.hGetContents
 
 -- | Read file. If file path ends with ".gz", assume gzipped file and decompress
 -- before read.
-readGZFile :: FilePath -> IO L.ByteString
+readGZFile :: FilePath -> IO ByteString
 readGZFile f
   | ".gz" `isSuffixOf` f = decompress <$> readFile' f
   | otherwise = readFile' f
 
 -- | Write file. If file path ends with ".gz", assume gzipped file and compress
 -- before write.
-writeGZFile :: Force -> FilePath -> L.ByteString -> IO ()
+writeGZFile :: Force -> FilePath -> ByteString -> IO ()
 writeGZFile frc f r
   | ".gz" `isSuffixOf` f = checkFile frc f >> L.writeFile f (compress r)
   | otherwise = checkFile frc f >> L.writeFile f r
 
 -- | Parse a possibly gzipped file.
-runParserOnFile ::
-  Parsec e L.ByteString a ->
-  FilePath ->
-  IO (Either (ParseErrorBundle L.ByteString e) a)
-runParserOnFile p f = parse p f <$> readGZFile f
+runParserOnFile :: Parser a -> FilePath -> IO (Either String a)
+runParserOnFile p f = parseOnly p <$> readGZFile f
 
 -- | Parse a possibly gzipped file and extract the result.
-parseFileWith ::
-  (ShowErrorComponent e) =>
-  -- | The parser.
-  Parsec e L.ByteString a ->
-  FilePath ->
-  IO a
+parseFileWith :: Parser a -> FilePath -> IO a
 parseFileWith p f = parseFileOrIOWith p (Just f)
 
 -- | Parse standard input.
-parseIOWith ::
-  (ShowErrorComponent e) =>
-  -- | The parser.
-  Parsec e L.ByteString a ->
-  IO a
-parseIOWith p = parseByteStringWith "Standard input" p <$> L.getContents
+parseIOWith :: Parser a -> IO a
+parseIOWith p = parseFileOrIOWith p Nothing
 
 -- | Parse a possibly gzipped file, or standard input, and extract the result.
-parseFileOrIOWith ::
-  (ShowErrorComponent e) =>
-  -- | The parser.
-  Parsec e L.ByteString a ->
-  -- | If no file path is given, standard input is used.
-  Maybe FilePath ->
-  IO a
+parseFileOrIOWith :: Parser a -> Maybe FilePath -> IO a
 parseFileOrIOWith p mf = do
   contents <- maybe L.getContents readGZFile mf
   return $ parseByteStringWith (fromMaybe "Standard input" mf) p contents
 
 -- | Parse a 'String' and extract the result.
-parseStringWith ::
-  (ShowErrorComponent e) =>
-  -- | Name of string.
-  String ->
-  -- | Parser.
-  Parsec e L.ByteString a ->
-  -- | Input.
-  String ->
-  a
-parseStringWith s p l = parseByteStringWith s p (L.pack l)
+parseStringWith :: Parser a -> String -> a
+parseStringWith p x = parseByteStringWith p (L.pack l)
 
--- | Parse a 'L.ByteString' and extract the result.
-parseByteStringWith ::
-  (ShowErrorComponent e) =>
-  -- | Name of byte string.
-  String ->
-  -- | Parser.
-  Parsec e L.ByteString a ->
-  -- | Input.
-  L.ByteString ->
-  a
-parseByteStringWith s p l = case parse p s l of
-  Left err -> error $ errorBundlePretty err
+-- | Parse a 'ByteString' and extract the result.
+parseByteStringWith :: Parser a -> ByteString -> a
+parseByteStringWith p x = case parseOnly p x of
+  Left err -> error err
   Right val -> val
 
 -- | Write a result with a given name to file with given extension or standard
 -- output. Supports compression.
-out :: Reproducible a => String -> L.ByteString -> String -> ELynx a ()
+out :: Reproducible a => String -> ByteString -> String -> ELynx a ()
 out name res ext = do
   mfp <- getOutFilePath ext
   case mfp of

@@ -47,7 +47,6 @@ module ELynx.Tools.Reproduction
     createCommandReproducible,
     createCommand,
     elynxParserInfo,
-    megaReadM,
 
     -- * Re-exports
     Generic,
@@ -77,7 +76,6 @@ import Data.Version
   ( Version,
     showVersion,
   )
-import Data.Void
 import Data.Word
 import ELynx.Tools.Definitions (version)
 import ELynx.Tools.Misc (allValues)
@@ -88,11 +86,6 @@ import Options.Applicative.Help.Pretty
 import System.Environment
   ( getArgs,
     getProgName,
-  )
-import Text.Megaparsec
-  ( Parsec,
-    errorBundlePretty,
-    runParser,
   )
 
 -- Be careful; it is necessary to synchronize the version numbers across packages.
@@ -451,14 +444,6 @@ parserInfo dsc ftr p =
     (fullDesc <> headerDoc (Just hdr') <> progDescDoc dsc <> footerDoc ftr)
   where
     hdr' = vsep $ map pretty hdr
-
--- | See 'eitherReader', but for Megaparsec.
-megaReadM :: Parsec Void String a -> ReadM a
-megaReadM p = eitherReader $ \input ->
-  let eea = runParser p "" input
-   in case eea of
-        Left eb -> Left $ errorBundlePretty eb
-        Right a -> Right a
 
 -- | Fill a string so that it becomes a paragraph with line breaks. Useful for
 -- descriptions, headers and footers.

@@ -20,7 +20,7 @@ import Control.Monad (unless)
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Char8 as L
 import Data.Containers.ListUtils (nubOrd)
 import Data.List ((\\))
 import qualified Data.Text as T

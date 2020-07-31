@@ -24,17 +24,8 @@ import Data.Void
 import ELynx.Tools
 import Options.Applicative
 import TLynx.Parsers
-import Text.Megaparsec
-  ( Parsec,
-    eof,
-    try,
-  )
-import Text.Megaparsec.Char
-  ( char,
-    string,
-  )
-import Text.Megaparsec.Char.Lexer (scientific)
 import Text.Printf
+import Data.Attoparsec.ByteString.Char8
 
 -- | Supported distance measures.
 data DistanceMeasure
@@ -140,6 +131,15 @@ distanceParser =
   -- Try first the normalized one, since the normal branch score
   -- parser also succeeds in this case.
   try symmetric <|> try incompatibleSplit <|> branchScore
+
+-- See 'eitherReader', but for an attoparsec parser.
+eitherReadA :: A.Parser a -> ReadM a
+eitherReadA p = eitherReader $ \input ->
+  let eea = A.parseOnly p "" input
+   in case eea of
+        Left eb -> Left $ errorBundlePretty eb
+        Right a -> Right a
+
 
 distanceOpt :: Parser DistanceMeasure
 distanceOpt =

@@ -30,6 +30,7 @@ library:
   dependencies:
     - aeson
     - async
+    - attoparsec
     - base >=4.7 && <5
     - base16-bytestring
     - bytestring
@@ -40,7 +41,6 @@ library:
     - fast-logger
     - hmatrix
     - matrices
-    - megaparsec
     - monad-logger
     - monad-control
     - mwc-random
