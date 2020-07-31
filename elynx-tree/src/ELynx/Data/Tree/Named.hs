@@ -16,10 +16,14 @@ where
 
 import Data.ByteString.Lazy.Builder (char8, doubleDec, intDec, toLazyByteString)
 import Data.ByteString.Lazy.Char8 (ByteString)
+import qualified Data.ByteString.Lazy.Char8 as L
 
 -- | Data types with names.
 class Named a where
   getName :: a -> ByteString
+
+instance Named () where
+  getName = const L.empty
 
 instance Named Int where
   getName = toLazyByteString . intDec
