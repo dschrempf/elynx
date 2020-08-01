@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- |
 -- Module      :  ELynx.Import.MarkovProcess.EDMModelPhylobayes
 -- Description :  Import stationary distributions from Phylobayes format
@@ -16,20 +18,13 @@ module ELynx.Import.MarkovProcess.EDMModelPhylobayes
   )
 where
 
+import Control.Applicative
 import Control.Monad
+import Data.Attoparsec.ByteString
+import qualified Data.Attoparsec.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Vector.Storable as V
-import Data.Void
 import ELynx.Data.MarkovProcess.MixtureModel
-  ( Weight,
-  )
-import ELynx.Tools
-import Text.Megaparsec
-import Text.Megaparsec.Byte
-import Text.Megaparsec.Byte.Lexer hiding (space)
-
--- | Shortcut.
-type Parser = Parsec Void L.ByteString
 
 -- | An empirical mixture model component has a weight and a stationary
 -- distribution.
@@ -37,36 +32,33 @@ type EDMComponent = (Weight, V.Vector Double)
 
 -- | Parse stationary distributions from Phylobayes format.
 phylobayes :: Parser [EDMComponent]
-phylobayes = do
+phylobayes = (<?> "phylobayes") $ do
   n <- headerLine
   k <- kComponentsLine
   cs <- count k $ dataLine n
-  _ <- many newline *> eof <?> "phylobayes"
+  _ <- C.skipWhile C.isSpace
+  _ <- endOfInput
   return cs
-
-horizontalSpace :: Parser ()
-horizontalSpace = skipMany $ char (c2w ' ') <|> tab
 
 headerLine :: Parser Int
 headerLine = do
-  n <- decimal
-  _ <- horizontalSpace
+  n <- C.decimal
+  _ <- skipWhile C.isHorizontalSpace
   -- XXX: This should be more general, but then we also want to ensure that the
   -- order of states is correct.
-  _ <-
-    chunk (L.pack "A C D E F G H I K L M N P Q R S T V W Y")
-      <|> chunk (L.pack "A C G T")
-  _ <- many newline <?> "headerLine"
+  _ <- string (L.toStrict "A C D E F G H I K L M N P Q R S T V W Y")
+      <|> string (L.toStrict "A C G T")
+  _ <- C.skipWhile C.isSpace <?> "headerLine"
   return n
 
 kComponentsLine :: Parser Int
-kComponentsLine = decimal <* newline <?> "kComponentsLine"
+kComponentsLine = C.decimal <* C.skipWhile C.isSpace <?> "kComponentsLine"
 
 dataLine :: Int -> Parser EDMComponent
-dataLine n = do
-  weight <- float
-  _ <- horizontalSpace
-  vals <- float `sepEndBy1` horizontalSpace
+dataLine n = (<?> "dataLine") $ do
+  weight <- C.double
+  _ <- skipWhile C.isHorizontalSpace
+  vals <- C.double `sepBy1` skipWhile C.isHorizontalSpace
+  _ <- C.skipWhile C.isSpace
   when (length vals /= n) (error "Did not find correct number of entries.")
-  _ <- space <?> "dataLine"
   return (weight, V.fromList vals)

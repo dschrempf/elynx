@@ -83,7 +83,7 @@ someNewick RevBayes = someNewickRevBayes
 
 -- Parse a single Newick tree. Also succeeds when more trees follow.
 newickStandard :: Parser (Tree Phylo ByteString)
-newickStandard = many space *> tree <* char ';' <* space <?> "newickStandard"
+newickStandard = skipWhile isSpace *> tree <* char ';' <* skipWhile isSpace <?> "newickStandard"
 
 -- Parse a single Newick tree. Fails when end of file is not reached.
 oneNewickStandard :: Parser (Tree Phylo ByteString)
@@ -143,7 +143,7 @@ branchSupport = (<?> "branchSupport") $
 -- IQ-TREE stores the branch support as node names after the closing bracket of
 -- a forest. Parse a single Newick tree. Also succeeds when more trees follow.
 newickIqTree :: Parser (Tree Phylo ByteString)
-newickIqTree = space *> treeIqTree <* char ';' <* space <?> "newickIqTree"
+newickIqTree = skipWhile isSpace *> treeIqTree <* char ';' <* skipWhile isSpace <?> "newickIqTree"
 
 -- See 'newickIqTree'. Parse a single Newick tree. Fails when end of file is not
 -- reached.
@@ -185,7 +185,7 @@ forestIqTree = (<?> "forestIqTree") $ do
 -- XXX: Key value pairs are ignored at the moment.
 newickRevBayes :: Parser (Tree Phylo ByteString)
 newickRevBayes =
-  space *> optional brackets *> treeRevBayes <* char ';' <* space <?> "newickRevBayes"
+  skipWhile isSpace *> optional brackets *> treeRevBayes <* char ';' <* skipWhile isSpace <?> "newickRevBayes"
 
 -- See 'newickRevBayes'. Parse a single Newick tree. Fails when end of file is
 -- not reached.
@@ -229,6 +229,6 @@ leafRevBayes = (<?> "leafRevBayes") $ do
 brackets :: Parser ()
 brackets = (<?> "brackets") $ do
   _ <- char '['
-  _ <- char ']'
   _ <- takeWhile (/= ']')
+  _ <- char ']'
   return ()

@@ -31,28 +31,28 @@ data Block a = Block
 
 -- | Parse a Nexus file with a given 'Block'.
 nexus :: Block a -> Parser a
-nexus b = start *> block b <?> "nexus"
+nexus b = start *> block b <* endOfInput <?> "nexus"
 
 start :: Parser ()
 start = (<?> "start") $ do
   _ <- string "#NEXUS"
-  _ <- space
+  _ <- skipWhile isSpace
   return ()
 
 block :: Block a -> Parser a
-block b = begin (name b) *> parser b <* end <?> "block"
+block b = beginB (name b) *> parser b <* endB <?> "block"
 
-begin :: ByteString -> Parser ()
-begin n = (<?> "begin") $ do
+beginB :: ByteString -> Parser ()
+beginB n = (<?> "begin") $ do
   _ <- string "BEGIN"
-  _ <- space
+  _ <- skipWhile isSpace
   _ <- string n
   _ <- char ';'
-  _ <- space
+  _ <- skipWhile isSpace
   return ()
 
-end :: Parser ()
-end = (<?> "end") $ do
+endB :: Parser ()
+endB = (<?> "end") $ do
   _ <- string "END;"
-  _ <- space
+  _ <- skipWhile isSpace
   return ()

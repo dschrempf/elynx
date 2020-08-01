@@ -16,7 +16,7 @@ module ELynx.Export.Tree.NexusSpec
   )
 where
 
-import Data.ByteString.Lazy (ByteString)
+import Data.ByteString (ByteString)
 import ELynx.Data.Tree
 import ELynx.Export.Tree.Nexus
 import ELynx.Import.Tree.Newick (NewickFormat (..))
@@ -42,5 +42,5 @@ spec :: Spec
 spec = describe "toNexusTrees" $
   it "exports a nexus file with a TREES block" $
     do
-      let ts = parseByteStringWith "NexusTrees" (nexusTrees Standard) (toNexusTrees [("tree1", tree)])
+      let ts = parseByteStringWith (nexusTrees Standard) (toNexusTrees [("tree1", tree)])
       head ts `shouldBe` ("tree1", tree)

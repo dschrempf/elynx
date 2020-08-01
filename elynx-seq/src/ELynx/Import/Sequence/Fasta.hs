@@ -23,10 +23,12 @@ module ELynx.Import.Sequence.Fasta
   )
 where
 
+import Control.Applicative
 import Control.Monad
+import Data.Attoparsec.ByteString
+import qualified Data.Attoparsec.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Set as S
-import Data.Void
 import Data.Word8
   ( Word8,
     isAlphaNum,
@@ -35,11 +37,7 @@ import ELynx.Data.Alphabet.Alphabet as A
 import ELynx.Data.Alphabet.Character
 import ELynx.Data.Sequence.Sequence
 import ELynx.Tools
-import Text.Megaparsec
-import Text.Megaparsec.Byte
-
--- | Shortcut.
-type Parser = Parsec Void L.ByteString
+import Prelude hiding (takeWhile)
 
 isSpecial :: Word8 -> Bool
 isSpecial w = w `elem` map c2w ['_', '|', '.', '-']
@@ -47,26 +45,22 @@ isSpecial w = w `elem` map c2w ['_', '|', '.', '-']
 isHeader :: Word8 -> Bool
 isHeader w = isAlphaNum w || isSpecial w
 
-isHorizontalSpace :: Word8 -> Bool
-isHorizontalSpace w = (w == c2w ' ') || (w == c2w '\t')
-
 sequenceHeader :: Parser (L.ByteString, L.ByteString)
 sequenceHeader = do
-  _ <- char (c2w '>')
-  n <- takeWhile1P (Just "Name") isHeader
-  _ <- takeWhileP (Just "Horizontal space") isHorizontalSpace
-  d <- takeWhileP (Just "Description") isHeader
-  _ <- eol
-  return (n, d)
+  _ <- C.char '>'
+  n <- takeWhile1 isHeader
+  _ <- takeWhile C.isHorizontalSpace
+  d <- takeWhile isHeader
+  _ <- C.endOfLine
+  return (L.fromStrict n, L.fromStrict d)
 
 -- It is a little faster to directly pass the set of allowed characters. Then,
 -- this set only has to be calculcated once per sequence in 'fastaSequence'.
 sequenceLine :: S.Set Word8 -> Parser L.ByteString
 sequenceLine s = do
   -- XXX: Will fail for non-capital letters.
-  !xs <- takeWhile1P (Just "Alphabet character") (`S.member` s)
-  _ <- void eol <|> eof
-  return xs
+  !xs <- takeWhile1 (`S.member` s)
+  return (L.fromStrict xs)
 
 -- XXX: If sequences are parsed line by line, the lines have to be copied when
 -- forming the complete sequence. This is not memory efficient.
@@ -76,10 +70,10 @@ fastaSequence :: Alphabet -> Parser Sequence
 fastaSequence a = do
   (n, d) <- sequenceHeader
   let !alph = S.map toWord (A.all . alphabetSpec $ a)
-  lns <- some (sequenceLine alph)
-  _ <- many eol
+  lns <- sequenceLine alph `sepBy1` C.endOfLine
+  _ <- many C.endOfLine
   return $ Sequence n d a (fromByteString $ L.concat lns)
 
 -- | Parse a Fasta file with given 'Alphabet'.
 fasta :: Alphabet -> Parser [Sequence]
-fasta a = some (fastaSequence a) <* eof
+fasta a = some (fastaSequence a) <* endOfInput

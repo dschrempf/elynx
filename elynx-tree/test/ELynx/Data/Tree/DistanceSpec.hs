@@ -17,7 +17,7 @@ module ELynx.Data.Tree.DistanceSpec
 where
 
 -- import Data.Bifunctor
-import Data.ByteString.Lazy.Char8 (ByteString)
+import Data.ByteString.Char8 (ByteString)
 import ELynx.Data.Tree
 -- import qualified Data.Set as S
 import ELynx.Data.Tree.Arbitrary ()
@@ -185,19 +185,19 @@ bifurcatingIncomp =
     ]
 
 incSplitTree1a :: Tree Phylo ByteString
-incSplitTree1a = parseByteStringWith "" (oneNewick IqTree) "((a,b)0.7,(c,d));"
+incSplitTree1a = parseByteStringWith (oneNewick IqTree) "((a,b)0.7,(c,d));"
 
 incSplitTree1b :: Tree Phylo ByteString
-incSplitTree1b = parseByteStringWith "" (oneNewick IqTree) "((a,b)0.7,c,d);"
+incSplitTree1b = parseByteStringWith (oneNewick IqTree) "((a,b)0.7,c,d);"
 
 incSplitTree2 :: Tree Phylo ByteString
-incSplitTree2 = parseByteStringWith "" (oneNewick IqTree) "((a,c),(b,d));"
+incSplitTree2 = parseByteStringWith (oneNewick IqTree) "((a,c),(b,d));"
 
 incSplitTree3 :: Tree Phylo ByteString
-incSplitTree3 = parseByteStringWith "" (oneNewick IqTree) "(((a,b)0.7,c),(d,e));"
+incSplitTree3 = parseByteStringWith (oneNewick IqTree) "(((a,b)0.7,c),(d,e));"
 
 incSplitTree4 :: Tree Phylo ByteString
-incSplitTree4 = parseByteStringWith "" (oneNewick IqTree) "(((a,c),b),(d,e));"
+incSplitTree4 = parseByteStringWith (oneNewick IqTree) "(((a,c),b),(d,e));"
 
 -- Compute distances between adjacent pairs of a list of input trees. Use given
 -- distance measure.

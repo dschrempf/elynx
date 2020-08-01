@@ -14,25 +14,29 @@ module ELynx.Data.Tree.Named
   )
 where
 
-import Data.ByteString.Lazy.Builder (char8, doubleDec, intDec, toLazyByteString)
-import Data.ByteString.Lazy.Char8 (ByteString)
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy.Builder as L
 import qualified Data.ByteString.Lazy.Char8 as L
+import Data.Double.Conversion.ByteString
 
 -- | Data types with names.
 class Named a where
-  getName :: a -> ByteString
+  getName :: a -> L.ByteString
 
 instance Named () where
   getName = const L.empty
 
 instance Named Int where
-  getName = toLazyByteString . intDec
+  getName = L.toLazyByteString . L.intDec
 
 instance Named Double where
-  getName = toLazyByteString . doubleDec
+  getName = L.fromStrict . toShortest
 
 instance Named Char where
-  getName = toLazyByteString . char8
+  getName = L.toLazyByteString . L.char8
 
-instance Named ByteString where
+instance Named L.ByteString where
   getName = id
+
+instance Named B.ByteString where
+  getName = L.fromStrict

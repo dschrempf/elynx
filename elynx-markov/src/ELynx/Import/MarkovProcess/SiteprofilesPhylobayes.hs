@@ -21,24 +21,21 @@ module ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
   )
 where
 
+import Control.Applicative
+import Data.Attoparsec.ByteString
+import qualified Data.Attoparsec.ByteString.Char8 as C
 import Control.Monad
 import Data.Containers.ListUtils (nubInt)
 import qualified Data.Vector.Storable as V
 import ELynx.Import.MarkovProcess.EDMModelPhylobayes
-  ( EDMComponent,
-    Parser,
-  )
-import ELynx.Tools
-import Text.Megaparsec
-import Text.Megaparsec.Byte
-import Text.Megaparsec.Byte.Lexer
 
 -- | Parse stationary distributions from Phylobayes format.
 siteprofiles :: Parser [EDMComponent]
-siteprofiles = do
+siteprofiles = (<?> "phylobayes siteprofiles") $ do
   _ <- headerLines
   cs <- many dataLine
-  _ <- many newline *> eof <?> "phylobayes siteprofiles"
+  _ <- C.skipWhile C.isSpace
+  _ <- endOfInput
   let ls = map length cs
       nLs = length $ nubInt ls
   when
@@ -46,28 +43,20 @@ siteprofiles = do
     (error "The site profiles have a different number of entries.")
   return cs
 
-horizontalSpace :: Parser ()
-horizontalSpace = skipMany $ char (c2w ' ') <|> tab
-
 line :: Parser ()
-line = do
-  _ <- many $ noneOf [c2w '\n']
-  pure ()
+line = skipWhile (not . C.isEndOfLine)
 
 -- For now, just ignore the header.
 headerLines :: Parser ()
-headerLines = do
-  _ <- line
-  _ <- many newline <?> "headerLine"
-  pure ()
+headerLines = line *> C.skipWhile C.isSpace <?> "headerLine"
 
 dataLine :: Parser EDMComponent
-dataLine = do
+dataLine = (<?> "dataLine") $ do
   -- Ignore site number.
-  _ <- decimal :: Parser Integer
-  _ <- horizontalSpace
+  _ <- C.decimal :: Parser Int
+  _ <- skipWhile C.isHorizontalSpace
   -- Also ignore additional white space on line.
-  vals <- float `sepEndBy1` horizontalSpace
-  _ <- many newline <?> "dataLine"
+  vals <- C.double `sepBy1` skipWhile C.isHorizontalSpace
+  _ <- C.skipWhile C.isSpace
   -- Set the weight to 1.0 for all sites.
   return (1.0, V.fromList vals)
