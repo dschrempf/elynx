@@ -30,12 +30,12 @@ library:
   source-dirs: src
   dependencies:
     - aeson
+    - attoparsec
     - base >=4.7 && <5
     - bytestring
     - containers
     - elynx-tools
     - matrices
-    - megaparsec
     - mwc-random
     - parallel
     - primitive
@@ -54,6 +54,5 @@ tests:
       - elynx-seq
       - elynx-tools
       - hspec
-      - hspec-megaparsec
       - matrices
       - vector

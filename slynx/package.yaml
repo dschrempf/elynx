@@ -30,6 +30,7 @@ library:
   source-dirs: src
   dependencies:
     - async
+    - attoparsec
     - base >=4.7 && <5
     - bytestring
     - containers
@@ -38,7 +39,6 @@ library:
     - elynx-tools
     - elynx-tree
     - hmatrix
-    - megaparsec
     - monad-logger
     - mwc-random
     - optparse-applicative

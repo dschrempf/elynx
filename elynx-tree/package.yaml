@@ -39,7 +39,6 @@ library:
     - elynx-nexus
     - elynx-tools
     - math-functions
-    - megaparsec
     - mwc-random
     - primitive
     - statistics
@@ -69,6 +68,4 @@ tests:
       - elynx-tools
       - elynx-tree
       - hspec
-      - hspec-megaparsec
-      - megaparsec
       - QuickCheck

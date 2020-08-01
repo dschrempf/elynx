@@ -26,6 +26,7 @@ library:
   dependencies:
     - aeson
     - array
+    - attoparsec
     - lifted-async
     - base >=4.7 && <5
     - bytestring
@@ -34,7 +35,6 @@ library:
     - elynx-tools
     - elynx-tree
     - gnuplot
-    - megaparsec
     - monad-logger
     - mwc-random
     - optparse-applicative

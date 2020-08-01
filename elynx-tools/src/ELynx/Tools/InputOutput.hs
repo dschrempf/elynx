@@ -48,7 +48,6 @@ import Control.Monad.Trans.Reader (ask)
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as L
 import Data.List (isSuffixOf)
-import Data.Maybe
 import qualified Data.Text as T
 import ELynx.Tools.Reproduction
   ( Arguments (..),
@@ -111,7 +110,7 @@ writeGZFile frc f r
 
 -- | Parse a possibly gzipped file.
 runParserOnFile :: Parser a -> FilePath -> IO (Either String a)
-runParserOnFile p f = parseOnly p <$> readGZFile f
+runParserOnFile p f = eitherResult . parse p <$> readGZFile f
 
 -- | Parse a possibly gzipped file and extract the result.
 parseFileWith :: Parser a -> FilePath -> IO a
@@ -124,16 +123,16 @@ parseIOWith p = parseFileOrIOWith p Nothing
 -- | Parse a possibly gzipped file, or standard input, and extract the result.
 parseFileOrIOWith :: Parser a -> Maybe FilePath -> IO a
 parseFileOrIOWith p mf = do
-  contents <- maybe L.getContents readGZFile mf
-  return $ parseByteStringWith (fromMaybe "Standard input" mf) p contents
+  s <- maybe L.getContents readGZFile mf
+  return $ parseByteStringWith p s
 
 -- | Parse a 'String' and extract the result.
 parseStringWith :: Parser a -> String -> a
-parseStringWith p x = parseByteStringWith p (L.pack l)
+parseStringWith p x = parseByteStringWith p (L.pack x)
 
 -- | Parse a 'ByteString' and extract the result.
 parseByteStringWith :: Parser a -> ByteString -> a
-parseByteStringWith p x = case parseOnly p x of
+parseByteStringWith p x = case eitherResult $ parse p x of
   Left err -> error err
   Right val -> val
 
