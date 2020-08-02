@@ -28,8 +28,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader (ask)
-import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Lazy.Char8 as LC
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List.NonEmpty (toList)
 import Data.Maybe
 import qualified Data.Set as Set
@@ -110,9 +109,9 @@ simulateAlignment pm t' n g = do
   return $ either error id $ A.fromSequences sequences
 
 -- Summarize EDM components; line to be printed to screen or log.
-summarizeEDMComponents :: [EDMComponent] -> L.ByteString
+summarizeEDMComponents :: [EDMComponent] -> BL.ByteString
 summarizeEDMComponents cs =
-  LC.pack $
+  BL.pack $
     "Empiricial distribution mixture model with "
       ++ show (length cs)
       ++ " components."
@@ -186,7 +185,7 @@ simulateCmd = do
       $(logInfo) $
         LT.toStrict $
           LT.decodeUtf8 $
-            LC.unlines $
+            BL.unlines $
               P.summarize
                 phyloModel'
       return phyloModel'
@@ -194,13 +193,13 @@ simulateCmd = do
       $(logInfo) $
         LT.toStrict $
           LT.decodeUtf8 $
-            LC.intercalate "\n" $
+            BL.intercalate "\n" $
               P.summarize phyloModel'
       $(logInfo) ""
       $(logInfo) $
         LT.toStrict $
           LT.decodeUtf8 $
-            LC.intercalate "\n" $
+            BL.intercalate "\n" $
               summarizeGammaRateHeterogeneity n alpha
       return $ expand n alpha phyloModel'
   -- -- XXX: Do not report possibly huge empirical distribution mixture models

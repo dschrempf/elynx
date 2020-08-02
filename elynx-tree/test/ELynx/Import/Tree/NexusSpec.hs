@@ -16,7 +16,7 @@ module ELynx.Import.Tree.NexusSpec
   )
 where
 
-import Data.ByteString (ByteString)
+import qualified Data.ByteString as BS
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick (NewickFormat (..))
 import ELynx.Import.Tree.Nexus
@@ -29,7 +29,7 @@ file = "data/SimpleTree.nex"
 noPL :: Phylo
 noPL = Phylo Nothing Nothing
 
-res :: Tree Phylo ByteString
+res :: Tree Phylo BS.ByteString
 res =
   Node
     noPL

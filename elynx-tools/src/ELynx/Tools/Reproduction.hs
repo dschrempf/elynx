@@ -68,7 +68,7 @@ import Data.Aeson
     encodeFile,
   )
 import Data.ByteString.Base16 (encode)
-import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Char8 as BS
 import Data.List hiding (group)
 import Data.Time
 import Data.Vector.Unboxed (Vector)
@@ -333,10 +333,10 @@ class Reproducible a where
 -- | A unique hash of the reproduction data type.
 getReproductionHash :: forall a. Reproducible a => Reproduction a -> String
 getReproductionHash r =
-  B.unpack $
+  BS.unpack $
     encode $
       hash $
-        B.pack $
+        BS.pack $
           unlines $
             -- Reproduction.
             progName r :
@@ -380,8 +380,8 @@ instance FromJSON a => FromJSON (Reproduction a)
 instance ToJSON a => ToJSON (Reproduction a)
 
 -- | Helper function.
-hashFile :: FilePath -> IO B.ByteString
-hashFile f = encode . hash <$> B.readFile f
+hashFile :: FilePath -> IO BS.ByteString
+hashFile f = encode . hash <$> BS.readFile f
 
 -- | Write an ELynx reproduction file.
 writeReproduction ::
@@ -396,7 +396,7 @@ writeReproduction bn r = do
   let outFs = map (bn ++) (outSuffixes r)
   let fs = inFiles r ++ outFs
   cs <- mapM hashFile fs
-  let cs' = map B.unpack cs
+  let cs' = map BS.unpack cs
       s = Reproduction pn as version Nothing fs cs' r
   void $ encodeFile (bn <> ".elynx") (setHash s)
 

@@ -16,21 +16,20 @@ module ELynx.Export.Nexus
   )
 where
 
-import Data.ByteString.Lazy.Char8 (ByteString)
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 
 -- XXX: This has to be refined. Like this, only one block can be parsed, and the
 -- block type has to be known beforehand.
 
 -- | Create nexus file with block name and block body.
-toNexus :: ByteString -> [ByteString] -> ByteString
-toNexus n b = L.unlines $ [start, begin n] <> b <> [end]
+toNexus :: BL.ByteString -> [BL.ByteString] -> BL.ByteString
+toNexus n b = BL.unlines $ [start, begin n] <> b <> [end]
 
-start :: ByteString
+start :: BL.ByteString
 start = "#NEXUS"
 
-begin :: ByteString -> ByteString
+begin :: BL.ByteString -> BL.ByteString
 begin n = "BEGIN " <> n <> ";"
 
-end :: ByteString
+end :: BL.ByteString
 end = "END;"

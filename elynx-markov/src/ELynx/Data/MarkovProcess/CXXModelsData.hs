@@ -10,7 +10,7 @@
 --
 -- Creation date: Tue Feb 26 17:17:35 2019.
 --
--- Quang, L. S., Gascuel, O. & Lartillot, N. Empirical profile mixture models for
+-- Quang, BL. S., Gascuel, O. & Lartillot, N. Empirical profile mixture models for
 -- phylogenetic reconstruction. Bioinformatics 24, 2317–2323 (2008).
 module ELynx.Data.MarkovProcess.CXXModelsData
   ( c10StatDists,

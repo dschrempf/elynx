@@ -37,8 +37,8 @@ module ELynx.Data.MarkovProcess.MixtureModel
   )
 where
 
-import qualified Data.ByteString.Builder as L
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Builder as BB
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List.NonEmpty hiding (zip)
 import Data.Semigroup
 import ELynx.Data.Alphabet.Alphabet
@@ -136,17 +136,17 @@ appendNameComponents n m = m {components = cs'}
     cs' = map (appendNameComponent n) cs
 
 -- | Summarize a mixture model component; lines to be printed to screen or log.
-summarizeComponent :: Component -> [L.ByteString]
+summarizeComponent :: Component -> [BL.ByteString]
 summarizeComponent c =
-  L.pack "Weight: "
-    <> (L.toLazyByteString . L.doubleDec $ weight c) :
+  BL.pack "Weight: "
+    <> (BB.toLazyByteString . BB.doubleDec $ weight c) :
   S.summarize (substModel c)
 
 -- | Summarize a mixture model; lines to be printed to screen or log.
-summarize :: MixtureModel -> [L.ByteString]
+summarize :: MixtureModel -> [BL.ByteString]
 summarize m =
-  [ L.pack $ "Mixture model: " ++ name m ++ ".",
-    L.pack $ "Number of components: " ++ show n ++ "."
+  [ BL.pack $ "Mixture model: " ++ name m ++ ".",
+    BL.pack $ "Number of components: " ++ show n ++ "."
   ]
     ++ detail
   where
@@ -155,7 +155,7 @@ summarize m =
       if n <= 100
         then
           concat
-            [ L.pack ("Component " ++ show i ++ ":") : summarizeComponent c
+            [ BL.pack ("Component " ++ show i ++ ":") : summarizeComponent c
               | (i, c) <- zip [1 :: Int ..] (toList $ components m)
             ]
         else []

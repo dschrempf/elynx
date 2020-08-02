@@ -10,7 +10,7 @@
 --
 -- Creation date: Tue Feb 26 16:44:33 2019.
 --
--- Quang, L. S., Gascuel, O. & Lartillot, N. Empirical profile mixture models for
+-- Quang, BL. S., Gascuel, O. & Lartillot, N. Empirical profile mixture models for
 -- phylogenetic reconstruction. Bioinformatics 24, 2317–2323 (2008).
 --
 -- XXX: For now, I only provide Poisson exchangeabilities.

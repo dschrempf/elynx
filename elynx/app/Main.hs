@@ -21,7 +21,7 @@ where
 import Control.Monad
 import Data.Aeson
 import qualified Data.Aeson.Types as J
-import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Char8 as BS
 import Data.Maybe
 import Data.Version (Version)
 import ELynx.Tools
@@ -82,7 +82,7 @@ checkArgs s = do
       else Right ()
 
 -- Does the file match the base 16 checksum?
-checkFile :: FilePath -> B.ByteString -> IO (Either String ())
+checkFile :: FilePath -> BS.ByteString -> IO (Either String ())
 checkFile fp h = do
   h' <- hashFile fp
   return $
@@ -92,8 +92,8 @@ checkFile fp h = do
         Left $
           unlines
             [ "SHA256 sum does not match for a file:",
-              fp ++ " has check sum " ++ B.unpack h',
-              "Stored check sum is " ++ B.unpack h
+              fp ++ " has check sum " ++ BS.unpack h',
+              "Stored check sum is " ++ BS.unpack h
             ]
 
 checkVersion :: Version -> Either String ()
@@ -130,7 +130,7 @@ validate s = do
   chA <- checkArgs s
   let chV = checkVersion (rVersion s)
       chH = checkHash s
-  chFs <- zipWithM checkFile (files s) (map B.pack $ checkSums s)
+  chFs <- zipWithM checkFile (files s) (map BS.pack $ checkSums s)
   return $ sequence_ (chA : chV : chH : chFs)
 
 validateAllReproductions :: AllReproductions -> IO (Either String ())

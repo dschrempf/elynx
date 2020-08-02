@@ -17,14 +17,10 @@ module ELynx.Data.Tree.PhylogenySpec
   )
 where
 
--- import Data.Bifunctor
--- import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Either
 import qualified Data.Set as S
 import ELynx.Data.Tree
 import ELynx.Data.Tree.Arbitrary ()
--- import ELynx.Import.Tree.Newick
--- import ELynx.Tools
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck hiding (labels)

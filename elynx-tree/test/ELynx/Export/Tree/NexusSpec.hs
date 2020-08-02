@@ -16,7 +16,7 @@ module ELynx.Export.Tree.NexusSpec
   )
 where
 
-import Data.ByteString (ByteString)
+import qualified Data.ByteString as BS
 import ELynx.Data.Tree
 import ELynx.Export.Tree.Nexus
 import ELynx.Import.Tree.Newick (NewickFormat (..))
@@ -24,7 +24,7 @@ import ELynx.Import.Tree.Nexus
 import ELynx.Tools
 import Test.Hspec
 
-tree :: Tree Phylo ByteString
+tree :: Tree Phylo BS.ByteString
 tree =
   Node
     (Phylo Nothing Nothing)

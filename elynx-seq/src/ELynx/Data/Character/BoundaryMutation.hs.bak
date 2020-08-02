@@ -38,7 +38,7 @@ module ELynx.Data.Character.BoundaryMutation
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8    as L
+import qualified Data.ByteString.Lazy.Char8    as BL
 import           Numeric.SpecFunctions          ( choose )
 
 import           ELynx.Data.Character.Nucleotide
@@ -76,14 +76,14 @@ data State = Bnd { bndN :: PopulationSize     -- | Population size.
                  , plyB :: Allele }
            deriving (Read, Eq)
 
--- | L.ByteString representation of 'State'; without surrounding brackets.
-showCounts :: State -> L.ByteString
-showCounts (Bnd n a) = L.intersperse ',' $ L.concat $ map (L.pack . toCounts)
+-- | BL.ByteString representation of 'State'; without surrounding brackets.
+showCounts :: State -> BL.ByteString
+showCounts (Bnd n a) = BL.intersperse ',' $ BL.concat $ map (L.pack . toCounts)
                                                           allValues
  where
   toCounts b | a == b    = show n
              | otherwise = "0"
-showCounts (Ply n i a b) = L.intersperse ',' $ L.concat $ map
+showCounts (Ply n i a b) = BL.intersperse ',' $ BL.concat $ map
   (L.pack . toCounts)
   allValues
  where
@@ -91,8 +91,8 @@ showCounts (Ply n i a b) = L.intersperse ',' $ L.concat $ map
              | c == b    = show (n - i)
              | otherwise = "0"
 
-showState :: State -> L.ByteString
-showState s = L.singleton '(' <> showCounts s <> L.singleton ')'
+showState :: State -> BL.ByteString
+showState s = BL.singleton '(' <> showCounts s <> BL.singleton ')'
 
 -- instance Show State where
 --   show s = "(" ++ showCounts s ++ ")"

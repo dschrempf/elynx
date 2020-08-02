@@ -25,7 +25,7 @@ import Options.Applicative
 import TLynx.Parsers
 import Text.Printf
 import qualified Data.Attoparsec.ByteString.Char8 as A
-import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Char8 as BS
 
 -- | Supported distance measures.
 data DistanceMeasure
@@ -133,7 +133,7 @@ distanceParser = symmetric <|> incompatibleSplit <|> branchScore
 
 -- See 'eitherReader', but for an attoparsec parser.
 eitherReadA :: A.Parser a -> ReadM a
-eitherReadA p = eitherReader $ \input -> A.parseOnly p (B.pack input)
+eitherReadA p = eitherReader $ \input -> A.parseOnly p (BS.pack input)
 
 distanceOpt :: Parser DistanceMeasure
 distanceOpt =

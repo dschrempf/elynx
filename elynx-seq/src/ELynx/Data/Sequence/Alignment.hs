@@ -44,7 +44,7 @@ where
 
 import Control.Monad hiding (join)
 import Control.Monad.Primitive
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List hiding
   ( concat,
     length,
@@ -107,31 +107,31 @@ toSequences (Alignment ns ds a da) =
     rows = M.toRows da
 
 -- -- | Show a 'Alignment', untrimmed.
--- summarizeSeq :: Alignment -> Int -> L.ByteString
+-- summarizeSeq :: Alignment -> Int -> BL.ByteString
 -- summarizeSeq m i =
---   L.unwords [ alignLeft nameWidth $ names m !! i
+--   BL.unwords [ alignLeft nameWidth $ names m !! i
 --             , summarizeByteString summaryLength $
---               L.pack $ V.toList $ V.map toChar $ M.takeRow (matrix m) i ]
+--               BL.pack $ V.toList $ V.map toChar $ M.takeRow (matrix m) i ]
 
-header :: Alignment -> L.ByteString
+header :: Alignment -> BL.ByteString
 header a =
-  L.unlines $
-    [ L.pack "Multi sequence alignment.",
-      L.pack $ "Code: " ++ A.alphabetDescription (alphabet a) ++ ".",
-      L.pack $ "Length: " ++ show (length a) ++ "."
+  BL.unlines $
+    [ BL.pack "Multi sequence alignment.",
+      BL.pack $ "Code: " ++ A.alphabetDescription (alphabet a) ++ ".",
+      BL.pack $ "Length: " ++ show (length a) ++ "."
     ]
       ++ reportLengthSummary
       ++ reportNumberSummary
   where
     reportLengthSummary =
-      [ L.pack $
+      [ BL.pack $
           "For each sequence, the "
             ++ show summaryLength
             ++ " first bases are shown."
         | length a > summaryLength
       ]
     reportNumberSummary =
-      [ L.pack $
+      [ BL.pack $
           show summaryNSequences
             ++ " out of "
             ++ show (nSequences a)
@@ -140,7 +140,7 @@ header a =
       ]
 
 -- | Similar to 'S.summarizeSequenceList' but with different Header.
-summarize :: Alignment -> L.ByteString
+summarize :: Alignment -> BL.ByteString
 summarize a = header a <> S.body (toSequences a)
 
 -- | Join two 'Alignment's vertically. That is, add more sequences

@@ -17,7 +17,7 @@ module ELynx.Tools.Text
   )
 where
 
-import Data.ByteString.Lazy (ByteString)
+import qualified Data.ByteString.Lazy as BL
 import Data.Text
   ( Text,
     pack,
@@ -30,5 +30,5 @@ tShow :: Show a => a -> Text
 tShow = pack . show
 
 -- | Conversion to 'Text' from bytestring.
-fromBs :: ByteString -> Text
+fromBs :: BL.ByteString -> Text
 fromBs = toStrict . decodeUtf8

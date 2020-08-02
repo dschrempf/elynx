@@ -22,7 +22,7 @@ import Control.Applicative
 import Control.Monad
 import Data.Attoparsec.ByteString
 import qualified Data.Attoparsec.ByteString.Char8 as C
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Vector.Storable as V
 import ELynx.Data.MarkovProcess.MixtureModel
 
@@ -46,8 +46,8 @@ headerLine = do
   _ <- skipWhile C.isHorizontalSpace
   -- XXX: This should be more general, but then we also want to ensure that the
   -- order of states is correct.
-  _ <- string (L.toStrict "A C D E F G H I K L M N P Q R S T V W Y")
-      <|> string (L.toStrict "A C G T")
+  _ <- string (BL.toStrict "A C D E F G H I K L M N P Q R S T V W Y")
+      <|> string (BL.toStrict "A C G T")
   _ <- C.skipWhile C.isSpace <?> "headerLine"
   return n
 

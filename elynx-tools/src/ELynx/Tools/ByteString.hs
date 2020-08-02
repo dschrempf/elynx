@@ -17,16 +17,10 @@ module ELynx.Tools.ByteString
     alignLeftWith,
     alignLeft,
     summarizeByteString,
-    c2w,
-    w2c,
     bShow,
   )
 where
 
-import Data.ByteString.Internal
-  ( c2w,
-    w2c,
-  )
 import qualified Data.ByteString.Lazy.Char8 as BL
 
 -- | For a given width, align string to the right; use given fill character;

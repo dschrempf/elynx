@@ -12,7 +12,7 @@
 module Main where
 
 import Criterion.Main
-import Data.ByteString.Lazy.Char8 (ByteString)
+import qualified Data.ByteString as BS
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick
 import ELynx.Tools
@@ -20,7 +20,7 @@ import ELynx.Tools
 treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"
 
-getManyTrees :: IO (Forest Phylo ByteString)
+getManyTrees :: IO (Forest Phylo BS.ByteString)
 getManyTrees = parseFileWith (someNewick Standard) treeFileMany
 
 main :: IO ()

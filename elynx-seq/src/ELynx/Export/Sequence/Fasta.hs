@@ -18,19 +18,19 @@ module ELynx.Export.Sequence.Fasta
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Data.Sequence.Sequence
 
-fastaHeader :: L.ByteString -> L.ByteString -> L.ByteString
+fastaHeader :: BL.ByteString -> BL.ByteString -> BL.ByteString
 fastaHeader n d =
-  L.singleton '>' <> n <> if L.null d then L.empty else L.pack " " <> d
+  BL.singleton '>' <> n <> if BL.null d then BL.empty else BL.pack " " <> d
 
 -- | Convert a 'Sequence' to Fasta format.
-sequenceToFasta :: Sequence -> L.ByteString
+sequenceToFasta :: Sequence -> BL.ByteString
 sequenceToFasta s =
-  L.unlines [fastaHeader (name s) (description s), toByteString $ characters s]
+  BL.unlines [fastaHeader (name s) (description s), toByteString $ characters s]
 
 -- | Convert a list 'Sequence's to Fasta format. A newline is added between any
 -- two 'Sequence's.
-sequencesToFasta :: [Sequence] -> L.ByteString
-sequencesToFasta ss = L.concat $ map sequenceToFasta ss
+sequencesToFasta :: [Sequence] -> BL.ByteString
+sequencesToFasta ss = BL.concat $ map sequenceToFasta ss

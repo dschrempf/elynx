@@ -22,7 +22,7 @@ module ELynx.Data.MarkovProcess.PhyloModel
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.MarkovProcess.MixtureModel as M
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
@@ -38,6 +38,6 @@ getAlphabet (MixtureModel mm) = M.getAlphabet mm
 getAlphabet (SubstitutionModel sm) = S.alphabet sm
 
 -- | Summarize a phylogenetic model; lines to be printed to screen or log.
-summarize :: PhyloModel -> [L.ByteString]
+summarize :: PhyloModel -> [BL.ByteString]
 summarize (MixtureModel mm) = M.summarize mm
 summarize (SubstitutionModel sm) = S.summarize sm

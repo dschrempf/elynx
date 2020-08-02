@@ -17,7 +17,7 @@ module ELynx.Import.Tree.Nexus
 where
 
 import Control.Applicative
-import Data.ByteString (ByteString)
+import qualified Data.ByteString as BS
 import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted
 import ELynx.Import.Nexus
@@ -26,13 +26,13 @@ import Data.Attoparsec.ByteString.Char8
 import Prelude hiding (takeWhile)
 
 -- | Parse a Nexus files with a TREES block.
-nexusTrees :: NewickFormat -> Parser [(ByteString, Tree Phylo ByteString)]
+nexusTrees :: NewickFormat -> Parser [(BS.ByteString, Tree Phylo BS.ByteString)]
 nexusTrees = nexus . trees
 
-trees :: NewickFormat -> Block [(ByteString, Tree Phylo ByteString)]
+trees :: NewickFormat -> Block [(BS.ByteString, Tree Phylo BS.ByteString)]
 trees f = Block "TREES" (some $ namedNewick f)
 
-namedNewick :: NewickFormat -> Parser (ByteString, Tree Phylo ByteString)
+namedNewick :: NewickFormat -> Parser (BS.ByteString, Tree Phylo BS.ByteString)
 namedNewick f = do
   _ <- skipWhile isSpace
   _ <- string "TREE"

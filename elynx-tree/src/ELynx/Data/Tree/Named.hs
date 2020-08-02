@@ -15,7 +15,7 @@ module ELynx.Data.Tree.Named
 where
 
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy.Builder as BB
+import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Double.Conversion.ByteString as BC
 

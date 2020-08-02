@@ -20,7 +20,7 @@ module ELynx.Data.MarkovProcess.GammaRateHeterogeneity
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as N
 import qualified ELynx.Data.MarkovProcess.MixtureModel as M
@@ -32,10 +32,10 @@ import Statistics.Distribution.Gamma
 import Prelude hiding (repeat)
 
 -- | Short summary of gamma rate heterogeneity parameters.
-summarizeGammaRateHeterogeneity :: Int -> Double -> [L.ByteString]
+summarizeGammaRateHeterogeneity :: Int -> Double -> [BL.ByteString]
 summarizeGammaRateHeterogeneity n alpha =
   map
-    L.pack
+    BL.pack
     [ "Discrete gamma rate heterogeneity.",
       "Number of categories: " ++ show n,
       "Shape parameter of gamma distribution: " ++ show alpha,

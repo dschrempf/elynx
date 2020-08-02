@@ -25,7 +25,7 @@ import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Logger (logDebug, logInfo)
 import Control.Monad.Trans.Reader (ask)
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Data.Tree
 import ELynx.Export.Tree.Newick (toNewick)
 import ELynx.Import.Tree.Newick (oneNewick)
@@ -69,16 +69,16 @@ shuffleCmd = do
     Random -> error "Seed not available; please contact maintainer."
     Fixed s -> liftIO $ initialize s
   ts <- liftIO $ shuffleT (nReplicates l) (height t) cs ls gen
-  liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . lengthToPhyloTree) ts
+  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts
   liftIO $ hClose h
 
 shuffleT ::
   Int -> -- How many?
   Double -> -- Stem length.
   [Double] -> -- Coalescent times.
-  [L.ByteString] -> -- Leave names.
+  [BL.ByteString] -> -- Leave names.
   GenIO ->
-  IO (Forest Length L.ByteString)
+  IO (Forest Length BL.ByteString)
 shuffleT n o cs ls gen = do
   css <- grabble cs n (length cs) gen
   lss <- grabble ls n (length ls) gen

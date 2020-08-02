@@ -45,8 +45,7 @@ import Control.Monad ((<=<))
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
-import Data.ByteString.Lazy (ByteString)
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (isSuffixOf)
 import qualified Data.Text as T
 import ELynx.Tools.Reproduction
@@ -91,22 +90,22 @@ openFile' frc fp md = checkFile frc fp >> openFile fp md
 
 -- XXX: For now, all files are read strictly (see help of
 -- Control.DeepSeq.force).
-readFile' :: FilePath -> IO ByteString
-readFile' fn = withFile fn ReadMode $ (evaluate . force) <=< L.hGetContents
+readFile' :: FilePath -> IO BL.ByteString
+readFile' fn = withFile fn ReadMode $ (evaluate . force) <=< BL.hGetContents
 
 -- | Read file. If file path ends with ".gz", assume gzipped file and decompress
 -- before read.
-readGZFile :: FilePath -> IO ByteString
+readGZFile :: FilePath -> IO BL.ByteString
 readGZFile f
   | ".gz" `isSuffixOf` f = decompress <$> readFile' f
   | otherwise = readFile' f
 
 -- | Write file. If file path ends with ".gz", assume gzipped file and compress
 -- before write.
-writeGZFile :: Force -> FilePath -> ByteString -> IO ()
+writeGZFile :: Force -> FilePath -> BL.ByteString -> IO ()
 writeGZFile frc f r
-  | ".gz" `isSuffixOf` f = checkFile frc f >> L.writeFile f (compress r)
-  | otherwise = checkFile frc f >> L.writeFile f r
+  | ".gz" `isSuffixOf` f = checkFile frc f >> BL.writeFile f (compress r)
+  | otherwise = checkFile frc f >> BL.writeFile f r
 
 -- | Parse a possibly gzipped file.
 runParserOnFile :: Parser a -> FilePath -> IO (Either String a)
@@ -123,28 +122,28 @@ parseIOWith p = parseFileOrIOWith p Nothing
 -- | Parse a possibly gzipped file, or standard input, and extract the result.
 parseFileOrIOWith :: Parser a -> Maybe FilePath -> IO a
 parseFileOrIOWith p mf = do
-  s <- maybe L.getContents readGZFile mf
+  s <- maybe BL.getContents readGZFile mf
   return $ parseByteStringWith p s
 
 -- | Parse a 'String' and extract the result.
 parseStringWith :: Parser a -> String -> a
-parseStringWith p x = parseByteStringWith p (L.pack x)
+parseStringWith p x = parseByteStringWith p (BL.pack x)
 
--- | Parse a 'ByteString' and extract the result.
-parseByteStringWith :: Parser a -> ByteString -> a
+-- | Parse a 'BL.ByteString' and extract the result.
+parseByteStringWith :: Parser a -> BL.ByteString -> a
 parseByteStringWith p x = case eitherResult $ parse p x of
   Left err -> error err
   Right val -> val
 
 -- | Write a result with a given name to file with given extension or standard
 -- output. Supports compression.
-out :: Reproducible a => String -> ByteString -> String -> ELynx a ()
+out :: Reproducible a => String -> BL.ByteString -> String -> ELynx a ()
 out name res ext = do
   mfp <- getOutFilePath ext
   case mfp of
     Nothing -> do
       $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
-      liftIO $ L.putStr res
+      liftIO $ BL.putStr res
     Just fp -> do
       $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
       frc <- forceReanalysis . global <$> ask

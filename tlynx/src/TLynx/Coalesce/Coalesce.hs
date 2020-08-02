@@ -28,8 +28,8 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
 import Control.Parallel.Strategies
-import qualified Data.ByteString.Builder as L
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Builder as BB
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Maybe
 import qualified Data.Sequence as Seq
 import qualified Data.Text as T
@@ -60,7 +60,7 @@ coalesce = do
         if s
           then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
           else parMap rpar toNewick (map lengthToPhyloTree trs)
-  let res = L.unlines ls
+  let res = BL.unlines ls
   out "simulated trees" res ".tree"
 
 simulateNTreesConcurrently :: ELynx CoalesceArguments (Forest Length Int)
@@ -126,13 +126,13 @@ type NChildSumStat = [BrLnNChildren]
 --    nLeaves1 branchLength1
 --    nLeaves2 branchLength2
 --    ....
-formatNChildSumStat :: NChildSumStat -> L.ByteString
+formatNChildSumStat :: NChildSumStat -> BL.ByteString
 formatNChildSumStat s =
-  L.toLazyByteString . mconcat $ map formatNChildSumStatLine s
+  BB.toLazyByteString . mconcat $ map formatNChildSumStatLine s
 
-formatNChildSumStatLine :: BrLnNChildren -> L.Builder
+formatNChildSumStatLine :: BrLnNChildren -> BB.Builder
 formatNChildSumStatLine (l, n) =
-  L.intDec n <> L.char8 ' ' <> L.doubleDec l <> L.char8 '\n'
+  BB.intDec n <> BB.char8 ' ' <> BB.doubleDec l <> BB.char8 '\n'
 
 -- | Compute NChilSumStat for a phylogenetic tree.
 toNChildSumStat :: Measurable e => Tree e a -> NChildSumStat

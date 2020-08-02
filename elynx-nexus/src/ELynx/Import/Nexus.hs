@@ -17,12 +17,12 @@ module ELynx.Import.Nexus
   )
 where
 
-import Data.ByteString.Char8 (ByteString)
+import qualified Data.ByteString as BS
 import Data.Attoparsec.ByteString.Char8
 
 -- | A Nexus block has a name (e.g., TREES), and parser for the entry.
 data Block a = Block
-  { name :: ByteString,
+  { name :: BS.ByteString,
     parser :: Parser a
   }
 
@@ -42,7 +42,7 @@ start = (<?> "start") $ do
 block :: Block a -> Parser a
 block b = beginB (name b) *> parser b <* endB <?> "block"
 
-beginB :: ByteString -> Parser ()
+beginB :: BS.ByteString -> Parser ()
 beginB n = (<?> "begin") $ do
   _ <- string "BEGIN"
   _ <- skipWhile isSpace

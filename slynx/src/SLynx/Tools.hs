@@ -26,9 +26,7 @@ import Control.Monad.Logger
 import qualified Data.Text as T
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.Sequence.Sequence
-import ELynx.Import.Sequence.Fasta hiding
-  ( Parser,
-  )
+import ELynx.Import.Sequence.Fasta
 import ELynx.Tools
 import Options.Applicative
 

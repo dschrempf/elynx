@@ -39,7 +39,7 @@ import Control.Monad.Logger
   )
 import Control.Monad.Trans.Control (MonadBaseControl)
 import Control.Monad.Trans.Reader (ReaderT (runReaderT))
-import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Char8 as BS
 import Data.Text
   ( Text,
     pack,
@@ -155,11 +155,11 @@ runELynxStderrLoggingT :: MonadIO m => LoggingT m a -> m a
 runELynxStderrLoggingT = (`runLoggingT` output stderr)
 
 output :: Handle -> Loc -> LogSource -> LogLevel -> LogStr -> IO ()
-output h _ _ _ msg = B.hPutStrLn h ls where ls = fromLogStr msg
+output h _ _ _ msg = BS.hPutStrLn h ls where ls = fromLogStr msg
 
 output2H :: Handle -> Handle -> Loc -> LogSource -> LogLevel -> LogStr -> IO ()
 output2H h1 h2 _ _ _ msg = do
-  B.hPutStrLn h1 ls
-  B.hPutStrLn h2 ls
+  BS.hPutStrLn h1 ls
+  BS.hPutStrLn h2 ls
   where
     ls = fromLogStr msg

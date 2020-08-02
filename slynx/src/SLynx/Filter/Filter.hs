@@ -21,7 +21,7 @@ where
 import Control.Monad (when)
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified ELynx.Data.Sequence.Alignment as M
@@ -31,7 +31,7 @@ import ELynx.Tools
 import SLynx.Filter.Options
 import SLynx.Tools
 
-filterRows :: Maybe Int -> Maybe Int -> Bool -> [S.Sequence] -> L.ByteString
+filterRows :: Maybe Int -> Maybe Int -> Bool -> [S.Sequence] -> BL.ByteString
 filterRows ml ms std ss = sequencesToFasta $ compose filters ss
   where
     filters' =
@@ -62,7 +62,7 @@ filterRowsCmd = do
   let result = filterRows long short std ss
   out "filtered sequences" result ".fasta"
 
-filterCols :: Maybe Double -> [S.Sequence] -> L.ByteString
+filterCols :: Maybe Double -> [S.Sequence] -> BL.ByteString
 filterCols ms ss = sequencesToFasta . M.toSequences $ compose filters a
   where
     a = either error id (M.fromSequences ss)

@@ -168,7 +168,7 @@ compareCmd = do
         (T.pack $ show $ incompatibleSplits (collapse 0.9 t1') (collapse 0.9 t2'))
   -- liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (1.01)"
   --   (T.pack $ show $ incompatibleSplits (collapse 1.01 t1') (collapse 1.01 t2'))
-  -- liftIO $ L.hPutStrLn outH $ toNewick (collapse 1.01 t1')
+  -- liftIO $ BL.hPutStrLn outH $ toNewick (collapse 1.01 t1')
 
   -- Bipartitions.
   when
@@ -184,10 +184,10 @@ compareCmd = do
               liftIO $ hPutStrLn outH ""
               liftIO $
                 hPutStrLn outH "Bipartitions in Tree 1 that are not in Tree 2."
-              -- let bp1Strs = map (bphuman L.unpack . bpmap getName) (S.toList bp1Only)
+              -- let bp1Strs = map (bphuman BL.unpack . bpmap getName) (S.toList bp1Only)
               forM_ bp1Only (liftIO . hPutStrLn outH . bpHuman)
           )
-        -- let bp1Strs = map (bphuman L.unpack) (S.toList bp1Only)
+        -- let bp1Strs = map (bphuman BL.unpack) (S.toList bp1Only)
         -- liftIO $ hPutStrLn outH $ intercalate "\n" bp1Strs)
         unless
           (S.null bp2Only)

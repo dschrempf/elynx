@@ -22,6 +22,7 @@ module ELynx.Data.MarkovProcess.AminoAcid
   )
 where
 
+import Data.ByteString.Internal (c2w)
 import Data.List (elemIndex)
 import Data.Maybe (fromMaybe)
 import Data.Word (Word8)

@@ -30,7 +30,7 @@ where
 import qualified Data.Set as S
 import Data.Vector.Unboxed.Base (Unbox)
 import Data.Word8 (Word8)
-import ELynx.Tools
+import Data.ByteString.Internal (c2w, w2c)
 
 -- XXX: Remove name clash with ELynx.Data.Alphabet.Alphabet.Character?
 

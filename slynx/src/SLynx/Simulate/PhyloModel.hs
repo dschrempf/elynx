@@ -19,7 +19,7 @@ where
 import Control.Applicative
 import Control.Monad (when)
 import Data.Attoparsec.ByteString.Char8
-import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Char8 as BS
 import Data.Either (rights)
 import Data.List.NonEmpty (fromList)
 import Data.Maybe
@@ -74,7 +74,7 @@ separator = ','
 
 name :: Parser String
 name =
-  B.unpack
+  BS.unpack
     <$> takeWhile1 (notInClass [paramsStart, paramsEnd, sdStart, sdEnd, mmStart, mmEnd, separator])
 
 params :: Parser [Double]

@@ -55,7 +55,7 @@ where
 import Data.Vector.Unboxed.Deriving
 import Data.Word8
 import qualified ELynx.Data.Character.Character as C
-import ELynx.Tools
+import Data.ByteString.Internal (c2w, w2c)
 
 -- | Amino acids.
 data AminoAcidS

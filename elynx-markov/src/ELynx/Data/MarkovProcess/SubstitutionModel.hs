@@ -38,7 +38,7 @@ module ELynx.Data.MarkovProcess.SubstitutionModel
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.MarkovProcess.RateMatrix as R
 import ELynx.Tools
@@ -123,9 +123,9 @@ appendName :: Name -> SubstitutionModel -> SubstitutionModel
 appendName n sm = sm {name = n'} where n' = name sm <> n
 
 -- | Summarize a substitution model; lines to be printed to screen or log.
-summarize :: SubstitutionModel -> [L.ByteString]
+summarize :: SubstitutionModel -> [BL.ByteString]
 summarize sm =
-  map L.pack $
+  map BL.pack $
     (show (alphabet sm) ++ " substitution model: " ++ name sm ++ ".") :
     ["Parameters: " ++ show (params sm) ++ "." | not (null (params sm))]
       ++ case alphabet sm of

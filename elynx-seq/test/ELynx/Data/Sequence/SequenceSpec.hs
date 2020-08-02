@@ -13,7 +13,7 @@ module ELynx.Data.Sequence.SequenceSpec
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.Sequence.Sequence
 import ELynx.Import.Sequence.Fasta
@@ -26,10 +26,10 @@ fastaDifferentLengthFN = "data/NucleotideDifferentLength.fasta"
 fastaDifferentLengthTrimmedFN :: FilePath
 fastaDifferentLengthTrimmedFN = "data/NucleotideDifferentLengthTrimmed.fasta"
 
-longestSequenceInFileBS :: L.ByteString
+longestSequenceInFileBS :: BL.ByteString
 longestSequenceInFileBS =
-  L.unlines $
-    map L.pack [">SEQUENCE_3", "ATTTAAAAAAACCCAAAACCCGGGCCCCGGGTTTTTTTA"]
+  BL.unlines $
+    map BL.pack [">SEQUENCE_3", "ATTTAAAAAAACCCAAAACCCGGGCCCCGGGTTTTTTTA"]
 
 longestSequenceInFile :: Sequence
 longestSequenceInFile = parseByteStringWith (fastaSequence DNA) longestSequenceInFileBS
