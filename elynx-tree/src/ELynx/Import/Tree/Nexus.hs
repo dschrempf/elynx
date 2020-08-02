@@ -17,7 +17,7 @@ module ELynx.Import.Tree.Nexus
 where
 
 import Control.Applicative
-import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BS
 import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted
 import ELynx.Import.Nexus

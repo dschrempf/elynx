@@ -17,7 +17,7 @@ module ELynx.Import.Nexus
   )
 where
 
-import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BS
 import Data.Attoparsec.ByteString.Char8
 
 -- | A Nexus block has a name (e.g., TREES), and parser for the entry.

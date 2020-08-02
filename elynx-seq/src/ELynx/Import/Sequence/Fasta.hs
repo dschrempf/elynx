@@ -23,7 +23,6 @@ module ELynx.Import.Sequence.Fasta
 where
 
 import Control.Applicative
-import Control.Monad
 import qualified Data.Attoparsec.ByteString as AS
 import qualified Data.Attoparsec.ByteString.Char8 as AC
 import qualified Data.ByteString.Lazy.Char8 as BL

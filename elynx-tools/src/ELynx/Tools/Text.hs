@@ -17,7 +17,7 @@ module ELynx.Tools.Text
   )
 where
 
-import qualified Data.ByteString.Lazy as BL
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Text
   ( Text,
     pack,

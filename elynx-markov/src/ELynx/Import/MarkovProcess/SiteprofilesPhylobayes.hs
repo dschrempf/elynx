@@ -22,20 +22,20 @@ module ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
 where
 
 import Control.Applicative
-import Data.Attoparsec.ByteString
-import qualified Data.Attoparsec.ByteString.Char8 as C
+import qualified Data.Attoparsec.ByteString as AS
+import qualified Data.Attoparsec.ByteString.Char8 as AC
 import Control.Monad
 import Data.Containers.ListUtils (nubInt)
 import qualified Data.Vector.Storable as V
 import ELynx.Import.MarkovProcess.EDMModelPhylobayes
 
 -- | Parse stationary distributions from Phylobayes format.
-siteprofiles :: Parser [EDMComponent]
-siteprofiles = (<?> "phylobayes siteprofiles") $ do
+siteprofiles :: AS.Parser [EDMComponent]
+siteprofiles = (AS.<?> "phylobayes siteprofiles") $ do
   _ <- headerLines
   cs <- many dataLine
-  _ <- C.skipWhile C.isSpace
-  _ <- endOfInput
+  _ <- AC.skipWhile AC.isSpace
+  _ <- AS.endOfInput
   let ls = map length cs
       nLs = length $ nubInt ls
   when
@@ -43,20 +43,20 @@ siteprofiles = (<?> "phylobayes siteprofiles") $ do
     (error "The site profiles have a different number of entries.")
   return cs
 
-line :: Parser ()
-line = skipWhile (not . C.isEndOfLine)
+line :: AS.Parser ()
+line = AS.skipWhile (not . AC.isEndOfLine)
 
 -- For now, just ignore the header.
-headerLines :: Parser ()
-headerLines = line *> C.skipWhile C.isSpace <?> "headerLine"
+headerLines :: AS.Parser ()
+headerLines = line *> AC.skipWhile AC.isSpace AS.<?> "headerLine"
 
-dataLine :: Parser EDMComponent
-dataLine = (<?> "dataLine") $ do
+dataLine :: AS.Parser EDMComponent
+dataLine = (AS.<?> "dataLine") $ do
   -- Ignore site number.
-  _ <- C.decimal :: Parser Int
-  _ <- skipWhile C.isHorizontalSpace
+  _ <- AC.decimal :: AS.Parser Int
+  _ <- AS.skipWhile AC.isHorizontalSpace
   -- Also ignore additional white space on line.
-  vals <- C.double `sepBy1` skipWhile C.isHorizontalSpace
-  _ <- C.skipWhile C.isSpace
+  vals <- AC.double `AS.sepBy1` AS.skipWhile AC.isHorizontalSpace
+  _ <- AC.skipWhile AC.isSpace
   -- Set the weight to 1.0 for all sites.
   return (1.0, V.fromList vals)

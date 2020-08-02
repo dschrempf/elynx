@@ -12,16 +12,15 @@
 --
 -- Creation date: Tue Jan 29 12:12:55 2019.
 module ELynx.Import.MarkovProcess.EDMModelPhylobayes
-  ( Parser,
-    EDMComponent,
+  ( EDMComponent,
     phylobayes,
   )
 where
 
 import Control.Applicative
 import Control.Monad
-import Data.Attoparsec.ByteString
-import qualified Data.Attoparsec.ByteString.Char8 as C
+import qualified Data.Attoparsec.ByteString as AS
+import qualified Data.Attoparsec.ByteString.Char8 as AC
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Vector.Storable as V
 import ELynx.Data.MarkovProcess.MixtureModel
@@ -31,34 +30,34 @@ import ELynx.Data.MarkovProcess.MixtureModel
 type EDMComponent = (Weight, V.Vector Double)
 
 -- | Parse stationary distributions from Phylobayes format.
-phylobayes :: Parser [EDMComponent]
-phylobayes = (<?> "phylobayes") $ do
+phylobayes :: AS.Parser [EDMComponent]
+phylobayes = (AS.<?> "phylobayes") $ do
   n <- headerLine
   k <- kComponentsLine
-  cs <- count k $ dataLine n
-  _ <- C.skipWhile C.isSpace
-  _ <- endOfInput
+  cs <- AS.count k $ dataLine n
+  _ <- AC.skipWhile AC.isSpace
+  _ <- AS.endOfInput
   return cs
 
-headerLine :: Parser Int
+headerLine :: AS.Parser Int
 headerLine = do
-  n <- C.decimal
-  _ <- skipWhile C.isHorizontalSpace
+  n <- AC.decimal
+  _ <- AS.skipWhile AC.isHorizontalSpace
   -- XXX: This should be more general, but then we also want to ensure that the
   -- order of states is correct.
-  _ <- string (BL.toStrict "A C D E F G H I K L M N P Q R S T V W Y")
-      <|> string (BL.toStrict "A C G T")
-  _ <- C.skipWhile C.isSpace <?> "headerLine"
+  _ <- AS.string (BL.toStrict "A C D E F G H I K L M N P Q R S T V W Y")
+      <|> AS.string (BL.toStrict "A C G T")
+  _ <- AC.skipWhile AC.isSpace AS.<?> "headerLine"
   return n
 
-kComponentsLine :: Parser Int
-kComponentsLine = C.decimal <* C.skipWhile C.isSpace <?> "kComponentsLine"
+kComponentsLine :: AS.Parser Int
+kComponentsLine = AC.decimal <* AC.skipWhile AC.isSpace AS.<?> "kComponentsLine"
 
-dataLine :: Int -> Parser EDMComponent
-dataLine n = (<?> "dataLine") $ do
-  weight <- C.double
-  _ <- skipWhile C.isHorizontalSpace
-  vals <- C.double `sepBy1` skipWhile C.isHorizontalSpace
-  _ <- C.skipWhile C.isSpace
+dataLine :: Int -> AS.Parser EDMComponent
+dataLine n = (AS.<?> "dataLine") $ do
+  weight <- AC.double
+  _ <- AS.skipWhile AC.isHorizontalSpace
+  vals <- AC.double `AC.sepBy1` AS.skipWhile AC.isHorizontalSpace
+  _ <- AC.skipWhile AC.isSpace
   when (length vals /= n) (error "Did not find correct number of entries.")
   return (weight, V.fromList vals)

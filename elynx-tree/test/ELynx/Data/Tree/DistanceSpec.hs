@@ -16,7 +16,7 @@ module ELynx.Data.Tree.DistanceSpec
   )
 where
 
-import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BS
 import ELynx.Data.Tree
 import ELynx.Data.Tree.Arbitrary ()
 import ELynx.Import.Tree.Newick

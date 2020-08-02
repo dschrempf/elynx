@@ -33,7 +33,7 @@ where
 
 import Control.Applicative
 import Data.Attoparsec.ByteString.Char8
-import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BS
 import ELynx.Data.Tree.Measurable
 import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted hiding (forest, label)

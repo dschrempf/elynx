@@ -16,7 +16,7 @@ module ELynx.Import.Tree.NexusSpec
   )
 where
 
-import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BS
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick (NewickFormat (..))
 import ELynx.Import.Tree.Nexus

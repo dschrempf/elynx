@@ -24,7 +24,7 @@ import ELynx.Tools
 import Options.Applicative
 import TLynx.Parsers
 import Text.Printf
-import qualified Data.Attoparsec.ByteString.Char8 as A
+import qualified Data.Attoparsec.ByteString.Char8 as AC
 import qualified Data.ByteString.Char8 as BS
 
 -- | Supported distance measures.
@@ -103,37 +103,37 @@ inFilesArg =
       <> help
         "Read tree(s) from INPUT-FILES; if more files are given, one tree is expected per file"
 
-symmetric :: A.Parser DistanceMeasure
+symmetric :: AC.Parser DistanceMeasure
 symmetric = do
-  _ <- A.string "symmetric"
-  _ <- A.endOfInput
+  _ <- AC.string "symmetric"
+  _ <- AC.endOfInput
   pure Symmetric
 
-incompatibleSplit :: A.Parser DistanceMeasure
+incompatibleSplit :: AC.Parser DistanceMeasure
 incompatibleSplit = do
-  _ <- A.string "incompatible-split"
-  _ <- A.char '['
-  f <- A.double
-  _ <- A.char ']'
-  _ <- A.endOfInput
+  _ <- AC.string "incompatible-split"
+  _ <- AC.char '['
+  f <- AC.double
+  _ <- AC.char ']'
+  _ <- AC.endOfInput
   if (0 <= f) && (f <= 1)
     then pure $ IncompatibleSplit f
     else error "Branch support has to be in [0, 1]."
 
-branchScore :: A.Parser DistanceMeasure
+branchScore :: AC.Parser DistanceMeasure
 branchScore = do
-  _ <- A.string "branch-score"
-  _ <- A.endOfInput
+  _ <- AC.string "branch-score"
+  _ <- AC.endOfInput
   pure BranchScore
 
 -- Try first the normalized one, since the normal branch score
 -- parser also succeeds in this case.
-distanceParser :: A.Parser DistanceMeasure
+distanceParser :: AC.Parser DistanceMeasure
 distanceParser = symmetric <|> incompatibleSplit <|> branchScore
 
 -- See 'eitherReader', but for an attoparsec parser.
-eitherReadA :: A.Parser a -> ReadM a
-eitherReadA p = eitherReader $ \input -> A.parseOnly p (BS.pack input)
+eitherReadA :: AC.Parser a -> ReadM a
+eitherReadA p = eitherReader $ \input -> AC.parseOnly p (BS.pack input)
 
 distanceOpt :: Parser DistanceMeasure
 distanceOpt =

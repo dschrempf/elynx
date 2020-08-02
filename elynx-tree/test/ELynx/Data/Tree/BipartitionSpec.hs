@@ -15,7 +15,7 @@ module ELynx.Data.Tree.BipartitionSpec
   )
 where
 
-import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BS
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
