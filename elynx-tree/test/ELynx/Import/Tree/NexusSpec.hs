@@ -20,7 +20,6 @@ import qualified Data.ByteString.Char8 as BS
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick (NewickFormat (..))
 import ELynx.Import.Tree.Nexus
-import ELynx.Tools
 import Test.Hspec
 
 file :: FilePath

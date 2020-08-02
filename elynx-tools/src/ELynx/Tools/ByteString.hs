@@ -16,8 +16,6 @@ module ELynx.Tools.ByteString
     alignRight,
     alignLeftWith,
     alignLeft,
-    summarizeByteString,
-    bShow,
   )
 where
 
@@ -48,14 +46,3 @@ alignLeftWith c n s =
 -- longer.
 alignLeft :: Int -> BL.ByteString -> BL.ByteString
 alignLeft = alignLeftWith ' '
-
--- | If a string is longer than a given value, trim it and add some dots.
-summarizeByteString :: Int -> BL.ByteString -> BL.ByteString
-summarizeByteString l s
-  | BL.length s >= fromIntegral l = BL.take (fromIntegral l) s <> BL.pack "..."
-  | otherwise = s
-
--- TODO: Remove this function (slow).
--- | Conversion to 'BL.ByteString'.
-bShow :: Show a => a -> BL.ByteString
-bShow = BL.pack . show

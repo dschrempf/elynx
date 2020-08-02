@@ -42,6 +42,7 @@ module ELynx.Data.Sequence.Alignment
   )
 where
 
+import Control.Parallel.Strategies
 import Control.Monad hiding (join)
 import Control.Monad.Primitive
 import qualified Data.ByteString.Lazy.Char8 as BL
@@ -56,7 +57,6 @@ import ELynx.Data.Alphabet.Character
 import qualified ELynx.Data.Alphabet.DistributionDiversity as D
 import ELynx.Data.Sequence.Defaults
 import qualified ELynx.Data.Sequence.Sequence as S
-import ELynx.Tools
 import System.Random.MWC
 import Prelude hiding
   ( concat,
@@ -94,6 +94,8 @@ fromSequences ss
     a = S.alphabet $ head ss
     bss = map S.characters ss
     d = M.fromRows bss
+    allEqual [] = True
+    allEqual xs = all (== head xs) $ tail xs
 
 -- | Conversion to list of 'S.Sequence's.
 toSequences :: Alignment -> [S.Sequence]
@@ -105,13 +107,6 @@ toSequences (Alignment ns ds a da) =
     rows
   where
     rows = M.toRows da
-
--- -- | Show a 'Alignment', untrimmed.
--- summarizeSeq :: Alignment -> Int -> BL.ByteString
--- summarizeSeq m i =
---   BL.unwords [ alignLeft nameWidth $ names m !! i
---             , summarizeByteString summaryLength $
---               BL.pack $ V.toList $ V.map toChar $ M.takeRow (matrix m) i ]
 
 header :: Alignment -> BL.ByteString
 header a =
@@ -142,6 +137,20 @@ header a =
 -- | Similar to 'S.summarizeSequenceList' but with different Header.
 summarize :: Alignment -> BL.ByteString
 summarize a = header a <> S.body (toSequences a)
+
+-- Vertical concatenation.
+(===) :: V.Unbox a => M.Matrix a -> M.Matrix a -> M.Matrix a
+(===) l r = M.fromRows $ lRs ++ rRs
+  where
+    lRs = M.toRows l
+    rRs = M.toRows r
+
+-- Horizontal concatenation.
+(|||) :: V.Unbox a => M.Matrix a -> M.Matrix a -> M.Matrix a
+(|||) l r = M.fromColumns $ lCs ++ rCs
+  where
+    lCs = M.toColumns l
+    rCs = M.toColumns r
 
 -- | Join two 'Alignment's vertically. That is, add more sequences
 -- to an alignment. See also 'concat'.
@@ -219,6 +228,16 @@ filterColsNoGaps a = filterColsWith (V.all $ not . A.isGap (alphabet a)) a
 -- the number of characters.
 type FrequencyData = M.Matrix Double
 
+-- Map a function on each row of a DIM2 array; parallel version with given chunk size.
+fMapColParChunk ::
+  (V.Unbox a, V.Unbox b) =>
+  Int ->
+  (V.Vector a -> V.Vector b) ->
+  M.Matrix a ->
+  M.Matrix b
+fMapColParChunk n f m =
+  M.fromColumns (map f (M.toColumns m) `using` parListChunk n rseq)
+
 -- | Calculcate frequency of characters at each site of a multi sequence alignment.
 toFrequencyData :: Alignment -> FrequencyData
 toFrequencyData a = fMapColParChunk 100 (D.frequencyCharacters spec) (matrix a)
@@ -235,6 +254,13 @@ distribution fd =
         (M.toColumns fd)
   where
     nSites = M.cols fd
+
+-- Parallel map with given chunk size.
+parMapChunk :: Int -> (a -> b) -> [a] -> [b]
+parMapChunk n f as = map f as `using` parListChunk n rseq
+
+chunksize :: Int
+chunksize = 500
 
 -- | Diversity analysis. See 'kEffEntropy'.
 kEffEntropy :: FrequencyData -> [Double]
@@ -262,6 +288,11 @@ countUnknowns :: Alignment -> Int
 countUnknowns a = V.length . V.filter (A.isUnknown (alphabet a)) $ allChars
   where
     allChars = M.flatten $ matrix a
+
+-- Sample the given sites from a matrix.
+subSampleMatrix :: V.Unbox a => [Int] -> M.Matrix a -> M.Matrix a
+subSampleMatrix is m =
+  M.fromColumns $ foldl' (\a i -> M.takeColumn m i : a) [] is
 
 -- | Sample the given sites from a multi sequence alignment.
 subSample :: [Int] -> Alignment -> Alignment

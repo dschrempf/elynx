@@ -55,7 +55,6 @@ import qualified Data.Vector.Unboxed as V
 import qualified ELynx.Data.Alphabet.Alphabet as A
 import ELynx.Data.Alphabet.Character
 import ELynx.Data.Sequence.Defaults
-import ELynx.Tools
 import qualified Text.Printf as P
 import Prelude hiding
   ( concat,
@@ -92,6 +91,18 @@ data Sequence = Sequence
   }
   deriving (Show, Eq)
 
+alignRight :: Int -> BL.ByteString -> BL.ByteString
+alignRight n s =
+  BL.replicate (fromIntegral n - l) ' ' <> BL.take (fromIntegral n) s
+  where
+    l = BL.length s
+
+alignLeft :: Int -> BL.ByteString -> BL.ByteString
+alignLeft n s =
+  BL.take (fromIntegral n) s <> BL.replicate (fromIntegral n - l) ' '
+  where
+    l = BL.length s
+
 getInfo :: Sequence -> BL.ByteString
 getInfo s =
   BL.unwords
@@ -104,6 +115,12 @@ getInfo s =
     len = length s
     nGaps = countGaps s
     pGaps = 100 * fromIntegral nGaps / fromIntegral len :: Double
+
+-- If a string is longer than a given value, trim it and add some dots.
+summarizeByteString :: Int -> BL.ByteString -> BL.ByteString
+summarizeByteString l s
+  | BL.length s >= fromIntegral l = BL.take (fromIntegral l) s <> BL.pack "..."
+  | otherwise = s
 
 -- | Trim and show a 'Sequence'.
 summarize :: Sequence -> BL.ByteString
@@ -161,6 +178,9 @@ length = fromIntegral . V.length . characters
 -- | Check if all 'Sequence's have equal length.
 equalLength :: [Sequence] -> Bool
 equalLength = allEqual . map length
+  where
+    allEqual [] = True
+    allEqual xs = all (== head xs) $ tail xs
 
 -- | Find the longest 'Sequence' in a list.
 longest :: [Sequence] -> Sequence

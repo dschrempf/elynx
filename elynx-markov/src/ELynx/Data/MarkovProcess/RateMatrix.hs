@@ -34,7 +34,7 @@ module ELynx.Data.MarkovProcess.RateMatrix
   )
 where
 
-import ELynx.Tools
+import qualified Data.Vector.Storable as V
 import Numeric.LinearAlgebra hiding (normalize)
 import Numeric.SpecFunctions
 import Prelude hiding ((<>))
@@ -50,9 +50,12 @@ type ExchangeabilityMatrix = Matrix R
 -- | Stationary distribution of a rate matrix.
 type StationaryDistribution = Vector R
 
+epsRelaxed :: Double
+epsRelaxed = 1e-5
+
 -- | True if distribution sums to 1.0.
 isValid :: StationaryDistribution -> Bool
-isValid d = nearlyEqWith eps' (norm_1 d) 1.0
+isValid d = epsRelaxed > abs (norm_1 d - 1.0)
 
 -- | Normalize a stationary distribution so that the elements sum to 1.0.
 normalizeSD :: StationaryDistribution -> StationaryDistribution
@@ -60,7 +63,7 @@ normalizeSD d = d / scalar (norm_1 d)
 
 -- | Get average number of substitutions per unit time.
 totalRateWith :: StationaryDistribution -> RateMatrix -> Double
-totalRateWith d m = norm_1 $ d <# matrixSetDiagToZero m
+totalRateWith d m = norm_1 $ d <# (m - diag (takeDiag m))
 
 -- | Get average number of substitutions per unit time.
 totalRate :: RateMatrix -> Double
@@ -80,7 +83,7 @@ normalizeWith d m = scale (1.0 / totalRateWith d m) m
 setDiagonal :: RateMatrix -> RateMatrix
 setDiagonal m = diagZeroes - diag (fromList rowSums)
   where
-    diagZeroes = matrixSetDiagToZero m
+    diagZeroes = m - diag (takeDiag m)
     rowSums = map norm_1 $ toRows diagZeroes
 
 -- | Extract the exchangeability matrix from a rate matrix.
@@ -95,6 +98,9 @@ fromExchangeabilityMatrix ::
   ExchangeabilityMatrix -> StationaryDistribution -> RateMatrix
 fromExchangeabilityMatrix em d = setDiagonal $ em <> diag d
 
+eps :: Double
+eps = 1e-12
+
 -- | Get stationary distribution from 'RateMatrix'. Involves eigendecomposition.
 -- If the given matrix does not satisfy the required properties of transition
 -- rate matrices and no eigenvector with an eigenvalue nearly equal to 0 is
@@ -104,12 +110,13 @@ fromExchangeabilityMatrix em d = setDiagonal $ em <> diag d
 -- function)?
 getStationaryDistribution :: RateMatrix -> StationaryDistribution
 getStationaryDistribution m =
-  if magnitude (eVals ! i) `nearlyEq` 0
-    then normalizeSumVec 1.0 distReal
+  if eps > abs (magnitude (eVals ! i))
+    then V.map (/s) distReal
     else
       error
         "getStationaryDistribution: Could not retrieve stationary distribution."
   where
+    s = V.sum distReal
     (eVals, eVecs) = eig (tr m)
     i = minIndex eVals
     distComplex = toColumns eVecs !! i

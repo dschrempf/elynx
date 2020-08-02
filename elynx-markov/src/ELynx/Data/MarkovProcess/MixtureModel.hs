@@ -14,11 +14,10 @@
 module ELynx.Data.MarkovProcess.MixtureModel
   ( -- * Types
     Weight,
-    Component,
-    MixtureModel (name),
+    Component (weight, substModel),
+    MixtureModel (name, alphabet, components),
 
     -- * Getters
-    getAlphabet,
     getWeights,
     getSubstitutionModels,
 
@@ -30,26 +29,14 @@ module ELynx.Data.MarkovProcess.MixtureModel
     scale,
     normalize,
     appendNameComponents,
-
-    -- * Output
-    summarizeComponent,
-    summarize,
   )
 where
 
-import qualified Data.ByteString.Builder as BB
-import qualified Data.ByteString.Lazy.Char8 as BL
-import Data.List.NonEmpty hiding (zip)
+import qualified Data.List.NonEmpty as N
 import Data.Semigroup
-import ELynx.Data.Alphabet.Alphabet
+import ELynx.Data.Alphabet.Alphabet hiding (all)
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
-import ELynx.Tools
-import Prelude hiding
-  ( head,
-    length,
-    map,
-    zipWith,
-  )
+import Prelude
 
 -- | Mixture model component weight.
 type Weight = Double
@@ -66,43 +53,40 @@ data MixtureModel = MixtureModel
   { -- | Name
     name :: S.Name,
     alphabet :: Alphabet,
-    components :: NonEmpty Component
+    components :: N.NonEmpty Component
   }
   deriving (Show, Read)
 
--- | Get alphabet used with mixture model. Throws error if components use
--- different 'Alphabet's.
-getAlphabet :: MixtureModel -> Alphabet
-getAlphabet = alphabet
-
 -- | Get weights.
-getWeights :: MixtureModel -> NonEmpty Weight
-getWeights = map weight . components
+getWeights :: MixtureModel -> N.NonEmpty Weight
+getWeights = N.map weight . components
 
 -- | Get substitution models.
-getSubstitutionModels :: MixtureModel -> NonEmpty S.SubstitutionModel
-getSubstitutionModels = map substModel . components
+getSubstitutionModels :: MixtureModel -> N.NonEmpty S.SubstitutionModel
+getSubstitutionModels = N.map substModel . components
 
 -- | Create a mixture model from a list of substitution models.
 fromSubstitutionModels ::
-  S.Name -> NonEmpty Weight -> NonEmpty S.SubstitutionModel -> MixtureModel
+  S.Name -> N.NonEmpty Weight -> N.NonEmpty S.SubstitutionModel -> MixtureModel
 fromSubstitutionModels n ws sms =
-  if allEqual $ toList alphs
-    then MixtureModel n (head alphs) comps
+  if allEqual $ N.toList alphs
+    then MixtureModel n (N.head alphs) comps
     else
       error
         "fromSubstitutionModels: alphabets of substitution models are not equal."
   where
-    comps = zipWith Component ws sms
-    alphs = map S.alphabet sms
+    comps = N.zipWith Component ws sms
+    alphs = N.map S.alphabet sms
+    allEqual [] = True
+    allEqual xs = all (== head xs) $ tail xs
 
 -- | Concatenate mixture models.
-concatenate :: S.Name -> NonEmpty MixtureModel -> MixtureModel
+concatenate :: S.Name -> N.NonEmpty MixtureModel -> MixtureModel
 concatenate n mms = fromSubstitutionModels n ws sms
   where
-    comps = sconcat $ map components mms
-    ws = map weight comps
-    sms = map substModel comps
+    comps = sconcat $ N.map components mms
+    ws = N.map weight comps
+    sms = N.map substModel comps
 
 scaleComponent :: Double -> Component -> Component
 scaleComponent s c = c {substModel = s'} where s' = S.scale s $ substModel c
@@ -112,16 +96,16 @@ scale :: Double -> MixtureModel -> MixtureModel
 scale s m = m {components = cs'}
   where
     cs = components m
-    cs' = map (scaleComponent s) cs
+    cs' = N.map (scaleComponent s) cs
 
 -- | Globally normalize a mixture model so that on average one event happens per
 -- unit time.
 normalize :: MixtureModel -> MixtureModel
 normalize mm = scale (1 / c) mm
   where
-    c = sum $ zipWith (*) weights scales
+    c = sum $ N.zipWith (*) weights scales
     weights = getWeights mm
-    scales = map S.totalRate $ getSubstitutionModels mm
+    scales = N.map S.totalRate $ getSubstitutionModels mm
 
 appendNameComponent :: S.Name -> Component -> Component
 appendNameComponent n c = c {substModel = s'}
@@ -133,29 +117,4 @@ appendNameComponents :: S.Name -> MixtureModel -> MixtureModel
 appendNameComponents n m = m {components = cs'}
   where
     cs = components m
-    cs' = map (appendNameComponent n) cs
-
--- | Summarize a mixture model component; lines to be printed to screen or log.
-summarizeComponent :: Component -> [BL.ByteString]
-summarizeComponent c =
-  BL.pack "Weight: "
-    <> (BB.toLazyByteString . BB.doubleDec $ weight c) :
-  S.summarize (substModel c)
-
--- | Summarize a mixture model; lines to be printed to screen or log.
-summarize :: MixtureModel -> [BL.ByteString]
-summarize m =
-  [ BL.pack $ "Mixture model: " ++ name m ++ ".",
-    BL.pack $ "Number of components: " ++ show n ++ "."
-  ]
-    ++ detail
-  where
-    n = length $ components m
-    detail =
-      if n <= 100
-        then
-          concat
-            [ BL.pack ("Component " ++ show i ++ ":") : summarizeComponent c
-              | (i, c) <- zip [1 :: Int ..] (toList $ components m)
-            ]
-        else []
+    cs' = N.map (appendNameComponent n) cs

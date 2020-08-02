@@ -17,9 +17,10 @@ module ELynx.Data.MarkovProcess.SubstitutionModel
     Params,
     SubstitutionModel,
 
-    -- * Lenses and other accessors
+    -- * Accessors
     alphabet,
     name,
+    params,
     stationaryDistribution,
     exchangeabilityMatrix,
     rateMatrix,
@@ -32,16 +33,12 @@ module ELynx.Data.MarkovProcess.SubstitutionModel
     scale,
     normalize,
     appendName,
-
-    -- * Output
-    summarize,
   )
 where
 
-import qualified Data.ByteString.Lazy.Char8 as BL
+import qualified Data.Vector.Storable as V
 import ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.MarkovProcess.RateMatrix as R
-import ELynx.Tools
 import qualified Numeric.LinearAlgebra as LinAlg
 
 -- | Name of substitution model; abstracted and subject to change.
@@ -105,7 +102,8 @@ substitutionModel c n ps d e =
         "substitionModel: Stationary distribution does not sum to 1.0: "
           ++ show d
   where
-    d' = normalizeSumVec 1.0 d
+    s = V.sum d
+    d' = V.map (/s) d
 
 -- | Scale the rate of a substitution model by given factor.
 scale :: Double -> SubstitutionModel -> SubstitutionModel
@@ -121,29 +119,3 @@ normalize sm = scale (1.0 / r) sm where r = totalRate sm
 -- | Abbend to name.
 appendName :: Name -> SubstitutionModel -> SubstitutionModel
 appendName n sm = sm {name = n'} where n' = name sm <> n
-
--- | Summarize a substitution model; lines to be printed to screen or log.
-summarize :: SubstitutionModel -> [BL.ByteString]
-summarize sm =
-  map BL.pack $
-    (show (alphabet sm) ++ " substitution model: " ++ name sm ++ ".") :
-    ["Parameters: " ++ show (params sm) ++ "." | not (null (params sm))]
-      ++ case alphabet sm of
-        DNA ->
-          [ "Stationary distribution: "
-              ++ dispv precision (stationaryDistribution sm)
-              ++ ".",
-            "Exchangeability matrix:\n"
-              ++ dispmi 2 precision (exchangeabilityMatrix sm)
-              ++ ".",
-            "Scale: " ++ show (roundN precision $ totalRate sm) ++ "."
-          ]
-        Protein ->
-          [ "Stationary distribution: "
-              ++ dispv precision (stationaryDistribution sm)
-              ++ ".",
-            "Scale: " ++ show (roundN precision $ totalRate sm) ++ "."
-          ]
-        _ ->
-          error
-            "Extended character sets are not supported with substitution models."

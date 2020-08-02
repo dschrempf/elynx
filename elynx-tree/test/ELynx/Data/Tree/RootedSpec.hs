@@ -21,7 +21,6 @@ import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Maybe
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick
-import ELynx.Tools
 import Test.Hspec
 
 node :: Int -> Tree () Int

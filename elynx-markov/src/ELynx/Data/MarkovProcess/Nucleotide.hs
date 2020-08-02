@@ -25,10 +25,10 @@ module ELynx.Data.MarkovProcess.Nucleotide
   )
 where
 
+import qualified Data.Vector.Storable as V
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.MarkovProcess.RateMatrix
 import ELynx.Data.MarkovProcess.SubstitutionModel
-import ELynx.Tools
 import Numeric.LinearAlgebra hiding (normalize)
 
 -- XXX: Another idea of structuring the code. This would probably be cleaner in
@@ -79,7 +79,7 @@ jcExch =
 
 -- | JC substitution model.
 jc :: SubstitutionModel
-jc = substitutionModel DNA "JC" [] d jcExch where d = uniformVec n
+jc = substitutionModel DNA "JC" [] d jcExch where d = V.replicate n (1 / fromIntegral n)
 
 -- | F81 substitution model.
 f81 :: StationaryDistribution -> SubstitutionModel

@@ -14,7 +14,6 @@ module ELynx.Import.MarkovProcess.EDMModelPhylobayesSpec
 where
 
 import ELynx.Import.MarkovProcess.EDMModelPhylobayes
-import ELynx.Tools
 import Numeric.LinearAlgebra (fromList)
 import Test.Hspec
 

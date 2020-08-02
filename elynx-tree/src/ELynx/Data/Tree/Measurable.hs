@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 -- |
 -- Module      :  ELynx.Data.Tree.Measurable
 -- Description :  Measurable branch labels
@@ -21,7 +19,6 @@ module ELynx.Data.Tree.Measurable
     rootHeight,
     distancesOriginLeaves,
     totalBranchLength,
-    summarizeBranchLengths,
     normalizeBranchLengths,
     normalizeHeight,
     ultrametric,
@@ -31,16 +28,10 @@ where
 
 import Data.Bifoldable
 import Data.Bifunctor
-import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Data.Tree.Rooted
-import ELynx.Tools
-import Text.Printf
 
 -- | Branch length.
 type BranchLength = Double
-
-pretty :: BranchLength -> String
-pretty = printf "%.5f"
 
 -- | A branch label with measurable and modifiable branch length.
 class Measurable e where
@@ -100,27 +91,6 @@ distancesOriginLeaves (Node br _ ts) = map (getLen br +) (concatMap distancesOri
 totalBranchLength :: Measurable e => Tree e a -> BranchLength
 totalBranchLength = bifoldl' (+) const 0 . first getLen
 
-prettyRow :: String -> String -> BL.ByteString
-prettyRow name val = alignLeft 33 n <> alignRight 8 v
-  where
-    n = BL.pack name
-    v = BL.pack val
-
--- | Examine branches of a tree.
-summarizeBranchLengths :: Measurable e => Tree e a -> BL.ByteString
-summarizeBranchLengths t =
-  BL.intercalate
-    "\n"
-    [ prettyRow "Origin height: " $ pretty h,
-      prettyRow "Average distance origin to leaves: " $ pretty h',
-      prettyRow "Total branch length: " $ pretty b
-    ]
-  where
-    n = length $ leaves t
-    h = height t
-    h' = sum (distancesOriginLeaves t) / fromIntegral n
-    b = totalBranchLength t
-
 -- | Normalize branch lengths so that the sum is 1.0.
 normalizeBranchLengths :: Measurable e => Tree e a -> Tree e a
 normalizeBranchLengths t = first (apply (/ s)) t
@@ -132,6 +102,14 @@ normalizeHeight :: Measurable e => Tree e a -> Tree e a
 normalizeHeight t = first (apply (/ h)) t
   where
     h = height t
+
+eps :: Double
+eps = 1e-12
+
+allNearlyEqual :: [Double] -> Bool
+allNearlyEqual [] = True
+allNearlyEqual xs = all (\y -> eps > abs (x - y)) (tail xs)
+  where x = head xs
 
 -- | Check if a tree is ultrametric.
 ultrametric :: Measurable e => Tree e a -> Bool

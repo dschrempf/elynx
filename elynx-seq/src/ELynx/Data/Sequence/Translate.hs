@@ -19,7 +19,13 @@ import ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.Alphabet.Character as C
 import ELynx.Data.Character.Codon
 import ELynx.Data.Sequence.Sequence
-import ELynx.Tools
+
+-- Chop list into chunks of given length. If the last chop is shorter than
+-- length, it is dropped.
+chopVec :: V.Unbox a => Int -> V.Vector a -> [V.Vector a]
+chopVec n xs
+  | V.length xs < n = []
+  | otherwise = V.take n xs : chopVec n (V.drop n xs)
 
 -- | Translate a sequence from 'DNA' or 'DNAX' to 'ProteinS'.
 translateSeq :: UniversalCode -> Int -> Sequence -> Sequence

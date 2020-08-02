@@ -29,6 +29,7 @@ import Control.Monad.Logger
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
+import qualified Data.ByteString.Builder as BB
 import Data.List.NonEmpty (toList)
 import Data.Maybe
 import qualified Data.Set as Set
@@ -59,6 +60,7 @@ import Numeric.LinearAlgebra hiding
 import SLynx.Simulate.Options
 import SLynx.Simulate.PhyloModel
 import System.Random.MWC
+import Text.Printf
 
 -- Simulate a 'Alignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
@@ -125,7 +127,88 @@ reportModel m = do
       $(logInfo)
         "No output file provided; omit writing machine-readable phylogenetic model."
     Just _ ->
-      out "model definition (machine readable)" (bShow m <> "\n") ".model.gz"
+      out "model definition (machine readable)" (BL.pack (show m) <> "\n") ".model.gz"
+
+pretty :: BranchLength -> String
+pretty = printf "%.5f"
+
+prettyRow :: String -> String -> BL.ByteString
+prettyRow name val = alignLeft 33 n <> alignRight 8 v
+  where
+    n = BL.pack name
+    v = BL.pack val
+
+-- | Examine branches of a tree.
+summarizeBranchLengths :: Measurable e => Tree e a -> BL.ByteString
+summarizeBranchLengths t =
+  BL.intercalate
+    "\n"
+    [ prettyRow "Origin height: " $ pretty h,
+      prettyRow "Average distance origin to leaves: " $ pretty h',
+      prettyRow "Total branch length: " $ pretty b
+    ]
+  where
+    n = length $ leaves t
+    h = height t
+    h' = sum (distancesOriginLeaves t) / fromIntegral n
+    b = totalBranchLength t
+
+-- Summarize a substitution model; lines to be printed to screen or log.
+summarizeSM :: SM.SubstitutionModel -> [BL.ByteString]
+summarizeSM sm =
+  map BL.pack $
+    (show (SM.alphabet sm) ++ " substitution model: " ++ SM.name sm ++ ".") :
+    ["Parameters: " ++ show (SM.params sm) ++ "." | not (null (SM.params sm))]
+      ++ case SM.alphabet sm of
+        DNA ->
+          [ "Stationary distribution: "
+              ++ dispv precision (SM.stationaryDistribution sm)
+              ++ ".",
+            "Exchangeability matrix:\n"
+              ++ dispmi 2 precision (SM.exchangeabilityMatrix sm)
+              ++ ".",
+            "Scale: " ++ show (roundN precision $ SM.totalRate sm) ++ "."
+          ]
+        Protein ->
+          [ "Stationary distribution: "
+              ++ dispv precision (SM.stationaryDistribution sm)
+              ++ ".",
+            "Scale: " ++ show (roundN precision $ SM.totalRate sm) ++ "."
+          ]
+        _ ->
+          error
+            "Extended character sets are not supported with substitution models."
+
+-- Summarize a mixture model component; lines to be printed to screen or log.
+summarizeMMComponent :: M.Component -> [BL.ByteString]
+summarizeMMComponent c =
+  BL.pack "Weight: "
+    <> (BB.toLazyByteString . BB.doubleDec $ M.weight c) :
+  summarizeSM (M.substModel c)
+
+-- Summarize a mixture model; lines to be printed to screen or log.
+summarizeMM :: M.MixtureModel -> [BL.ByteString]
+summarizeMM m =
+  [ BL.pack $ "Mixture model: " ++ M.name m ++ ".",
+    BL.pack $ "Number of components: " ++ show n ++ "."
+  ]
+    ++ detail
+  where
+    n = length $ M.components m
+    detail =
+      if n <= 100
+        then
+          concat
+            [ BL.pack ("Component " ++ show i ++ ":") : summarizeMMComponent c
+              | (i, c) <- zip [1 :: Int ..] (toList $ M.components m)
+            ]
+        else []
+
+
+-- Summarize a phylogenetic model; lines to be printed to screen or log.
+summarizePM :: P.PhyloModel -> [BL.ByteString]
+summarizePM (P.MixtureModel mm) = summarizeMM mm
+summarizePM (P.SubstitutionModel sm) = summarizeSM sm
 
 -- | Simulate sequences.
 simulateCmd :: ELynx SimulateArguments ()
@@ -184,7 +267,7 @@ simulateCmd = do
         LT.toStrict $
           LT.decodeUtf8 $
             BL.unlines $
-              P.summarize
+              summarizePM
                 phyloModel'
       return phyloModel'
     Just (n, alpha) -> do
@@ -192,7 +275,7 @@ simulateCmd = do
         LT.toStrict $
           LT.decodeUtf8 $
             BL.intercalate "\n" $
-              P.summarize phyloModel'
+              summarizePM phyloModel'
       $(logInfo) ""
       $(logInfo) $
         LT.toStrict $

@@ -16,13 +16,10 @@ module ELynx.Tools.Concurrent
     splitGen,
 
     -- * Concurrent calculations
-    parComp,
     getChunks,
   )
 where
 
-import Control.Concurrent
-import Control.Concurrent.Async
 import Control.Monad
 import Control.Monad.Primitive
 import qualified Data.Vector as V
@@ -36,24 +33,6 @@ splitGen n gen
   | otherwise = do
     seeds :: [V.Vector Word32] <- replicateM (n -1) $ uniformVector gen 256
     fmap (gen :) (mapM initialize seeds)
-
--- -- XXX: This just doesn't work... The only thing I found:
--- -- https://stackoverflow.com/a/16250010.
--- parComp :: (PrimMonad m, Monoid b) => Int -> (Int -> Gen (PrimState m) -> m b)
---         -> Gen (PrimState m) -> m b
--- parComp num fun gen = do
---   let ncap   = ceiling (fromIntegral num / fromIntegral chunksize :: Double)
---       chunks = getChunks ncap num
---   gs <- splitGen ncap gen
---   mconcat <$> P.mapM (\(n', g') -> fun n' g') (zip chunks gs)
-
--- | Perform random calculation in parallel. Does only work with 'IO' and the moment.
-parComp :: Int -> (Int -> GenIO -> IO b) -> GenIO -> IO [b]
-parComp num fun gen = do
-  ncap <- getNumCapabilities
-  let chunks = getChunks ncap num
-  gs <- splitGen ncap gen
-  mapConcurrently (uncurry fun) (zip chunks gs)
 
 -- | For a given number of capabilities and number of calculations, get chunk
 -- sizes. The chunk sizes will be as evenly distributed as possible and sum up

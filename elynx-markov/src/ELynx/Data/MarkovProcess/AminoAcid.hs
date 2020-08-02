@@ -22,6 +22,7 @@ module ELynx.Data.MarkovProcess.AminoAcid
   )
 where
 
+import qualified Data.Vector.Storable as V
 import Data.ByteString.Internal (c2w)
 import Data.List (elemIndex)
 import Data.Maybe (fromMaybe)
@@ -29,7 +30,6 @@ import Data.Word (Word8)
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.MarkovProcess.RateMatrix
 import ELynx.Data.MarkovProcess.SubstitutionModel
-import ELynx.Tools
 import Numeric.LinearAlgebra
 
 n :: Int
@@ -322,10 +322,14 @@ lgExchRawPaml =
 lgExch :: ExchangeabilityMatrix
 lgExch = pamlToAlphaMat $ exchFromListLower n lgExchRawPaml
 
+normalizeSumVec :: (Fractional b, V.Storable b) => Vector b -> Vector b
+normalizeSumVec v = V.map (/s) v
+  where s = V.sum v
+
 -- Stationary distribution in PAML order.
 lgStatDistPaml :: StationaryDistribution
 lgStatDistPaml =
-  normalizeSumVec 1.0 $
+  normalizeSumVec $
     fromList
       [ 0.079066,
         0.055941,
@@ -565,7 +569,7 @@ wagExch = pamlToAlphaMat $ exchFromListLower n wagExchRawPaml
 -- WAG stationary distribution in PAML order.
 wagStatDistPaml :: StationaryDistribution
 wagStatDistPaml =
-  normalizeSumVec 1.0 $
+  normalizeSumVec $
     fromList
       [ 0.0866279,
         0.043972,
@@ -603,15 +607,21 @@ wagCustom mnm d = substitutionModel Protein nm [] d wagExch
   where
     nm = fromMaybe "WAG-Custom" mnm
 
+matrixSetDiagToZero :: Matrix R -> Matrix R
+matrixSetDiagToZero m = m - diag (takeDiag m)
+
 uniformExch :: ExchangeabilityMatrix
 uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n * n) 1.0
 
 poissonExch :: ExchangeabilityMatrix
 poissonExch = uniformExch
 
+uniformVec :: Vector Double
+uniformVec = V.replicate n (1 / fromIntegral n)
+
 -- | Poisson substitution model.
 poisson :: SubstitutionModel
-poisson = substitutionModel Protein "Poisson" [] (uniformVec n) poissonExch
+poisson = substitutionModel Protein "Poisson" [] uniformVec poissonExch
 
 -- | Poisson substitution model with maybe a name and a custom stationary distribution.
 poissonCustom :: Maybe String -> StationaryDistribution -> SubstitutionModel

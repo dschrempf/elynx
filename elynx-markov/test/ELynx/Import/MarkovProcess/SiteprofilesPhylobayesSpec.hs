@@ -18,7 +18,6 @@ import ELynx.Import.MarkovProcess.EDMModelPhylobayes
   ( EDMComponent,
   )
 import ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
-import ELynx.Tools
 import Test.Hspec
 
 fn :: FilePath

@@ -20,7 +20,6 @@ import qualified Data.ByteString.Char8 as BS
 import Data.Either
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick
-import ELynx.Tools
 import Test.Hspec
 
 -- sampleLabelByteString :: ByteString

@@ -106,9 +106,8 @@ getMeans n alpha = N.fromList $ means <> pure lastMean
     -- The last category has to be calculated with an improper integration.
     lastMean = integralAToInf meanFunc (quantiles !! (n - 1))
 
--- The error of integration.
 eps :: Double
-eps = 1e-6
+eps = 1e-8
 
 -- The integration method to use
 method :: (Double -> Double) -> Double -> Double -> [Result]

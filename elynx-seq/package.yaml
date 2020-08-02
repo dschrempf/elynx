@@ -34,7 +34,6 @@ library:
     - base >=4.7 && <5
     - bytestring
     - containers
-    - elynx-tools
     - matrices
     - mwc-random
     - parallel
@@ -52,7 +51,6 @@ tests:
       - base >=4.7 && <5
       - bytestring
       - elynx-seq
-      - elynx-tools
       - hspec
       - matrices
       - vector

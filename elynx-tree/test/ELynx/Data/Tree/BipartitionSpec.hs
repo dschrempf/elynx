@@ -15,6 +15,7 @@ module ELynx.Data.Tree.BipartitionSpec
   )
 where
 
+import Data.Attoparsec.ByteString
 import qualified Data.ByteString.Char8 as BS
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -22,7 +23,6 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick
-import ELynx.Tools
 import Test.Hspec
 
 sfrom :: [BS.ByteString] -> S.Set BS.ByteString
@@ -32,7 +32,9 @@ treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
 
 getSimpleTrees :: IO (Forest Phylo BS.ByteString)
-getSimpleTrees = parseFileWith (someNewick Standard) treeFileSimple
+getSimpleTrees = do
+  f <- BS.readFile treeFileSimple
+  return $ either error id $ parseOnly f (someNewick Standard)
 
 bipartitionToBranchAnswer :: Map (Bipartition BS.ByteString) Length
 bipartitionToBranchAnswer =

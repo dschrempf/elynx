@@ -33,6 +33,31 @@ import System.IO
     hPutStrLn,
   )
 import TLynx.Examine.Options
+import Text.Printf
+
+pretty :: BranchLength -> String
+pretty = printf "%.5f"
+
+prettyRow :: String -> String -> BL.ByteString
+prettyRow name val = alignLeft 33 n <> alignRight 8 v
+  where
+    n = BL.pack name
+    v = BL.pack val
+
+-- | Examine branches of a tree.
+summarizeBranchLengths :: Measurable e => Tree e a -> BL.ByteString
+summarizeBranchLengths t =
+  BL.intercalate
+    "\n"
+    [ prettyRow "Origin height: " $ pretty h,
+      prettyRow "Average distance origin to leaves: " $ pretty h',
+      prettyRow "Total branch length: " $ pretty b
+    ]
+  where
+    n = length $ leaves t
+    h = height t
+    h' = sum (distancesOriginLeaves t) / fromIntegral n
+    b = totalBranchLength t
 
 readTrees :: FilePath -> ELynx ExamineArguments (Forest Phylo BS.ByteString)
 readTrees fp = do

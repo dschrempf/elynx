@@ -32,13 +32,14 @@ module ELynx.Import.Tree.Newick
 where
 
 import Control.Applicative
+import Data.Aeson (FromJSON, ToJSON)
 import Data.Attoparsec.ByteString.Char8
 import qualified Data.ByteString.Char8 as BS
 import ELynx.Data.Tree.Measurable
 import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted hiding (forest, label)
 import ELynx.Data.Tree.Supported
-import ELynx.Tools
+import GHC.Generics
 import Prelude hiding (takeWhile)
 
 -- | Newick tree format.

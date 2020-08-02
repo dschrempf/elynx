@@ -16,7 +16,6 @@ where
 import ELynx.Data.MarkovProcess.AminoAcid
 import qualified ELynx.Data.MarkovProcess.RateMatrix as R
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
-import ELynx.Tools
 import Numeric.LinearAlgebra
 import Test.Hspec
 

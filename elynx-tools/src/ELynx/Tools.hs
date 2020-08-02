@@ -20,10 +20,8 @@ module ELynx.Tools
     module ELynx.Tools.LinearAlgebra,
     module ELynx.Tools.List,
     module ELynx.Tools.Logger,
-    module ELynx.Tools.Matrix,
     module ELynx.Tools.Misc,
     module ELynx.Tools.Numeric,
-    module ELynx.Tools.Parallel,
     module ELynx.Tools.Reproduction,
     module ELynx.Tools.Text,
     module ELynx.Tools.Vector,
@@ -38,10 +36,8 @@ import ELynx.Tools.InputOutput
 import ELynx.Tools.LinearAlgebra
 import ELynx.Tools.List
 import ELynx.Tools.Logger
-import ELynx.Tools.Matrix
 import ELynx.Tools.Misc
 import ELynx.Tools.Numeric
-import ELynx.Tools.Parallel
 import ELynx.Tools.Reproduction
 import ELynx.Tools.Text
 import ELynx.Tools.Vector

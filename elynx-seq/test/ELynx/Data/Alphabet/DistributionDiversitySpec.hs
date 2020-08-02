@@ -15,7 +15,6 @@ where
 
 import qualified Data.Vector.Unboxed as V
 import ELynx.Data.Alphabet.DistributionDiversity
-import ELynx.Tools
 import Test.Hspec
 
 testArr1 :: V.Vector Double

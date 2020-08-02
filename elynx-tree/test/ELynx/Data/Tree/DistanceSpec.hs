@@ -20,7 +20,6 @@ import qualified Data.ByteString.Char8 as BS
 import ELynx.Data.Tree
 import ELynx.Data.Tree.Arbitrary ()
 import ELynx.Import.Tree.Newick
-import ELynx.Tools
 import Test.Hspec
 import Test.QuickCheck
 

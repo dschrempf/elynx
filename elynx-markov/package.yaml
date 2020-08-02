@@ -30,11 +30,11 @@ library:
   source-dirs: src
   dependencies:
     - attoparsec
+    - async
     - base >=4.7 && <5
     - bytestring
     - containers
     - elynx-seq
-    - elynx-tools
     - elynx-tree
     - hmatrix
     - integration
@@ -54,7 +54,6 @@ tests:
       - base >=4.7 && <5
       - containers
       - elynx-markov
-      - elynx-tools
       - elynx-tree
       - hmatrix
       - hspec

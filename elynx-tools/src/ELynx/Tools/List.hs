@@ -11,8 +11,6 @@
 -- Creation date: Thu May  2 18:57:39 2019.
 module ELynx.Tools.List
   ( -- * Lists
-    sortListWithIndices,
-    randomInsertList,
     shuffle,
     shuffleN,
     grabble,
@@ -22,23 +20,10 @@ where
 import Control.Monad
 import Control.Monad.Primitive
 import Control.Monad.ST
-import Data.Function
-import Data.List
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import qualified Data.Vector.Mutable as M
 import System.Random.MWC
-
--- | Sort a list and also return original indices.
-sortListWithIndices :: Ord a => [a] -> [(a, Int)]
-sortListWithIndices xs = sortBy (compare `on` fst) $ zip xs ([0 ..] :: [Int])
-
--- | Insert element into random position of list.
-randomInsertList :: PrimMonad m => a -> [a] -> Gen (PrimState m) -> m [a]
-randomInsertList e v g = do
-  let l = length v
-  i <- uniformR (0, l) g
-  return $ take i v ++ [e] ++ drop i v
 
 -- | Shuffle a list.
 shuffle :: PrimMonad m => [a] -> Gen (PrimState m) -> m [a]

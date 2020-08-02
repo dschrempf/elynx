@@ -29,7 +29,8 @@ where
 
 import Control.Monad
 import Control.Monad.Primitive
-import Data.List (mapAccumL)
+import Data.Function
+import Data.List
 import Data.Sequence (Seq)
 import qualified Data.Sequence as S
 import ELynx.Data.Tree.Measurable
@@ -42,7 +43,6 @@ import ELynx.Distribution.BirthDeathNearlyCritical
 import ELynx.Distribution.TimeOfOrigin
 import ELynx.Distribution.TimeOfOriginNearCritical
 import ELynx.Distribution.Types
-import ELynx.Tools
 import qualified Statistics.Distribution as D
   ( genContVar,
   )
@@ -53,6 +53,23 @@ epsNearCriticalPointProcess = 1e-5
 
 epsNearCriticalTimeOfOrigin :: Double
 epsNearCriticalTimeOfOrigin = 1e-8
+
+eps :: Double
+eps = 1e-12
+
+(=~=) :: Double -> Double -> Bool
+x =~= y = eps > abs (x - y)
+
+-- Sort a list and also return original indices.
+sortListWithIndices :: Ord a => [a] -> [(a, Int)]
+sortListWithIndices xs = sortBy (compare `on` fst) $ zip xs ([0 ..] :: [Int])
+
+-- Insert element into random position of list.
+randomInsertList :: PrimMonad m => a -> [a] -> Gen (PrimState m) -> m [a]
+randomInsertList e v g = do
+  let l = length v
+  i <- uniformR (0, l) g
+  return $ take i v ++ [e] ++ drop i v
 
 -- | A __point process__ for \(n\) points and of age \(t_{or}\) is defined as
 -- follows. Draw $n$ points on the horizontal axis at \(1,2,\ldots,n\). Pick
@@ -148,10 +165,10 @@ simulate n (Just (t, c)) l m g
     return $ PointProcess [0 .. (n - 1)] vs' t
   | otherwise = error "simulate: Fell through guard, this should never happen."
 
--- | Sort the values of a point process and their indices to be (the indices
+-- Sort the values of a point process and their indices to be (the indices
 -- that they will have while creating the tree).
-sort :: (Ord b) => PointProcess a b -> ([b], [Int])
-sort (PointProcess _ vs _) = (vsSorted, isSorted)
+sortPP :: (Ord b) => PointProcess a b -> ([b], [Int])
+sortPP (PointProcess _ vs _) = (vsSorted, isSorted)
   where
     vsIsSorted = sortListWithIndices vs
     vsSorted = map fst vsIsSorted
@@ -229,7 +246,7 @@ toReconstructedTree l pp@(PointProcess ps vs o)
     otherwise =
     treeOrigin
   where
-    (vsSorted, isSorted) = sort pp
+    (vsSorted, isSorted) = sortPP pp
     !lvs = S.fromList [Node (Length 0) p [] | p <- ps]
     !heights = S.replicate (length ps) 0
     !treeRoot = toReconstructedTree' isSorted vsSorted l lvs heights

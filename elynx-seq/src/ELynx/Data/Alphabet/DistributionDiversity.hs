@@ -33,7 +33,16 @@ import Data.Vector.Generic
 import qualified Data.Vector.Generic as V
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.Alphabet.Character
-import ELynx.Tools
+
+eps :: Double
+eps = 1e-12
+
+-- Calculate x*log(x) but set to 0.0 when x is smaller than 'eps'.
+xLogX :: Double -> Double
+xLogX x
+  | x < 0.0 = error "Argument lower than zero."
+  | eps > x = 0.0
+  | otherwise = x * log x
 
 -- | Entropy of vector.
 entropy :: (Vector v Double) => v Double -> Double
@@ -44,7 +53,7 @@ entropy v =
         ("entropy: Sesult of following vector is NaN: " ++ show (toList v) ++ ".")
     else res
   where
-    res = negate $ sumVec $ V.map xLogX v
+    res = negate $ V.sum $ V.map xLogX v
 
 -- | Effective number of used characters measured using 'entropy'. The result
 -- only makes sense when the sum of the array is 1.0.
@@ -55,7 +64,7 @@ kEffEntropy v = if e < eps then 1.0 else exp e where e = entropy v
 -- binomially sampling the same character twice and only makes sense when the
 -- sum of the array is 1.0.
 homoplasy :: Vector v Double => v Double -> Double
-homoplasy v = sumVec $ V.map (\x -> x * x) v
+homoplasy v = V.sum $ V.map (\x -> x * x) v
 
 -- | Effective number of used characters measured using 'homoplasy'. The result
 -- only makes sense when the sum of the array is 1.0.
@@ -98,4 +107,4 @@ frequencyCharacters ::
 frequencyCharacters alph d = V.map (`saveDivision` s) counts
   where
     counts = countCharacters alph d
-    s = sumVec counts
+    s = V.sum counts

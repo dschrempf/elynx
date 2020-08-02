@@ -17,7 +17,6 @@ import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.Character.Codon
 import ELynx.Data.Sequence.Translate
 import ELynx.Import.Sequence.Fasta
-import ELynx.Tools
 import Test.Hspec
 
 fastaTranslateDNAFN :: FilePath

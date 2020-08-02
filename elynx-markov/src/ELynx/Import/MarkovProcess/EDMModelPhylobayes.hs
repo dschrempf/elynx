@@ -55,9 +55,9 @@ kComponentsLine = AC.decimal <* AC.skipWhile AC.isSpace AS.<?> "kComponentsLine"
 
 dataLine :: Int -> AS.Parser EDMComponent
 dataLine n = (AS.<?> "dataLine") $ do
-  weight <- AC.double
+  wght <- AC.double
   _ <- AS.skipWhile AC.isHorizontalSpace
   vals <- AC.double `AC.sepBy1` AS.skipWhile AC.isHorizontalSpace
   _ <- AC.skipWhile AC.isSpace
   when (length vals /= n) (error "Did not find correct number of entries.")
-  return (weight, V.fromList vals)
+  return (wght, V.fromList vals)

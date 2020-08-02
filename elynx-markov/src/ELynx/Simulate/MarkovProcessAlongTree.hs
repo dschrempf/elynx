@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 -- |
 --   Description :  Work with transition probability matrices on rooted trees
 --   Copyright   :  (c) Dominik Schrempf 2017
@@ -24,15 +26,18 @@ module ELynx.Simulate.MarkovProcessAlongTree
   )
 where
 
+import Control.Concurrent
+import Control.Concurrent.Async
 import Control.Monad
 import Control.Monad.Primitive
 import Control.Parallel.Strategies
 import Data.Tree
+import qualified Data.Vector.Storable as V
+import Data.Word (Word32)
 import ELynx.Data.MarkovProcess.RateMatrix
 import ELynx.Simulate.MarkovProcess
-import ELynx.Tools
 import Numeric.LinearAlgebra
-import System.Random.MWC (Gen, GenIO)
+import System.Random.MWC
 import System.Random.MWC.Distributions (categorical)
 
 toProbTree :: RateMatrix -> Tree Double -> Tree ProbMatrix
@@ -159,8 +164,29 @@ simulateAndFlattenMixtureModel' is cs (Node ps f) g = do
       concat
         <$> sequence [simulateAndFlattenMixtureModel' is' cs t g | t <- f]
 
--- | See 'simulateAndFlattenMixtureModel', parallel version;
--- needs to be run in IO monad.
+getChunks :: Int -> Int -> [Int]
+getChunks c n = ns
+  where
+    n' = n `div` c
+    r = n `mod` c
+    ns = replicate r (n' + 1) ++ replicate (c - r) n'
+
+splitGen :: PrimMonad m => Int -> Gen (PrimState m) -> m [Gen (PrimState m)]
+splitGen n gen
+  | n <= 0 = return []
+  | otherwise = do
+    seeds :: [V.Vector Word32] <- replicateM (n -1) $ uniformVector gen 256
+    fmap (gen :) (mapM initialize seeds)
+
+-- | Perform random calculation in parallel. Does only work with 'IO' and the moment.
+parComp :: Int -> (Int -> GenIO -> IO b) -> GenIO -> IO [b]
+parComp num fun gen = do
+  ncap <- getNumCapabilities
+  let chunks = getChunks ncap num
+  gs <- splitGen ncap gen
+  mapConcurrently (uncurry fun) (zip chunks gs)
+
+-- | See 'simulateAndFlattenMixtureModel', parallel version.
 simulateAndFlattenMixtureModelPar ::
   Int ->
   Vector R ->
