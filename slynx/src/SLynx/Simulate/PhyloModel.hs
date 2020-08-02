@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- |
 -- Module      :  SLynx.Simulate.PhyloModel
 -- Description :  Parse and interpret the model string
@@ -14,14 +16,13 @@ module SLynx.Simulate.PhyloModel
   )
 where
 
+import Control.Applicative
 import Control.Monad (when)
-import qualified Data.ByteString.Lazy.Char8 as L
+import Data.Attoparsec.ByteString.Char8
+import qualified Data.ByteString.Char8 as B
 import Data.Either (rights)
 import Data.List.NonEmpty (fromList)
 import Data.Maybe
-import Data.Scientific hiding (scientific)
-import Data.Void
-import Data.Word (Word8)
 import ELynx.Data.MarkovProcess.AminoAcid
 import ELynx.Data.MarkovProcess.CXXModels
 import qualified ELynx.Data.MarkovProcess.MixtureModel as M
@@ -38,14 +39,6 @@ import Numeric.LinearAlgebra
     size,
     vector,
   )
-import Text.Megaparsec
-import Text.Megaparsec.Byte
-import Text.Megaparsec.Byte.Lexer
-
-type Parser = Parsec Void L.ByteString
-
-bs :: String -> L.ByteString
-bs = L.pack
 
 nNuc :: Int
 -- nNuc = length (alphabet :: [Nucleotide])
@@ -56,53 +49,42 @@ nAA :: Int
 nAA = 20
 
 -- Model parameters between square brackets.
-paramsStart :: Word8
-paramsStart = c2w '['
+paramsStart :: Char
+paramsStart = '['
 
-paramsEnd :: Word8
-paramsEnd = c2w ']'
+paramsEnd :: Char
+paramsEnd = ']'
 
 -- Stationary distribution between curly brackets.
-sdStart :: Word8
-sdStart = c2w '{'
+sdStart :: Char
+sdStart = '{'
 
-sdEnd :: Word8
-sdEnd = c2w '}'
+sdEnd :: Char
+sdEnd = '}'
 
 -- Mixture model components between round brackets.
-mmStart :: Word8
-mmStart = c2w '('
+mmStart :: Char
+mmStart = '('
 
-mmEnd :: Word8
-mmEnd = c2w ')'
+mmEnd :: Char
+mmEnd = ')'
 
-separator :: Word8
-separator = c2w ','
+separator :: Char
+separator = ','
 
 name :: Parser String
 name =
-  L.unpack
-    <$> takeWhile1P
-      (Just "Model name")
-      ( `notElem` [paramsStart, paramsEnd, sdStart, sdEnd, mmStart, mmEnd, separator]
-      )
+  B.unpack
+    <$> takeWhile1 (notInClass [paramsStart, paramsEnd, sdStart, sdEnd, mmStart, mmEnd, separator])
 
 params :: Parser [Double]
-params =
-  map toRealFloat
-    <$> between
-      (char paramsStart)
-      (char paramsEnd)
-      (sepBy1 scientific (char separator))
+params = char paramsStart *> double `sepBy1` char separator <* char paramsEnd
 
 stationaryDistribution :: Parser StationaryDistribution
 stationaryDistribution = do
-  f <-
-    vector . map toRealFloat
-      <$> between
-        (char sdStart)
-        (char sdEnd)
-        (sepBy1 scientific (char separator))
+  _ <- char sdStart
+  f <- vector <$> double `sepBy1` char separator
+  _ <- char sdEnd
   if nearlyEq (norm_1 f) 1.0
     then return f
     else
@@ -172,7 +154,7 @@ parseSubstitutionModel = do
 
 edmModel :: [EDMComponent] -> Maybe [M.Weight] -> Parser M.MixtureModel
 edmModel cs mws = do
-  _ <- chunk (bs "EDM")
+  _ <- string "EDM"
   _ <- char mmStart
   n <- name
   mps <- optional params
@@ -192,13 +174,13 @@ edmModel cs mws = do
 
 cxxModel :: Maybe [M.Weight] -> Parser M.MixtureModel
 cxxModel mws = do
-  _ <- char (c2w 'C')
+  _ <- char 'C'
   n <- decimal :: Parser Int
   return $ cxx n mws
 
 standardMixtureModel :: [M.Weight] -> Parser M.MixtureModel
 standardMixtureModel ws = do
-  _ <- chunk (bs "MIXTURE")
+  _ <- string "MIXTURE"
   _ <- char mmStart
   sms <- parseSubstitutionModel `sepBy1` char separator
   _ <- char mmEnd
@@ -233,7 +215,6 @@ getPhyloModel (Just s) Nothing Nothing Nothing =
   Right $
     P.SubstitutionModel $
       parseStringWith
-        "Substitution model string"
         parseSubstitutionModel
         s
 getPhyloModel (Just _) Nothing (Just _) _ =
@@ -245,6 +226,5 @@ getPhyloModel Nothing (Just m) mws mcs =
   Right $
     P.MixtureModel $
       parseStringWith
-        "Mixture model string"
         (mixtureModel mcs mws)
         m
