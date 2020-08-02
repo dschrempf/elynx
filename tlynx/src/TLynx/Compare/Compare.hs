@@ -21,8 +21,8 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
-import Data.ByteString.Lazy.Char8 (ByteString)
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
+import qualified Data.ByteString.Char8 as BS
 import Data.List (intercalate)
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -48,7 +48,7 @@ treesOneFile ::
   FilePath ->
   ELynx
     CompareArguments
-    (Tree PhyloStrict ByteString, Tree PhyloStrict ByteString)
+    (Tree PhyloStrict BS.ByteString, Tree PhyloStrict BS.ByteString)
 treesOneFile tf = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse file '" ++ tf ++ "'."
@@ -68,7 +68,7 @@ treesTwoFiles ::
   FilePath ->
   ELynx
     CompareArguments
-    (Tree PhyloStrict ByteString, Tree PhyloStrict ByteString)
+    (Tree PhyloStrict BS.ByteString, Tree PhyloStrict BS.ByteString)
 treesTwoFiles tf1 tf2 = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse first tree file '" ++ tf1 ++ "'."
@@ -93,9 +93,9 @@ compareCmd = do
       error
         "Need two input files with one tree each or one input file with two trees."
   liftIO $ hPutStrLn outH "Tree 1:"
-  liftIO $ L.hPutStrLn outH $ toNewick $ fromStrictTree tr1
+  liftIO $ BL.hPutStrLn outH $ toNewick $ fromStrictTree tr1
   liftIO $ hPutStrLn outH "Tree 2:"
-  liftIO $ L.hPutStrLn outH $ toNewick $ fromStrictTree tr2
+  liftIO $ BL.hPutStrLn outH $ toNewick $ fromStrictTree tr2
   liftIO $ hPutStrLn outH ""
   -- Intersect trees.
   (t1, t2) <-
@@ -103,8 +103,8 @@ compareCmd = do
       then do
         let [x, y] = either error id $ intersect [tr1, tr2]
         liftIO $ hPutStrLn outH "Intersected trees are:"
-        liftIO $ L.hPutStrLn outH $ toNewick $ fromStrictTree x
-        liftIO $ L.hPutStrLn outH $ toNewick $ fromStrictTree y
+        liftIO $ BL.hPutStrLn outH $ toNewick $ fromStrictTree x
+        liftIO $ BL.hPutStrLn outH $ toNewick $ fromStrictTree y
         return (x, y)
       else return (tr1, tr2)
   -- Check input (moved to library functions).
@@ -135,8 +135,8 @@ compareCmd = do
   let t1' = normalizeBranchSupport t1
       t2' = normalizeBranchSupport t2
   $(logDebug) "Trees with normalized branch support values:"
-  $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick $ fromStrictTree t1'
-  $(logDebug) $ E.decodeUtf8 $ L.toStrict $ toNewick $ fromStrictTree t2'
+  $(logDebug) $ E.decodeUtf8 $ BL.toStrict $ toNewick $ fromStrictTree t1'
+  $(logDebug) $ E.decodeUtf8 $ BL.toStrict $ toNewick $ fromStrictTree t2'
   liftIO $
     T.hPutStrLn outH $
       formatD
@@ -174,8 +174,8 @@ compareCmd = do
   when
     (argsBipartitions l)
     ( do
-        let bp1 = either error id $ bipartitions (fmap getName t1)
-            bp2 = either error id $ bipartitions (fmap getName t2)
+        let bp1 = either error id $ bipartitions t1
+            bp2 = either error id $ bipartitions t2
             bp1Only = bp1 S.\\ bp2
             bp2Only = bp2 S.\\ bp1
         unless

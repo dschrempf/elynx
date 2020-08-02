@@ -31,9 +31,11 @@ import Control.Monad.Logger
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader hiding (local)
 import Data.Bifunctor
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List hiding (intersect)
 import Data.Maybe
+-- TODO: Remove text dependency.
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Data.Text.Lazy as LT
@@ -54,20 +56,20 @@ median xs = sort xs !! l2 where l2 = length xs `div` 2
 pf :: String
 pf = "%.3f"
 
-header :: Int -> Int -> DistanceMeasure -> L.ByteString
+header :: Int -> Int -> DistanceMeasure -> BL.ByteString
 header n m d =
   alignLeft (n + 2) "Tree 1" <> alignLeft (n + 2) "Tree 2"
     <> alignRight
       (m + 2)
-      (L.pack $ show d)
+      (BL.pack $ show d)
 
 showTriplet ::
-  (PrintfArg a) => Int -> Int -> [String] -> (Int, Int, a) -> L.ByteString
+  (PrintfArg a) => Int -> Int -> [String] -> (Int, Int, a) -> BL.ByteString
 showTriplet n m args (i, j, d) = i' <> j' <> d'
   where
-    i' = alignLeft (n + 2) $ L.pack (args !! i)
-    j' = alignLeft (n + 2) $ L.pack (args !! j)
-    d' = alignRight (m + 2) $ L.pack (printf pf d)
+    i' = alignLeft (n + 2) $ BL.pack (args !! i)
+    j' = alignLeft (n + 2) $ BL.pack (args !! j)
+    d' = alignRight (m + 2) $ BL.pack (printf pf d)
 
 -- Compute pairwise distances of a list of input trees. Use given distance
 -- measure. Returns a triple, the first two elements are the indices of the
@@ -132,7 +134,7 @@ distance = do
   -- when (isNothing mtree) $ $(logInfo)
   --   "Compute pairwise distances between trees from different files."
   $(logDebug) "The trees are:"
-  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map toNewick trees
+  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ BL.unlines $ map toNewick trees
   -- Set the distance measure.
   let dist = argsDistance l
   case argsDistance l of
@@ -147,8 +149,8 @@ distance = do
     BranchScore -> $(logInfo) "Use branch score distance."
   let distanceMeasure' ::
         (Measurable e1, Measurable e2) =>
-        Tree e1 L.ByteString ->
-        Tree e2 L.ByteString ->
+        Tree e1 BS.ByteString ->
+        Tree e2 BS.ByteString ->
         Double
       distanceMeasure' t1 t2 = either error id $ case dist of
         Symmetric -> second fromIntegral $ symmetric t1 t2
@@ -177,10 +179,10 @@ distance = do
         IncompatibleSplit val -> collapse val . normalizeBranchSupport
         _ -> id
   -- The trees can be prepared now.
-  let trees' :: Forest PhyloStrict L.ByteString
+  let trees' :: Forest PhyloStrict BS.ByteString
       trees' = map (collapseF . normalizeF . either error id . toStrictTree) trees
   $(logDebug) "The prepared trees are:"
-  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ L.unlines $ map (toNewick . fromStrictTree) trees'
+  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ BL.unlines $ map (toNewick . fromStrictTree) trees'
   let dsTriplets = case mtree of
         Nothing -> pairwise distanceMeasure trees'
         Just pt ->
@@ -208,9 +210,9 @@ distance = do
       T.justifyLeft 10 ' ' "Variance: "
         <> T.pack
           (printf pf (variance dsVec))
-  -- L.putStrLn $ L.unlines $ map toNewick ts
-  -- L.putStrLn $ L.unlines $ map toNewick tsN
-  -- L.putStrLn $ L.unlines $ map toNewick tsC
+  -- BS.putStrLn $ BS.unlines $ map toNewick ts
+  -- BS.putStrLn $ BS.unlines $ map toNewick tsN
+  -- BS.putStrLn $ BS.unlines $ map toNewick tsC
 
   lift $
     unless
@@ -219,17 +221,17 @@ distance = do
           let n = maximum $ 6 : map length names
               m = length $ show dist
           lift $ hPutStrLn outH ""
-          lift $ L.hPutStrLn outH $ header n m dist
+          lift $ BL.hPutStrLn outH $ header n m dist
           case mname of
             Nothing ->
               lift $
-                L.hPutStr outH $
-                  L.unlines
+                BL.hPutStr outH $
+                  BL.unlines
                     (map (showTriplet n m names) dsTriplets)
             Just mn ->
               lift $
-                L.hPutStr outH $
-                  L.unlines
+                BL.hPutStr outH $
+                  BL.unlines
                     (map (showTriplet n m (mn : names)) dsTriplets)
       )
   liftIO $ hClose outH

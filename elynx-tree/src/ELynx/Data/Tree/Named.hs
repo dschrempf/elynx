@@ -14,29 +14,30 @@ module ELynx.Data.Tree.Named
   )
 where
 
-import qualified Data.ByteString as B
-import qualified Data.ByteString.Lazy.Builder as L
-import qualified Data.ByteString.Lazy.Char8 as L
-import Data.Double.Conversion.ByteString
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy.Builder as BB
+import qualified Data.ByteString.Lazy.Char8 as BL
+import Data.Double.Conversion.ByteString as BC
 
 -- | Data types with names.
 class Named a where
-  getName :: a -> L.ByteString
+  -- Use lazy byte strings because Newick strings are built using chunks.
+  getName :: a -> BL.ByteString
 
 instance Named () where
-  getName = const L.empty
+  getName = const BL.empty
 
 instance Named Int where
-  getName = L.toLazyByteString . L.intDec
+  getName = BB.toLazyByteString . BB.intDec
 
 instance Named Double where
-  getName = L.fromStrict . toShortest
+  getName = BL.fromStrict . toShortest
 
 instance Named Char where
-  getName = L.toLazyByteString . L.char8
+  getName = BB.toLazyByteString . BB.char8
 
-instance Named L.ByteString where
+instance Named BL.ByteString where
   getName = id
 
-instance Named B.ByteString where
-  getName = L.fromStrict
+instance Named BS.ByteString where
+  getName = BL.fromStrict

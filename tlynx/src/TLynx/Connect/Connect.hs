@@ -20,8 +20,8 @@ where
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
-import Data.ByteString.Lazy.Char8 (ByteString)
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Set as S
 import ELynx.Data.Tree
 import ELynx.Export.Tree.Newick (toNewick)
@@ -73,9 +73,9 @@ connectCmd = do
   liftIO $ hClose outH
 
 connectTrees ::
-  Tree Length ByteString ->
-  Tree Length ByteString ->
-  Forest Length ByteString
+  Tree Length BS.ByteString ->
+  Tree Length BS.ByteString ->
+  Forest Length BS.ByteString
 connectTrees t = either error id . connect 0 "root" t
 
 type Constraint a = S.Set a
@@ -106,7 +106,7 @@ parseTrees ::
   FilePath ->
   ELynx
     ConnectArguments
-    (Tree Length ByteString, Tree Length ByteString)
+    (Tree Length BS.ByteString, Tree Length BS.ByteString)
 parseTrees l r = do
   nwF <- nwFormat . local <$> ask
   tl <- liftIO $ parseFileWith (oneNewick nwF) l
@@ -122,7 +122,7 @@ connectOnly h l r = do
   (tl, tr) <- parseTrees l r
   let ts = connectTrees tl tr
   $(logInfo) $ "Connected trees: " <> tShow (length ts)
-  liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . lengthToPhyloTree) ts
+  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts
 
 connectAndFilter ::
   Handle -> FilePath -> FilePath -> FilePath -> ELynx ConnectArguments ()
@@ -130,12 +130,12 @@ connectAndFilter h c l r = do
   nwF <- nwFormat . local <$> ask
   cts <- liftIO $ parseFileWith (someNewick nwF) c
   $(logInfo) "Constraints:"
-  $(logInfo) $ fromBs $ L.intercalate "\n" $ map toNewick cts
+  $(logInfo) $ fromBs $ BL.intercalate "\n" $ map toNewick cts
   (tl, tr) <- parseTrees l r
   let ts = connectTrees tl tr
-      cs = map S.fromList $ concatMap multifurcatingGroups cts :: [Constraint ByteString]
+      cs = map S.fromList $ concatMap multifurcatingGroups cts :: [Constraint BS.ByteString]
       -- Only collect trees that are compatible with the constraints.
       ts' = filter (compatibleWith getName cs) ts
   $(logInfo) $ "Connected  trees: " <> tShow (length ts)
   $(logInfo) $ "Compatible trees: " <> tShow (length ts')
-  liftIO $ L.hPutStr h $ L.unlines $ map (toNewick . lengthToPhyloTree) ts'
+  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts'

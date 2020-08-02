@@ -139,6 +139,7 @@ simulateCmd = do
   $(logInfo) $ T.pack $ "Read tree from file '" ++ treeFile ++ "'."
   tree <- liftIO $ parseFileWith (newick Standard) treeFile
   let t' = either error id $ phyloToLengthTree tree
+  $(logInfo) $ T.pack $ "Number of leaves: " ++ show (length $ leaves t')
   $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarizeBranchLengths t'
   let edmFile = argsEDMFile l
   let sProfileFiles = argsSiteprofilesFiles l

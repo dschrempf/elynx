@@ -20,7 +20,8 @@ import Control.Monad (unless)
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
-import qualified Data.ByteString.Char8 as L
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Containers.ListUtils (nubOrd)
 import Data.List ((\\))
 import qualified Data.Text as T
@@ -33,7 +34,7 @@ import System.IO
   )
 import TLynx.Examine.Options
 
-readTrees :: FilePath -> ELynx ExamineArguments (Forest Phylo L.ByteString)
+readTrees :: FilePath -> ELynx ExamineArguments (Forest Phylo BS.ByteString)
 readTrees fp = do
   $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
   nf <- argsNewickFormat . local <$> ask
@@ -45,7 +46,7 @@ examineTree h t = do
   let l = phyloToLengthTree t
   case l of
     Left _ -> hPutStrLn h "Branch lengths not available."
-    Right t' -> L.hPutStrLn h $ summarizeBranchLengths t'
+    Right t' -> BL.hPutStrLn h $ summarizeBranchLengths t'
   unless (null dups) $
     hPutStrLn h ""
       >> hPutStrLn

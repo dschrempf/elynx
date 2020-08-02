@@ -48,7 +48,7 @@ module ELynx.Data.Sequence.Sequence
 where
 
 import Control.Parallel.Strategies
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (maximumBy)
 import Data.Ord (comparing)
 import qualified Data.Vector.Unboxed as V
@@ -65,22 +65,22 @@ import qualified Prelude as Pr
   ( length,
   )
 
--- | For now, 'Name's are just 'L.ByteString's.
-type Name = L.ByteString
+-- | For now, 'Name's are just 'BL.ByteString's.
+type Name = BL.ByteString
 
 -- | The description of a sequence.
-type Description = L.ByteString
+type Description = BL.ByteString
 
 -- | The vector of characters of a sequence.
 type Characters = V.Vector Character
 
 -- | Convert byte string to sequence characters.
-fromByteString :: L.ByteString -> Characters
-fromByteString = V.fromList . map fromChar . L.unpack
+fromByteString :: BL.ByteString -> Characters
+fromByteString = V.fromList . map fromChar . BL.unpack
 
 -- | Convert sequence characters to byte string.
-toByteString :: Characters -> L.ByteString
-toByteString = L.pack . map toChar . V.toList
+toByteString :: Characters -> BL.ByteString
+toByteString = BL.pack . map toChar . V.toList
 
 -- | Sequences have a name, a possibly empty description, a code and hopefully a
 -- lot of data.
@@ -92,13 +92,13 @@ data Sequence = Sequence
   }
   deriving (Show, Eq)
 
-getInfo :: Sequence -> L.ByteString
+getInfo :: Sequence -> BL.ByteString
 getInfo s =
-  L.unwords
+  BL.unwords
     [ alignLeft nameWidth (name s),
-      alignRight fieldWidth (L.pack $ show $ alphabet s),
-      alignRight fieldWidth (L.pack . show $ len),
-      alignRight fieldWidth (L.pack $ P.printf "%2.2f" pGaps)
+      alignRight fieldWidth (BL.pack $ show $ alphabet s),
+      alignRight fieldWidth (BL.pack . show $ len),
+      alignRight fieldWidth (BL.pack $ P.printf "%2.2f" pGaps)
     ]
   where
     len = length s
@@ -106,19 +106,19 @@ getInfo s =
     pGaps = 100 * fromIntegral nGaps / fromIntegral len :: Double
 
 -- | Trim and show a 'Sequence'.
-summarize :: Sequence -> L.ByteString
+summarize :: Sequence -> BL.ByteString
 summarize s =
-  L.unwords
+  BL.unwords
     [getInfo s, summarizeByteString summaryLength $ toByteString (characters s)]
 
 -- | Trim and show a list of 'Sequence's.
-summarizeSequences :: [Sequence] -> L.ByteString
+summarizeSequences :: [Sequence] -> BL.ByteString
 summarizeSequences ss = header ss <> body (take summaryNSequences ss)
 
 -- | Header printed before 'Sequence' list.
-tableHeader :: L.ByteString
+tableHeader :: BL.ByteString
 tableHeader =
-  L.unwords
+  BL.unwords
     [ alignLeft nameWidth "Name",
       alignRight fieldWidth "Code",
       alignRight fieldWidth "Length",
@@ -127,15 +127,15 @@ tableHeader =
     ]
 
 -- | A short description of the sequence.
-header :: [Sequence] -> L.ByteString
+header :: [Sequence] -> BL.ByteString
 header ss =
-  L.unlines $
+  BL.unlines $
     reportIfSubsetIsShown
-      ++ [ L.pack $
+      ++ [ BL.pack $
              "For each sequence, the "
                ++ show summaryLength
                ++ " first bases are shown.",
-           L.pack $ "List contains " ++ show (Pr.length ss) ++ " sequences.",
+           BL.pack $ "List contains " ++ show (Pr.length ss) ++ " sequences.",
            "",
            tableHeader
          ]
@@ -147,12 +147,12 @@ header ss =
         ++ show (Pr.length ss)
         ++ " sequences are shown."
     reportIfSubsetIsShown
-      | l > summaryNSequences = [L.pack s]
+      | l > summaryNSequences = [BL.pack s]
       | otherwise = []
 
 -- | Trim and show a list of 'Sequence's.
-body :: [Sequence] -> L.ByteString
-body ss = L.unlines (map summarize ss `using` parListChunk 5 rdeepseq)
+body :: [Sequence] -> BL.ByteString
+body ss = BL.unlines (map summarize ss `using` parListChunk 5 rdeepseq)
 
 -- | Calculate length of 'Sequence'.
 length :: Sequence -> Int
@@ -180,16 +180,16 @@ concat (Sequence i d c cs) (Sequence j f k ks)
   | i /= j =
     error $
       "concatenate: Sequences do not have equal names: "
-        ++ L.unpack i
+        ++ BL.unpack i
         ++ ", "
-        ++ L.unpack j
+        ++ BL.unpack j
         ++ "."
   | d /= f =
     error $
       "concatenate: Sequences do not have equal descriptions: "
-        ++ L.unpack d
+        ++ BL.unpack d
         ++ ", "
-        ++ L.unpack f
+        ++ BL.unpack f
         ++ "."
   | c /= k =
     error $

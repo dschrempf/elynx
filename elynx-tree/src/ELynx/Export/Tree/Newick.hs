@@ -19,35 +19,33 @@ module ELynx.Export.Tree.Newick
   )
 where
 
-import Data.ByteString.Lazy.Builder (Builder)
-import qualified Data.ByteString.Lazy.Builder as L
-import Data.ByteString.Lazy.Char8 (ByteString)
+import qualified Data.ByteString.Lazy.Builder as BB
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (intersperse)
 import ELynx.Data.Tree.Named
 import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted
-import ELynx.Tools
 
-toNewickBuilder :: Named a => Tree Phylo a -> Builder
-toNewickBuilder t = go t <> L.word8 (c2w ';')
+toNewickBuilder :: Named a => Tree Phylo a -> BB.Builder
+toNewickBuilder t = go t <> BB.char8 ';'
   where
     go (Node b l []) = lbl b l
     go (Node b l ts) =
-      L.word8 (c2w '(')
-        <> mconcat (intersperse (L.word8 $ c2w ',') $ map go ts)
-        <> L.word8 (c2w ')')
+      BB.char8 '('
+        <> mconcat (intersperse (BB.char8 ',') $ map go ts)
+        <> BB.char8 ')'
         <> lbl b l
-    mBrSupBuilder x = maybe mempty (\bs -> L.word8 (c2w '[') <> L.doubleDec bs <> L.word8 (c2w ']')) (brSup x)
-    mBrLenBuilder x = maybe mempty (\bl -> L.word8 (c2w ':') <> L.doubleDec bl) (brLen x)
+    mBrSupBuilder x = maybe mempty (\bs -> BB.char8 '[' <> BB.doubleDec bs <> BB.char8 ']') (brSup x)
+    mBrLenBuilder x = maybe mempty (\bl -> BB.char8 ':' <> BB.doubleDec bl) (brLen x)
     lbl x y =
-      L.lazyByteString (getName y)
+      BB.lazyByteString (getName y)
         <> mBrLenBuilder x
         -- After reading several discussion, I go for the "more semantical
         -- form" with branch support values in square brackets.
         <> mBrSupBuilder x
 
--- | General conversion of a tree into a Newick 'L.Bytestring'. Use provided
+-- | General conversion of a tree into a Newick 'BB.Bytestring'. Use provided
 -- functions to extract node labels and branch lengths builder objects. See also
 -- Biobase.Newick.Export.
-toNewick :: Named a => Tree Phylo a -> ByteString
-toNewick = L.toLazyByteString . toNewickBuilder
+toNewick :: Named a => Tree Phylo a -> BL.ByteString
+toNewick = BB.toLazyByteString . toNewickBuilder

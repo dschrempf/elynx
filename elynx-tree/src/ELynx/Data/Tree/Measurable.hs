@@ -31,8 +31,7 @@ where
 
 import Data.Bifoldable
 import Data.Bifunctor
-import Data.ByteString.Lazy.Char8 (ByteString)
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Data.Tree.Rooted
 import ELynx.Tools
 import Text.Printf
@@ -101,16 +100,16 @@ distancesOriginLeaves (Node br _ ts) = map (getLen br +) (concatMap distancesOri
 totalBranchLength :: Measurable e => Tree e a -> BranchLength
 totalBranchLength = bifoldl' (+) const 0 . first getLen
 
-prettyRow :: String -> String -> ByteString
+prettyRow :: String -> String -> BL.ByteString
 prettyRow name val = alignLeft 33 n <> alignRight 8 v
   where
-    n = L.pack name
-    v = L.pack val
+    n = BL.pack name
+    v = BL.pack val
 
 -- | Examine branches of a tree.
-summarizeBranchLengths :: Measurable e => Tree e a -> ByteString
+summarizeBranchLengths :: Measurable e => Tree e a -> BL.ByteString
 summarizeBranchLengths t =
-  L.intercalate
+  BL.intercalate
     "\n"
     [ prettyRow "Origin height: " $ pretty h,
       prettyRow "Average distance origin to leaves: " $ pretty h',

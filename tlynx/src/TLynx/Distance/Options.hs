@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
 -- |
@@ -19,13 +20,12 @@ module TLynx.Distance.Options
   )
 where
 
-import Data.Scientific (toRealFloat)
-import Data.Void
 import ELynx.Tools
 import Options.Applicative
 import TLynx.Parsers
 import Text.Printf
-import Data.Attoparsec.ByteString.Char8
+import qualified Data.Attoparsec.ByteString.Char8 as A
+import qualified Data.ByteString.Char8 as B
 
 -- | Supported distance measures.
 data DistanceMeasure
@@ -103,47 +103,41 @@ inFilesArg =
       <> help
         "Read tree(s) from INPUT-FILES; if more files are given, one tree is expected per file"
 
-symmetric :: Parsec Void String DistanceMeasure
+symmetric :: A.Parser DistanceMeasure
 symmetric = do
-  _ <- string "symmetric"
-  _ <- eof
+  _ <- A.string "symmetric"
+  _ <- A.endOfInput
   pure Symmetric
 
-incompatibleSplit :: Parsec Void String DistanceMeasure
+incompatibleSplit :: A.Parser DistanceMeasure
 incompatibleSplit = do
-  _ <- string "incompatible-split"
-  _ <- char '['
-  f <- toRealFloat <$> scientific
-  _ <- char ']'
-  _ <- eof
+  _ <- A.string "incompatible-split"
+  _ <- A.char '['
+  f <- A.double
+  _ <- A.char ']'
+  _ <- A.endOfInput
   if (0 <= f) && (f <= 1)
     then pure $ IncompatibleSplit f
     else error "Branch support has to be in [0, 1]."
 
-branchScore :: Parsec Void String DistanceMeasure
+branchScore :: A.Parser DistanceMeasure
 branchScore = do
-  _ <- string "branch-score"
-  _ <- eof
+  _ <- A.string "branch-score"
+  _ <- A.endOfInput
   pure BranchScore
 
-distanceParser :: Parsec Void String DistanceMeasure
-distanceParser =
-  -- Try first the normalized one, since the normal branch score
-  -- parser also succeeds in this case.
-  try symmetric <|> try incompatibleSplit <|> branchScore
+-- Try first the normalized one, since the normal branch score
+-- parser also succeeds in this case.
+distanceParser :: A.Parser DistanceMeasure
+distanceParser = symmetric <|> incompatibleSplit <|> branchScore
 
 -- See 'eitherReader', but for an attoparsec parser.
 eitherReadA :: A.Parser a -> ReadM a
-eitherReadA p = eitherReader $ \input ->
-  let eea = A.parseOnly p "" input
-   in case eea of
-        Left eb -> Left $ errorBundlePretty eb
-        Right a -> Right a
-
+eitherReadA p = eitherReader $ \input -> A.parseOnly p (B.pack input)
 
 distanceOpt :: Parser DistanceMeasure
 distanceOpt =
-  option (megaReadM distanceParser) $
+  option (eitherReadA distanceParser) $
     long "distance"
       <> short 'd'
       <> metavar "MEASURE"
