@@ -14,8 +14,6 @@
 -- Parse FASTA files.
 --
 -- [NCBI file specifications](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp).
---
--- For more complicated parsers, try to use a [lexer](https://hackage.haskell.org/package/megaparsec-7.0.1/docs/Text-Megaparsec-Byte-Lexer.html).
 module ELynx.Import.Sequence.Fasta
   ( fastaSequence,
     fasta,
