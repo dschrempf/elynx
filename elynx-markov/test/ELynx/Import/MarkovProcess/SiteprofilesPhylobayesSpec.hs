@@ -19,6 +19,7 @@ import ELynx.Import.MarkovProcess.EDMModelPhylobayes
   )
 import ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
 import Test.Hspec
+import ELynx.Tools
 
 fn :: FilePath
 fn = "data/HSSPMany.siteprofiles"

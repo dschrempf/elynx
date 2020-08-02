@@ -22,6 +22,7 @@ import ELynx.Export.Tree.Nexus
 import ELynx.Import.Tree.Newick (NewickFormat (..))
 import ELynx.Import.Tree.Nexus
 import Test.Hspec
+import ELynx.Tools
 
 tree :: Tree Phylo BS.ByteString
 tree =

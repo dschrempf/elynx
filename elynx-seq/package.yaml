@@ -48,9 +48,11 @@ tests:
     main:                Spec.hs
     source-dirs:         test
     dependencies:
+      - attoparsec
       - base >=4.7 && <5
       - bytestring
       - elynx-seq
+      - elynx-tools
       - hspec
       - matrices
       - vector

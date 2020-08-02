@@ -18,6 +18,7 @@ import qualified ELynx.Data.MarkovProcess.RateMatrix as R
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
 import Numeric.LinearAlgebra
 import Test.Hspec
+import ELynx.Tools
 
 statDistLGPython :: R.StationaryDistribution
 statDistLGPython =

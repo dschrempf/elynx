@@ -16,6 +16,7 @@ where
 import qualified Data.Vector.Unboxed as V
 import ELynx.Data.Alphabet.DistributionDiversity
 import Test.Hspec
+import ELynx.Tools
 
 testArr1 :: V.Vector Double
 testArr1 = V.replicate 20 0.0

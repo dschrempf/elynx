@@ -16,6 +16,7 @@ where
 import ELynx.Import.MarkovProcess.EDMModelPhylobayes
 import Numeric.LinearAlgebra (fromList)
 import Test.Hspec
+import ELynx.Tools
 
 componentsFilePhylobayes :: FilePath
 componentsFilePhylobayes = "data/EDMDistsPhylobayes.txt"

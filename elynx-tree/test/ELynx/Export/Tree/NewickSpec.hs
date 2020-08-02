@@ -24,6 +24,7 @@ import ELynx.Export.Tree.Newick
 import ELynx.Import.Tree.Newick
 import Test.Hspec
 import Test.QuickCheck hiding (label)
+import ELynx.Tools
 
 samplePhyloByteStringTree :: Tree Phylo BS.ByteString
 samplePhyloByteStringTree = parseByteStringWith (newick Standard) sampleNewickByteString1

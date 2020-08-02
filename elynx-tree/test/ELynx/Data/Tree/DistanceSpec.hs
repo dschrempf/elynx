@@ -22,6 +22,7 @@ import ELynx.Data.Tree.Arbitrary ()
 import ELynx.Import.Tree.Newick
 import Test.Hspec
 import Test.QuickCheck
+import ELynx.Tools
 
 treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"

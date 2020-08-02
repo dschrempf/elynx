@@ -21,6 +21,7 @@ import Data.Either
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick
 import Test.Hspec
+import ELynx.Tools
 
 -- sampleLabelByteString :: ByteString
 -- sampleLabelByteString = "name:0.3"

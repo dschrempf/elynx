@@ -18,6 +18,7 @@ import ELynx.Data.Alphabet.Alphabet
 import qualified ELynx.Data.Sequence.Alignment as M
 import ELynx.Import.Sequence.Fasta
 import Test.Hspec
+import ELynx.Tools
 
 fastaNucleotideFN :: FilePath
 fastaNucleotideFN = "data/Nucleotide.fasta"

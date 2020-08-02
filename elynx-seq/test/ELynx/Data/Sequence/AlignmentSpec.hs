@@ -20,6 +20,7 @@ import ELynx.Data.Alphabet.Character
 import ELynx.Data.Sequence.Alignment
 import ELynx.Import.Sequence.Fasta
 import Test.Hspec
+import ELynx.Tools
 
 fastaNucleotideIUPACFN :: FilePath
 fastaNucleotideIUPACFN = "data/NucleotideIUPAC.fasta"
