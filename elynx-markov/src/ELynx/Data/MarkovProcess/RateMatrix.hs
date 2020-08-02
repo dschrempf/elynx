@@ -61,9 +61,12 @@ isValid d = epsRelaxed > abs (norm_1 d - 1.0)
 normalizeSD :: StationaryDistribution -> StationaryDistribution
 normalizeSD d = d / scalar (norm_1 d)
 
+matrixSetDiagToZero :: Matrix R -> Matrix R
+matrixSetDiagToZero m = m - diag (takeDiag m)
+
 -- | Get average number of substitutions per unit time.
 totalRateWith :: StationaryDistribution -> RateMatrix -> Double
-totalRateWith d m = norm_1 $ d <# (m - diag (takeDiag m))
+totalRateWith d m = norm_1 $ d <# matrixSetDiagToZero m
 
 -- | Get average number of substitutions per unit time.
 totalRate :: RateMatrix -> Double
@@ -83,7 +86,7 @@ normalizeWith d m = scale (1.0 / totalRateWith d m) m
 setDiagonal :: RateMatrix -> RateMatrix
 setDiagonal m = diagZeroes - diag (fromList rowSums)
   where
-    diagZeroes = m - diag (takeDiag m)
+    diagZeroes = matrixSetDiagToZero m
     rowSums = map norm_1 $ toRows diagZeroes
 
 -- | Extract the exchangeability matrix from a rate matrix.
