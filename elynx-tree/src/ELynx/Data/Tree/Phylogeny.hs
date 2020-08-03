@@ -324,7 +324,7 @@ instance ToJSON Phylo
 instance FromJSON Phylo
 
 -- | Branch length label.
-
+--
 -- For conversion, see 'phyloToLengthTree' and 'lengthToPhyloTree'.
 newtype Length = Length {fromLength :: BranchLength}
   deriving (Read, Show, Eq, Ord, Generic, NFData)
@@ -426,7 +426,7 @@ toSupport (Phylo _ (Just s)) = Just $ Support s
 cleanSupport :: BranchSupport -> Tree Phylo a -> Tree Support a
 cleanSupport maxSup (Node (Phylo _ s) l xs) = Node (Support $ fromMaybe maxSup s) l $ map (cleanSupport maxSup) xs
 
--- TODO: Change name. Strict is reserved for "not lazy".
+-- XXX: Probably change name. Strict is reserved for "not lazy".
 
 -- | Strict branch label for phylogenetic trees.
 data PhyloStrict = PhyloStrict
