@@ -29,23 +29,19 @@ library:
   exposed-modules: ELynx.Tools
   dependencies:
     - aeson
-    - async
     - attoparsec
     - base >=4.7 && <5
     - base16-bytestring
     - bytestring
-    - containers
     - cryptohash-sha256
     - deepseq
     - directory
     - fast-logger
     - hmatrix
-    - matrices
     - monad-logger
     - monad-control
     - mwc-random
     - optparse-applicative
-    - parallel
     - primitive
     - template-haskell
     - text

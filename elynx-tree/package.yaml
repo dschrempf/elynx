@@ -42,7 +42,6 @@ library:
     - mwc-random
     - primitive
     - statistics
-    - vector
   generated-other-modules: Paths_elynx_tree
 
 benchmarks:
@@ -52,7 +51,6 @@ benchmarks:
     dependencies:
       - base >=4.7 && <5
       - bytestring
-      - containers
       - elynx-tools
       - elynx-tree
       - criterion

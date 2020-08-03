@@ -35,7 +35,6 @@ library:
     - bytestring
     - containers
     - elynx-seq
-    - elynx-tree
     - hmatrix
     - integration
     - math-functions
@@ -55,7 +54,6 @@ tests:
       - containers
       - elynx-markov
       - elynx-tools
-      - elynx-tree
       - hmatrix
       - hspec
       - mwc-random

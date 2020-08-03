@@ -25,7 +25,6 @@ library:
   source-dirs: src
   dependencies:
     - aeson
-    - array
     - attoparsec
     - lifted-async
     - base >=4.7 && <5
@@ -39,8 +38,6 @@ library:
     - mwc-random
     - optparse-applicative
     - parallel
-    - primitive
-    - scientific
     - statistics
     - text
     - transformers
@@ -57,5 +54,4 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - base >=4.7 && <5
-      - elynx-tools
       - tlynx

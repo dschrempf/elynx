@@ -83,6 +83,11 @@ packages:
 
 # # Support weeder.
 # # 1.0: -ddump-to-file -ddump-hi.
+# ghc-options:
+#   "$locals": -ddump-to-file -ddump-hi
 # # 2.0: -fwrite-ide-info (hie files).
 # ghc-options:
-#   "$locals": -fwrite-ide-info -ddump-to-file -ddump-hi
+#   "$locals": -fwrite-ide-info
+# # Both.
+ghc-options:
+  "$locals": -fwrite-ide-info -ddump-to-file -ddump-hi
