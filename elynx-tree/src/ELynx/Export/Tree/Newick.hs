@@ -16,6 +16,7 @@
 -- See nomenclature in 'ELynx.Data.Tree.Tree'.
 module ELynx.Export.Tree.Newick
   ( toNewick,
+    toNewickBuilder,
   )
 where
 
@@ -26,6 +27,7 @@ import ELynx.Data.Tree.Named
 import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted
 
+-- | See 'toNewick'.
 toNewickBuilder :: Named a => Tree Phylo a -> BB.Builder
 toNewickBuilder t = go t <> BB.char8 ';'
   where

@@ -50,7 +50,7 @@ summarizeBranchLengths t =
   BL.intercalate
     "\n"
     [ prettyRow "Origin height: " $ pretty h,
-      prettyRow "Average distance origin to leaves: " $ pretty h',
+      prettyRow "Mean distance origin leaves: " $ pretty h',
       prettyRow "Total branch length: " $ pretty b
     ]
   where
@@ -77,6 +77,7 @@ examineTree h t = do
       >> hPutStrLn
         h
         ("Duplicate leaves: " ++ show dups)
+  BL.hPutStrLn h $ "Leave names: " <> BL.intercalate " " lvs
   where
     lvs = map getName $ leaves t
     dups = lvs \\ nubOrd lvs
