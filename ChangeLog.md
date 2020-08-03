@@ -2,7 +2,14 @@
 # Changelog for ELynx
 
 
-## Version 0.3.1; in development
+## Version 0.3.2; in development
+
+
+## Version 0.3.1
+
+-   Use Attoparsec.
+-   Use ByteString consistently.
+-   Remove elynx-tools dependency from libaries.
 
 
 ## Version 0.3.0

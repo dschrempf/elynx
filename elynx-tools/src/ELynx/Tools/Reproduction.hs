@@ -67,13 +67,13 @@ import Data.Time
 import Data.Vector.Unboxed (Vector)
 import Data.Version
 import Data.Word
-import ELynx.Tools.Definitions
 import ELynx.Tools.Misc
 import GHC.Generics
 import Language.Haskell.TH
 import Options.Applicative hiding (empty)
 import Options.Applicative.Help.Pretty
 import System.Environment
+import Paths_elynx_tools
 
 -- Be careful; it is necessary to synchronize the version numbers across packages.
 versionString :: String

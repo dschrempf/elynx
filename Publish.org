@@ -1,4 +1,8 @@
 * Module dependencies
+** Weeder
+Use weeder to reduce dependencies.
+
+** Graph
 Check module dependencies.
 
 #+NAME: CheckModuleDependencies
