@@ -11,10 +11,7 @@
 --
 -- Miscellaneous tools that do not have their own category (yet).
 module ELynx.Tools.Misc
-  ( -- * Not yet classified stuff
-    ensure,
-
-    -- * Weird stuff
+  ( -- * Weird stuff
     compose,
     allValues,
     horizontalConcat,
@@ -38,9 +35,3 @@ allValues = [minBound ..]
 horizontalConcat :: [[[a]]] -> [[a]]
 horizontalConcat [xs] = xs
 horizontalConcat xss = foldl' (zipWith (++)) (head xss) (tail xss)
-
--- | Ensure that a value satisfies a given predicate.
-ensure :: (a -> Bool) -> a -> Maybe a
-ensure p v
-  | p v = Just v
-  | otherwise = Nothing

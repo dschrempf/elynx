@@ -86,6 +86,11 @@ rateMatrix sm =
 totalRate :: SubstitutionModel -> Double
 totalRate sm = R.totalRate (rateMatrix sm)
 
+normalizeSumVec :: V.Vector Double -> V.Vector Double
+normalizeSumVec v = V.map (/s) v
+  where s = V.sum v
+{-# INLINE normalizeSumVec #-}
+
 -- | Create normalized 'SubstitutionModel'. See 'normalize'.
 substitutionModel ::
   Alphabet ->
@@ -96,14 +101,11 @@ substitutionModel ::
   SubstitutionModel
 substitutionModel c n ps d e =
   if R.isValid d
-    then normalize $ SubstitutionModel c n ps d' e
+    then normalize $ SubstitutionModel c n ps (normalizeSumVec d) e
     else
       error $
         "substitionModel: Stationary distribution does not sum to 1.0: "
           ++ show d
-  where
-    s = V.sum d
-    d' = V.map (/s) d
 
 -- | Scale the rate of a substitution model by given factor.
 scale :: Double -> SubstitutionModel -> SubstitutionModel

@@ -34,6 +34,7 @@ matrixSeparateSymSkew m = (mSym, mSkew)
 -- | Set the diagonal entries of a matrix to zero.
 matrixSetDiagToZero :: Matrix R -> Matrix R
 matrixSetDiagToZero m = m - diag (takeDiag m)
+{-# INLINE matrixSetDiagToZero #-}
 
 -- | Display a vector with given precision.
 dispv :: Int -> Vector R -> String

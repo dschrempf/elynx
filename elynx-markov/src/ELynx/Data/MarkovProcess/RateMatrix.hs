@@ -63,6 +63,7 @@ normalizeSD d = d / scalar (norm_1 d)
 
 matrixSetDiagToZero :: Matrix R -> Matrix R
 matrixSetDiagToZero m = m - diag (takeDiag m)
+{-# INLINE matrixSetDiagToZero #-}
 
 -- | Get average number of substitutions per unit time.
 totalRateWith :: StationaryDistribution -> RateMatrix -> Double
@@ -104,6 +105,11 @@ fromExchangeabilityMatrix em d = setDiagonal $ em <> diag d
 eps :: Double
 eps = 1e-12
 
+normalizeSumVec :: V.Vector Double -> V.Vector Double
+normalizeSumVec v = V.map (/s) v
+  where s = V.sum v
+{-# INLINE normalizeSumVec #-}
+
 -- | Get stationary distribution from 'RateMatrix'. Involves eigendecomposition.
 -- If the given matrix does not satisfy the required properties of transition
 -- rate matrices and no eigenvector with an eigenvalue nearly equal to 0 is
@@ -114,12 +120,11 @@ eps = 1e-12
 getStationaryDistribution :: RateMatrix -> StationaryDistribution
 getStationaryDistribution m =
   if eps > abs (magnitude (eVals ! i))
-    then V.map (/s) distReal
+    then normalizeSumVec distReal
     else
       error
         "getStationaryDistribution: Could not retrieve stationary distribution."
   where
-    s = V.sum distReal
     (eVals, eVecs) = eig (tr m)
     i = minIndex eVals
     distComplex = toColumns eVecs !! i

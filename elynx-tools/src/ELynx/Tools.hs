@@ -24,7 +24,6 @@ module ELynx.Tools
     module ELynx.Tools.Numeric,
     module ELynx.Tools.Reproduction,
     module ELynx.Tools.Text,
-    module ELynx.Tools.Vector,
   )
 where
 
@@ -40,4 +39,3 @@ import ELynx.Tools.Misc
 import ELynx.Tools.Numeric
 import ELynx.Tools.Reproduction
 import ELynx.Tools.Text
-import ELynx.Tools.Vector

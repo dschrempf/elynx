@@ -55,38 +55,25 @@ module ELynx.Tools.Reproduction
   )
 where
 
-import Control.Monad (void)
+import Control.Monad
 import Control.Monad.Logger
-  ( LogLevel (..),
-    LoggingT,
-  )
-import Control.Monad.Trans.Reader (ReaderT)
-import Crypto.Hash.SHA256 (hash)
-import Data.Aeson
-  ( FromJSON,
-    ToJSON,
-    encodeFile,
-  )
-import Data.ByteString.Base16 (encode)
+import Control.Monad.Trans.Reader hiding (local)
+import Crypto.Hash.SHA256
+import Data.Aeson hiding (encode)
+import Data.ByteString.Base16
 import qualified Data.ByteString.Char8 as BS
 import Data.List hiding (group)
 import Data.Time
 import Data.Vector.Unboxed (Vector)
 import Data.Version
-  ( Version,
-    showVersion,
-  )
 import Data.Word
-import ELynx.Tools.Definitions (version)
-import ELynx.Tools.Misc (allValues)
-import GHC.Generics (Generic)
+import ELynx.Tools.Definitions
+import ELynx.Tools.Misc
+import GHC.Generics
 import Language.Haskell.TH
 import Options.Applicative hiding (empty)
 import Options.Applicative.Help.Pretty
 import System.Environment
-  ( getArgs,
-    getProgName,
-  )
 
 -- Be careful; it is necessary to synchronize the version numbers across packages.
 versionString :: String

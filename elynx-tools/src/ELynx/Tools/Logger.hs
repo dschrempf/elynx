@@ -24,57 +24,15 @@ where
 
 import Control.Monad.Base (liftBase)
 import Control.Monad.IO.Class
-  ( MonadIO,
-    liftIO,
-  )
 import Control.Monad.Logger
-  ( Loc,
-    LogLevel,
-    LogSource,
-    LoggingT,
-    MonadLogger,
-    filterLogger,
-    logInfo,
-    runLoggingT,
-  )
 import Control.Monad.Trans.Control (MonadBaseControl)
 import Control.Monad.Trans.Reader (ReaderT (runReaderT))
 import qualified Data.ByteString.Char8 as BS
 import Data.Text
-  ( Text,
-    pack,
-  )
 import ELynx.Tools.InputOutput (openFile')
 import ELynx.Tools.Reproduction
-  ( Arguments (..),
-    ELynx,
-    Force,
-    GlobalArguments (..),
-    Reproducible (..),
-    Seed (..),
-    ToJSON,
-    logFooter,
-    logHeader,
-    toLogLevel,
-    writeReproduction,
-  )
 import System.IO
-  ( BufferMode (LineBuffering),
-    Handle,
-    IOMode (WriteMode),
-    hClose,
-    hSetBuffering,
-    stderr,
-  )
-import System.Log.FastLogger
-  ( LogStr,
-    fromLogStr,
-  )
 import System.Random.MWC
-  ( createSystemRandom,
-    fromSeed,
-    save,
-  )
 
 -- | Unified way of creating a new section in the log.
 logNewSection :: MonadLogger m => Text -> m ()

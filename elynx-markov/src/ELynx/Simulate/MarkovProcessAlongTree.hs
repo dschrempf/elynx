@@ -178,7 +178,6 @@ splitGen n gen
     seeds :: [V.Vector Word32] <- replicateM (n -1) $ uniformVector gen 256
     fmap (gen :) (mapM initialize seeds)
 
--- | Perform random calculation in parallel. Does only work with 'IO' and the moment.
 parComp :: Int -> (Int -> GenIO -> IO b) -> GenIO -> IO [b]
 parComp num fun gen = do
   ncap <- getNumCapabilities

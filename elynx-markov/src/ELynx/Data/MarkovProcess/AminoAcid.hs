@@ -322,9 +322,10 @@ lgExchRawPaml =
 lgExch :: ExchangeabilityMatrix
 lgExch = pamlToAlphaMat $ exchFromListLower n lgExchRawPaml
 
-normalizeSumVec :: (Fractional b, V.Storable b) => Vector b -> Vector b
+normalizeSumVec :: Vector Double -> Vector Double
 normalizeSumVec v = V.map (/s) v
   where s = V.sum v
+{-# INLINE normalizeSumVec #-}
 
 -- Stationary distribution in PAML order.
 lgStatDistPaml :: StationaryDistribution
@@ -609,6 +610,7 @@ wagCustom mnm d = substitutionModel Protein nm [] d wagExch
 
 matrixSetDiagToZero :: Matrix R -> Matrix R
 matrixSetDiagToZero m = m - diag (takeDiag m)
+{-# INLINE matrixSetDiagToZero #-}
 
 uniformExch :: ExchangeabilityMatrix
 uniformExch = matrixSetDiagToZero $ matrix n $ replicate (n * n) 1.0

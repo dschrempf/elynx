@@ -77,9 +77,12 @@ jcExch =
       0.0
     ]
 
+uniformVec :: Vector Double
+uniformVec = V.replicate n (1 / fromIntegral n)
+
 -- | JC substitution model.
 jc :: SubstitutionModel
-jc = substitutionModel DNA "JC" [] d jcExch where d = V.replicate n (1 / fromIntegral n)
+jc = substitutionModel DNA "JC" [] uniformVec jcExch
 
 -- | F81 substitution model.
 f81 :: StationaryDistribution -> SubstitutionModel
