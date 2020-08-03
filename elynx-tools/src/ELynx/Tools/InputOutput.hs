@@ -45,6 +45,7 @@ import Control.Monad ((<=<))
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
+import Data.Attoparsec.ByteString.Lazy
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (isSuffixOf)
 import qualified Data.Text as T
@@ -58,7 +59,6 @@ import ELynx.Tools.Reproduction
   )
 import System.Directory (doesFileExist)
 import System.IO
-import Data.Attoparsec.ByteString.Lazy
 
 -- | Get out file path with extension.
 getOutFilePath ::

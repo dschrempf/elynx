@@ -22,8 +22,8 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Data.Tree
 import ELynx.Import.Tree.Newick
-import Test.Hspec
 import ELynx.Tools
+import Test.Hspec
 
 sfrom :: [BS.ByteString] -> S.Set BS.ByteString
 sfrom = S.fromList

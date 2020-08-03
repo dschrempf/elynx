@@ -29,10 +29,10 @@ module ELynx.Data.Character.Nucleotide
   )
 where
 
+import Data.ByteString.Internal (c2w, w2c)
 import Data.Vector.Unboxed.Deriving
 import Data.Word8
 import qualified ELynx.Data.Character.Character as C
-import Data.ByteString.Internal (c2w, w2c)
 
 -- | Nucleotides.
 data Nucleotide = A | C | G | T

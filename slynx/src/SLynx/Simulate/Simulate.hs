@@ -28,8 +28,8 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader (ask)
-import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.ByteString.Builder as BB
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List.NonEmpty (toList)
 import Data.Maybe
 import qualified Data.Set as Set
@@ -203,7 +203,6 @@ summarizeMM m =
               | (i, c) <- zip [1 :: Int ..] (toList $ M.components m)
             ]
         else []
-
 
 -- Summarize a phylogenetic model; lines to be printed to screen or log.
 summarizePM :: P.PhyloModel -> [BL.ByteString]

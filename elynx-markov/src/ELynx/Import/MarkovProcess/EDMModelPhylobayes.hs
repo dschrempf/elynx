@@ -45,7 +45,8 @@ headerLine = do
   _ <- AS.skipWhile AC.isHorizontalSpace
   -- XXX: This should be more general, but then we also want to ensure that the
   -- order of states is correct.
-  _ <- AS.string (BL.toStrict "A C D E F G H I K L M N P Q R S T V W Y")
+  _ <-
+    AS.string (BL.toStrict "A C D E F G H I K L M N P Q R S T V W Y")
       <|> AS.string (BL.toStrict "A C G T")
   _ <- AC.skipWhile AC.isSpace AS.<?> "headerLine"
   return n

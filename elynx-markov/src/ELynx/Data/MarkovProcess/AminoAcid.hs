@@ -22,10 +22,10 @@ module ELynx.Data.MarkovProcess.AminoAcid
   )
 where
 
-import qualified Data.Vector.Storable as V
 import Data.ByteString.Internal (c2w)
 import Data.List (elemIndex)
 import Data.Maybe (fromMaybe)
+import qualified Data.Vector.Storable as V
 import Data.Word (Word8)
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.MarkovProcess.RateMatrix
@@ -323,8 +323,9 @@ lgExch :: ExchangeabilityMatrix
 lgExch = pamlToAlphaMat $ exchFromListLower n lgExchRawPaml
 
 normalizeSumVec :: Vector Double -> Vector Double
-normalizeSumVec v = V.map (/s) v
-  where s = V.sum v
+normalizeSumVec v = V.map (/ s) v
+  where
+    s = V.sum v
 {-# INLINE normalizeSumVec #-}
 
 -- Stationary distribution in PAML order.

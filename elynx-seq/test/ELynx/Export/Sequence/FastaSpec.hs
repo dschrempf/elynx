@@ -16,8 +16,8 @@ where
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Export.Sequence.Fasta
 import ELynx.Import.Sequence.Fasta
-import Test.Hspec
 import ELynx.Tools
+import Test.Hspec
 
 fastaNucleotideIUPACFN :: FilePath
 fastaNucleotideIUPACFN = "data/NucleotideIUPAC.fasta"

@@ -26,11 +26,11 @@ module ELynx.Data.Alphabet.Character
   )
 where
 
+import Data.ByteString.Internal (c2w, w2c)
 import qualified Data.Vector.Unboxed as V
 import Data.Vector.Unboxed.Deriving
 import Data.Word8
 import qualified ELynx.Data.Character.Character as C
-import Data.ByteString.Internal (c2w, w2c)
 
 -- | Alphabet characters; abstracted so that representation can be changed at
 -- some point.

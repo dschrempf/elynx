@@ -17,13 +17,14 @@ import qualified Data.Vector.Storable as V
 import ELynx.Data.MarkovProcess.AminoAcid
 import qualified ELynx.Data.MarkovProcess.RateMatrix as R
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
+import ELynx.Tools
 import Numeric.LinearAlgebra
 import Test.Hspec
-import ELynx.Tools
 
 normalizeSumVec :: Vector Double -> Vector Double
-normalizeSumVec v = V.map (/s) v
-  where s = V.sum v
+normalizeSumVec v = V.map (/ s) v
+  where
+    s = V.sum v
 {-# INLINE normalizeSumVec #-}
 
 statDistLGPython :: R.StationaryDistribution

@@ -109,7 +109,8 @@ eps = 1e-12
 allNearlyEqual :: [Double] -> Bool
 allNearlyEqual [] = True
 allNearlyEqual xs = all (\y -> eps > abs (x - y)) (tail xs)
-  where x = head xs
+  where
+    x = head xs
 
 -- | Check if a tree is ultrametric.
 ultrametric :: Measurable e => Tree e a -> Bool

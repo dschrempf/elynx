@@ -22,9 +22,9 @@ module ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
 where
 
 import Control.Applicative
+import Control.Monad
 import qualified Data.Attoparsec.ByteString as AS
 import qualified Data.Attoparsec.ByteString.Char8 as AC
-import Control.Monad
 import Data.Containers.ListUtils (nubInt)
 import qualified Data.Vector.Storable as V
 import ELynx.Import.MarkovProcess.EDMModelPhylobayes

@@ -17,12 +17,12 @@ module ELynx.Import.Tree.Nexus
 where
 
 import Control.Applicative
+import Data.Attoparsec.ByteString.Char8
 import qualified Data.ByteString.Char8 as BS
 import ELynx.Data.Tree.Phylogeny
 import ELynx.Data.Tree.Rooted
 import ELynx.Import.Nexus
 import ELynx.Import.Tree.Newick
-import Data.Attoparsec.ByteString.Char8
 import Prelude hiding (takeWhile)
 
 -- | Parse a Nexus files with a TREES block.

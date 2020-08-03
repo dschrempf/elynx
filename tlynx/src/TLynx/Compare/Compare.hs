@@ -21,8 +21,8 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
-import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (intercalate)
 import qualified Data.Map as M
 import qualified Data.Set as S

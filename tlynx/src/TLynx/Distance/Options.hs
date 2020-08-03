@@ -1,5 +1,5 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- |
 -- Module      :  TLynx.Distance.Options
@@ -20,12 +20,12 @@ module TLynx.Distance.Options
   )
 where
 
+import qualified Data.Attoparsec.ByteString.Char8 as AC
+import qualified Data.ByteString.Char8 as BS
 import ELynx.Tools
 import Options.Applicative
 import TLynx.Parsers
 import Text.Printf
-import qualified Data.Attoparsec.ByteString.Char8 as AC
-import qualified Data.ByteString.Char8 as BS
 
 -- | Supported distance measures.
 data DistanceMeasure

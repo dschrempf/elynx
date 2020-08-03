@@ -87,8 +87,9 @@ totalRate :: SubstitutionModel -> Double
 totalRate sm = R.totalRate (rateMatrix sm)
 
 normalizeSumVec :: V.Vector Double -> V.Vector Double
-normalizeSumVec v = V.map (/s) v
-  where s = V.sum v
+normalizeSumVec v = V.map (/ s) v
+  where
+    s = V.sum v
 {-# INLINE normalizeSumVec #-}
 
 -- | Create normalized 'SubstitutionModel'. See 'normalize'.

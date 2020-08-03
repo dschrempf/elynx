@@ -17,8 +17,8 @@ import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.Sequence.Sequence
 import ELynx.Import.Sequence.Fasta
-import Test.Hspec
 import ELynx.Tools
+import Test.Hspec
 
 fastaDifferentLengthFN :: FilePath
 fastaDifferentLengthFN = "data/NucleotideDifferentLength.fasta"

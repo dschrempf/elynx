@@ -42,9 +42,9 @@ module ELynx.Data.Sequence.Alignment
   )
 where
 
-import Control.Parallel.Strategies
 import Control.Monad hiding (join)
 import Control.Monad.Primitive
+import Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List hiding
   ( concat,

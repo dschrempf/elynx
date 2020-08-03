@@ -106,8 +106,9 @@ eps :: Double
 eps = 1e-12
 
 normalizeSumVec :: V.Vector Double -> V.Vector Double
-normalizeSumVec v = V.map (/s) v
-  where s = V.sum v
+normalizeSumVec v = V.map (/ s) v
+  where
+    s = V.sum v
 {-# INLINE normalizeSumVec #-}
 
 -- | Get stationary distribution from 'RateMatrix'. Involves eigendecomposition.

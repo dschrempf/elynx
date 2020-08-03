@@ -17,8 +17,8 @@ import Data.Vector.Generic
 import ELynx.Data.MarkovProcess.Nucleotide
 import ELynx.Data.MarkovProcess.RateMatrix
 import ELynx.Data.MarkovProcess.SubstitutionModel
-import Test.Hspec
 import ELynx.Tools
+import Test.Hspec
 
 stationaryDist :: StationaryDistribution
 stationaryDist = fromList [0.2, 0.3, 0.3, 0.2]
