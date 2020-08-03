@@ -78,14 +78,14 @@ done
 #+END_SRC
 
 #+RESULTS: HackageUploadTarballs
-: Uploading elynx-markov-0.3.0.tar.gz... done!
-: Uploading elynx-nexus-0.3.0.tar.gz... done!
-: Uploading elynx-seq-0.3.0.tar.gz... done!
-: Uploading elynx-tools-0.3.0.tar.gz... done!
-: Uploading elynx-tree-0.3.0.tar.gz... done!
-: Uploading slynx-0.3.0.tar.gz... done!
-: Uploading tlynx-0.3.0.tar.gz... done!
-: Uploading elynx-0.3.0.tar.gz... done!
+: Uploading elynx-markov-0.3.1.tar.gz... done!
+: Uploading elynx-nexus-0.3.1.tar.gz... done!
+: Uploading elynx-seq-0.3.1.tar.gz... done!
+: Uploading elynx-tools-0.3.1.tar.gz... done!
+: Uploading elynx-tree-0.3.1.tar.gz... done!
+: Uploading slynx-0.3.1.tar.gz... done!
+: Uploading tlynx-0.3.1.tar.gz... done!
+: Uploading elynx-0.3.1.tar.gz... done!
 
 * Documentation
 Documentation can be built manually.
