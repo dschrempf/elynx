@@ -23,18 +23,16 @@ import Data.Aeson
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString.Char8 as BS
 import Data.Maybe
-import Data.Version (Version)
+import Data.Version
 import ELynx.Tools
 import Options
 import Options.Applicative
 import qualified SLynx.Options as S
-import SLynx.SLynx (slynx)
+import SLynx.SLynx
 import System.Environment
-  ( withArgs,
-    withProgName,
-  )
 import qualified TLynx.Options as T
-import TLynx.TLynx (tlynx)
+import TLynx.TLynx
+import Paths_elynx
 
 parseProgName :: Value -> J.Parser String
 parseProgName = withObject "progName" $ \o -> o .: "progName"
@@ -182,7 +180,7 @@ runRedo a = do
     putStrLn "Use the --force (-f) option to skip this test."
     runValidate (ValidateArguments fp)
   repr <- getAllR fp
-  let as = getArgs repr
+  let as = getELynxArgs repr
   as' <-
     if "-f" `notElem` as && "--force" `notElem` as
       then do
@@ -190,7 +188,7 @@ runRedo a = do
           "Force option required to redo analysis. Add -f (force) to arguments."
         return $ "-f" : as
       else return as
-  withProgName (getProgName repr) $ withArgs as' $ redo repr
+  withProgName (getELynxProgName repr) $ withArgs as' $ redo repr
 
 setForce :: Arguments a -> Arguments a
 setForce (Arguments g l) = Arguments g {forceReanalysis = Force True} l

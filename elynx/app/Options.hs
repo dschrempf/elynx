@@ -13,8 +13,8 @@
 -- Creation date: Thu Apr 23 19:17:17 2020.
 module Options
   ( AllReproductions (..),
-    getProgName,
-    getArgs,
+    getELynxProgName,
+    getELynxArgs,
     ValidateArguments (..),
     RedoArguments (..),
     CommandArguments (..),
@@ -33,14 +33,14 @@ data AllReproductions
   | T (Reproduction (Arguments T.CommandArguments))
 
 -- | Get program name irrespective of which program has been run.
-getProgName :: AllReproductions -> String
-getProgName (S x) = progName x
-getProgName (T x) = progName x
+getELynxProgName :: AllReproductions -> String
+getELynxProgName (S x) = progName x
+getELynxProgName (T x) = progName x
 
 -- | Get arguments irrespective of which program has been run.
-getArgs :: AllReproductions -> [String]
-getArgs (S x) = argsStr x
-getArgs (T x) = argsStr x
+getELynxArgs :: AllReproductions -> [String]
+getELynxArgs (S x) = argsStr x
+getELynxArgs (T x) = argsStr x
 
 newtype ValidateArguments = ValidateArguments
   {vElynxFile :: FilePath}
