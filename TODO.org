@@ -14,4 +14,7 @@ Keep an eye on [[https://github.com/phadej/splitmix][Splitmix]], a fast, splitab
 
 * Easy
 * Medium
+Remove aeson dependency from libraries and use a small package like
+elynx-tree-instances with lens and aeson instances.
+
 * Hard

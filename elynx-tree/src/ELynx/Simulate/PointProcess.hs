@@ -48,12 +48,17 @@ import qualified Statistics.Distribution as D
   )
 import System.Random.MWC
 
+-- Require near critical process if birth and death rates are closer than this value.
 epsNearCriticalPointProcess :: Double
 epsNearCriticalPointProcess = 1e-5
 
+-- Also the distribution of origins needs a Tailor expansion for near critical values.
+--
+-- TODO: Check why the two epsilons are chosen differently.
 epsNearCriticalTimeOfOrigin :: Double
 epsNearCriticalTimeOfOrigin = 1e-8
 
+-- Require critical process if birth and death rates are closer than this value.
 eps :: Double
 eps = 1e-12
 
