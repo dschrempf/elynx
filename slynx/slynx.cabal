@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           slynx
-version:        0.3.1
+version:        0.3.2
 synopsis:       Handle molecular sequences
 description:    Examine, modify, and simulate molecular sequences in a reproducible way. Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
 category:       Bioinformatics
