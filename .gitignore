@@ -4,7 +4,6 @@
 .stack-work-test/
 .stack-work-prof/
 .stack-work-prod/
-*.cabal
 
 # HIE files.
 *.dump-hi
