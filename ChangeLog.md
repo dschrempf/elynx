@@ -2,7 +2,13 @@
 # Changelog for ELynx
 
 
-## Version 0.3.2; in development
+## Unreleased changes
+
+
+## Version 0.3.2
+
+-   Remove llvm dependency.
+-   Move away from hpack.
 
 
 ## Version 0.3.1
