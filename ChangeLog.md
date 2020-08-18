@@ -5,6 +5,11 @@
 ## Unreleased changes
 
 
+## Version 0.3.3
+
+-   Fix test suites.
+
+
 ## Version 0.3.2
 
 -   Remove llvm dependency.

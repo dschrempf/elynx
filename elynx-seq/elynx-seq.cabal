@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           elynx-seq
-version:        0.3.2
+version:        0.3.3
 synopsis:       Handle molecular sequences
 description:    Examine, modify, and simulate molecular sequences in a reproducible way. Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
 category:       Bioinformatics
@@ -16,6 +16,14 @@ build-type:     Simple
 extra-source-files:
     README.md
     ChangeLog.md
+    data/AminoAcid.fasta
+    data/Erroneous.fasta
+    data/NucleotideDifferentLength.fasta
+    data/NucleotideDifferentLengthTrimmed.fasta
+    data/Nucleotide.fasta
+    data/NucleotideIUPAC.fasta
+    data/TranslateMitochondrialVertebrateDNA.fasta
+    data/TranslateMitochondrialVertebrateProtein.fasta
 
 source-repository head
   type: git

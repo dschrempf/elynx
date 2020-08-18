@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           elynx-markov
-version:        0.3.2
+version:        0.3.3
 synopsis:       Simulate molecular sequences along trees
 description:    Examine, modify, and simulate molecular sequences in a reproducible way. Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
 category:       Bioinformatics
@@ -16,6 +16,10 @@ build-type:     Simple
 extra-source-files:
     README.md
     ChangeLog.md
+    data/EDMDistsIQTREE.nex
+    data/EDMDistsPhylobayes.txt
+    data/HSSPMany.siteprofiles
+    data/HSSPSingle.siteprofiles
 
 source-repository head
   type: git
