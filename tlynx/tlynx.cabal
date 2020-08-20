@@ -23,8 +23,6 @@ source-repository head
 
 library
   exposed-modules:
-      TLynx.Coalesce.Coalesce
-      TLynx.Coalesce.Options
       TLynx.Compare.Compare
       TLynx.Compare.Options
       TLynx.Connect.Connect

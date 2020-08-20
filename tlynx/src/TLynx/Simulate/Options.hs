@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
 -- |
@@ -12,7 +13,9 @@
 --
 -- Creation date: Fri May  3 11:51:07 2019.
 module TLynx.Simulate.Options
-  ( SimulateArguments (..),
+  ( Height (..),
+    Process (..),
+    SimulateArguments (..),
     simulateArguments,
     reportSimulateArguments,
     simulateFooter,
@@ -23,25 +26,60 @@ import Data.List
 import ELynx.Tools
 import Options.Applicative
 
+-- | Condition on tree height (origin or most recent common ancestor).
+data Height = Origin Double | Mrca Double
+  deriving (Eq, Generic)
+
+instance Show Height where
+  show (Origin o) = "Condition on height of origin: " ++ show o
+  show (Mrca m) = "Condition on height of MRCA: " ++ show m
+
+instance FromJSON Height
+
+instance ToJSON Height
+
+-- | Process to be used for simulation.
+data Process
+  = BirthDeath
+      {
+        -- | Birth rate.
+        bdLambda :: Double,
+        -- | Death rate.
+        bdMu :: Double,
+        -- | Sampling rate.
+        bdRho :: Maybe Double,
+        -- | Condition on height?
+        bdHeight :: Maybe Height
+      }
+  | Coalescent
+  deriving (Eq, Show, Generic)
+
+instance FromJSON Process
+
+instance ToJSON Process
+
+reportProcess :: Process -> String
+reportProcess (BirthDeath l m mr mh) =
+  intercalate
+    "\n"
+    [ "Model: Birth and death process",
+      "  Birth rate: " ++ show l,
+      "  Death rate: " ++ show m,
+      "  Sampling probability: " ++ maybe "1.0" show mr,
+      "  Height specification: " ++ maybe "Random" show mh
+    ]
+reportProcess Coalescent = "Model: Coalescent process"
+
 -- | Arguments need to simulate phylogenetic trees using birth and death processes.
 data SimulateArguments = SimulateArguments
   { -- | Simulated trees.
     argsNTrees :: Int,
     -- | Number of leaves.
     argsNLeaves :: Int,
-    -- | Tree height (time to origin or MRCA).
-    argsHeight :: Maybe Double,
-    -- | False: condition on origin; True:
-    -- condition on MRCA.
-    argsConditionMRCA :: Bool,
-    -- | Birth rate.
-    argsLambda :: Double,
-    -- | Death rate.
-    argsMu :: Double,
-    -- | Smapling rate.
-    argsRho :: Double,
-    -- | Perform actual sub-sampling.
-    argsSubSample :: Bool,
+    -- | Process.
+    argsProcess :: Process,
+    -- | Perform sub-sampling with given probability.
+    argsSubSample :: Maybe Double,
     -- | Only print summary statistics?
     argsSumStat :: Bool,
     -- | Seed of NRG, random if 'Nothing'.
@@ -56,9 +94,7 @@ instance Reproducible SimulateArguments where
   setSeed a s = a {argsSeed = Fixed s}
   parser = simulateArguments
   cmdName = "simulate"
-  cmdDsc =
-    [ "Simulate phylogenetic trees using birth and death processes (see also the 'coalesce' command for simulations using the coalescent process)."
-    ]
+  cmdDsc = ["Simulate phylogenetic trees using a birth and death or coalescent process."]
   cmdFtr = simulateFooter
 
 instance FromJSON SimulateArguments
@@ -72,21 +108,14 @@ reportSimulateArguments a =
     "\n"
     [ "Number of simulated trees: " ++ show (argsNTrees a),
       "Number of leaves per tree: " ++ show (argsNLeaves a),
-      "Height of trees: " ++ hStr,
-      "Birth rate: " ++ show (argsLambda a),
-      "Death rate: " ++ show (argsMu a),
-      "Sampling probability: " ++ show (argsRho a),
-      "Perform sub-sampling: " ++ show (argsSubSample a),
+      reportProcess (argsProcess a),
+      "Perform sub-sampling: " ++ ssStr,
       "Summary statistics only: " ++ show (argsSumStat a)
     ]
   where
-    hStr = case argsHeight a of
-      Nothing -> "Random height of origin"
-      Just h ->
-        show h ++ ", conditioned on "
-          ++ if argsConditionMRCA a
-            then "MRCA"
-            else "origin"
+    ssStr = case argsSubSample a of
+      Nothing -> "No"
+      Just p -> "Yes, with probability " ++ show p
 
 -- | Command line parser.
 simulateArguments :: Parser SimulateArguments
@@ -94,11 +123,7 @@ simulateArguments =
   SimulateArguments
     <$> nTreeOpt
     <*> nLeavesOpt
-    <*> treeHeightOpt
-    <*> conditionMRCAOpt
-    <*> lambdaOpt
-    <*> muOpt
-    <*> rhoOpt
+    <*> process
     <*> subSampleOpt
     <*> sumStatOpt
     <*> seedOpt
@@ -109,8 +134,6 @@ nTreeOpt =
     long "nTrees"
       <> short 't'
       <> metavar "INT"
-      <> value 10
-      <> showDefault
       <> help "Number of trees"
 
 nLeavesOpt :: Parser Int
@@ -119,25 +142,7 @@ nLeavesOpt =
     long "nLeaves"
       <> short 'n'
       <> metavar "INT"
-      <> value 5
-      <> showDefault
       <> help "Number of leaves per tree"
-
-treeHeightOpt :: Parser (Maybe Double)
-treeHeightOpt =
-  optional $
-    option auto $
-      long "height"
-        <> short 'H'
-        <> metavar "DOUBLE"
-        <> help "Fix tree height (no default)"
-
-conditionMRCAOpt :: Parser Bool
-conditionMRCAOpt =
-  switch $
-    long "condition-on-mrca" <> short 'M' <> showDefault
-      <> help
-        "Do not condition on height of origin but on height of MRCA"
 
 lambdaOpt :: Parser Double
 lambdaOpt =
@@ -145,8 +150,6 @@ lambdaOpt =
     long "lambda"
       <> short 'l'
       <> metavar "DOUBLE"
-      <> value 1.0
-      <> showDefault
       <> help "Birth rate lambda"
 
 muOpt :: Parser Double
@@ -155,40 +158,65 @@ muOpt =
     long "mu"
       <> short 'm'
       <> metavar "DOUBLE"
-      <> value 0.9
-      <> showDefault
       <> help "Death rate mu"
 
 rhoOpt :: Parser Double
 rhoOpt =
   option auto $
-    long "rho" <> short 'r' <> metavar "DOUBLE" <> value 1.0
-      <> help
-        "Sampling probability rho (default: 1.0)"
+    long "rho"
+    <> short 'r'
+    <> metavar "DOUBLE"
+    <> help "Sampling probability rho"
 
-subSampleOpt :: Parser Bool
+mrca :: Parser Height
+mrca = Mrca <$> option auto (
+  long "mrca"
+  <> metavar "DOUBLE"
+  <> help "Condition on height of most recent common ancestor" )
+
+origin :: Parser Height
+origin = Origin <$> option auto (
+  long "origin"
+  <> metavar "DOUBLE"
+  <> help "Condition on height of origin" )
+
+birthDeath :: Parser Process
+birthDeath = BirthDeath <$> lambdaOpt <*> muOpt <*> optional rhoOpt <*> optional (mrca <|> origin)
+
+coalescent :: Parser Process
+coalescent = pure Coalescent
+
+process :: Parser Process
+process = subparser (command "birthdeath"
+                     (info (birthDeath <**> helper) (progDesc "Birth and death process"))
+                    <> command "coalescent"
+                     (info (coalescent <**> helper) (progDesc "Coalescent process")))
+
+subSampleOpt :: Parser (Maybe Double)
 subSampleOpt =
-  switch $
-    long "sub-sample" <> short 'u' <> showDefault
-      <> help
-        "Perform sub-sampling; see below."
+  optional $
+    option auto $
+      long
+        "sub-sample"
+        <> short 'u'
+        <> metavar "DOUBLE"
+        <> showDefault
+        <> help "Perform sub-sampling; see below."
 
 sumStatOpt :: Parser Bool
 sumStatOpt =
   switch $
     long "summary-statistics" <> short 's' <> showDefault
       <> help
-        "Only output number of children for each branch"
+        "For each branch, print length and number of children"
 
-citation :: String
-citation =
-  "Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005"
+-- citation :: String
+-- citation =
+--   "Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005"
 
 -- | And a footer.
 simulateFooter :: [String]
 simulateFooter =
-  [ "Height of Trees: if no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate.",
-    "Summary statistics only: only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character.",
-    "Sub-sampling: simulate one big tree with n'=round(n/rho), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with rho=1.0, the same tree is reported over and over again.",
-    citation
+    [ "Height of Trees: If no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate.",
+      "Sub-sample with probability p: Simulate one big tree with n'=round(n/p), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with p=1.0, the same tree is reported over and over again."
   ]

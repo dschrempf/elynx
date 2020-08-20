@@ -20,7 +20,6 @@ where
 
 import ELynx.Tools
 import Options.Applicative
-import TLynx.Coalesce.Options
 import TLynx.Compare.Options
 import TLynx.Connect.Options
 import TLynx.Distance.Options
@@ -31,8 +30,7 @@ import TLynx.Simulate.Options
 
 -- | The different TLynx commands and their arguments.
 data CommandArguments
-  = Coalesce CoalesceArguments
-  | Compare CompareArguments
+  =  Compare CompareArguments
   | Connect ConnectArguments
   | Distance DistanceArguments
   | Examine ExamineArguments
@@ -41,7 +39,6 @@ data CommandArguments
   deriving (Eq, Show, Generic)
 
 instance Reproducible CommandArguments where
-  inFiles (Coalesce a) = inFiles a
   inFiles (Compare a) = inFiles a
   inFiles (Connect a) = inFiles a
   inFiles (Distance a) = inFiles a
@@ -49,7 +46,6 @@ instance Reproducible CommandArguments where
   inFiles (Shuffle a) = inFiles a
   inFiles (Simulate a) = inFiles a
 
-  outSuffixes (Coalesce a) = outSuffixes a
   outSuffixes (Compare a) = outSuffixes a
   outSuffixes (Connect a) = outSuffixes a
   outSuffixes (Distance a) = outSuffixes a
@@ -57,7 +53,6 @@ instance Reproducible CommandArguments where
   outSuffixes (Shuffle a) = outSuffixes a
   outSuffixes (Simulate a) = outSuffixes a
 
-  getSeed (Coalesce a) = getSeed a
   getSeed (Compare a) = getSeed a
   getSeed (Connect a) = getSeed a
   getSeed (Distance a) = getSeed a
@@ -65,7 +60,6 @@ instance Reproducible CommandArguments where
   getSeed (Shuffle a) = getSeed a
   getSeed (Simulate a) = getSeed a
 
-  setSeed (Coalesce a) = Coalesce . setSeed a
   setSeed (Compare a) = Compare . setSeed a
   setSeed (Connect a) = Connect . setSeed a
   setSeed (Distance a) = Distance . setSeed a
@@ -86,9 +80,6 @@ instance Reproducible CommandArguments where
 instance FromJSON CommandArguments
 
 instance ToJSON CommandArguments
-
-coalesceCommand :: Mod CommandFields CommandArguments
-coalesceCommand = createCommandReproducible Coalesce
 
 compareCommand :: Mod CommandFields CommandArguments
 compareCommand = createCommandReproducible Compare
@@ -111,8 +102,7 @@ simulateCommand = createCommandReproducible Simulate
 commandArguments :: Parser CommandArguments
 commandArguments =
   hsubparser $
-    coalesceCommand
-      <> compareCommand
+      compareCommand
       <> connectCommand
       <> distanceCommand
       <> examineCommand

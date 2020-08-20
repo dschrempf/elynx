@@ -16,7 +16,6 @@ module TLynx.TLynx
 where
 
 import ELynx.Tools
-import TLynx.Coalesce.Coalesce
 import TLynx.Compare.Compare
 import TLynx.Connect.Connect
 import TLynx.Distance.Distance
@@ -30,8 +29,6 @@ import TLynx.Simulate.Simulate
 -- | Run TLynx with given arguments.
 tlynx :: Arguments CommandArguments -> IO ()
 tlynx c = case local c of
-  Coalesce _ ->
-    eLynxWrapper c (\(Arguments g (Coalesce l)) -> Arguments g l) coalesce
   Compare _ ->
     eLynxWrapper c (\(Arguments g (Compare l)) -> Arguments g l) compareCmd
   Connect _ ->
