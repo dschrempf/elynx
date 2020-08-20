@@ -179,14 +179,14 @@ distance = do
         IncompatibleSplit val -> collapse val . normalizeBranchSupport
         _ -> id
   -- The trees can be prepared now.
-  let trees' :: Forest PhyloStrict BS.ByteString
-      trees' = map (collapseF . normalizeF . either error id . toStrictTree) trees
+  let trees' :: Forest PhyloExplicit BS.ByteString
+      trees' = map (collapseF . normalizeF . either error id . toExplicitTree) trees
   $(logDebug) "The prepared trees are:"
-  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ BL.unlines $ map (toNewick . fromStrictTree) trees'
+  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ BL.unlines $ map (toNewick . toPhyloTree) trees'
   let dsTriplets = case mtree of
         Nothing -> pairwise distanceMeasure trees'
         Just pt ->
-          let t = (either error id . toStrictTree) pt
+          let t = (either error id . toExplicitTree) pt
            in [(0, i, distanceMeasure t t') | (i, t') <- zip [1 ..] trees']
       ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds

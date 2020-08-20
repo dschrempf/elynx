@@ -59,7 +59,7 @@ coalesce = do
   let ls =
         if s
           then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
-          else parMap rpar toNewick (map lengthToPhyloTree trs)
+          else parMap rpar toNewick (map measurableToPhyloTree trs)
   let res = BL.unlines ls
   out "simulated trees" res ".tree"
 
@@ -97,7 +97,7 @@ simulateAndSubSampleNTreesConcurrently = do
         <> show nLeavesBigTree
         <> " leaves."
   -- Log the base tree.
-  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ lengthToPhyloTree tr
+  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ measurableToPhyloTree tr
   logNewSection $
     T.pack $
       "Sub sample "

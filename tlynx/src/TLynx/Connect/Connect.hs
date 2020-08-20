@@ -122,7 +122,7 @@ connectOnly h l r = do
   (tl, tr) <- parseTrees l r
   let ts = connectTrees tl tr
   $(logInfo) $ "Connected trees: " <> tShow (length ts)
-  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts
+  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . measurableToPhyloTree) ts
 
 connectAndFilter ::
   Handle -> FilePath -> FilePath -> FilePath -> ELynx ConnectArguments ()
@@ -138,4 +138,4 @@ connectAndFilter h c l r = do
       ts' = filter (compatibleWith getName cs) ts
   $(logInfo) $ "Connected  trees: " <> tShow (length ts)
   $(logInfo) $ "Compatible trees: " <> tShow (length ts')
-  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts'
+  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . measurableToPhyloTree) ts'

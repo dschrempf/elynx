@@ -48,7 +48,7 @@ treesOneFile ::
   FilePath ->
   ELynx
     CompareArguments
-    (Tree PhyloStrict BS.ByteString, Tree PhyloStrict BS.ByteString)
+    (Tree PhyloExplicit BS.ByteString, Tree PhyloExplicit BS.ByteString)
 treesOneFile tf = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse file '" ++ tf ++ "'."
@@ -59,8 +59,8 @@ treesOneFile tf = do
     GT -> error "Too many trees in file."
     EQ ->
       return
-        ( either error id $ toStrictTree $ head ts,
-          either error id $ toStrictTree $ head . tail $ ts
+        ( either error id $ toExplicitTree $ head ts,
+          either error id $ toExplicitTree $ head . tail $ ts
         )
 
 treesTwoFiles ::
@@ -68,14 +68,14 @@ treesTwoFiles ::
   FilePath ->
   ELynx
     CompareArguments
-    (Tree PhyloStrict BS.ByteString, Tree PhyloStrict BS.ByteString)
+    (Tree PhyloExplicit BS.ByteString, Tree PhyloExplicit BS.ByteString)
 treesTwoFiles tf1 tf2 = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse first tree file '" ++ tf1 ++ "'."
   t1 <- liftIO $ parseFileWith (oneNewick nwF) tf1
   $(logInfo) $ T.pack $ "Parse second tree file '" ++ tf2 ++ "'."
   t2 <- liftIO $ parseFileWith (oneNewick nwF) tf2
-  return (either error id $ toStrictTree t1, either error id $ toStrictTree t2)
+  return (either error id $ toExplicitTree t1, either error id $ toExplicitTree t2)
 
 -- | More detailed comparison of two trees.
 compareCmd :: ELynx CompareArguments ()
@@ -93,9 +93,9 @@ compareCmd = do
       error
         "Need two input files with one tree each or one input file with two trees."
   liftIO $ hPutStrLn outH "Tree 1:"
-  liftIO $ BL.hPutStrLn outH $ toNewick $ fromStrictTree tr1
+  liftIO $ BL.hPutStrLn outH $ toNewick $ toPhyloTree tr1
   liftIO $ hPutStrLn outH "Tree 2:"
-  liftIO $ BL.hPutStrLn outH $ toNewick $ fromStrictTree tr2
+  liftIO $ BL.hPutStrLn outH $ toNewick $ toPhyloTree tr2
   liftIO $ hPutStrLn outH ""
   -- Intersect trees.
   (t1, t2) <-
@@ -103,8 +103,8 @@ compareCmd = do
       then do
         let [x, y] = either error id $ intersect [tr1, tr2]
         liftIO $ hPutStrLn outH "Intersected trees are:"
-        liftIO $ BL.hPutStrLn outH $ toNewick $ fromStrictTree x
-        liftIO $ BL.hPutStrLn outH $ toNewick $ fromStrictTree y
+        liftIO $ BL.hPutStrLn outH $ toNewick $ toPhyloTree x
+        liftIO $ BL.hPutStrLn outH $ toNewick $ toPhyloTree y
         return (x, y)
       else return (tr1, tr2)
   -- Check input (moved to library functions).
@@ -135,8 +135,8 @@ compareCmd = do
   let t1' = normalizeBranchSupport t1
       t2' = normalizeBranchSupport t2
   $(logDebug) "Trees with normalized branch support values:"
-  $(logDebug) $ E.decodeUtf8 $ BL.toStrict $ toNewick $ fromStrictTree t1'
-  $(logDebug) $ E.decodeUtf8 $ BL.toStrict $ toNewick $ fromStrictTree t2'
+  $(logDebug) $ E.decodeUtf8 $ BL.toStrict $ toNewick $ toPhyloTree t1'
+  $(logDebug) $ E.decodeUtf8 $ BL.toStrict $ toNewick $ toPhyloTree t2'
   liftIO $
     T.hPutStrLn outH $
       formatD

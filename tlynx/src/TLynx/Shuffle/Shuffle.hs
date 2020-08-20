@@ -69,7 +69,7 @@ shuffleCmd = do
     Random -> error "Seed not available; please contact maintainer."
     Fixed s -> liftIO $ initialize s
   ts <- liftIO $ shuffleT (nReplicates l) (height t) cs ls gen
-  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts
+  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . measurableToPhyloTree) ts
   liftIO $ hClose h
 
 shuffleT ::

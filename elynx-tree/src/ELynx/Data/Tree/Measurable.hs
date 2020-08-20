@@ -74,12 +74,6 @@ rootHeight :: Measurable e => Tree e a -> BranchLength
 rootHeight (Node _ _ []) = 0
 rootHeight t = maximum $ concatMap distancesOriginLeaves (forest t)
 
--- -- | The maximum distance between root and leaves.
--- --
--- -- Does not include the length of the stem, see 'height'.
--- rootHeight :: Measurable e => Tree e a -> BranchLength
--- rootHeight t = subtract (getStem t) $ height t
-
 -- | Distances from the origin of a tree to the leaves.
 --
 -- The distances include the length of the stem.
