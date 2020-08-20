@@ -31,12 +31,13 @@
 -- Note: 'Tree's encoded in Newick format correspond to rooted trees. By
 -- convention only, a tree parsed from Newick format is usually thought to be
 -- unrooted, when the root node is multifurcating and has three children. This
--- convention is not enforced here. Newick trees are just parsed as they are,
--- and a rooted tree is returned.
+-- convention is not used here. Newick trees are just parsed as they are, and a
+-- rooted tree is returned.
 --
--- The bifurcating root of a tree can be changed with 'roots', or 'rootAt'.
+-- The bifurcating root of a tree can be changed with 'rootAt' or 'midpoint'; a
+-- list of all rooted trees is returned by 'roots'.
 --
--- Trees with multifurcating root nodes can be properly rooted using 'outgroup'.
+-- Trees with multifurcating root nodes can be rooted using 'outgroup'.
 module ELynx.Data.Tree.Phylogeny
   ( -- * Functions
     equal,
@@ -122,20 +123,23 @@ bifurcating (Node _ _ []) = True
 bifurcating (Node _ _ [x, y]) = bifurcating x && bifurcating y
 bifurcating _ = False
 
--- TODO. Adapt for trees with branches.
+-- Is this function really needed. I believe that manual treatment with
+-- 'outgroup' is preferable.
+
 -- -- | Remove multifurcations.
 -- --
--- -- A caterpillar like bifurcating tree is used to resolve all multifurcations on
--- -- a tree. The multifurcating nodes are copied.
+-- -- A caterpillar like bifurcating structure is used to resolve all
+-- -- multifurcations on a tree.
 -- --
--- -- Branch labels are not handled.
--- resolve :: Tree e a -> Tree e a
+-- -- Multifurcating nodes are copied and branches are 'split'.
+-- resolve :: Splittable e => Tree e a -> Tree e a
 -- resolve t@(Node _ _ []) = t
--- resolve (Node _ l [x]) = Node () l [resolve x]
--- resolve (Node _ l [x, y]) = Node () l $ map resolve [x, y]
--- resolve (Node _ l (x : xs)) = Node () l $ map resolve [x, Node () l xs]
+-- resolve (Node br lb [x]) = Node br lb [resolve x]
+-- resolve (Node br lb [x, y]) = Node br lb $ map resolve [x, y]
+-- resolve (Node br lb (Node brL lbL xsL : xs)) = Node br lb [Node brL' lbL (map resolve xsL), Node brL' lb (map resolve xs)]
+--   where brL' = split brL
 
--- | Resolve a multifurcation at the root using an outgroup.
+-- | Resolve a multifurcating root using an outgroup.
 --
 -- A bifurcating root node with the provided label is introduced. The affected
 -- branch is 'split'.

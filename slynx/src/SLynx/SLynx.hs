@@ -24,8 +24,6 @@ import SLynx.Simulate.Simulate
 import SLynx.SubSample.SubSample
 import SLynx.Translate.Translate
 
--- TODO: Use a class here (e.g., elynx-wrappable) which defines the extractor function.
-
 -- | Run SLynx with given arguments.
 slynx :: Arguments CommandArguments -> IO ()
 slynx c = case local c of
