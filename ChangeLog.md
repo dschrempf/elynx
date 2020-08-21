@@ -5,6 +5,14 @@
 ## Unreleased changes
 
 
+## Version 0.3.4
+
+-   Improve `slynx examine`; show hamming distance; show constant sites.
+-   PhyloStrict -> PhyloExplicit; and some conversion functions were changed.
+-   `tlynx coalesce` was merged into `tlynx simulate`, the syntax has changed; see
+    `tlynx simulate --help`.
+
+
 ## Version 0.3.3
 
 -   Fix test suites.

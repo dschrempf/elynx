@@ -2,7 +2,7 @@
 
 # The ELynx Suite
 
-Version: 0.3.3.
+Version: 0.3.4.
 Reproducible evolution made easy.
 
 <p align="center"><img src="https://travis-ci.org/dschrempf/elynx.svg?branch=master"/></p>
@@ -90,9 +90,9 @@ Handle evolutionary sequences.
 
     slynx --help | head -n -16
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
     Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
                  [-f|--force] COMMAND
@@ -136,9 +136,9 @@ Concatenate multi sequence alignments.
 
     slynx concatenate --help
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
     Usage: slynx concatenate (-a|--alphabet NAME) INPUT-FILE
       Concatenate sequences found in input files.
@@ -157,9 +157,9 @@ Examine sequence with `slynx examine`.
 
     slynx examine --help
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
     Usage: slynx examine (-a|--alphabet NAME) INPUT-FILE [--per-site]
       Examine sequences. If data is a multi sequence alignment, additionally analyze columns.
@@ -179,9 +179,9 @@ Filter sequences with `filer-rows`.
 
     slynx filter-rows --help
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
     Usage: slynx filter-rows (-a|--alphabet NAME) INPUT-FILE [--longer-than LENGTH] 
                              [--shorter-than LENGTH] [--standard-characters]
@@ -202,9 +202,9 @@ Filter columns of multi sequence alignments with `filter-columns`.
 
     slynx filter-columns --help
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
     Usage: slynx filter-columns (-a|--alphabet NAME) INPUT-FILE 
                                 [--standard-chars DOUBLE]
@@ -226,9 +226,9 @@ Simulate sequences with `slynx simulate`.
 
     slynx simulate --help
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
     Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL] 
                           [-m|--mixture-model MODEL] [-e|--edm-file NAME] 
@@ -305,9 +305,9 @@ Sub-sample columns from multi sequence alignments.
 
     slynx sub-sample --help
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
     Usage: slynx sub-sample (-a|--alphabet NAME) INPUT-FILE
                             (-n|--number-of-sites INT)
@@ -335,9 +335,9 @@ Translate sequences.
 
     slynx translate --help
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
     Usage: slynx translate (-a|--alphabet NAME) INPUT-FILE (-r|--reading-frame INT)
                            (-u|--universal-code CODE)
@@ -360,9 +360,9 @@ Handle phylogenetic trees in Newick format.
 
     tlynx --help | head -n -16
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
     Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
                  [-f|--force] COMMAND
@@ -379,13 +379,12 @@ Handle phylogenetic trees in Newick format.
                                output files.
     
     Available commands:
-      coalesce                 Simulate phylogenetic trees using the coalescent processes (see also the 'simulate' command for simulations using the birth and death process).
       compare                  Compare two phylogenetic trees (compute distances and branch-wise differences).
       connect                  Connect two phylogenetic trees in all ways (possibly honoring constraints).
       distance                 Compute distances between many phylogenetic trees.
       examine                  Compute summary statistics of phylogenetic trees.
       shuffle                  Shuffle a phylogenetic tree (keep coalescent times, but shuffle topology and leaves).
-      simulate                 Simulate phylogenetic trees using birth and death processes (see also the 'coalesce' command for simulations using the coalescent process).
+      simulate                 Simulate phylogenetic trees using a birth and death or coalescent process.
     
     
     Available tree file formats:
@@ -399,9 +398,9 @@ Compute distances between phylogenetic trees.
 
     tlynx compare --help
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
     Usage: tlynx compare [-n|--normalize] [-b|--bipartitions] [-t|--intersect] 
                          [-f|--newick-format FORMAT] NAMES
@@ -428,9 +427,9 @@ Compute summary statistics of phylogenetic trees.
 
     tlynx examine --help
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
     Usage: tlynx examine INPUT-FILE [-f|--newick-format FORMAT]
       Compute summary statistics of phylogenetic trees.
@@ -452,37 +451,35 @@ Simulate phylogenetic trees using birth and death processes.
 
     tlynx simulate --help
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
-    Usage: tlynx simulate [-t|--nTrees INT] [-n|--nLeaves INT] [-H|--height DOUBLE] 
-                          [-M|--condition-on-mrca] [-l|--lambda DOUBLE] 
-                          [-m|--mu DOUBLE] [-r|--rho DOUBLE] [-u|--sub-sample] 
-                          [-s|--summary-statistics] [-S|--seed [INT]]
-      Simulate phylogenetic trees using birth and death processes (see also the 'coalesce' command for simulations using the coalescent process).
+    Usage: tlynx simulate (-t|--nTrees INT) (-n|--nLeaves INT) PROCESS 
+                          [-u|--sub-sample DOUBLE] [-s|--summary-statistics] 
+                          [-S|--seed [INT]]
+      Simulate phylogenetic trees using a birth and death or coalescent process.
     
     Available options:
       -h,--help                Show this help text
       -V,--version             Show version
-      -t,--nTrees INT          Number of trees (default: 10)
-      -n,--nLeaves INT         Number of leaves per tree (default: 5)
-      -H,--height DOUBLE       Fix tree height (no default)
-      -M,--condition-on-mrca   Do not condition on height of origin but on height of
-                               MRCA
-      -l,--lambda DOUBLE       Birth rate lambda (default: 1.0)
-      -m,--mu DOUBLE           Death rate mu (default: 0.9)
-      -r,--rho DOUBLE          Sampling probability rho (default: 1.0)
-      -u,--sub-sample          Perform sub-sampling; see below.
-      -s,--summary-statistics  Only output number of children for each branch
+      -t,--nTrees INT          Number of trees
+      -n,--nLeaves INT         Number of leaves per tree
+      -u,--sub-sample DOUBLE   Perform sub-sampling; see below.
+      -s,--summary-statistics  For each branch, print length and number of children
       -S,--seed [INT]          Seed for random number generator; list of 32 bit
                                integers with up to 256 elements (default: random)
       -h,--help                Show this help text
     
-    Height of Trees: if no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate.
-    Summary statistics only: only print (NumberOfExtantChildren BranchLength) pairs for each branch of each tree. The trees are separated by a newline character.
-    Sub-sampling: simulate one big tree with n'=round(n/rho), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with rho=1.0, the same tree is reported over and over again.
-    Gernhard, T. (2008). The conditioned reconstructed process. Journal of Theoretical Biology, 253(4), 769–778. http://doi.org/10.1016/j.jtbi.2008.04.005
+    Available processes:
+      birthdeath               Birth and death process
+      coalescent               Coalescent process
+    
+    See, for example, 'tlynx simulate birthdeath --help'.
+    Sub-sample with probability p:
+      1. Simulate one big tree with n'=round(n/p), n'>=n, leaves;
+      2. Randomly sample sub-trees with n leaves.
+      (With p=1.0, the same tree is reported over and over again.)
 
 
 # ELynx
@@ -491,9 +488,9 @@ Validate and (optionally) redo past ELynx analyses.
 
     elynx --help | head -n -16
 
-    ELynx Suite version 0.3.3.
+    ELynx Suite version 0.3.4.
     Developed by Dominik Schrempf.
-    Compiled on August 18, 2020, at 08:07 am, UTC.
+    Compiled on August 21, 2020, at 09:40 am, UTC.
     
     Usage: elynx COMMAND
       Validate and redo past ELynx analyses
