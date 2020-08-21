@@ -45,9 +45,12 @@ examineAlignment perSiteFlag a =
   BL.unlines
     [ BL.pack
         "Sequences have equal length (multi sequence alignment, or single sequence).",
-      pRow "Total number of columns in alignment:" $ show aL,
-      pRow "Number of columns without gaps:" $ show (M.length aNoGaps),
-      pRow "Number of columns with standard characters only:" $
+      BL.pack "Number of columns in alignment:",
+      pRow "  Total:" $ show aL,
+      pRow "  Constant:" $ show nConstant,
+      pRow "  Constant (including gaps or unknowns):" $ show nConstantSoft,
+      pRow "  Without gaps:" $ show (M.length aNoGaps),
+      pRow "  With standard characters only:" $
         show (M.length aOnlyStd),
       BL.empty,
       pRow "Total number of characters:" $ show nTot,
@@ -95,6 +98,8 @@ examineAlignment perSiteFlag a =
     <> perSiteBS
   where
     aL = M.length a
+    nConstant = M.length $ M.filterColsConstant a
+    nConstantSoft = M.length $ M.filterColsConstantSoft a
     nTot = M.length a * M.nSequences a
     nIUPAC = M.countIUPACChars a
     nGaps = M.countGaps a

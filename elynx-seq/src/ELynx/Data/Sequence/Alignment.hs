@@ -24,6 +24,8 @@ module ELynx.Data.Sequence.Alignment
     join,
     concat,
     concatAlignments,
+    filterColsConstant,
+    filterColsConstantSoft,
     filterColsOnlyStd,
     filterColsStd,
     filterColsNoGaps,
@@ -203,6 +205,20 @@ filterColsWith :: (V.Vector Character -> Bool) -> Alignment -> Alignment
 filterColsWith p a = a {matrix = m'}
   where
     m' = M.fromColumns . filter p . M.toColumns $ matrix a
+
+-- | Only keep constant columns.
+filterColsConstant :: Alignment -> Alignment
+filterColsConstant = filterColsWith (\v -> V.all (== V.head v) v)
+
+-- | Only keep constant columns, and constant columns with at least one standard
+-- character as well as any number of gaps or unknowns.
+filterColsConstantSoft :: Alignment -> Alignment
+filterColsConstantSoft a = filterColsWith f a
+  where
+    al = alphabet a
+    f v = case V.find (A.isStd al) v of
+      Nothing -> False
+      Just c -> V.all (\x -> x == c || (A.isGap al) x || (A.isUnknown al) x) v
 
 -- | Only keep columns with standard characters. Alignment columns with IUPAC
 -- characters are removed.
