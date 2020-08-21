@@ -52,6 +52,7 @@ module ELynx.Data.Tree.Phylogeny
     Phylo (..),
     toPhyloTree,
     measurableToPhyloTree,
+    supportedToPhyloTree,
     Length (..),
     phyloToLengthTree,
     Support (..),
@@ -337,12 +338,21 @@ toPhyloLabel x = Phylo (Just $ getLen x) (Just $ getSup x)
 
 -- | Set all branch support values to 'Nothing'.
 --
--- Useful to export a tree with branch lengths in Newick format.
+-- Useful to export a tree with branch lengths to Newick format.
 measurableToPhyloTree :: Measurable e => Tree e a -> Tree Phylo a
 measurableToPhyloTree = first measurableToPhyloLabel
 
 measurableToPhyloLabel :: Measurable e => e -> Phylo
 measurableToPhyloLabel x = Phylo (Just $ getLen x) Nothing
+
+-- | Set all branch lengths to 'Nothing'.
+--
+-- Useful to export a tree with branch support to Newick format.
+supportedToPhyloTree :: Supported e => Tree e a -> Tree Phylo a
+supportedToPhyloTree = first supportedToPhyloLabel
+
+supportedToPhyloLabel :: Supported e => e -> Phylo
+supportedToPhyloLabel x = Phylo Nothing (Just $ getSup x)
 
 -- | Branch length label.
 --

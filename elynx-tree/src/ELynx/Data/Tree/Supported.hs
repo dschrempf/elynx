@@ -45,9 +45,6 @@ normalizeBranchSupport t = first (apply (/ m)) t
   where
     m = bimaximum $ bimap getSup (const 0) t
 
--- TODO: Something was wrong here. @collapse 1.0 t@ should be a star tree but it
--- was a leaf. Is this still so?
-
 -- | Collapse branches with support lower than given value.
 --
 -- The branch and node labels of the collapsed branches are discarded.
@@ -56,10 +53,14 @@ collapse th tr =
   let tr' = collapse' th tr
    in if tr == tr' then tr else collapse th tr'
 
+-- A leaf has full support.
+highP :: Supported e => Double -> Tree e a -> Bool
+highP _  (Node _ _ []) = True
+highP th (Node br _ _) = getSup br >= th
+
 -- See 'collapse'.
 collapse' :: Supported e => BranchSupport -> Tree e a -> Tree e a
-collapse' _ t@(Node _ _ []) = t
 collapse' th (Node br lb ts) = Node br lb $ map (collapse' th) (highSupport ++ lowSupportForest)
   where
-    (highSupport, lowSupport) = partition ((>= th) . getSup . branch) ts
+    (highSupport, lowSupport) = partition (highP th) ts
     lowSupportForest = concatMap forest lowSupport

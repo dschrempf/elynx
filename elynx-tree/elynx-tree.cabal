@@ -101,6 +101,7 @@ test-suite tree-test
       ELynx.Data.Tree.PartitionSpec
       ELynx.Data.Tree.PhylogenySpec
       ELynx.Data.Tree.RootedSpec
+      ELynx.Data.Tree.SupportedSpec
       ELynx.Export.Tree.NewickSpec
       ELynx.Export.Tree.NexusSpec
       ELynx.Import.Tree.NewickSpec
