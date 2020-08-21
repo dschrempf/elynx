@@ -35,7 +35,6 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List hiding (intersect)
 import Data.Maybe
--- TODO: Remove text dependency.
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Data.Text.Lazy as LT

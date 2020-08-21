@@ -30,7 +30,7 @@ import TLynx.Simulate.Options
 
 -- | The different TLynx commands and their arguments.
 data CommandArguments
-  =  Compare CompareArguments
+  = Compare CompareArguments
   | Connect ConnectArguments
   | Distance DistanceArguments
   | Examine ExamineArguments
@@ -102,7 +102,7 @@ simulateCommand = createCommandReproducible Simulate
 commandArguments :: Parser CommandArguments
 commandArguments =
   hsubparser $
-      compareCommand
+    compareCommand
       <> connectCommand
       <> distanceCommand
       <> examineCommand

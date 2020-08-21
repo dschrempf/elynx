@@ -27,12 +27,12 @@ import Data.Version
 import ELynx.Tools
 import Options
 import Options.Applicative
+import Paths_elynx
 import qualified SLynx.Options as S
 import SLynx.SLynx
 import System.Environment
 import qualified TLynx.Options as T
 import TLynx.TLynx
-import Paths_elynx
 
 parseProgName :: Value -> J.Parser String
 parseProgName = withObject "progName" $ \o -> o .: "progName"

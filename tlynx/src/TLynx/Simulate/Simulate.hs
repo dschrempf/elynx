@@ -46,8 +46,8 @@ import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Encoding as LT
 import ELynx.Data.Tree
 import ELynx.Export.Tree.Newick
-import qualified ELynx.Simulate.PointProcess as PP
 import qualified ELynx.Simulate.Coalescent as CS
+import qualified ELynx.Simulate.PointProcess as PP
 import ELynx.Tools
 import System.Random.MWC
 import TLynx.Simulate.Options
@@ -55,7 +55,6 @@ import TLynx.Simulate.Options
 -- | Simulate phylogenetic trees using birth and death process.
 simulate :: ELynx SimulateArguments ()
 simulate = do
-  -- TODO: The explicit pattern match for a fixed seed is weird.
   l@(SimulateArguments nTrees nLeaves pr subS sumS (Fixed s)) <- local <$> ask
   c <- liftIO getNumCapabilities
   logNewSection "Arguments"
@@ -73,7 +72,7 @@ simulate = do
             Just (Mrca h) -> Just (h, True)
             Just (Origin h) -> Just (h, False)
       case subS of
-        Nothing -> bdSimulateNTreesConcurrently nLeaves lambda mu rho timeSpec chunks gs
+        Nothing -> liftIO $ bdSimulateNTreesConcurrently nLeaves lambda mu rho timeSpec chunks gs
         Just p ->
           bdSimulateAndSubSampleNTreesConcurrently
             nLeaves
@@ -85,7 +84,7 @@ simulate = do
             chunks
             gs
     Coalescent -> case subS of
-      Nothing -> coalSimulateNTreesConcurrently nLeaves chunks gs
+      Nothing -> liftIO $ coalSimulateNTreesConcurrently nLeaves chunks gs
       Just p -> coalSimulateAndSubSampleNTreesConcurrently nLeaves p chunks gs
   let ls =
         if sumS
@@ -102,14 +101,25 @@ bdSimulateNTreesConcurrently ::
   PP.TimeSpec ->
   [Int] ->
   [GenIO] ->
-  ELynx SimulateArguments (Forest Length Int)
+  IO (Forest Length Int)
 bdSimulateNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
   let l' = l * r
       m' = m - l * (1.0 - r)
   trss <-
-    liftIO $
+    mapConcurrently
+      (\(n, g) -> PP.simulateNReconstructedTrees n nLeaves timeSpec l' m' g)
+      (zip chunks gs)
+  return $ concat trss
+
+coalSimulateNTreesConcurrently ::
+  Int ->
+  [Int] ->
+  [GenIO] ->
+  IO (Forest Length Int)
+coalSimulateNTreesConcurrently nL chunks gs = do
+  trss <-
       mapConcurrently
-        (\(n, g) -> PP.simulateNReconstructedTrees n nLeaves timeSpec l' m' g)
+        (\(n, g) -> replicateM n $ CS.simulate nL g)
         (zip chunks gs)
   return $ concat trss
 
@@ -151,19 +161,6 @@ bdSimulateAndSubSampleNTreesConcurrently nLeaves l m r p timeSpec chunks gs = do
   let trs = catMaybes $ concat trss
   return $ map prune trs
 
-coalSimulateNTreesConcurrently ::
-  Int ->
-  [Int] ->
-  [GenIO] ->
-  ELynx SimulateArguments (Forest Length Int)
-coalSimulateNTreesConcurrently nL chunks gs = do
-  trss <-
-    liftIO $
-      mapConcurrently
-        (\(n, g) -> replicateM n $ CS.simulate nL g)
-        (zip chunks gs)
-  return $ concat trss
-
 coalSimulateAndSubSampleNTreesConcurrently ::
   Int ->
   Double ->
@@ -172,12 +169,12 @@ coalSimulateAndSubSampleNTreesConcurrently ::
   ELynx SimulateArguments (Forest Length Int)
 coalSimulateAndSubSampleNTreesConcurrently nL p chunks gs = do
   let nLeavesBigTree = (round $ fromIntegral nL / p) :: Int
-  tr <- liftIO $ CS.simulate nLeavesBigTree (head gs)
   logNewSection $
     T.pack $
       "Simulate one big tree with "
         <> show nLeavesBigTree
         <> " leaves."
+  tr <- liftIO $ CS.simulate nLeavesBigTree (head gs)
   -- Log the base tree.
   $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ measurableToPhyloTree tr
   logNewSection $
@@ -196,7 +193,7 @@ coalSimulateAndSubSampleNTreesConcurrently nL p chunks gs = do
   let trs = catMaybes $ concat trss
   return $ map prune trs
 
--- | Extract a random subtree with @N@ leaves of a tree with @M@ leaves, where
+-- Extract a random subtree with @N@ leaves of a tree with @M@ leaves, where
 -- @M>N@ (otherwise error). The complete list of leaves (names are assumed to be
 -- unique) has to be provided as a 'Seq.Seq', and a 'Seq.Set', so that fast
 -- sub-sampling as well as lookup are fast and so that these data structures do
@@ -218,18 +215,20 @@ nSubSamples m lvs n tree g
     let lsSets = map Set.fromList lss
     return [dropLeavesWith (`Set.notMember` ls) tree | ls <- lsSets]
 
--- | Pair of branch length with number of extant children.
+-- Pair of branch length with number of extant children.
 type BrLnNChildren = (BranchLength, Int)
 
--- | Possible summary statistic of phylogenetic trees. A list of tuples
+-- Possible summary statistic of phylogenetic trees. A list of tuples
 -- (BranchLength, NumberOfExtantChildrenBelowThisBranch).
 type NChildSumStat = [BrLnNChildren]
 
--- | Format the summary statistics in the following form:
+-- Format the summary statistics in the following form:
+--
 -- @
---    nLeaves1 branchLength1
---    nLeaves2 branchLength2
---    ....
+--   nLeaves1 branchLength1
+--   nLeaves2 branchLength2
+--   ....
+-- @
 formatNChildSumStat :: NChildSumStat -> BL.ByteString
 formatNChildSumStat s =
   BB.toLazyByteString . mconcat $ map formatNChildSumStatLine s
@@ -238,7 +237,7 @@ formatNChildSumStatLine :: BrLnNChildren -> BB.Builder
 formatNChildSumStatLine (l, n) =
   BB.intDec n <> BB.char8 ' ' <> BB.doubleDec l <> BB.char8 '\n'
 
--- | Compute NChilSumStat for a phylogenetic tree.
+-- Compute NChilSumStat for a phylogenetic tree.
 toNChildSumStat :: Measurable e => Tree e a -> NChildSumStat
 toNChildSumStat (Node br _ []) = [(getLen br, 1)]
 toNChildSumStat (Node br _ ts) = (getLen br, sumCh) : concat nChSS

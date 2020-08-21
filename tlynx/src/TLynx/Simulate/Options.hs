@@ -1,5 +1,5 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- |
 -- Module      :  TLynx.Simulate.Options
@@ -18,7 +18,6 @@ module TLynx.Simulate.Options
     SimulateArguments (..),
     simulateArguments,
     reportSimulateArguments,
-    simulateFooter,
   )
 where
 
@@ -41,8 +40,7 @@ instance ToJSON Height
 -- | Process to be used for simulation.
 data Process
   = BirthDeath
-      {
-        -- | Birth rate.
+      { -- | Birth rate.
         bdLambda :: Double,
         -- | Death rate.
         bdMu :: Double,
@@ -164,21 +162,29 @@ rhoOpt :: Parser Double
 rhoOpt =
   option auto $
     long "rho"
-    <> short 'r'
-    <> metavar "DOUBLE"
-    <> help "Sampling probability rho"
+      <> short 'r'
+      <> metavar "DOUBLE"
+      <> help "Sampling probability rho"
 
 mrca :: Parser Height
-mrca = Mrca <$> option auto (
-  long "mrca"
-  <> metavar "DOUBLE"
-  <> help "Condition on height of most recent common ancestor" )
+mrca =
+  Mrca
+    <$> option
+      auto
+      ( long "mrca"
+          <> metavar "DOUBLE"
+          <> help "Condition on height of most recent common ancestor"
+      )
 
 origin :: Parser Height
-origin = Origin <$> option auto (
-  long "origin"
-  <> metavar "DOUBLE"
-  <> help "Condition on height of origin" )
+origin =
+  Origin
+    <$> option
+      auto
+      ( long "origin"
+          <> metavar "DOUBLE"
+          <> help "Condition on height of origin"
+      )
 
 birthDeath :: Parser Process
 birthDeath = BirthDeath <$> lambdaOpt <*> muOpt <*> optional rhoOpt <*> optional (mrca <|> origin)
@@ -187,10 +193,22 @@ coalescent :: Parser Process
 coalescent = pure Coalescent
 
 process :: Parser Process
-process = subparser (command "birthdeath"
-                     (info (birthDeath <**> helper) (progDesc "Birth and death process"))
-                    <> command "coalescent"
-                     (info (coalescent <**> helper) (progDesc "Coalescent process")))
+process =
+  hsubparser $
+    ( command
+        "birthdeath"
+        ( info
+            birthDeath
+            ( progDesc "Birth and death process"
+                <> footer "Height: If no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate assuming a uniform prior."
+            )
+        )
+        <> command
+          "coalescent"
+          (info coalescent (progDesc "Coalescent process"))
+    )
+      <> metavar "PROCESS"
+      <> commandGroup "Available processes:"
 
 subSampleOpt :: Parser (Maybe Double)
 subSampleOpt =
@@ -217,6 +235,6 @@ sumStatOpt =
 -- | And a footer.
 simulateFooter :: [String]
 simulateFooter =
-    [ "Height of Trees: If no tree height is given, the heights will be randomly drawn from the expected distribution given the number of leaves, the birth and the death rate.",
-      "Sub-sample with probability p: Simulate one big tree with n'=round(n/p), n'>=n, leaves, and randomly sample sub-trees with n leaves. Hence, with p=1.0, the same tree is reported over and over again."
+  [ "See, for example, 'tlynx simulate birthdeath --help'.",
+    "Sub-sample with probability p: Simulate one big tree with n'=round(n/p), n'>=n, leaves;\n  randomly sample sub-trees with n leaves.\n  Hence, with p=1.0, the same tree is reported over and over again."
   ]

@@ -72,8 +72,8 @@ import GHC.Generics
 import Language.Haskell.TH
 import Options.Applicative hiding (empty)
 import Options.Applicative.Help.Pretty
-import System.Environment
 import Paths_elynx_tools
+import System.Environment
 
 -- Be careful; it is necessary to synchronize the version numbers across packages.
 versionString :: String
