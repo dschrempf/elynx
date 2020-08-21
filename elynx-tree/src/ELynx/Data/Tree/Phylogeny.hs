@@ -123,8 +123,7 @@ bifurcating (Node _ _ []) = True
 bifurcating (Node _ _ [x, y]) = bifurcating x && bifurcating y
 bifurcating _ = False
 
--- Is this function really needed. I believe that manual treatment with
--- 'outgroup' is preferable.
+-- I believe that manual treatment with 'outgroup' is preferable.
 
 -- -- | Remove multifurcations.
 -- --
@@ -167,11 +166,11 @@ outgroup o r t@(Node b l ts)
     -- Introduce a bifurcating root node.
     t' = Node b r [Node (split brO) lbO tsO, Node (split brO) l (tail ts)]
 
--- XXX: The 'midpoint' algorithm is pretty stupid because it calculates all
--- rooted trees and then finds the one minimizing the difference between the
--- heights of the left and right sub tree. Actually, one just needs to move left
--- or right, with the aim to minimize the height difference between the left and
--- right sub tree.
+-- The 'midpoint' algorithm is pretty stupid because it calculates all rooted
+-- trees and then finds the one minimizing the difference between the heights of
+-- the left and right sub tree. Actually, one just needs to move left or right,
+-- with the aim to minimize the height difference between the left and right sub
+-- tree.
 
 -- | Root tree at the midpoint.
 --

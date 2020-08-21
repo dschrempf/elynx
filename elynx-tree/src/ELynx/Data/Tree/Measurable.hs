@@ -9,6 +9,10 @@
 -- Portability :  portable
 --
 -- Creation date: Thu Jan 17 14:16:34 2019.
+--
+-- Non-negativity of branch lengths is not (yet) ensured. To ensure
+-- non-negativity, a newtype wrapper could be used, but this would be a major
+-- refactor.
 module ELynx.Data.Tree.Measurable
   ( BranchLength,
     Measurable (..),

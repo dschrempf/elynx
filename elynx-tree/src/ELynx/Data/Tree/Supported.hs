@@ -9,6 +9,10 @@
 -- Portability :  portable
 --
 -- Creation date: Thu Jun 13 14:06:45 2019.
+--
+-- Non-negativity of branch support values is not (yet) ensured. To ensure
+-- non-negativity, a newtype wrapper could be used, but this would be a major
+-- refactor.
 module ELynx.Data.Tree.Supported
   ( BranchSupport,
     Supported (..),
