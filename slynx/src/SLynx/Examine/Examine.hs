@@ -22,13 +22,16 @@ import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Set as S
+import qualified Data.Vector.Unboxed as V
 import qualified ELynx.Data.Alphabet.Alphabet as A
 import qualified ELynx.Data.Alphabet.Character as C
 import qualified ELynx.Data.Sequence.Alignment as M
+import qualified ELynx.Data.Sequence.Distance as D
 import qualified ELynx.Data.Sequence.Sequence as Seq
 import ELynx.Tools
 import SLynx.Examine.Options
 import SLynx.Tools
+import qualified Statistics.Sample as Sm
 import Text.Printf
 
 pRow :: String -> String -> BL.ByteString
@@ -42,7 +45,7 @@ examineAlignment perSiteFlag a =
   BL.unlines
     [ BL.pack
         "Sequences have equal length (multi sequence alignment, or single sequence).",
-      pRow "Total number of columns in alignment:" $ show (M.length a),
+      pRow "Total number of columns in alignment:" $ show aL,
       pRow "Number of columns without gaps:" $ show (M.length aNoGaps),
       pRow "Number of columns with standard characters only:" $
         show (M.length aOnlyStd),
@@ -71,6 +74,12 @@ examineAlignment perSiteFlag a =
                 M.alphabet a,
       BL.pack $ unwords $ map (printf "%.3f") charFreqs,
       BL.empty,
+      BL.pack "Pairwise hamming distances (per site):",
+      pRow "  Mean:" $ printf "%.3f" hMean,
+      pRow "  Standard deviation:" $ printf "%.3f" $ sqrt hVar,
+      pRow "  Minimum:" $ printf "%.3f" hMin,
+      pRow "  Maximum:" $ printf "%.3f" hMax,
+      BL.empty,
       BL.pack "Mean effective number of states (measured using entropy):",
       pRow "Across whole alignment:" $ printf "%.3f" kEffMean,
       pRow "Across columns without gaps:" $ printf "%.3f" kEffMeanNoGaps,
@@ -85,6 +94,7 @@ examineAlignment perSiteFlag a =
     ]
     <> perSiteBS
   where
+    aL = M.length a
     nTot = M.length a * M.nSequences a
     nIUPAC = M.countIUPACChars a
     nGaps = M.countGaps a
@@ -93,18 +103,32 @@ examineAlignment perSiteFlag a =
     percentGaps = 100 * fromIntegral nGaps / fromIntegral nTot :: Double
     percentUnknowns = 100 * fromIntegral nUnknowns / fromIntegral nTot :: Double
     aNoGaps = M.filterColsNoGaps a
+    aNoGapsFreq = M.toFrequencyData aNoGaps
     aOnlyStd = M.filterColsOnlyStd aNoGaps
+    aOnlyStdFreq = M.toFrequencyData aOnlyStd
     charFreqsPerSite = M.toFrequencyData a
     charFreqs = M.distribution charFreqsPerSite
+    seqs = M.toSequences a
+    normlz x = fromIntegral x / fromIntegral aL
+    pairwiseHamming =
+      V.fromList
+        [ either error normlz $ D.hamming x y
+          | x <- seqs,
+            y <- seqs,
+            x /= y
+        ]
+    (hMean, hVar) = Sm.meanVariance pairwiseHamming
+    hMin = V.minimum pairwiseHamming
+    hMax = V.maximum pairwiseHamming
     kEffs = M.kEffEntropy charFreqsPerSite
-    kEffsNoGaps = M.kEffEntropy . M.toFrequencyData $ aNoGaps
-    kEffsOnlyStd = M.kEffEntropy . M.toFrequencyData $ aOnlyStd
+    kEffsNoGaps = M.kEffEntropy aNoGapsFreq
+    kEffsOnlyStd = M.kEffEntropy aOnlyStdFreq
     kEffMean = sum kEffs / fromIntegral (length kEffs)
     kEffMeanNoGaps = sum kEffsNoGaps / fromIntegral (length kEffsNoGaps)
     kEffMeanOnlyStd = sum kEffsOnlyStd / fromIntegral (length kEffsOnlyStd)
     kEffsHomo = M.kEffHomoplasy charFreqsPerSite
-    kEffsNoGapsHomo = M.kEffHomoplasy . M.toFrequencyData $ aNoGaps
-    kEffsOnlyStdHomo = M.kEffHomoplasy . M.toFrequencyData $ aOnlyStd
+    kEffsNoGapsHomo = M.kEffHomoplasy aNoGapsFreq
+    kEffsOnlyStdHomo = M.kEffHomoplasy aOnlyStdFreq
     kEffMeanHomo = sum kEffsHomo / fromIntegral (length kEffsHomo)
     kEffMeanNoGapsHomo =
       sum kEffsNoGapsHomo / fromIntegral (length kEffsNoGapsHomo)

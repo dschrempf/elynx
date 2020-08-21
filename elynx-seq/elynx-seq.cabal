@@ -45,6 +45,7 @@ library
       ELynx.Data.Character.NucleotideX
       ELynx.Data.Sequence.Alignment
       ELynx.Data.Sequence.Defaults
+      ELynx.Data.Sequence.Distance
       ELynx.Data.Sequence.Sequence
       ELynx.Data.Sequence.Translate
       ELynx.Export.Sequence.Fasta

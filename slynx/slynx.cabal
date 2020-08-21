@@ -60,6 +60,7 @@ library
     , monad-logger
     , mwc-random
     , optparse-applicative
+    , statistics
     , text
     , transformers
     , vector
