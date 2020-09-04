@@ -5,6 +5,12 @@
 ## Unreleased changes
 
 
+## Version 0.4.0
+
+-   Major refactor of `elynx-tree`. All required function can now conveniently
+    reexported by `ELynx.Tree`.
+
+
 ## Version 0.3.4
 
 -   Improve `slynx examine`; show hamming distance; show constant sites.
