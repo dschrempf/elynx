@@ -32,11 +32,21 @@ module ELynx.Tree
     module ELynx.Tree.Bipartition,
     module ELynx.Tree.Partition,
     module ELynx.Tree.Distance,
+
+    -- * Import and Export
+    module ELynx.Tree.Export.Newick,
+    module ELynx.Tree.Export.Nexus,
+    module ELynx.Tree.Import.Newick,
+    module ELynx.Tree.Import.Nexus,
   )
 where
 
 import ELynx.Tree.Bipartition
 import ELynx.Tree.Distance
+import ELynx.Tree.Export.Newick
+import ELynx.Tree.Export.Nexus
+import ELynx.Tree.Import.Newick
+import ELynx.Tree.Import.Nexus
 import ELynx.Tree.Measurable
 import ELynx.Tree.Named
 import ELynx.Tree.Partition

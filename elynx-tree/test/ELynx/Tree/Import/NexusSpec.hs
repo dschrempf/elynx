@@ -18,8 +18,6 @@ where
 
 import qualified Data.ByteString.Char8 as BS
 import ELynx.Tree
-import ELynx.Tree.Import.Newick (NewickFormat (..))
-import ELynx.Tree.Import.Nexus
 import ELynx.Tools
 import Test.Hspec
 

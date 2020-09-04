@@ -356,7 +356,7 @@ supportedToPhyloLabel x = Phylo Nothing (Just $ getSup x)
 
 -- | Branch length label.
 --
--- For conversion, see 'phyloToLengthTree' and 'lengthToPhyloTree'.
+-- For conversion, see 'phyloToLengthTree'.
 newtype Length = Length {fromLength :: BranchLength}
   deriving (Read, Show, Eq, Ord, Generic, NFData)
   deriving (Num, Fractional, Floating) via Double

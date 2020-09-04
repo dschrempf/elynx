@@ -19,7 +19,6 @@ where
 import qualified Data.ByteString.Char8 as BS
 import ELynx.Tree
 import ELynx.Tree.Arbitrary ()
-import ELynx.Tree.Import.Newick
 import ELynx.Tools
 import Test.Hspec
 import Test.QuickCheck

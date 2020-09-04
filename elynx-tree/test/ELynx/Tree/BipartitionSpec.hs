@@ -21,7 +21,6 @@ import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Tree
-import ELynx.Tree.Import.Newick
 import ELynx.Tools
 import Test.Hspec
 

@@ -20,8 +20,6 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Tree
 import ELynx.Tree.Arbitrary ()
-import ELynx.Tree.Export.Newick
-import ELynx.Tree.Import.Newick
 import ELynx.Tools
 import Test.Hspec
 import Test.QuickCheck hiding (label)

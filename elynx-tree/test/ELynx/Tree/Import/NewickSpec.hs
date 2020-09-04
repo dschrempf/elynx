@@ -19,7 +19,6 @@ import Data.Attoparsec.ByteString.Char8
 import qualified Data.ByteString.Char8 as BS
 import Data.Either
 import ELynx.Tree
-import ELynx.Tree.Import.Newick
 import ELynx.Tools
 import Test.Hspec
 
