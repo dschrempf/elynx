@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
+-- |
 -- Module      :  ELynx.Tree.Import.Newick
 -- Description :  Import Newick trees
 -- Copyright   :  (c) Dominik Schrempf 2020
@@ -19,15 +20,24 @@
 -- In particular, no conversion from _ to (space) is done right now.
 --
 -- For a description of rooted 'Tree's, please see the 'ELynx.Tree.Rooted'
-
--- |
--- module header.
+--
+-- Code snippet:
+--
+-- @
+-- import Data.Attoparsec.ByteString
+-- import ELynx.Tree
+--
+-- getOneNewick = either error id . parseOnly (oneNewick Standard)
+-- @
 module ELynx.Tree.Import.Newick
   ( NewickFormat (..),
     description,
     newick,
+    parseNewick,
     oneNewick,
+    parseOneNewick,
     someNewick,
+    parseSomeNewick,
   )
 where
 
@@ -64,23 +74,35 @@ description IqTree =
 description RevBayes =
   "RevBayes: Key-value pairs is provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are ignored at the moment."
 
--- | Parse a single Newick tree. Also succeeds when more trees follow.
+-- | Newick tree parser. Also succeeds when more trees follow.
 newick :: NewickFormat -> Parser (Tree Phylo BS.ByteString)
 newick Standard = newickStandard
 newick IqTree = newickIqTree
 newick RevBayes = newickRevBayes
 
--- | Parse a single Newick tree. Fails when end of file is not reached.
+-- | See 'newick'.
+parseNewick :: NewickFormat -> BS.ByteString -> Tree Phylo BS.ByteString
+parseNewick f = either error id . parseOnly (newick f)
+
+-- | One Newick tree parser. Fails when end of input is not reached.
 oneNewick :: NewickFormat -> Parser (Tree Phylo BS.ByteString)
 oneNewick Standard = oneNewickStandard
 oneNewick IqTree = oneNewickIqTree
 oneNewick RevBayes = oneNewickRevBayes
 
--- | Parse one or more Newick trees until end of file.
+-- | See 'oneNewick'.
+parseOneNewick :: NewickFormat -> BS.ByteString -> Tree Phylo BS.ByteString
+parseOneNewick f = either error id . parseOnly (oneNewick f)
+
+-- | One or more Newick trees parser.
 someNewick :: NewickFormat -> Parser (Forest Phylo BS.ByteString)
 someNewick Standard = someNewickStandard
 someNewick IqTree = someNewickIqTree
 someNewick RevBayes = someNewickRevBayes
+
+-- | See 'someNewick'.
+parseSomeNewick :: NewickFormat -> BS.ByteString -> [Tree Phylo BS.ByteString]
+parseSomeNewick f = either error id . parseOnly (someNewick f)
 
 -- Parse a single Newick tree. Also succeeds when more trees follow.
 newickStandard :: Parser (Tree Phylo BS.ByteString)
