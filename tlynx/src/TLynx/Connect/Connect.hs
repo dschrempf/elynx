@@ -23,12 +23,7 @@ import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Set as S
-import ELynx.Data.Tree
-import ELynx.Export.Tree.Newick (toNewick)
-import ELynx.Import.Tree.Newick
-  ( oneNewick,
-    someNewick,
-  )
+import ELynx.Tree
 import ELynx.Tools
   ( Arguments (..),
     ELynx,

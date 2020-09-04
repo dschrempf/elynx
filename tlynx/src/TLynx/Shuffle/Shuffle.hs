@@ -26,10 +26,8 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Logger (logDebug, logInfo)
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
-import ELynx.Data.Tree
-import ELynx.Export.Tree.Newick (toNewick)
-import ELynx.Import.Tree.Newick (oneNewick)
-import ELynx.Simulate.PointProcess
+import ELynx.Tree
+import ELynx.Tree.Simulate.PointProcess
   ( PointProcess (PointProcess),
     toReconstructedTree,
   )

@@ -40,9 +40,7 @@ import qualified Data.Text.IO as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Encoding as LT
 import qualified Data.Vector.Unboxed as V
-import ELynx.Data.Tree
-import ELynx.Export.Tree.Newick
-import ELynx.Import.Tree.Newick
+import ELynx.Tree
 import ELynx.Tools
 import Statistics.Sample
 import System.IO

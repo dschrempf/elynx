@@ -17,7 +17,7 @@ module TLynx.Parsers
 where
 
 import Data.List (intercalate)
-import ELynx.Import.Tree.Newick
+import ELynx.Tree
   ( NewickFormat (..),
     description,
   )

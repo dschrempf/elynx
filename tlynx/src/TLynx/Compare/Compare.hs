@@ -29,9 +29,7 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 import qualified Data.Text.IO as T
-import ELynx.Data.Tree
-import ELynx.Export.Tree.Newick (toNewick)
-import ELynx.Import.Tree.Newick
+import ELynx.Tree
 import ELynx.Tools
   ( Arguments (..),
     ELynx,

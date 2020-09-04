@@ -46,11 +46,10 @@ import qualified ELynx.Data.Sequence.Alignment as A
 import qualified ELynx.Data.Sequence.Sequence as Seq hiding
   ( name,
   )
-import ELynx.Data.Tree
+import ELynx.Tree
 import ELynx.Export.Sequence.Fasta
 import ELynx.Import.MarkovProcess.EDMModelPhylobayes
 import ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
-import ELynx.Import.Tree.Newick
 import ELynx.Simulate.MarkovProcessAlongTree
 import ELynx.Tools
 import Numeric.LinearAlgebra hiding

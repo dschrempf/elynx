@@ -96,7 +96,7 @@ prop_roots _ = True
 
 prop_roots_total_length :: Tree Length a -> Bool
 prop_roots_total_length t@(Node _ _ [_, _]) =
-  all (\b -> abs (b - l) < 1e-10) $
+  all (\b -> abs (b - l) < 1e-8) $
     map totalBranchLength $
       either error id $
         roots t
