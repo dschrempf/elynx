@@ -62,13 +62,8 @@ simulate = do
   gs <- liftIO $ initialize s >>= \gen -> splitGen c gen
   let chunks = getChunks c nTrees
   trs <- case pr of
-    (BirthDeath lambda mu mRho mHeight) -> do
+    (BirthDeath lambda mu mRho timeSpec) -> do
       let rho = fromMaybe 1.0 mRho
-          -- This is bad code, but I don't want to change the definition of 'TimeSpec'.
-          timeSpec = case mHeight of
-            Nothing -> PP.Random
-            Just (Origin h) -> PP.Origin h
-            Just (Mrca h) -> PP.Mrca h
       case subS of
         Nothing -> liftIO $ bdSimulateNTreesConcurrently nLeaves lambda mu rho timeSpec chunks gs
         Just p ->

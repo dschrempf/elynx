@@ -1,5 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 -- |
 -- Module      :  TLynx.Simulate.Options
@@ -13,29 +15,30 @@
 --
 -- Creation date: Fri May  3 11:51:07 2019.
 module TLynx.Simulate.Options
-  ( Height (..),
-    Process (..),
+  ( Process (..),
     SimulateArguments (..),
     simulateArguments,
     reportSimulateArguments,
   )
 where
 
+import Data.Maybe
 import Data.List
-import ELynx.Tools
+import ELynx.Tools hiding (Random)
 import Options.Applicative
+import ELynx.Tree.Simulate.PointProcess (TimeSpec (..))
 
--- | Condition on tree height (origin or most recent common ancestor).
-data Height = Origin Double | Mrca Double
-  deriving (Eq, Generic)
+deriving instance Eq TimeSpec
+deriving instance Generic TimeSpec
 
-instance Show Height where
+instance Show TimeSpec where
+  show Random = "Random"
   show (Origin o) = "Condition on height of origin: " ++ show o
   show (Mrca m) = "Condition on height of MRCA: " ++ show m
 
-instance FromJSON Height
+instance FromJSON TimeSpec
 
-instance ToJSON Height
+instance ToJSON TimeSpec
 
 -- | Process to be used for simulation.
 data Process
@@ -47,7 +50,7 @@ data Process
         -- | Sampling rate.
         bdRho :: Maybe Double,
         -- | Condition on height?
-        bdHeight :: Maybe Height
+        bdHeight :: TimeSpec
       }
   | Coalescent
   deriving (Eq, Show, Generic)
@@ -57,14 +60,14 @@ instance FromJSON Process
 instance ToJSON Process
 
 reportProcess :: Process -> String
-reportProcess (BirthDeath l m mr mh) =
+reportProcess (BirthDeath l m mr ts) =
   intercalate
     "\n"
     [ "Model: Birth and death process",
       "  Birth rate: " ++ show l,
       "  Death rate: " ++ show m,
       "  Sampling probability: " ++ maybe "1.0" show mr,
-      "  Height specification: " ++ maybe "Random" show mh
+      "  Height specification: " ++ show ts
     ]
 reportProcess Coalescent = "Model: Coalescent process"
 
@@ -166,7 +169,7 @@ rhoOpt =
       <> metavar "DOUBLE"
       <> help "Sampling probability rho"
 
-mrca :: Parser Height
+mrca :: Parser TimeSpec
 mrca =
   Mrca
     <$> option
@@ -176,7 +179,7 @@ mrca =
           <> help "Condition on height of most recent common ancestor"
       )
 
-origin :: Parser Height
+origin :: Parser TimeSpec
 origin =
   Origin
     <$> option
@@ -186,8 +189,11 @@ origin =
           <> help "Condition on height of origin"
       )
 
+timeSpec :: Parser TimeSpec
+timeSpec = fromMaybe Random <$> optional (mrca <|> origin)
+
 birthDeath :: Parser Process
-birthDeath = BirthDeath <$> lambdaOpt <*> muOpt <*> optional rhoOpt <*> optional (mrca <|> origin)
+birthDeath = BirthDeath <$> lambdaOpt <*> muOpt <*> optional rhoOpt <*> timeSpec
 
 coalescent :: Parser Process
 coalescent = pure Coalescent
