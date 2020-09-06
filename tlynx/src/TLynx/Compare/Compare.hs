@@ -29,7 +29,6 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 import qualified Data.Text.IO as T
-import ELynx.Tree
 import ELynx.Tools
   ( Arguments (..),
     ELynx,
@@ -37,6 +36,7 @@ import ELynx.Tools
     outHandle,
     parseFileWith,
   )
+import ELynx.Tree
 import Graphics.Gnuplot.Simple
 import System.IO
 import TLynx.Compare.Options

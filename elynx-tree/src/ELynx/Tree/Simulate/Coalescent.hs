@@ -15,10 +15,10 @@ module ELynx.Tree.Simulate.Coalescent
 where
 
 import Control.Monad.Primitive
+import ELynx.Tree.Distribution.CoalescentContinuous
 import ELynx.Tree.Measurable
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
-import ELynx.Tree.Distribution.CoalescentContinuous
 import Statistics.Distribution
 import System.Random.MWC
 

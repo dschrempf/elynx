@@ -90,10 +90,13 @@ data PointProcess a b = PointProcess
   deriving (Read, Show, Eq)
 
 -- | Tree height specification.
-data TimeSpec =
-  Random -- ^ Sample time of origin from respective distribution.
-  | Origin Time -- ^ Condition on time of origin.
-  | Mrca Time -- ^ Condition on time of most recent common ancestor (MRCA).
+data TimeSpec
+  = -- | Sample time of origin from respective distribution.
+    Random
+  | -- | Condition on time of origin.
+    Origin Time
+  | -- | Condition on time of most recent common ancestor (MRCA).
+    Mrca Time
 
 -- | Sample a point process using the 'BirthDeathDistribution'. The names of the
 -- points will be integers.
@@ -114,9 +117,9 @@ simulate n ts l m g
   | n < 1 = error "Number of samples needs to be one or larger."
   | l < 0.0 = error "Birth rate needs to be positive."
   | otherwise = case ts of
-      Random -> simulateRandom n l m g
-      Origin t -> simulateOrigin n t l m g
-      Mrca t -> simulateMrca n t l m g
+    Random -> simulateRandom n l m g
+    Origin t -> simulateOrigin n t l m g
+    Mrca t -> simulateMrca n t l m g
 
 -- No time of origin given. We also don't need to take care of the conditioning
 -- (origin or MRCA).

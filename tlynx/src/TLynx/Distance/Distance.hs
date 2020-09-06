@@ -40,8 +40,8 @@ import qualified Data.Text.IO as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Encoding as LT
 import qualified Data.Vector.Unboxed as V
-import ELynx.Tree
 import ELynx.Tools
+import ELynx.Tree
 import Statistics.Sample
 import System.IO
 import TLynx.Distance.Options

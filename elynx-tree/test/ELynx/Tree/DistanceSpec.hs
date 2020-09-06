@@ -17,9 +17,9 @@ module ELynx.Tree.DistanceSpec
 where
 
 import qualified Data.ByteString.Char8 as BS
+import ELynx.Tools
 import ELynx.Tree
 import ELynx.Tree.Arbitrary ()
-import ELynx.Tools
 import Test.Hspec
 import Test.QuickCheck
 

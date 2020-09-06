@@ -18,9 +18,9 @@ where
 import Data.Bifunctor
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
+import ELynx.Tools
 import ELynx.Tree
 import ELynx.Tree.Arbitrary ()
-import ELynx.Tools
 import Test.Hspec
 import Test.QuickCheck hiding (label)
 

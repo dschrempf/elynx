@@ -26,12 +26,12 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Logger (logDebug, logInfo)
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
+import ELynx.Tools
 import ELynx.Tree
 import ELynx.Tree.Simulate.PointProcess
   ( PointProcess (PointProcess),
     toReconstructedTree,
   )
-import ELynx.Tools
 import System.IO (hClose)
 import System.Random.MWC (GenIO, initialize)
 import TLynx.Shuffle.Options

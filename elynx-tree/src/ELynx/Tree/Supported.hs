@@ -55,7 +55,7 @@ collapse th tr =
 
 -- A leaf has full support.
 highP :: Supported e => Double -> Tree e a -> Bool
-highP _  (Node _ _ []) = True
+highP _ (Node _ _ []) = True
 highP th (Node br _ _) = getSup br >= th
 
 -- See 'collapse'.

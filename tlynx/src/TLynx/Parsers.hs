@@ -17,11 +17,11 @@ module TLynx.Parsers
 where
 
 import Data.List (intercalate)
+import ELynx.Tools (allValues)
 import ELynx.Tree
   ( NewickFormat (..),
     description,
   )
-import ELynx.Tools (allValues)
 import Options.Applicative
 
 -- | Parse 'NewickFormat'.

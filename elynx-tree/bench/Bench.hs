@@ -15,7 +15,6 @@ import Criterion.Main
 import qualified Data.ByteString.Char8 as BS
 import ELynx.Tools
 import ELynx.Tree
-import ELynx.Tree.Import.Newick
 
 treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"

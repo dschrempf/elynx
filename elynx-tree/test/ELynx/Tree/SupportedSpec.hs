@@ -17,8 +17,8 @@ module ELynx.Tree.SupportedSpec
 where
 
 import qualified Data.ByteString.Char8 as BS
-import ELynx.Tree
 import ELynx.Tools
+import ELynx.Tree
 import Test.Hspec
 
 collapseTree :: Tree Phylo BS.ByteString

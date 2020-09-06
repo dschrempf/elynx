@@ -23,7 +23,6 @@ import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Set as S
-import ELynx.Tree
 import ELynx.Tools
   ( Arguments (..),
     ELynx,
@@ -32,6 +31,7 @@ import ELynx.Tools
     parseFileWith,
     tShow,
   )
+import ELynx.Tree
 import System.IO
 import TLynx.Connect.Options
 

@@ -25,8 +25,8 @@ import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Containers.ListUtils (nubOrd)
 import Data.List ((\\))
 import qualified Data.Text as T
-import ELynx.Tree
 import ELynx.Tools
+import ELynx.Tree
 import System.IO
   ( Handle,
     hPutStrLn,

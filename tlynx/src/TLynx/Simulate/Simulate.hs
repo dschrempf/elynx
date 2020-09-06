@@ -43,10 +43,10 @@ import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Encoding as LT
+import ELynx.Tools
 import ELynx.Tree
 import qualified ELynx.Tree.Simulate.Coalescent as CS
 import qualified ELynx.Tree.Simulate.PointProcess as PP
-import ELynx.Tools
 import System.Random.MWC
 import TLynx.Simulate.Options
 
@@ -111,9 +111,9 @@ coalSimulateNTreesConcurrently ::
   IO (Forest Length Int)
 coalSimulateNTreesConcurrently nL chunks gs = do
   trss <-
-      mapConcurrently
-        (\(n, g) -> replicateM n $ CS.simulate nL g)
-        (zip chunks gs)
+    mapConcurrently
+      (\(n, g) -> replicateM n $ CS.simulate nL g)
+      (zip chunks gs)
   return $ concat trss
 
 bdSimulateAndSubSampleNTreesConcurrently ::

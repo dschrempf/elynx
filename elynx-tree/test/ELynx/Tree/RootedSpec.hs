@@ -19,8 +19,8 @@ where
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Maybe
-import ELynx.Tree
 import ELynx.Tools
+import ELynx.Tree
 import Test.Hspec
 
 node :: Int -> Tree () Int

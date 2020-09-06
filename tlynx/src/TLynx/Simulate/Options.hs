@@ -22,13 +22,14 @@ module TLynx.Simulate.Options
   )
 where
 
-import Data.Maybe
 import Data.List
+import Data.Maybe
 import ELynx.Tools hiding (Random)
-import Options.Applicative
 import ELynx.Tree.Simulate.PointProcess (TimeSpec (..))
+import Options.Applicative
 
 deriving instance Eq TimeSpec
+
 deriving instance Generic TimeSpec
 
 instance Show TimeSpec where
