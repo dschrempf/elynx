@@ -66,9 +66,9 @@ simulate = do
       let rho = fromMaybe 1.0 mRho
           -- This is bad code, but I don't want to change the definition of 'TimeSpec'.
           timeSpec = case mHeight of
-            Nothing -> Nothing
-            Just (Mrca h) -> Just (h, True)
-            Just (Origin h) -> Just (h, False)
+            Nothing -> PP.Random
+            Just (Origin h) -> PP.Origin h
+            Just (Mrca h) -> PP.Mrca h
       case subS of
         Nothing -> liftIO $ bdSimulateNTreesConcurrently nLeaves lambda mu rho timeSpec chunks gs
         Just p ->
