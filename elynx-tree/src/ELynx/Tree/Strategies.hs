@@ -13,6 +13,7 @@ module ELynx.Tree.Strategies
   ( parTree,
     using,
     parBranchFold,
+    parBranchFoldMap,
   )
 where
 
@@ -53,3 +54,14 @@ parBranchFold 1 f (Node br _ ts) = foldl' f br (map (branchFold f) ts `using` my
 parBranchFold n f (Node br _ ts)
   | n >= 2 = foldl' f br $ map (parBranchFold (n - 1) f) ts
   | otherwise = error "parBranchFold: n is zero or negative."
+
+branchFoldMap :: (e -> f) -> (f -> f -> f) -> Tree e a -> f
+branchFoldMap f g (Node br _ ts) = foldl' g (f br) $ map (branchFoldMap f g) ts
+
+-- | Map and fold over branches up to given layer in parallel.
+parBranchFoldMap :: NFData f => Int -> (e -> f) -> (f -> f -> f) -> Tree e a -> f
+parBranchFoldMap 0 f g t = branchFoldMap f g t
+parBranchFoldMap 1 f g (Node br _ ts) = foldl' g (f br) (map (branchFoldMap f g) ts `using` myParList)
+parBranchFoldMap n f g (Node br _ ts)
+  | n >= 2 = foldl' g (f br) $ map (parBranchFoldMap (n - 1) f g) ts
+  | otherwise = error "parBranchFoldMap: n is zero or negative."
