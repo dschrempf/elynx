@@ -27,8 +27,8 @@ import ELynx.Tree.Rooted
 parTree :: (NFData e, NFData a) => Int -> Strategy (Tree e a)
 parTree 0 t = rdeepseq t
 parTree n (Node br lb ts)
-  | n == 1 = evalTreeWith parTraversable
-  | n >= 2 = evalTreeWith evalTraversable
+  | n == 1 = evalTreeWith parList
+  | n >= 2 = evalTreeWith evalList
   | otherwise = error "parTree: n is negative."
   where
     evalTreeWith strat = do
@@ -47,7 +47,7 @@ parBranchFold 1 f (Node br _ ts) =
   foldl' f br (map (branchFold f) ts `using` parList rdeepseq)
 parBranchFold n f (Node br _ ts)
   | n >= 2 = foldl' f br $ map (parBranchFold (n - 1) f) ts
-  | otherwise = error "parBranchFold: n is zero or negative."
+  | otherwise = error "parBranchFold: n is negative."
 
 branchFoldMap :: (e -> f) -> (f -> f -> f) -> Tree e a -> f
 branchFoldMap f g (Node br _ ts) = foldl' g (f br) $ map (branchFoldMap f g) ts
@@ -59,4 +59,4 @@ parBranchFoldMap 1 f g (Node br _ ts) =
   foldl' g (f br) (map (branchFoldMap f g) ts `using` parList rdeepseq)
 parBranchFoldMap n f g (Node br _ ts)
   | n >= 2 = foldl' g (f br) $ map (parBranchFoldMap (n - 1) f g) ts
-  | otherwise = error "parBranchFoldMap: n is zero or negative."
+  | otherwise = error "parBranchFoldMap: n is negative."
