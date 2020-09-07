@@ -116,7 +116,7 @@ instance Functor (Tree e) where
   fmap f ~(Node br lb ts) = Node br (f lb) $ map (fmap f) ts
   x <$ ~(Node br _ ts) = Node br x (map (x <$) ts)
 
--- | The function `first` acts on branch labels, `second` on node labels.
+-- | The function 'first' acts on branch labels, 'second' on node labels.
 instance Bifunctor Tree where
   bimap f g ~(Node br lb ts) = Node (f br) (g lb) $ map (bimap f g) ts
   first f ~(Node br lb ts) = Node (f br) lb $ map (first f) ts
