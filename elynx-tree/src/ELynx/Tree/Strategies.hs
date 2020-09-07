@@ -11,23 +11,45 @@
 -- Creation date: Mon Sep  7 13:36:45 2020.
 module ELynx.Tree.Strategies
   ( parTree,
-    parTree2,
-    parTree3,
     using,
+    parBranchFold,
   )
 where
 
 import Control.Parallel.Strategies
+import Data.Foldable
 import ELynx.Tree.Rooted
 
--- | Evaluates all elements of the 'forest' in parallel.
-parTree :: (NFData e, NFData a) => Strategy (Tree e a)
-parTree (Node br lb ts) = Node <$> rdeepseq br <*> rdeepseq lb <*> parTraversable rdeepseq ts
+-- | Parallel evaluation strategy.
+--
+-- Evaluate the tree in parallel up to a given layer.
+parTree :: (NFData e, NFData a) => Int -> Strategy (Tree e a)
+parTree 0 t = rdeepseq t
+parTree n (Node br lb ts)
+  | n == 1 = evalTreeWith parTraversable
+  | n >= 2 = evalTreeWith evalTraversable
+  | otherwise = error "parTree: n is negative."
+  where
+    evalTreeWith strat = do
+      ts' <- strat (parTree $ n - 1) ts
+      br' <- rdeepseq br
+      lb' <- rdeepseq lb
+      return $ Node br' lb' ts'
 
--- | Evaluates all elements of the 'forest's of the 'forest' in parallel.
-parTree2 :: (NFData e, NFData a) => Strategy (Tree e a)
-parTree2 (Node br lb ts) = Node <$> rdeepseq br <*> rdeepseq lb <*> parTraversable parTree ts
+branchFold :: (e -> e -> e) -> Tree e a -> e
+branchFold f (Node br _ ts) = foldl' f br $ map (branchFold f) ts
 
--- | Evaluates all elements of the 'forest's of the 'forest's of the 'forest' in parallel.
-parTree3 :: (NFData e, NFData a) => Strategy (Tree e a)
-parTree3 (Node br lb ts) = Node <$> rdeepseq br <*> rdeepseq lb <*> parTraversable parTree2 ts
+myParList :: NFData a => Strategy [a]
+myParList [] = return []
+myParList ts = do
+  ts' <- parList rdeepseq $ tail ts
+  t' <- rdeepseq $ head ts
+  return $ t' : ts'
+
+-- | Fold over branches up to given layer in parallel.
+parBranchFold :: NFData e => Int -> (e -> e -> e) -> Tree e a -> e
+parBranchFold 0 f t = branchFold f t
+parBranchFold 1 f (Node br _ ts) = foldl' f br (map (branchFold f) ts `using` myParList)
+parBranchFold n f (Node br _ ts)
+  | n >= 2 = foldl' f br $ map (parBranchFold (n - 1) f) ts
+  | otherwise = error "parBranchFold: n is zero or negative."

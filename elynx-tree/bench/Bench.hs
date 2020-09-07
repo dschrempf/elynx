@@ -15,6 +15,7 @@ module Main where
 
 import Criterion.Main
 import Data.Bifunctor
+import Data.Foldable
 import qualified Data.ByteString.Char8 as BS
 import ELynx.Tools hiding (Random)
 import ELynx.Tree
@@ -28,7 +29,7 @@ getManyTrees :: IO (Forest Phylo BS.ByteString)
 getManyTrees = parseFileWith (someNewick Standard) treeFileMany
 
 hugeTree :: IO (Tree Length Int)
-hugeTree = create >>= simulateReconstructedTree 1000 Random 1.0 0.9
+hugeTree = create >>= simulateReconstructedTree 20000 Random 1.0 0.9
 
 sinN :: Int -> Double -> Double
 sinN n x = iterate sin x !! n
@@ -36,14 +37,8 @@ sinN n x = iterate sin x !! n
 hugeTreeCalc :: Tree Length Int -> Tree Double Int
 hugeTreeCalc = first (sinN 200 . getLen)
 
-hugeTreeCalcPar :: Tree Length Int -> Tree Double Int
-hugeTreeCalcPar t = hugeTreeCalc t `using` parTree
-
-hugeTreeCalcPar2 :: Tree Length Int -> Tree Double Int
-hugeTreeCalcPar2 t = hugeTreeCalc t `using` parTree2
-
-hugeTreeCalcPar3 :: Tree Length Int -> Tree Double Int
-hugeTreeCalcPar3 t = hugeTreeCalc t `using` parTree3
+hugeTreeCalcPar :: Int -> Tree Length Int -> Tree Double Int
+hugeTreeCalcPar n t = hugeTreeCalc t `using` parTree n
 
 main :: IO ()
 main = do
@@ -53,9 +48,9 @@ main = do
     [ bgroup "bipartition" [bench "manyTrees" $ nf (map bipartitions) ts],
       bgroup
         "strategies"
-        [ bench "exp, sequential" $ nf hugeTreeCalc ht,
-          bench "exp, parallel 1" $ nf hugeTreeCalcPar ht,
-          bench "exp, parallel 2" $ nf hugeTreeCalcPar2 ht,
-          bench "exp, parallel 3" $ nf hugeTreeCalcPar3 ht
+        [ bench "map sequential" $ nf hugeTreeCalc ht,
+          bench "map parallel 1" $ nf (hugeTreeCalcPar 1) ht,
+          bench "fld sequential" $ nf (foldl' (*) 1 . branches) ht,
+          bench "fld parallel 1" $ nf (parBranchFold 1 (*)) ht
         ]
     ]
