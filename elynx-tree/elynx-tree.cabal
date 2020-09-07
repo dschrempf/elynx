@@ -51,6 +51,7 @@ library
       ELynx.Tree.Phylogeny
       ELynx.Tree.Rooted
       ELynx.Tree.Splittable
+      ELynx.Tree.Strategies
       ELynx.Tree.Supported
       ELynx.Tree.Zipper
       ELynx.Tree.Distribution.BirthDeath
