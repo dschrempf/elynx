@@ -44,13 +44,16 @@ main :: IO ()
 main = do
   !ts <- getManyTrees
   !ht <- hugeTree
+  -- print $ hugeTreeCalc ht == hugeTreeCalcPar 1 ht
+  -- print $ (foldl' (+) 0 . branches) ht
+  -- print $ parBranchFoldMap 1 id (+) ht
   defaultMain
     [ bgroup "bipartition" [bench "manyTrees" $ nf (map bipartitions) ts],
       bgroup
         "strategies"
         [ bench "map sequential" $ nf hugeTreeCalc ht,
           bench "map parallel 1" $ nf (hugeTreeCalcPar 1) ht,
-          bench "fld sequential" $ nf (foldl' (*) 1 . branches) ht,
-          bench "fld parallel 1" $ nf (parBranchFold 1 (*)) ht
+          bench "fld sequential" $ nf (foldl' (+) 0 . branches) ht,
+          bench "fld parallel 1" $ nf (parBranchFoldMap 1 id (+)) ht
         ]
     ]

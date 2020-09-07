@@ -12,8 +12,8 @@
 module ELynx.Tree.Strategies
   ( parTree,
     using,
-    parBranchFold,
     parBranchFoldMap,
+    parNodeFoldMap,
   )
 where
 
@@ -37,26 +37,26 @@ parTree n (Node br lb ts)
       lb' <- rdeepseq lb
       return $ Node br' lb' ts'
 
-branchFold :: (e -> e -> e) -> Tree e a -> e
-branchFold f (Node br _ ts) = foldl' f br $ map (branchFold f) ts
-
--- | Fold over branches. Evaluate the given layer in parallel.
-parBranchFold :: NFData e => Int -> (e -> e -> e) -> Tree e a -> e
-parBranchFold 0 f t = branchFold f t
-parBranchFold 1 f (Node br _ ts) =
-  foldl' f br (map (branchFold f) ts `using` parList rdeepseq)
-parBranchFold n f (Node br _ ts)
-  | n >= 2 = foldl' f br $ map (parBranchFold (n - 1) f) ts
-  | otherwise = error "parBranchFold: n is negative."
-
 branchFoldMap :: (e -> f) -> (f -> f -> f) -> Tree e a -> f
-branchFoldMap f g (Node br _ ts) = foldl' g (f br) $ map (branchFoldMap f g) ts
+branchFoldMap f op (Node br _ ts) = foldl' op (f br) $ map (branchFoldMap f op) ts
 
--- | Map and fold over branches. Evaluate the given layer in parallel.
+-- | Map and fold over branches. Evaluate the sub trees at given layer in parallel.
 parBranchFoldMap :: NFData f => Int -> (e -> f) -> (f -> f -> f) -> Tree e a -> f
-parBranchFoldMap 0 f g t = branchFoldMap f g t
-parBranchFoldMap 1 f g (Node br _ ts) =
-  foldl' g (f br) (map (branchFoldMap f g) ts `using` parList rdeepseq)
-parBranchFoldMap n f g (Node br _ ts)
-  | n >= 2 = foldl' g (f br) $ map (parBranchFoldMap (n - 1) f g) ts
+parBranchFoldMap 0 f op t = branchFoldMap f op t
+parBranchFoldMap 1 f op (Node br _ ts) =
+  foldl' op (f br) (map (branchFoldMap f op) ts `using` parList rdeepseq)
+parBranchFoldMap n f op (Node br _ ts)
+  | n >= 2 = foldl' op (f br) $ map (parBranchFoldMap (n - 1) f op) ts
   | otherwise = error "parBranchFoldMap: n is negative."
+
+nodeFoldMap :: (a -> b) -> (b -> b -> b) -> Tree e a -> b
+nodeFoldMap f op (Node _ lb ts) = foldl' op (f lb) $ map (nodeFoldMap f op) ts
+
+-- | Map and fold over nodes. Evaluate the sub trees at given layer in parallel.
+parNodeFoldMap :: NFData b => Int -> (a -> b) -> (b -> b -> b) -> Tree e a -> b
+parNodeFoldMap 0 f op t = nodeFoldMap f op t
+parNodeFoldMap 1 f op (Node _ lb ts) =
+  foldl' op (f lb) (map (nodeFoldMap f op) ts `using` parList rdeepseq)
+parNodeFoldMap n f op (Node _ lb ts)
+  | n >= 2 = foldl' op (f lb) $ map (parNodeFoldMap (n - 1) f op) ts
+  | otherwise = error "parNodeFoldMap: n is negative."
