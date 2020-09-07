@@ -97,7 +97,8 @@ import GHC.Generics
 -- | Rooted rose trees with branch labels.
 --
 -- Unary instances such as 'Functor' act on node labels, and not on branch
--- labels. Binary instances such as 'Bifunctor' act on both labels.
+-- labels. Binary instances such as 'Bifunctor' act on both labels (`first` acts
+-- on branches, `second` on node labels).
 --
 -- Lifted instances are not provided.
 data Tree e a = Node
@@ -115,6 +116,7 @@ instance Functor (Tree e) where
   fmap f ~(Node br lb ts) = Node br (f lb) $ map (fmap f) ts
   x <$ ~(Node br _ ts) = Node br x (map (x <$) ts)
 
+-- | The function `first` acts on branch labels, `second` on node labels.
 instance Bifunctor Tree where
   bimap f g ~(Node br lb ts) = Node (f br) (g lb) $ map (bimap f g) ts
   first f ~(Node br lb ts) = Node (f br) lb $ map (first f) ts
