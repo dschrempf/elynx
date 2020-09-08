@@ -19,8 +19,8 @@ module ELynx.Tree
     -- * Tree zipper
     module ELynx.Tree.Zipper,
 
-    -- * Parallel evaluation strategies
-    module ELynx.Tree.Strategies,
+    -- * Parallel evaluation
+    module ELynx.Tree.Parallel,
 
     -- * Branch label classes
     module ELynx.Tree.Measurable,
@@ -54,11 +54,11 @@ import ELynx.Tree.Import.Newick
 import ELynx.Tree.Import.Nexus
 import ELynx.Tree.Measurable
 import ELynx.Tree.Named
+import ELynx.Tree.Parallel
 import ELynx.Tree.Partition
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
 import ELynx.Tree.Splittable
-import ELynx.Tree.Strategies
 import ELynx.Tree.Supported
 import ELynx.Tree.Zipper
 

@@ -50,14 +50,14 @@ main = do
   -- print $ parBranchFoldMap 1 id (+) ht
   defaultMain
     [
-      -- bgroup "bipartition" [bench "manyTrees" $ nf (map bipartitions) ts],
+      bgroup "bipartition" [bench "manyTrees" $ nf (map bipartitions) ts],
       bgroup
         "map strategies"
-        [ bench "map sequential" $ nf hugeTreeCalc ht,
-          bench "map parallel 1" $ nf (hugeTreeCalcPar 2) ht ]
-      -- bgroup
-      --   "fold strategies"
-      --   [ bench "fld sequential" $ nf (foldl' (+) 0 . branches) ht,
-      --     bench "fld parallel 1" $ nf (parBranchFoldMap 2 id (+)) ht
-      --   ]
+        [ bench "sequential" $ nf hugeTreeCalc ht,
+          bench "parallel 1" $ nf (hugeTreeCalcPar 2) ht ],
+      bgroup
+        "fold strategies"
+        [ bench "sequential" $ nf (foldl' (+) 0 . branches) ht,
+          bench "parallel 1" $ nf (parBranchFoldMap 2 id (+)) ht
+        ]
     ]

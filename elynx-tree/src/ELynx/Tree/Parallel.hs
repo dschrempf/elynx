@@ -1,5 +1,5 @@
 -- |
--- Module      :  ELynx.Tree.Strategies
+-- Module      :  ELynx.Tree.Parallel
 -- Description :  Evaluation strategies for trees
 -- Copyright   :  (c) Dominik Schrempf, 2020
 -- License     :  GPL-3.0-or-later
@@ -9,7 +9,7 @@
 -- Portability :  portable
 --
 -- Creation date: Mon Sep  7 13:36:45 2020.
-module ELynx.Tree.Strategies
+module ELynx.Tree.Parallel
   ( parTree,
     parBranchFoldMap,
     parNodeFoldMap,
