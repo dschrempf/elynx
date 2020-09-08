@@ -35,29 +35,42 @@ hugeTree = create >>= simulateReconstructedTree 50000 Random 1.0 0.9
 sinN :: Int -> Double -> Double
 sinN n x = iterate sin x !! n
 
-hugeTreeCalc :: Tree Length Int -> Tree Double Int
-hugeTreeCalc = first (sinN 200 . getLen)
+func :: Double -> Double
+func = sinN 200
 
-hugeTreeCalcPar :: Int -> Tree Length Int -> Tree Double Int
-hugeTreeCalcPar n t = hugeTreeCalc t `using` parTree n
+hugeTreeCalcPar :: Int -> Tree Double Int -> Tree Double Int
+hugeTreeCalcPar n t = first func t `using` parTree n
 
 main :: IO ()
 main = do
   !ts <- getManyTrees
-  !ht <- hugeTree
-  -- print $ hugeTreeCalc ht == hugeTreeCalcPar 1 ht
-  -- print $ (foldl' (+) 0 . branches) ht
-  -- print $ parBranchFoldMap 1 id (+) ht
+  !ht <- first getLen <$> hugeTree
+  let mr1 = hugeTreeCalcPar 0 ht
+      mr2 = hugeTreeCalcPar 1 ht
+  if  mr1 == mr2
+    then putStrLn "Map OK."
+    else do
+      print mr1
+      print mr2
+      error "Map wrong."
+  let fr1 = (foldl' (+) 0 . branches) ht
+      fr2 = parBranchFoldMap 1 id (+) ht
+  if 1e-8 > abs (fr1 - fr2)
+    then putStrLn "Fold OK."
+    else do
+      print fr1
+      print fr2
+      error "Fold wrong."
   defaultMain
     [
       bgroup "bipartition" [bench "manyTrees" $ nf (map bipartitions) ts],
       bgroup
         "map strategies"
-        [ bench "sequential" $ nf hugeTreeCalc ht,
-          bench "parallel 1" $ nf (hugeTreeCalcPar 2) ht ],
+        [ bench "sequential" $ nf (hugeTreeCalcPar 0) ht,
+          bench "parallel 3" $ nf (hugeTreeCalcPar 3) ht ],
       bgroup
         "fold strategies"
-        [ bench "sequential" $ nf (foldl' (+) 0 . branches) ht,
-          bench "parallel 1" $ nf (parBranchFoldMap 2 id (+)) ht
+        [ bench "sequential" $ nf (parBranchFoldMap 0 func (+)) ht,
+          bench "parallel 3" $ nf (parBranchFoldMap 3 func (+)) ht
         ]
     ]

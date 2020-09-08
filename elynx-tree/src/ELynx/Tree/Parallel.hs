@@ -20,34 +20,35 @@ import Control.Parallel.Strategies
 import Data.Foldable
 import ELynx.Tree.Rooted
 
--- | Parallel evaluation strategy for a tree.
+myParList :: Strategy a -> Strategy [a]
+myParList _ [] = return []
+myParList s xs = do
+  ys <- parList s $ tail xs
+  y <- s $ head xs
+  return $ y:ys
+
+-- | Parallel evaluation strategy for a tree into normal form.
 --
 -- Evaluate the sub trees up to given layer in parallel.
 parTree :: (NFData e, NFData a) => Int -> Strategy (Tree e a)
-parTree 0 t = rseq t
-parTree n (Node br lb ts)
-  | n >= 1 = do
-      ts' <- myParList ts
-      br' <- rseq br
-      lb' <- rseq lb
-      return $ Node br' lb' ts'
+parTree n t@(Node br lb ts)
+  | n == 0 = rdeepseq t
+  | n == 1 = do
+      ts' <- myParList rdeepseq ts
+      return $ Node br lb ts'
+  | n >= 2 = do
+      ts' <- myParList (parTree (n-1)) ts
+      return $ Node br lb ts'
   | otherwise = error "parTree: n is negative."
 
 branchFoldMap :: (e -> f) -> (f -> f -> f) -> Tree e a -> f
 branchFoldMap f op (Node br _ ts) = foldl' op (f br) $ map (branchFoldMap f op) ts
 
-myParList :: Strategy [a]
-myParList [] = return []
-myParList xs = do
-  ys <- parList rseq $ tail xs
-  y <- rseq $ head xs
-  return $ y:ys
-
 -- | Map and fold over branches. Evaluate the sub trees up to given layer in parallel.
 parBranchFoldMap :: NFData f => Int -> (e -> f) -> (f -> f -> f) -> Tree e a -> f
 parBranchFoldMap 0 f op t = branchFoldMap f op t
 parBranchFoldMap n f op (Node br _ ts)
-  | n >= 1 = foldl' op (f br) (map (parBranchFoldMap (n - 1) f op) ts `using` myParList)
+  | n >= 1 = foldl' op (f br) (map (parBranchFoldMap (n - 1) f op) ts `using` myParList rseq)
   | otherwise = error "parBranchFoldMap: n is negative."
 
 nodeFoldMap :: (a -> b) -> (b -> b -> b) -> Tree e a -> b
@@ -57,5 +58,5 @@ nodeFoldMap f op (Node _ lb ts) = foldl' op (f lb) $ map (nodeFoldMap f op) ts
 parNodeFoldMap :: NFData b => Int -> (a -> b) -> (b -> b -> b) -> Tree e a -> b
 parNodeFoldMap 0 f op t = nodeFoldMap f op t
 parNodeFoldMap n f op (Node _ lb ts)
-  | n >= 2 = foldl' op (f lb) (map (parNodeFoldMap (n - 1) f op) ts `using` myParList)
+  | n >= 1 = foldl' op (f lb) (map (parNodeFoldMap (n - 1) f op) ts `using` myParList rseq)
   | otherwise = error "parNodeFoldMap: n is negative."

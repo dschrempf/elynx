@@ -136,6 +136,7 @@ benchmark tree-bench
       base >=4.7 && <5
     , bytestring
     , criterion
+    , deepseq
     , elynx-tools
     , elynx-tree
     , mwc-random
