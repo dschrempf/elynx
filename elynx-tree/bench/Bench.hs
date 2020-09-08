@@ -13,6 +13,7 @@
 -- Creation date: Mon Dec 16 13:33:27 2019.
 module Main where
 
+import Control.Parallel.Strategies
 import Criterion.Main
 import Data.Bifunctor
 import Data.Foldable
@@ -29,7 +30,7 @@ getManyTrees :: IO (Forest Phylo BS.ByteString)
 getManyTrees = parseFileWith (someNewick Standard) treeFileMany
 
 hugeTree :: IO (Tree Length Int)
-hugeTree = create >>= simulateReconstructedTree 20000 Random 1.0 0.9
+hugeTree = create >>= simulateReconstructedTree 50000 Random 1.0 0.9
 
 sinN :: Int -> Double -> Double
 sinN n x = iterate sin x !! n
@@ -48,12 +49,15 @@ main = do
   -- print $ (foldl' (+) 0 . branches) ht
   -- print $ parBranchFoldMap 1 id (+) ht
   defaultMain
-    [ bgroup "bipartition" [bench "manyTrees" $ nf (map bipartitions) ts],
+    [
+      -- bgroup "bipartition" [bench "manyTrees" $ nf (map bipartitions) ts],
       bgroup
-        "strategies"
+        "map strategies"
         [ bench "map sequential" $ nf hugeTreeCalc ht,
-          bench "map parallel 1" $ nf (hugeTreeCalcPar 1) ht,
-          bench "fld sequential" $ nf (foldl' (+) 0 . branches) ht,
-          bench "fld parallel 1" $ nf (parBranchFoldMap 1 id (+)) ht
-        ]
+          bench "map parallel 1" $ nf (hugeTreeCalcPar 2) ht ]
+      -- bgroup
+      --   "fold strategies"
+      --   [ bench "fld sequential" $ nf (foldl' (+) 0 . branches) ht,
+      --     bench "fld parallel 1" $ nf (parBranchFoldMap 2 id (+)) ht
+      --   ]
     ]
