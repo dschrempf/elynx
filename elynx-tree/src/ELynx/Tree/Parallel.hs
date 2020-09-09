@@ -48,7 +48,7 @@ branchFoldMap f op (Node br _ ts) = foldl' op (f br) $ map (branchFoldMap f op) 
 parBranchFoldMap :: NFData f => Int -> (e -> f) -> (f -> f -> f) -> Tree e a -> f
 parBranchFoldMap 0 f op t = branchFoldMap f op t
 parBranchFoldMap n f op (Node br _ ts)
-  | n >= 1 = foldl' op (f br) (map (parBranchFoldMap (n - 1) f op) ts `using` myParList rseq)
+  | n >= 1 = foldl' op (f br) (map (parBranchFoldMap (n - 1) f op) ts `using` myParList rdeepseq)
   | otherwise = error "parBranchFoldMap: n is negative."
 
 nodeFoldMap :: (a -> b) -> (b -> b -> b) -> Tree e a -> b
@@ -58,5 +58,5 @@ nodeFoldMap f op (Node _ lb ts) = foldl' op (f lb) $ map (nodeFoldMap f op) ts
 parNodeFoldMap :: NFData b => Int -> (a -> b) -> (b -> b -> b) -> Tree e a -> b
 parNodeFoldMap 0 f op t = nodeFoldMap f op t
 parNodeFoldMap n f op (Node _ lb ts)
-  | n >= 1 = foldl' op (f lb) (map (parNodeFoldMap (n - 1) f op) ts `using` myParList rseq)
+  | n >= 1 = foldl' op (f lb) (map (parNodeFoldMap (n - 1) f op) ts `using` myParList rdeepseq)
   | otherwise = error "parNodeFoldMap: n is negative."
