@@ -31,7 +31,6 @@ extra-source-files:
     data/RevBayes.trees
     data/SimpleTree.nex
     data/TreeDist.trees
-    data/UltraMetric.log
     data/UltraMetric.tree
 
 source-repository head
