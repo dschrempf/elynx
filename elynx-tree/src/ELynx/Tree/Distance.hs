@@ -10,20 +10,18 @@
 --
 -- Creation date: Thu Jun 13 17:15:54 2019.
 --
--- Various distance functions for phylogenetic trees (and trees with branch
--- lengths in general).
+-- Various distance functions for trees.
 --
 -- The functions provided in this module return distances for __unrooted__
 -- trees. See comments of 'symmetric', 'branchScore', and 'bipartitionToBranch',
 -- as well as the documentation of
 -- [treedist](http://evolution.genetics.washington.edu/phylip/doc/treedist.html).
 --
--- It is a little unfortunate that the 'Tree' data type, which represents rooted
--- trees, is also used in this module. However, rooted trees are much easier to
--- handle. In the future, a separate data type for unrooted trees may be
--- introduced. In theory, this is quite straight forward, for example, using
--- algebraic graphs. Difficulties may arise because the branches of an unrooted
--- tree are undirected.
+-- It is a little unfortunate that the 'Tree' data type represents rooted trees.
+-- However, rooted trees are much easier to handle computationally. In the
+-- future, a separate data type for unrooted trees may be introduced, for
+-- example, using algebraic graphs. Difficulties may arise because the branches
+-- of an unrooted tree are undirected.
 module ELynx.Tree.Distance
   ( symmetric,
     incompatibleSplits,
@@ -66,7 +64,7 @@ symmetric t1 t2
 
 countIncompatibilities :: (Show a, Ord a) => Set (Bipartition a) -> Set (Partition a) -> Int
 countIncompatibilities bs ms =
-  foldl' (\i b -> if any (compatible $ bpToMp b) ms then i else i + 1) 0 bs
+  foldl' (\i b -> if any (compatible $ bpToP b) ms then i else i + 1) 0 bs
 
 -- | Number of incompatible splits.
 --

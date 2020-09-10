@@ -89,7 +89,7 @@ compatibleAll t@(Node _ _ [l, r]) cs =
     && all (compatible (either error id $ partition r)) (map getP cs)
   where
     lvs = S.fromList $ leaves t
-    getP x = either error id $ mp [x, lvs S.\\ x]
+    getP x = either error id $ pt [x, lvs S.\\ x]
 compatibleAll _ _ = error "Tree is not bifurcating."
 
 compatibleWith ::

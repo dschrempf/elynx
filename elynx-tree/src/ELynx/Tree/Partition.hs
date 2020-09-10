@@ -15,10 +15,10 @@
 module ELynx.Tree.Partition
   ( -- * Data type
     Partition (fromPartition),
-    mp,
-    mpUnsafe,
-    bpToMp,
-    mpHuman,
+    pt,
+    pUnsafe,
+    bpToP,
+    pHuman,
 
     -- * Work with 'Partition's
     partition,
@@ -54,21 +54,19 @@ newtype Partition a = Partition
 
 -- TODO: Check that list is not empty after filtering.
 
--- TODO: Rename these functions; don't use 'multi'.
-
 -- | Create a partition.
-mp :: Ord a => [Set a] -> Either String (Partition a)
-mp xs = case filter (not . S.null) xs of
+pt :: Ord a => [Set a] -> Either String (Partition a)
+pt xs = case filter (not . S.null) xs of
   [] -> Left "mp: Empty list."
-  xs' -> Right $ mpUnsafe xs'
+  xs' -> Right $ pUnsafe xs'
 
 -- | Create a partition.
-mpUnsafe :: Ord a => [Set a] -> Partition a
-mpUnsafe xs = Partition (S.fromList xs)
+pUnsafe :: Ord a => [Set a] -> Partition a
+pUnsafe xs = Partition (S.fromList xs)
 
 -- | Convert a bipartition to a partition.
-bpToMp :: Ord a => Bipartition a -> Partition a
-bpToMp = mpUnsafe . tupleToList . fromBipartition
+bpToP :: Ord a => Bipartition a -> Partition a
+bpToP = pUnsafe . tupleToList . fromBipartition
   where
     -- Be careful with tuples, because 'toList' does something very weird. It only
     -- takes the second element of the tuple!
@@ -78,8 +76,8 @@ bpToMp = mpUnsafe . tupleToList . fromBipartition
 
 -- | Show a partition in a human readable form. Use a provided function to
 -- extract the valuable information.
-mpHuman :: Show a => Partition a -> String
-mpHuman (Partition xs) =
+pHuman :: Show a => Partition a -> String
+pHuman (Partition xs) =
   "(" ++ intercalate "|" (map setShow (S.toList xs)) ++ ")"
 
 -- Show the elements of a set in a human readable format.
@@ -95,7 +93,7 @@ partition :: Ord a => Tree e a -> Either String (Partition a)
 partition (Node _ _ []) = Left "partition: Encountered a leaf."
 partition t@(Node _ _ ts)
   | duplicateLeaves t = Left "partition: Tree contains duplicate leaves."
-  | otherwise = mp $ map (S.fromList . leaves) ts
+  | otherwise = pt $ map (S.fromList . leaves) ts
 
 -- | Get all 'Partition's of a tree.
 --
@@ -110,7 +108,7 @@ partitions' :: Ord a => Set a -> Tree e (Set a) -> Set (Partition a)
 partitions' _ (Node _ _ []) = S.empty
 partitions' p t@(Node _ _ ts) =
   S.unions $
-    either (const S.empty) S.singleton (mp (p : map label ts)) :
+    either (const S.empty) S.singleton (pt (p : map label ts)) :
     zipWith partitions' cs ts
   where
     cs = getComplementaryLeaves p t
