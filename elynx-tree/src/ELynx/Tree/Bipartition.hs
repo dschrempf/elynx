@@ -56,8 +56,12 @@ groups :: Tree e a -> Tree e [a]
 -- I am proud of this awesome 'Comonad' usage here :).
 groups = extend leaves
 
--- | Each branch of a tree partitions the leaves of the tree into two subsets,
--- or a bipartition.
+-- | A bipartition of a tree is a grouping of the leaves of the tree into two
+-- non-overlapping, non-empty sub sets.
+--
+-- For example, each branch of a tree partitions the leaves of the tree into two
+-- subsets, or a bipartition. Also, a bifurcating root induces a bipartition;
+-- see 'bipartition'.
 --
 -- The order of the two subsets of a 'Bipartition' is meaningless. We ensure by
 -- construction that the smaller subset comes first, and hence, that equality
@@ -152,8 +156,6 @@ bipartitions' p t@(Node _ p' ts) =
       [bipartitions' c s | (c, s) <- zip cs ts]
   where
     cs = getComplementaryLeaves p t
-
--- TODO: Unrooted? See module comment of Distance.hs.
 
 -- | Convert a tree into a 'Map' from each 'Bipartition' to the branch inducing
 -- the respective 'Bipartition'.

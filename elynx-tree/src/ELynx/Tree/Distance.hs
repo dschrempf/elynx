@@ -18,7 +18,7 @@
 -- as well as the documentation of
 -- [treedist](http://evolution.genetics.washington.edu/phylip/doc/treedist.html).
 --
--- It is a little unfortunate that 'Tree' data type, which represents rooted
+-- It is a little unfortunate that the 'Tree' data type, which represents rooted
 -- trees, is also used in this module. However, rooted trees are much easier to
 -- handle. In the future, a separate data type for unrooted trees may be
 -- introduced. In theory, this is quite straight forward, for example, using
