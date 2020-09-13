@@ -34,4 +34,4 @@ allValues = [minBound ..]
 -- checks are performed!
 horizontalConcat :: [[[a]]] -> [[a]]
 horizontalConcat [xs] = xs
-horizontalConcat xss = foldr (zipWith (++)) [] xss
+horizontalConcat xss = foldr1 (zipWith (++)) xss
