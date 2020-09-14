@@ -64,7 +64,7 @@ symmetric t1 t2
 
 countIncompatibilities :: (Show a, Ord a) => Set (Bipartition a) -> Set (Partition a) -> Int
 countIncompatibilities bs ms =
-  foldl' (\i b -> if any (compatible $ bpToP b) ms then i else i + 1) 0 bs
+  foldl' (\i b -> if any (compatible $ bpToPt b) ms then i else i + 1) 0 bs
 
 -- | Number of incompatible splits.
 --

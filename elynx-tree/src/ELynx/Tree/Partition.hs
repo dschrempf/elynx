@@ -16,9 +16,9 @@ module ELynx.Tree.Partition
   ( -- * Data type
     Partition (fromPartition),
     pt,
-    pUnsafe,
-    bpToP,
-    pHuman,
+    ptUnsafe,
+    bpToPt,
+    ptHuman,
 
     -- * Work with 'Partition's
     partition,
@@ -58,15 +58,15 @@ newtype Partition a = Partition
 pt :: Ord a => [Set a] -> Either String (Partition a)
 pt xs = case filter (not . S.null) xs of
   [] -> Left "mp: Empty list."
-  xs' -> Right $ pUnsafe xs'
+  xs' -> Right $ ptUnsafe xs'
 
 -- | Create a partition.
-pUnsafe :: Ord a => [Set a] -> Partition a
-pUnsafe xs = Partition (S.fromList xs)
+ptUnsafe :: Ord a => [Set a] -> Partition a
+ptUnsafe xs = Partition (S.fromList xs)
 
 -- | Convert a bipartition to a partition.
-bpToP :: Ord a => Bipartition a -> Partition a
-bpToP = pUnsafe . tupleToList . fromBipartition
+bpToPt :: Ord a => Bipartition a -> Partition a
+bpToPt = ptUnsafe . tupleToList . fromBipartition
   where
     -- Be careful with tuples, because 'toList' does something very weird. It only
     -- takes the second element of the tuple!
@@ -76,8 +76,8 @@ bpToP = pUnsafe . tupleToList . fromBipartition
 
 -- | Show a partition in a human readable form. Use a provided function to
 -- extract the valuable information.
-pHuman :: Show a => Partition a -> String
-pHuman (Partition xs) =
+ptHuman :: Show a => Partition a -> String
+ptHuman (Partition xs) =
   "(" ++ intercalate "|" (map setShow (S.toList xs)) ++ ")"
 
 -- Show the elements of a set in a human readable format.
