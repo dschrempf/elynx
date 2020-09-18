@@ -178,7 +178,8 @@ instance ToJSON Force
 data GlobalArguments = GlobalArguments
   { verbosity :: Verbosity,
     outFileBaseName :: Maybe FilePath,
-    forceReanalysis :: Force
+    forceReanalysis :: Force,
+    writeElynxFile :: Bool
   }
   deriving (Eq, Show, Generic)
 
@@ -189,7 +190,7 @@ instance ToJSON GlobalArguments
 -- | See 'GlobalArguments', parser function.
 globalArguments :: Parser GlobalArguments
 globalArguments =
-  GlobalArguments <$> verbosityOpt <*> optional outFileBaseNameOpt <*> forceOpt
+  GlobalArguments <$> verbosityOpt <*> optional outFileBaseNameOpt <*> forceOpt <*> writeELynxOpt
 
 -- | Boolean option; be verbose; default NO.
 verbosityOpt :: Parser Verbosity
@@ -226,6 +227,10 @@ forceOpt =
         <> help
           "Ignore previous analysis and overwrite existing output files."
     )
+
+writeELynxOpt :: Parser Bool
+writeELynxOpt = flag True False ( long "no-elynx-file"
+                                  <> help "Do not write files for needed for reproducibility." )
 
 -- | Random or fixed seed.
 data Seed = Random | Fixed (Vector Word32)

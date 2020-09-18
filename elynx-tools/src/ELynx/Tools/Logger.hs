@@ -77,11 +77,14 @@ eLynxWrapper args f worker = do
     -- Run the worker with the fixed seed.
     runReaderT worker $ f args'
     -- Reproduction file.
-    case outBn of
-      Nothing ->
+    case (writeElynxFile gArgs, outBn) of
+      (False, _) ->
+        $(logInfo)
+          "No elynx file option --- skip writing ELynx file for reproducible runs."
+      (True, Nothing) ->
         $(logInfo)
           "No output file given --- skip writing ELynx file for reproducible runs."
-      Just bn -> do
+      (True, Just bn) -> do
         $(logInfo) "Write ELynx reproduction file."
         liftIO $ writeReproduction bn args'
     -- Footer.

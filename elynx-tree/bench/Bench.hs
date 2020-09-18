@@ -16,8 +16,8 @@ module Main where
 import Control.Parallel.Strategies
 import Criterion.Main
 import Data.Bifunctor
-import Data.Foldable
 import qualified Data.ByteString.Char8 as BS
+import Data.Foldable
 import ELynx.Tools hiding (Random)
 import ELynx.Tree
 import ELynx.Tree.Simulate.PointProcess
@@ -47,7 +47,7 @@ main = do
   !ht <- first getLen <$> hugeTree
   let mr1 = hugeTreeCalcPar 0 ht
       mr2 = hugeTreeCalcPar 1 ht
-  if  mr1 == mr2
+  if mr1 == mr2
     then putStrLn "Map OK."
     else do
       print mr1
@@ -62,12 +62,12 @@ main = do
       print fr2
       error "Fold wrong."
   defaultMain
-    [
-      bgroup "bipartition" [bench "manyTrees" $ nf (map bipartitions) ts],
+    [ bgroup "bipartition" [bench "manyTrees" $ nf (map bipartitions) ts],
       bgroup
         "map strategies"
         [ bench "sequential" $ nf (hugeTreeCalcPar 0) ht,
-          bench "parallel 3" $ nf (hugeTreeCalcPar 3) ht ],
+          bench "parallel 3" $ nf (hugeTreeCalcPar 3) ht
+        ],
       bgroup
         "fold strategies"
         [ bench "sequential" $ nf (parBranchFoldMap 0 func (+)) ht,

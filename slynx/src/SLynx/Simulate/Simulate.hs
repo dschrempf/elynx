@@ -21,9 +21,6 @@ import Control.Applicative ((<|>))
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Monad
-  ( unless,
-    when,
-  )
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Class
@@ -115,18 +112,18 @@ summarizeEDMComponents cs =
       ++ show (length cs)
       ++ " components."
 
--- XXX. Maybe provide human readable model file. But then, why is this
--- necessary. A human readable summary is reported anyways, and for Protein
--- models the exchangeabilities are too many.
 reportModel :: P.PhyloModel -> ELynx SimulateArguments ()
 reportModel m = do
-  bn <- outFileBaseName . global <$> ask
-  case bn of
-    Nothing ->
-      $(logInfo)
-        "No output file provided; omit writing machine-readable phylogenetic model."
-    Just _ ->
-      out "model definition (machine readable)" (BL.pack (show m) <> "\n") ".model.gz"
+  as <- global <$> ask
+  if writeElynxFile as
+    then (do let bn = outFileBaseName as
+             case bn of
+               Nothing ->
+                 $(logInfo)
+                   "No output file provided; omit writing machine-readable phylogenetic model."
+               Just _ ->
+                 out "model definition (machine readable)" (BL.pack (show m) <> "\n") ".model.gz")
+    else $(logInfo) "No elynx file required; omit writing machine-readable phylogenetic model."
 
 pretty :: BranchLength -> String
 pretty = printf "%.5f"
@@ -281,15 +278,7 @@ simulateCmd = do
             BL.intercalate "\n" $
               summarizeGammaRateHeterogeneity n alpha
       return $ expand n alpha phyloModel'
-  -- -- XXX: Do not report possibly huge empirical distribution mixture models
-  -- -- for now, because it takes too long and uses too much disk space :).
-  unless
-    (isJust sProfiles)
-    ( do
-        $(logInfo) ""
-        reportModel phyloModel
-        $(logInfo) ""
-    )
+  reportModel phyloModel
   $(logInfo) "Simulate alignment."
   let alignmentLength = argsLength l
   $(logInfo) $ T.pack $ "Length: " <> show alignmentLength <> "."

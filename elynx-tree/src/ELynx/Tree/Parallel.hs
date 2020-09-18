@@ -25,7 +25,7 @@ myParList _ [] = return []
 myParList s xs = do
   ys <- parList s $ tail xs
   y <- s $ head xs
-  return $ y:ys
+  return $ y : ys
 
 -- | Parallel evaluation strategy for a tree into normal form.
 --
@@ -34,11 +34,11 @@ parTree :: (NFData e, NFData a) => Int -> Strategy (Tree e a)
 parTree n t@(Node br lb ts)
   | n == 0 = rdeepseq t
   | n == 1 = do
-      ts' <- myParList rdeepseq ts
-      return $ Node br lb ts'
+    ts' <- myParList rdeepseq ts
+    return $ Node br lb ts'
   | n >= 2 = do
-      ts' <- myParList (parTree (n-1)) ts
-      return $ Node br lb ts'
+    ts' <- myParList (parTree (n -1)) ts
+    return $ Node br lb ts'
   | otherwise = error "parTree: n is negative."
 
 branchFoldMap :: (e -> f) -> (f -> f -> f) -> Tree e a -> f
