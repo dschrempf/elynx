@@ -28,12 +28,12 @@ import ELynx.Tools
     ELynx,
     fromBs,
     outHandle,
-    parseFileWith,
     tShow,
   )
 import ELynx.Tree
 import System.IO
 import TLynx.Connect.Options
+import TLynx.Parsers
 
 -- Connect two trees with a branch in all possible ways.
 --
@@ -85,27 +85,29 @@ multifurcatingGroups t = leaves t : concatMap multifurcatingGroups (forest t)
 
 compatibleAll :: (Show a, Ord a) => Tree e a -> [Constraint a] -> Bool
 compatibleAll t@(Node _ _ [l, r]) cs =
-  all (compatible (either error id $ partition l)) (map getP cs)
-    && all (compatible (either error id $ partition r)) (map getP cs)
+  all (compatible partitionLeft . getP) cs
+    && all (compatible partitionRight . getP) cs
   where
     lvs = S.fromList $ leaves t
     getP x = either error id $ pt [x, lvs S.\\ x]
+    partitionLeft = either error id $ partition l
+    partitionRight = either error id $ partition r
 compatibleAll _ _ = error "Tree is not bifurcating."
 
 compatibleWith ::
   (Show b, Ord b) => (a -> b) -> [Constraint a] -> Tree e a -> Bool
 compatibleWith f cs t = compatibleAll (fmap f t) (map (S.map f) cs)
 
-parseTrees ::
+parseTreeTuple ::
   FilePath ->
   FilePath ->
   ELynx
     ConnectArguments
     (Tree Length BS.ByteString, Tree Length BS.ByteString)
-parseTrees l r = do
+parseTreeTuple l r = do
   nwF <- nwFormat . local <$> ask
-  tl <- liftIO $ parseFileWith (oneNewick nwF) l
-  tr <- liftIO $ parseFileWith (oneNewick nwF) r
+  tl <- liftIO $ parseTree nwF l
+  tr <- liftIO $ parseTree nwF r
   $(logInfo) "Tree 1:"
   $(logInfo) $ fromBs $ toNewick tl
   $(logInfo) "Tree 2:"
@@ -114,7 +116,7 @@ parseTrees l r = do
 
 connectOnly :: Handle -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectOnly h l r = do
-  (tl, tr) <- parseTrees l r
+  (tl, tr) <- parseTreeTuple l r
   let ts = connectTrees tl tr
   $(logInfo) $ "Connected trees: " <> tShow (length ts)
   liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . measurableToPhyloTree) ts
@@ -123,10 +125,10 @@ connectAndFilter ::
   Handle -> FilePath -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectAndFilter h c l r = do
   nwF <- nwFormat . local <$> ask
-  cts <- liftIO $ parseFileWith (someNewick nwF) c
+  cts <- liftIO $ parseTrees nwF c
   $(logInfo) "Constraints:"
   $(logInfo) $ fromBs $ BL.intercalate "\n" $ map toNewick cts
-  (tl, tr) <- parseTrees l r
+  (tl, tr) <- parseTreeTuple l r
   let ts = connectTrees tl tr
       cs = map S.fromList $ concatMap multifurcatingGroups cts :: [Constraint BS.ByteString]
       -- Only collect trees that are compatible with the constraints.

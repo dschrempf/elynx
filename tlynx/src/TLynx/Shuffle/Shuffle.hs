@@ -35,6 +35,7 @@ import ELynx.Tree.Simulate.PointProcess
 import System.IO (hClose)
 import System.Random.MWC (GenIO, initialize)
 import TLynx.Shuffle.Options
+import TLynx.Parsers
 
 -- | Shuffle a tree. Get all coalescent times, shuffle them. Get all leaves,
 -- shuffle them. Connect the shuffled leaves with the shuffled coalescent times.
@@ -45,7 +46,7 @@ shuffleCmd = do
   l <- local <$> ask
   h <- outHandle "results" ".tree"
   let nwF = nwFormat l
-  tPhylo <- liftIO $ parseFileWith (oneNewick nwF) (inFile l)
+  tPhylo <- liftIO $ parseTree nwF (inFile l)
   $(logInfo) "Input tree:"
   $(logInfo) $ fromBs $ toNewick tPhylo
   let t = either error id $ phyloToLengthTree tPhylo

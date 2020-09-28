@@ -32,6 +32,7 @@ import System.IO
     hPutStrLn,
   )
 import TLynx.Examine.Options
+import TLynx.Parsers
 import Text.Printf
 
 pretty :: BranchLength -> String
@@ -62,7 +63,7 @@ readTrees :: FilePath -> ELynx ExamineArguments (Forest Phylo BS.ByteString)
 readTrees fp = do
   $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
   nf <- argsNewickFormat . local <$> ask
-  liftIO $ parseFileWith (someNewick nf) fp
+  liftIO $ parseTrees nf fp
 
 examineTree :: Named a => Handle -> Tree Phylo a -> IO ()
 examineTree h t = do

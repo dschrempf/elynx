@@ -1,6 +1,6 @@
 -- |
 -- Module      :  TLynx.Parsers
--- Description :  Common parsers
+-- Description :  Parse Newick/Nexus tree files
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -10,19 +10,57 @@
 --
 -- Creation date: Wed Apr 22 13:34:35 2020.
 module TLynx.Parsers
-  ( NewickFormat,
+  (
+    parseTree,
+    parseTrees,
+    NewickFormat,
     newickFormat,
     newickHelp,
   )
 where
 
-import Data.List (intercalate)
-import ELynx.Tools (allValues)
+import qualified Data.ByteString.Char8 as BS
+import Data.List
+import ELynx.Tools
 import ELynx.Tree
-  ( NewickFormat (..),
-    description,
-  )
 import Options.Applicative
+
+printError :: String -> String -> String -> IO a
+printError fn new nex = do
+  putStrLn $ "Error of Newick parser: " <> new <> "."
+  putStrLn $ "Error of Nexus  parser: " <> nex <> "."
+  error $ "Could not read tree file: " <> fn <> "."
+
+-- | Parse a Newick tree file or a Nexus file with Newick trees.
+--
+-- Error if no or more than one trees are found.
+-- Error if both file formats fail to parse.
+parseTree :: NewickFormat -> FilePath -> IO (Tree Phylo BS.ByteString)
+parseTree fmt fn = do
+  parseResultNewick <- runParserOnFile (oneNewick fmt) fn
+  case parseResultNewick of
+    Right r -> return r
+    Left eNewick -> do
+      parseResultNexus <- runParserOnFile (nexusTrees fmt) fn
+      case parseResultNexus of
+        Right [] -> error $ "No tree found in Nexus file " <> fn <> "."
+        Right [(_, t)] -> return t
+        Right _ -> error $ "More than one tree found in Nexus file " <> fn <> "."
+        Left eNexus -> printError fn eNewick eNexus
+
+-- | Parse a Newick tree file or a Nexus file with Newick trees.
+--
+-- Error if both file formats fail to parse.
+parseTrees :: NewickFormat -> FilePath -> IO (Forest Phylo BS.ByteString)
+parseTrees fmt fn = do
+  parseResultNewick <- runParserOnFile (someNewick fmt) fn
+  case parseResultNewick of
+    Right r -> return r
+    Left eNewick -> do
+      parseResultNexus <- runParserOnFile (nexusTrees fmt) fn
+      case parseResultNexus of
+        Right r -> return $ map snd r
+        Left eNexus -> printError fn eNewick eNexus
 
 -- | Parse 'NewickFormat'.
 newickFormat :: Parser NewickFormat
@@ -39,6 +77,6 @@ newickFormat =
 
 -- | Help for different 'NewickFormat's.
 newickHelp :: [String]
-newickHelp = map (toListItem . description) (allValues :: [NewickFormat])
+newickHelp = map (toListItem . description) (allValues :: [NewickFormat]) ++ ["- Nexus file including Newick trees"]
   where
     toListItem = ("- Newick " ++)

@@ -34,12 +34,12 @@ import ELynx.Tools
     ELynx,
     GlobalArguments (..),
     outHandle,
-    parseFileWith,
   )
 import ELynx.Tree
 import Graphics.Gnuplot.Simple
 import System.IO
 import TLynx.Compare.Options
+import TLynx.Parsers
 import Text.Printf
 
 treesOneFile ::
@@ -50,16 +50,13 @@ treesOneFile ::
 treesOneFile tf = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse file '" ++ tf ++ "'."
-  ts <- liftIO $ parseFileWith (someNewick nwF) tf
+  ts <- liftIO $ parseTrees nwF tf
   let n = length ts
   case compare n 2 of
     LT -> error "Not enough trees in file."
     GT -> error "Too many trees in file."
     EQ ->
-      return
-        ( head ts,
-          head . tail $ ts
-        )
+      return (head ts, head . tail $ ts)
 
 treesTwoFiles ::
   FilePath ->
@@ -70,9 +67,9 @@ treesTwoFiles ::
 treesTwoFiles tf1 tf2 = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse first tree file '" ++ tf1 ++ "'."
-  t1 <- liftIO $ parseFileWith (oneNewick nwF) tf1
+  t1 <- liftIO $ parseTree nwF tf1
   $(logInfo) $ T.pack $ "Parse second tree file '" ++ tf2 ++ "'."
-  t2 <- liftIO $ parseFileWith (oneNewick nwF) tf2
+  t2 <- liftIO $ parseTree nwF tf2
   return (t1, t2)
 
 -- | More detailed comparison of two trees.
@@ -105,17 +102,6 @@ compareCmd = do
         liftIO $ BL.hPutStrLn outH $ toNewick y
         return (x, y)
       else return (tr1, tr2)
-  -- Check input (moved to library functions).
-  -- let lvs1  = leaves t1
-  --     lvs2  = leaves t2
-  --     lfns1 = map getName lvs1
-  --     lfns2 = map getName lvs2
-  --     s1    = S.fromList lfns1
-  --     s2    = S.fromList lfns2
-  -- if s1 == s2
-  --   then liftIO $ hPutStrLn outH "Trees have the same set of leaf names."
-  --   else error "Trees do not have the same set of leaf names."
-  -- liftIO $ hPutStrLn outH ""
 
   -- Distances.
   analyzeDistance outH t1 t2
@@ -181,8 +167,9 @@ analyzeDistance outH t1 t2 = do
     -- liftIO $ T.hPutStrLn outH $ formatD "Incompatible split (1.01)"
     --   (T.pack $ show $ incompatibleSplits (collapse 1.01 t1n) (collapse 1.01 t2n))
     -- liftIO $ BL.hPutStrLn outH $ toNewick (collapse 1.01 t1n)
-    _ -> do $(logInfo) "Some branches do not have support values."
-            $(logInfo) "Distances involving branch support cannot be calculated."
+    _ -> do
+      $(logInfo) "Some branches do not have support values."
+      $(logInfo) "Distances involving branch support cannot be calculated."
 
 analyzeBipartitions ::
   Handle ->

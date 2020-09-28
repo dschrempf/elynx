@@ -45,6 +45,7 @@ import ELynx.Tree
 import Statistics.Sample
 import System.IO
 import TLynx.Distance.Options
+import TLynx.Parsers
 import Text.Printf
 
 median :: Ord a => [a] -> a
@@ -107,7 +108,7 @@ distance = do
     Nothing -> return Nothing
     Just f -> do
       $(logInfo) $ T.pack $ "Read master tree from file: " <> f <> "."
-      t <- liftIO $ parseFileWith (oneNewick nwFormat) f
+      t <- liftIO $ parseTree nwFormat f
       $(logInfo) "Compute distances between all trees and master tree."
       return $ Just t
   let tfps = argsInFiles l
@@ -115,13 +116,13 @@ distance = do
     [] -> error "No tree input files given."
     [tf] -> do
       $(logInfo) "Read trees from single file."
-      ts <- liftIO $ parseFileWith (someNewick nwFormat) tf
+      ts <- liftIO $ parseTrees nwFormat tf
       $(logInfo) $ tShow (length ts) <> " trees found in file."
       $(logInfo) "Trees are indexed with integers."
       return (ts, map show [0 .. length ts - 1])
     _ -> do
       $(logInfo) "Read trees from files."
-      ts <- liftIO $ mapM (parseFileWith (oneNewick nwFormat)) tfps
+      ts <- liftIO $ mapM (parseTree nwFormat) tfps
       $(logInfo) "Trees are named according to their file names."
       return (ts, tfps)
   when (null trees) (error "Not enough trees found in files.")
@@ -182,8 +183,8 @@ distance = do
   $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ BL.unlines $ map (toNewick . toPhyloTree) trees'
   let dsTriplets = case mtree of
         Nothing -> pairwise distanceMeasure trees'
-        Just pt ->
-          let t = (either error id . toExplicitTree) pt
+        Just masterTree ->
+          let t = (either error id . toExplicitTree) masterTree
            in [(0, i, distanceMeasure t t') | (i, t') <- zip [1 ..] trees']
       ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds

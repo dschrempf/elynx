@@ -20,7 +20,7 @@
 -- 2. Sets of 'Character's form 'Alphabet's; each 'Alphabet' has a specification
 -- 'AlphabetSpec'.
 --
--- New alphabets have to be added manually in this module.
+-- New alphabets have to be added manually to this module.
 --
 -- This way of handling characters and alphabets IS NOT TYPE SAFE, but much, much
 -- faster. A second layer of modules such as 'ELynx.Data.Character.Nucleotide'

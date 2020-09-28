@@ -27,7 +27,7 @@ import Prelude hiding (takeWhile)
 
 -- | Parse a Nexus files with a TREES block.
 nexusTrees :: NewickFormat -> Parser [(BS.ByteString, Tree Phylo BS.ByteString)]
-nexusTrees = nexus . trees
+nexusTrees = nexusBlock . trees
 
 trees :: NewickFormat -> Block [(BS.ByteString, Tree Phylo BS.ByteString)]
 trees f = Block "TREES" (some $ namedNewick f)
@@ -35,11 +35,11 @@ trees f = Block "TREES" (some $ namedNewick f)
 namedNewick :: NewickFormat -> Parser (BS.ByteString, Tree Phylo BS.ByteString)
 namedNewick f = do
   _ <- skipWhile isSpace
-  _ <- string "TREE"
+  _ <- stringCI "TREE" <?> "namedNewickTreeStart"
   _ <- skipWhile isSpace
-  n <- takeWhile1 (\x -> isAlpha_ascii x || isDigit x)
+  n <- takeWhile1 (\x -> isAlpha_ascii x || isDigit x) <?> "namedNewickTreeName"
   _ <- skipWhile isSpace
-  _ <- char '='
+  _ <- char '=' <?> "namedNewickEqual"
   _ <- skipWhile isSpace
-  t <- newick f
+  t <- newick f <?> "namedNewickTree"
   return (n, t)
