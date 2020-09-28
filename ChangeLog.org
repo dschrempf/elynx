@@ -8,6 +8,7 @@
 - Bugfix =tlynx compare=, so not throw error when branch support values are not
   set.
 - Add =no-elynx-file= option.
+- Also parse Nexus files with =tlynx= commands.
 
 ** Version 0.4.0
 - Major refactor of =elynx-tree=. All required function can now conveniently
