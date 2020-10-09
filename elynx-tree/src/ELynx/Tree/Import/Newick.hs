@@ -205,10 +205,14 @@ forestIqTree = (<?> "forestIqTree") $ do
 -- about nodes and branches. Parse a single Newick tree. Also succeeds when more
 -- trees follow.
 --
--- XXX: Key value pairs are ignored at the moment.
+-- TODO: Key value pairs are ignored at the moment.
 newickRevBayes :: Parser (Tree Phylo BS.ByteString)
 newickRevBayes =
-  skipWhile isSpace *> optional brackets *> treeRevBayes <* char ';' <* skipWhile isSpace <?> "newickRevBayes"
+  skipWhile isSpace
+    *> optional brackets
+    *> treeRevBayes
+    <* char ';'
+    <* skipWhile isSpace <?> "newickRevBayes"
 
 -- See 'newickRevBayes'. Parse a single Newick tree. Fails when end of file is
 -- not reached.

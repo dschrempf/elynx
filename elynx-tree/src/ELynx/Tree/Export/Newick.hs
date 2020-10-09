@@ -27,6 +27,12 @@ import ELynx.Tree.Named
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
 
+buildBrSup :: Double -> BB.Builder
+buildBrSup bs = BB.char8 '[' <> BB.doubleDec bs <> BB.char8 ']'
+
+buildBrLen :: Double -> BB.Builder
+buildBrLen bl = BB.char8 ':' <> BB.doubleDec bl
+
 -- | See 'toNewick'.
 toNewickBuilder :: Named a => Tree Phylo a -> BB.Builder
 toNewickBuilder t = go t <> BB.char8 ';'
@@ -37,8 +43,8 @@ toNewickBuilder t = go t <> BB.char8 ';'
         <> mconcat (intersperse (BB.char8 ',') $ map go ts)
         <> BB.char8 ')'
         <> lbl b l
-    mBrSupBuilder x = maybe mempty (\bs -> BB.char8 '[' <> BB.doubleDec bs <> BB.char8 ']') (brSup x)
-    mBrLenBuilder x = maybe mempty (\bl -> BB.char8 ':' <> BB.doubleDec bl) (brLen x)
+    mBrSupBuilder x = maybe mempty buildBrSup (brSup x)
+    mBrLenBuilder x = maybe mempty buildBrLen (brLen x)
     lbl x y =
       BB.lazyByteString (getName y)
         <> mBrLenBuilder x
