@@ -85,16 +85,6 @@ pairwise dist trs =
       (j, y) <- zip is xs
   ]
 
--- -- Compute distances between adjacent pairs of a list of input trees. Use given
--- -- distance measure.
--- adjacent ::
---   -- | Distance function.
---   (a -> a -> b) ->
---   -- | Input values.
---   [a] ->
---   [b]
--- adjacent dist trs = [dist x y | (x, y) <- zip trs (tail trs)]
-
 -- | Compute distance functions between phylogenetic trees.
 distance :: ELynx DistanceArguments ()
 distance = do
@@ -146,14 +136,17 @@ distance = do
             ++ "."
     BranchScore -> $(logInfo) "Use branch score distance."
   let distanceMeasure' ::
-        (Measurable e1, Measurable e2) =>
-        Tree e1 BS.ByteString ->
-        Tree e2 BS.ByteString ->
+        Tree Phylo BS.ByteString ->
+        Tree Phylo BS.ByteString ->
         Double
       distanceMeasure' t1 t2 = either error id $ case dist of
         Symmetric -> second fromIntegral $ symmetric t1 t2
-        IncompatibleSplit _ -> second fromIntegral $ incompatibleSplits t1 t2
-        BranchScore -> branchScore t1 t2
+        IncompatibleSplit val -> second fromIntegral $ incompatibleSplits
+                                 (collapse val $ normalizeBranchSupport $ either error id $ phyloToSupportTree t1)
+                                 (collapse val $ normalizeBranchSupport $ either error id $ phyloToSupportTree t2)
+        BranchScore ->
+          branchScore (normalizeF $ either error id $ phyloToLengthTree t1) (normalizeF $ either error id $ phyloToLengthTree t2)
+        where normalizeF = if argsNormalize l then normalizeBranchLengths else id
   -- Possibly intersect trees before distance calculation.
   when (argsIntersect l) $
     $(logInfo) "Intersect trees before calculation of distances."
@@ -168,24 +161,9 @@ distance = do
   -- Possibly normalize trees.
   when (argsNormalize l) $
     $(logInfo) "Normalize trees before calculation of distances."
-  let normalizeF = if argsNormalize l then normalizeBranchLengths else id
-  -- Possibly collapse unsupported nodes.
-  let collapseF = case dist of
-        -- For the incompatible split distance we have to collapse branches with
-        -- support lower than the given value. Before doing so, we normalize the
-        -- branch support values.
-        IncompatibleSplit val -> collapse val . normalizeBranchSupport
-        _ -> id
-  -- The trees can be prepared now.
-  let trees' :: Forest PhyloExplicit BS.ByteString
-      trees' = map (collapseF . normalizeF . either error id . toExplicitTree) trees
-  $(logDebug) "The prepared trees are:"
-  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ BL.unlines $ map (toNewick . toPhyloTree) trees'
   let dsTriplets = case mtree of
-        Nothing -> pairwise distanceMeasure trees'
-        Just masterTree ->
-          let t = (either error id . toExplicitTree) masterTree
-           in [(0, i, distanceMeasure t t') | (i, t') <- zip [1 ..] trees']
+        Nothing -> pairwise distanceMeasure trees
+        Just masterTree -> [(0, i, distanceMeasure masterTree t') | (i, t') <- zip [1 ..] trees]
       ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds
   liftIO $

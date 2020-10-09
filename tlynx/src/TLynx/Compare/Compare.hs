@@ -123,13 +123,15 @@ analyzeDistance outH t1 t2 = do
       formatD
         "Symmetric"
         (T.pack $ show $ symmetric t1 t2)
-  case (toExplicitTree t1, toExplicitTree t2) of
+  case (phyloToLengthTree t1, phyloToLengthTree t2) of
     (Right t1', Right t2') -> do
       liftIO $
         T.hPutStrLn outH $
           formatD
             "Branch score"
             (T.pack $ show $ branchScore t1' t2')
+  case (toExplicitTree t1, toExplicitTree t2) of
+    (Right t1', Right t2') -> do
       let t1n = normalizeBranchSupport t1'
           t2n = normalizeBranchSupport t2'
       $(logDebug) "Trees with normalized branch support values:"
