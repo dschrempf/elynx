@@ -18,10 +18,9 @@ where
 
 import qualified Data.ByteString.Lazy.Char8 as BL
 
--- XXX: This has to be refined. Like this, only one block can be parsed, and the
--- block type has to be known beforehand.
-
 -- | Create nexus file with block name and block body.
+--
+-- At the moment writing one block only is supported.
 toNexus :: BL.ByteString -> [BL.ByteString] -> BL.ByteString
 toNexus n b = BL.unlines $ [start, begin n] <> b <> [end]
 
