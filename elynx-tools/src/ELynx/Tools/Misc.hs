@@ -18,8 +18,6 @@ module ELynx.Tools.Misc
   )
 where
 
-import Data.List
-
 -- | Chain a list of functions together. See https://wiki.haskell.org/Compose.
 compose :: [a -> a] -> a -> a
 compose = foldl (flip (.)) id

@@ -130,6 +130,9 @@ analyzeDistance outH t1 t2 = do
           formatD
             "Branch score"
             (T.pack $ show $ branchScore t1' t2')
+    _ -> do
+      $(logInfo) "Some branches do not have length values."
+      $(logInfo) "Distances involving length cannot be calculated."
   case (toExplicitTree t1, toExplicitTree t2) of
     (Right t1', Right t2') -> do
       let t1n = normalizeBranchSupport t1'
