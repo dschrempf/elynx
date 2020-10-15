@@ -26,7 +26,7 @@ fastaNucleotideIUPACFN :: FilePath
 fastaNucleotideIUPACFN = "data/NucleotideIUPAC.fasta"
 
 ssData :: M.Matrix Character
-ssData = M.fromLists $ map (reverse . map fromChar) ["AAA", "GAA", "TAA"]
+ssData = M.fromLists $ map (map fromChar) ["AAA", "GAA", "TAA"]
 
 ssA :: Alignment
 ssA =
