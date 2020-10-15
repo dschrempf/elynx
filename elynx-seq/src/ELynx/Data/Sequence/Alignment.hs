@@ -308,7 +308,7 @@ countUnknowns a = V.length . V.filter (A.isUnknown (alphabet a)) $ allChars
 -- Sample the given sites from a matrix.
 subSampleMatrix :: V.Unbox a => [Int] -> M.Matrix a -> M.Matrix a
 subSampleMatrix is m =
-  M.fromColumns $ foldl' (\a i -> M.takeColumn m i : a) [] is
+  M.fromColumns $ foldl' (\a i -> M.takeColumn m i : a) [] (reverse is)
 
 -- | Sample the given sites from a multi sequence alignment.
 subSample :: [Int] -> Alignment -> Alignment
