@@ -1,3 +1,11 @@
+* Version
+Bump version.
+
+#+NAME: BumpVersion
+#+BEGIN_SRC sh :exports both :results output verbatim
+./scripts/bump-version minor
+#+END_SRC
+
 * Module dependencies
 ** Weeder
 Use weeder to reduce dependencies.
@@ -40,7 +48,7 @@ and [[file:ChangeLog.org][ChangeLog.org]]; export them to Markdown.
 * Git
 Commit all changes.
 
-Tag new commit with version number created above.
+Tag new commit with version number created above and push the tag
 
 * Distribution tarballs
 Create source distribution tarballs.
@@ -68,22 +76,14 @@ done
 #+END_SRC
 
 #+RESULTS: HackageUploadTarballs
-: Uploading elynx-markov-0.3.1.tar.gz... done!
-: Uploading elynx-nexus-0.3.1.tar.gz... done!
-: Uploading elynx-seq-0.3.1.tar.gz... done!
-: Uploading elynx-tools-0.3.1.tar.gz... done!
-: Uploading elynx-tree-0.3.1.tar.gz... done!
-: Uploading slynx-0.3.1.tar.gz... done!
-: Uploading tlynx-0.3.1.tar.gz... done!
-: Uploading elynx-0.3.1.tar.gz... done!
-
-* Version
-After upload, bump development version.
-
-#+NAME: BumpVersion
-#+BEGIN_SRC sh :exports both :results output verbatim
-./scripts/bump-version minor
-#+END_SRC
+: Uploading elynx-markov-0.4.1.tar.gz... done!
+: Uploading elynx-nexus-0.4.1.tar.gz... done!
+: Uploading elynx-seq-0.4.1.tar.gz... done!
+: Uploading elynx-tools-0.4.1.tar.gz... done!
+: Uploading elynx-tree-0.4.1.tar.gz... done!
+: Uploading slynx-0.4.1.tar.gz... done!
+: Uploading tlynx-0.4.1.tar.gz... done!
+: Uploading elynx-0.4.1.tar.gz... done!
 
 * Documentation
 Documentation can be built manually.
