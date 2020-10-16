@@ -4,14 +4,19 @@
 
 ## Unreleased changes
 
+
+## Version 0.4.1
+
 -   Improve `TimeSpec` (Point process).
 -   Parallel evaluation strategies.
 -   Change names of some functions involving partitions. For example, `mp` was
     renamed to `pt`.
 -   Improve documentation for (bi)partitions.
--   Bugfix `tlynx compare`, so not throw error when branch support values are not
+-   Bugfix `tlynx compare`; do not throw error when branch support values are not
     set.
 -   Add `no-elynx-file` option.
+-   Also parse Nexus files with `tlynx` commands.
+-   Bugfix `subSample`; the sub sample was reversed.
 
 
 ## Version 0.4.0

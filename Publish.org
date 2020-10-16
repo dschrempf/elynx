@@ -23,16 +23,6 @@ Format all source files.
 
 #+RESULTS: CleanFilesStylishHaskell
 
-* Version
-Bump version.
-
-#+NAME: BumpVersion
-#+BEGIN_SRC sh :exports both :results output verbatim
-./scripts/bump-version minor
-#+END_SRC
-
-Recompile project.
-
 * Build
 Build project, perform tests, build documentation.
 
@@ -86,6 +76,14 @@ done
 : Uploading slynx-0.3.1.tar.gz... done!
 : Uploading tlynx-0.3.1.tar.gz... done!
 : Uploading elynx-0.3.1.tar.gz... done!
+
+* Version
+After upload, bump development version.
+
+#+NAME: BumpVersion
+#+BEGIN_SRC sh :exports both :results output verbatim
+./scripts/bump-version minor
+#+END_SRC
 
 * Documentation
 Documentation can be built manually.
