@@ -48,12 +48,20 @@ toNewickBuilder t = go t <> BB.char8 ';'
     lbl x y =
       BB.lazyByteString (getName y)
         <> mBrLenBuilder x
-        -- After reading several discussion, I go for the "more semantical
+        -- After reading several discussions, I go for the "more semantical
         -- form" with branch support values in square brackets.
         <> mBrSupBuilder x
 
 -- | General conversion of a tree into a Newick 'BL.Bytestring'. Use provided
 -- functions to extract node labels and branch lengths builder objects. See also
 -- Biobase.Newick.Export.
+--
+-- Functions to write key value pairs for nodes are not provided. Those can just
+-- be set as node names. For example, the posterior density and the confidence
+-- interval of a node can be encoded by setting the node name to:
+--
+-- @
+-- "ACTUALNAME[posterior=-2839.2,age_95%_HPD={4.80804,31.6041}]"
+-- @
 toNewick :: Named a => Tree Phylo a -> BL.ByteString
 toNewick = BB.toLazyByteString . toNewickBuilder
