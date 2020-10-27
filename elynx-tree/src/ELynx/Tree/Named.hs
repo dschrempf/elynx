@@ -10,7 +10,8 @@
 --
 -- Creation date: Thu Jan 24 20:09:20 2019.
 module ELynx.Tree.Named
-  ( Named (..),
+  ( NodeName,
+    Named (..),
   )
 where
 
@@ -19,10 +20,14 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Double.Conversion.ByteString as BC
 
+-- | Node name.
+--
+-- Use lazy byte strings because Newick strings are built using chunks.
+type NodeName = BL.ByteString
+
 -- | Data types with names.
 class Named a where
-  -- Use lazy byte strings because Newick strings are built using chunks.
-  getName :: a -> BL.ByteString
+  getName :: a -> NodeName
 
 instance Named () where
   getName = const BL.empty
