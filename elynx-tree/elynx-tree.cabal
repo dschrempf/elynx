@@ -39,6 +39,7 @@ source-repository head
 
 library
   exposed-modules:
+      ELynx.Topology
       ELynx.Topology.Phylogeny
       ELynx.Topology.Rooted
       ELynx.Tree

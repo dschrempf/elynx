@@ -1,9 +1,6 @@
--- TODO: Topology data type.
--- data Topology a = Node (NonEmptySet (Topology a)) | Leaf a
-
 -- |
 -- Module      :  ELynx.Tree
--- Description :  Phylogenetic trees
+-- Description :  Rooted trees
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -12,6 +9,8 @@
 -- Portability :  portable
 --
 -- Creation date: Sat Mar 21 16:27:20 2020.
+--
+-- Convenience module combining all tree modules.
 module ELynx.Tree
   ( -- * Rooted trees
     module ELynx.Tree.Rooted,
