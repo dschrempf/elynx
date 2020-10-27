@@ -18,7 +18,7 @@
 -- - https://en.wikipedia.org/wiki/Genetic_code
 module ELynx.Data.Character.Codon
   ( Codon (Codon),
-    unsafeFromVec,
+    fromVecUnsafe,
     UniversalCode (..),
     translate,
     translateX,
@@ -50,8 +50,8 @@ convert (Codon (x, y, z)) = Codon (C.convert x, C.convert y, C.convert z)
 
 -- | Unsafe conversion from vector with at least three elements; only the first
 -- three elements are used, the rest is discarded.
-unsafeFromVec :: V.Vector v a => v a -> Codon a
-unsafeFromVec xs =
+fromVecUnsafe :: V.Vector v a => v a -> Codon a
+fromVecUnsafe xs =
   Codon (V.head xs, V.head . V.tail $ xs, V.head . V.tail . V.tail $ xs)
 
 -- | Universal codes.

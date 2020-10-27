@@ -132,12 +132,12 @@ nFixed = 43
 -- | Set the population size of a 'State'; validity of resulting 'State' is checked.
 setPopulationSize :: PopulationSize -> State -> Maybe State
 setPopulationSize n s = if valid s' then Just s' else Nothing
-  where s' = unsafeSetPopulationSize n s
+  where s' = setPopulationSizeUnsafe n s
 
 -- | See 'setPopulationSize'. Does not check if resulting 'State' is valid.
-unsafeSetPopulationSize :: Int -> State -> State
-unsafeSetPopulationSize n (Bnd _ s    ) = Bnd n s
-unsafeSetPopulationSize n (Ply _ i a b) = Ply n i a b
+setPopulationSizeUnsafe :: Int -> State -> State
+setPopulationSizeUnsafe n (Bnd _ s    ) = Bnd n s
+setPopulationSizeUnsafe n (Ply _ i a b) = Ply n i a b
 
 -- | For a given population size 'PopulationSize', convert a number 'Int' to 'State'.
 fromIndexWith :: PopulationSize -> Int -> State

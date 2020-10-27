@@ -49,5 +49,5 @@ translateVecWith f rf cs
   | rf < 0 = error "translateVecWith: reading frame is negative."
   | otherwise = aas
   where
-    codons = map unsafeFromVec $ chopVec 3 $ V.drop rf cs
+    codons = map fromVecUnsafe $ chopVec 3 $ V.drop rf cs
     aas = V.fromList $ map f codons

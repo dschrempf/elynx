@@ -25,7 +25,7 @@ module ELynx.Tree.Zipper
     goChild,
     Path,
     goPath,
-    unsafeGoPath,
+    goPathUnsafe,
 
     -- * Modification
     insertTree,
@@ -133,11 +133,11 @@ goPath pos pth = foldlM (flip goChild) pth pos
 
 -- | Go to child with given index in forest. Call 'error' if child does not
 -- exist.
-unsafeGoChild :: Int -> TreePos e a -> TreePos e a
-unsafeGoChild n pos = case current pos of
+goChildUnsafe :: Int -> TreePos e a -> TreePos e a
+goChildUnsafe n pos = case current pos of
   (Node br lb ts)
-    | null ts -> error "unsafeGoChild: Forest is empty."
-    | length ts <= n -> error "unsafeGoChild: Forest is too short."
+    | null ts -> error "goChildUnsafe: Forest is empty."
+    | length ts <= n -> error "goChildUnsafe: Forest is too short."
     | otherwise ->
       Pos
         { current = head rs',
@@ -149,8 +149,8 @@ unsafeGoChild n pos = case current pos of
       (ls', rs') = splitAt n ts
 
 -- | Got to node with given path. Call 'error' if path is invalid.
-unsafeGoPath :: [Int] -> TreePos e a -> TreePos e a
-unsafeGoPath pos pth = foldl (flip unsafeGoChild) pth pos
+goPathUnsafe :: [Int] -> TreePos e a -> TreePos e a
+goPathUnsafe pos pth = foldl (flip goChildUnsafe) pth pos
 
 -- | Insert a new tree into the current focus of the zipper.
 insertTree :: Tree e a -> TreePos e a -> TreePos e a
