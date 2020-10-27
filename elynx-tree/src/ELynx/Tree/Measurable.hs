@@ -61,7 +61,7 @@ applyStem f t = t {branch = apply f b}
 
 -- | Get the length of the stem of a tree.
 getStem :: Measurable e => Tree e a -> BranchLength
-getStem (Node br _ _) = getLen br
+getStem = getLen . branch
 
 -- | Set the length of the stem of a tree.
 setStem :: Measurable e => BranchLength -> Tree e a -> Tree e a
