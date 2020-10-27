@@ -23,6 +23,7 @@ module ELynx.Tree.Zipper
     goLeft,
     goRight,
     goChild,
+    Path,
     goPath,
     unsafeGoPath,
 
@@ -119,6 +120,12 @@ goChild n pos = case current pos of
           }
     where
       (ls', rs') = splitAt n ts
+
+-- | Path from the root of a tree to the node of the tree.
+--
+-- The position is specific to a tree topology. If the topology changes, the
+-- position becomes invalid.
+type Path = [Int]
 
 -- | Go to node with given path.
 goPath :: [Int] -> TreePos e a -> Maybe (TreePos e a)
