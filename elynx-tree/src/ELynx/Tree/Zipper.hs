@@ -26,6 +26,7 @@ module ELynx.Tree.Zipper
     Path,
     goPath,
     goPathUnsafe,
+    getSubTreeUnsafe,
 
     -- * Modification
     insertTree,
@@ -128,7 +129,7 @@ goChild n pos = case current pos of
 type Path = [Int]
 
 -- | Go to node with given path.
-goPath :: [Int] -> TreePos e a -> Maybe (TreePos e a)
+goPath :: Path -> TreePos e a -> Maybe (TreePos e a)
 goPath pos pth = foldlM (flip goChild) pth pos
 
 -- | Go to child with given index in forest. Call 'error' if child does not
@@ -148,9 +149,17 @@ goChildUnsafe n pos = case current pos of
     where
       (ls', rs') = splitAt n ts
 
--- | Got to node with given path. Call 'error' if path is invalid.
-goPathUnsafe :: [Int] -> TreePos e a -> TreePos e a
+-- | Got to node with given path.
+--
+-- Call 'error' if path is invalid.
+goPathUnsafe :: Path -> TreePos e a -> TreePos e a
 goPathUnsafe pos pth = foldl (flip goChildUnsafe) pth pos
+
+-- | Get the sub tree at path.
+--
+-- Call 'error' if path is invalid.
+getSubTreeUnsafe :: Path -> Tree e a -> Tree e a
+getSubTreeUnsafe p = current . goPathUnsafe p . fromTree
 
 -- | Insert a new tree into the current focus of the zipper.
 insertTree :: Tree e a -> TreePos e a -> TreePos e a

@@ -1,5 +1,7 @@
 * Changelog for ELynx
 ** Unreleased changes
+- Add =Path=, and =getSubTreeUnsafe= to tree zipper.
+- Rename =unsafe= functions (put =unsafe= to the end).
 
 ** Version 0.4.1
 - Improve =TimeSpec= (Point process).
