@@ -31,7 +31,6 @@ import Control.Monad.Logger
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader hiding (local)
 import Data.Bifunctor
-import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List hiding (intersect)
 import Data.Maybe
@@ -136,20 +135,20 @@ distance = do
             ++ "."
     BranchScore -> $(logInfo) "Use branch score distance."
   let distanceMeasure' ::
-        Tree Phylo BS.ByteString ->
-        Tree Phylo BS.ByteString ->
+        Tree Phylo NodeName ->
+        Tree Phylo NodeName ->
         Double
       distanceMeasure' t1 t2 = either error id $ case dist of
         Symmetric -> second fromIntegral $ symmetric t1 t2
         IncompatibleSplit val ->
           second fromIntegral $
             incompatibleSplits
-              (collapse val $ normalizeBranchSupport $ either error id $ phyloToSupportTree t1)
-              (collapse val $ normalizeBranchSupport $ either error id $ phyloToSupportTree t2)
+              (collapse val $ normalizeSupport $ either error id $ phyloToSupportTree t1)
+              (collapse val $ normalizeSupport $ either error id $ phyloToSupportTree t2)
         BranchScore ->
           branchScore (normalizeF $ either error id $ phyloToLengthTree t1) (normalizeF $ either error id $ phyloToLengthTree t2)
         where
-          normalizeF = if argsNormalize l then normalizeBranchLengths else id
+          normalizeF = if argsNormalize l then normalizeLengths else id
   -- Possibly intersect trees before distance calculation.
   when (argsIntersect l) $
     $(logInfo) "Intersect trees before calculation of distances."

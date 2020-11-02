@@ -21,7 +21,6 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
-import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (intercalate)
 import qualified Data.Map as M
@@ -46,7 +45,7 @@ treesOneFile ::
   FilePath ->
   ELynx
     CompareArguments
-    (Tree Phylo BS.ByteString, Tree Phylo BS.ByteString)
+    (Tree Phylo NodeName, Tree Phylo NodeName)
 treesOneFile tf = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse file '" ++ tf ++ "'."
@@ -63,7 +62,7 @@ treesTwoFiles ::
   FilePath ->
   ELynx
     CompareArguments
-    (Tree Phylo BS.ByteString, Tree Phylo BS.ByteString)
+    (Tree Phylo NodeName, Tree Phylo NodeName)
 treesTwoFiles tf1 tf2 = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse first tree file '" ++ tf1 ++ "'."
@@ -112,8 +111,8 @@ compareCmd = do
 
 analyzeDistance ::
   Handle ->
-  Tree Phylo BS.ByteString ->
-  Tree Phylo BS.ByteString ->
+  Tree Phylo NodeName ->
+  Tree Phylo NodeName ->
   ELynx CompareArguments ()
 analyzeDistance outH t1 t2 = do
   let formatD str val = T.justifyLeft 25 ' ' str <> "  " <> val
@@ -135,8 +134,8 @@ analyzeDistance outH t1 t2 = do
       $(logInfo) "Distances involving length cannot be calculated."
   case (toExplicitTree t1, toExplicitTree t2) of
     (Right t1', Right t2') -> do
-      let t1n = normalizeBranchSupport t1'
-          t2n = normalizeBranchSupport t2'
+      let t1n = normalizeSupport t1'
+          t2n = normalizeSupport t2'
       $(logDebug) "Trees with normalized branch support values:"
       $(logDebug) $ E.decodeUtf8 $ BL.toStrict $ toNewick $ toPhyloTree t1n
       $(logDebug) $ E.decodeUtf8 $ BL.toStrict $ toNewick $ toPhyloTree t2n
@@ -178,8 +177,8 @@ analyzeDistance outH t1 t2 = do
 
 analyzeBipartitions ::
   Handle ->
-  Tree Phylo BS.ByteString ->
-  Tree Phylo BS.ByteString ->
+  Tree Phylo NodeName ->
+  Tree Phylo NodeName ->
   ELynx CompareArguments ()
 analyzeBipartitions outH t1 t2 =
   case (phyloToLengthTree t1, phyloToLengthTree t2) of
@@ -215,8 +214,8 @@ analyzeBipartitions outH t1 t2 =
           liftIO $ hPutStrLn outH "There are no common bipartitions."
           liftIO $ hPutStrLn outH "No plots have been generated."
         else do
-          let bpToBrLen1 = M.map (fromBranchLength . getLen) $ either error id $ bipartitionToBranch t1l
-              bpToBrLen2 = M.map (fromBranchLength . getLen) $ either error id $ bipartitionToBranch t2l
+          let bpToBrLen1 = M.map (fromLength . getLen) $ either error id $ bipartitionToBranch t1l
+              bpToBrLen2 = M.map (fromLength . getLen) $ either error id $ bipartitionToBranch t2l
           liftIO $
             hPutStrLn
               outH

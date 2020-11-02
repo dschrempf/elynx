@@ -211,7 +211,7 @@ getMidpoint ts = case t of
 -- find index of minimum; take this tree and move root to the midpoint of the branch
 
 -- Get delta height of left and right sub tree.
-getDeltaHeight :: Measurable e => Tree e a -> BranchLength
+getDeltaHeight :: Measurable e => Tree e a -> Length
 getDeltaHeight (Node _ _ [l, r]) = abs $ height l - height r
 -- Explicitly use 'error' here, because roots is supposed to return trees with
 -- bifurcating root nodes.
@@ -315,8 +315,8 @@ rootAt' b t = do
 --
 -- Branches may have a length and a support value.
 data Phylo = Phylo
-  { brLen :: Maybe BranchLength,
-    brSup :: Maybe BranchSupport
+  { brLen :: Maybe Length,
+    brSup :: Maybe Support
   }
   deriving (Read, Show, Eq, Ord, Generic, NFData)
 
@@ -360,7 +360,7 @@ supportedToPhyloLabel x = Phylo Nothing (Just $ getSup x)
 -- | If root branch length is not available, set it to 0.
 --
 -- Return 'Left' if any other branch length is unavailable.
-phyloToLengthTree :: Tree Phylo a -> Either String (Tree BranchLength a)
+phyloToLengthTree :: Tree Phylo a -> Either String (Tree Length a)
 phyloToLengthTree =
   maybe (Left "phyloToLengthTree: Length unavailable for some branches.") Right
     . bitraverse brLen pure
@@ -374,46 +374,42 @@ cleanRootLength t = t
 -- branch to maximum support.
 --
 -- Return 'Left' if any other branch has no available support value.
-phyloToSupportTree :: Tree Phylo a -> Either String (Tree BranchSupport a)
+phyloToSupportTree :: Tree Phylo a -> Either String (Tree Support a)
 phyloToSupportTree t =
   maybe
     (Left "phyloToSupportTree: Support unavailable for some branches.")
     Right
-    $ bitraverse toSupport pure $
+    $ bitraverse brSup pure $
       cleanLeafSupport m $
         cleanRootSupport m t
   where
     m = getMaxSupport t
 
 -- | Set all unavailable branch support values to maximum support.
-phyloToSupportTreeUnsafe :: Tree Phylo a -> Tree BranchSupport a
+phyloToSupportTreeUnsafe :: Tree Phylo a -> Tree Support a
 phyloToSupportTreeUnsafe t = cleanSupport m t
   where
     m = getMaxSupport t
 
 -- If all branch support values are below 1.0, set the max support to 1.0.
-getMaxSupport :: Tree Phylo a -> BranchSupport
+getMaxSupport :: Tree Phylo a -> Support
 getMaxSupport = fromJust . max (Just 1.0) . bimaximum . bimap brSup (const Nothing)
 
-cleanRootSupport :: BranchSupport -> Tree Phylo a -> Tree Phylo a
+cleanRootSupport :: Support -> Tree Phylo a -> Tree Phylo a
 cleanRootSupport maxSup (Node (Phylo b Nothing) l xs) = Node (Phylo b (Just maxSup)) l xs
 cleanRootSupport _ t = t
 
-cleanLeafSupport :: BranchSupport -> Tree Phylo a -> Tree Phylo a
+cleanLeafSupport :: Support -> Tree Phylo a -> Tree Phylo a
 cleanLeafSupport s (Node (Phylo b Nothing) l []) = Node (Phylo b (Just s)) l []
 cleanLeafSupport s (Node b l xs) = Node b l $ map (cleanLeafSupport s) xs
 
-toSupport :: Phylo -> Maybe BranchSupport
-toSupport (Phylo _ Nothing) = Nothing
-toSupport (Phylo _ (Just s)) = Just s
-
-cleanSupport :: BranchSupport -> Tree Phylo a -> Tree BranchSupport a
+cleanSupport :: Support -> Tree Phylo a -> Tree Support a
 cleanSupport maxSup (Node (Phylo _ s) l xs) = Node (fromMaybe maxSup s) l $ map (cleanSupport maxSup) xs
 
 -- | Explicit branch label for phylogenetic trees.
 data PhyloExplicit = PhyloExplicit
-  { sBrLen :: BranchLength,
-    sBrSup :: BranchSupport
+  { sBrLen :: Length,
+    sBrSup :: Support
   }
   deriving (Read, Show, Eq, Ord, Generic)
 

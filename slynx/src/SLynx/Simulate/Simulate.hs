@@ -68,7 +68,7 @@ simulateAlignment ::
   GenIO ->
   IO A.Alignment
 simulateAlignment pm t' n g = do
-  let t = fromBranchLength . getLen <$> toTreeBranchLabels t'
+  let t = fromLength . getLen <$> toTreeBranchLabels t'
   c <- getNumCapabilities
   gs <- splitGen c g
   let chunks = getChunks c n
@@ -125,8 +125,8 @@ reportModel m = do
                  out "model definition (machine readable)" (BL.pack (show m) <> "\n") ".model.gz")
     else $(logInfo) "No elynx file required; omit writing machine-readable phylogenetic model."
 
-pretty :: BranchLength -> String
-pretty = printf "%.5f" . fromBranchLength
+pretty :: Length -> String
+pretty = printf "%.5f" . fromLength
 
 prettyRow :: String -> String -> BL.ByteString
 prettyRow name val = alignLeft 33 n <> alignRight 8 v
@@ -135,8 +135,8 @@ prettyRow name val = alignLeft 33 n <> alignRight 8 v
     v = BL.pack val
 
 -- | Examine branches of a tree.
-summarizeBranchLengths :: Measurable e => Tree e a -> BL.ByteString
-summarizeBranchLengths t =
+summarizeLengths :: Measurable e => Tree e a -> BL.ByteString
+summarizeLengths t =
   BL.intercalate
     "\n"
     [ prettyRow "Origin height: " $ pretty h,
@@ -147,7 +147,7 @@ summarizeBranchLengths t =
     n = length $ leaves t
     h = height t
     h' = sum (distancesOriginLeaves t) / fromIntegral n
-    b = totalBranchLength t
+    b = totalLength t
 
 -- Summarize a substitution model; lines to be printed to screen or log.
 summarizeSM :: SM.SubstitutionModel -> [BL.ByteString]
@@ -215,7 +215,7 @@ simulateCmd = do
   tree <- liftIO $ parseFileWith (newick Standard) treeFile
   let t' = either error id $ phyloToLengthTree tree
   $(logInfo) $ T.pack $ "Number of leaves: " ++ show (length $ leaves t')
-  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarizeBranchLengths t'
+  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarizeLengths t'
   let edmFile = argsEDMFile l
   let sProfileFiles = argsSiteprofilesFiles l
   $(logInfo) ""

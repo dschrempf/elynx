@@ -15,7 +15,6 @@ module ELynx.Tree.BipartitionSpec
   )
 where
 
-import qualified Data.ByteString.Char8 as BS
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
@@ -24,16 +23,16 @@ import ELynx.Tools
 import ELynx.Tree
 import Test.Hspec
 
-sfrom :: [BS.ByteString] -> S.Set BS.ByteString
+sfrom :: [NodeName] -> S.Set NodeName
 sfrom = S.fromList
 
 treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
 
-getSimpleTrees :: IO (Forest Phylo BS.ByteString)
+getSimpleTrees :: IO (Forest Phylo NodeName)
 getSimpleTrees = parseFileWith (someNewick Standard) treeFileSimple
 
-bipartitionToBranchAnswer :: Map (Bipartition BS.ByteString) BranchLength
+bipartitionToBranchAnswer :: Map (Bipartition NodeName) Length
 bipartitionToBranchAnswer =
   M.fromList
     [ (bpUnsafe (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]), 0.3),
@@ -45,7 +44,7 @@ bipartitionToBranchAnswer =
       (bpUnsafe (sfrom ["E"]) (sfrom ["A", "B", "C", "D"]), 0.8)
     ]
 
-bipartitionsFirstTree :: Set (Bipartition BS.ByteString)
+bipartitionsFirstTree :: Set (Bipartition NodeName)
 bipartitionsFirstTree =
   S.fromList
     [ bpUnsafe (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]),
@@ -57,7 +56,7 @@ bipartitionsFirstTree =
       bpUnsafe (sfrom ["E"]) (sfrom ["A", "B", "C", "D"])
     ]
 
-bipartitionsSecondTree :: Set (Bipartition BS.ByteString)
+bipartitionsSecondTree :: Set (Bipartition NodeName)
 bipartitionsSecondTree =
   S.fromList
     [ bpUnsafe (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]),

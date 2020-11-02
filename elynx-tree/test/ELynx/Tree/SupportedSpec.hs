@@ -16,15 +16,14 @@ module ELynx.Tree.SupportedSpec
   )
 where
 
-import qualified Data.ByteString.Char8 as BS
 import ELynx.Tools
 import ELynx.Tree
 import Test.Hspec
 
-collapseTree :: Tree Phylo BS.ByteString
+collapseTree :: Tree Phylo NodeName
 collapseTree = parseByteStringWith (oneNewick IqTree) "((a,b),(c,d));"
 
-collapseStarTree :: Tree Phylo BS.ByteString
+collapseStarTree :: Tree Phylo NodeName
 collapseStarTree = parseByteStringWith (oneNewick Standard) "(a[1.0],b[1.0],c[1.0],d[1.0])[1.0];"
 
 spec :: Spec

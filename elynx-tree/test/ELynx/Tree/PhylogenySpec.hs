@@ -91,17 +91,17 @@ prop_roots _ = True
 
 -- -- TODO.
 -- prop_bifurcating_tree
---   :: (Ord a, Measurable a, Named a, BranchSupported a) => Tree a -> Bool
+--   :: (Ord a, Measurable a, Named a, Supported a) => Tree a -> Bool
 -- prop_bifurcating_tree t = partitions (resolve t) == empty
 
-prop_roots_total_length :: Tree BranchLength a -> Bool
+prop_roots_total_length :: Tree Length a -> Bool
 prop_roots_total_length t@(Node _ _ [_, _]) =
   all (\b -> abs (b - l) < 1e-8) $
-    map totalBranchLength $
+    map totalLength $
       either error id $
         roots t
   where
-    l = totalBranchLength t
+    l = totalLength t
 prop_roots_total_length _ = True
 
 spec :: Spec
@@ -132,7 +132,7 @@ spec = do
   describe "rootsWithBranch" $
     modifyMaxSize (* 100) $
       it "does not change the tree height" $
-        property (prop_roots_total_length :: Tree BranchLength Int -> Bool)
+        property (prop_roots_total_length :: Tree Length Int -> Bool)
 
 -- -- TODO: Move this test to the executable.
 -- describe "connect" $

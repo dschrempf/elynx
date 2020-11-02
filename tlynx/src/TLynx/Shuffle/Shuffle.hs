@@ -54,10 +54,10 @@ shuffleCmd = do
   let dh = sum $ map (height t -) (distancesOriginLeaves t)
   $(logDebug) $ "Distance in branch length to being ultrametric: " <> tShow dh
   when (dh > 2e-4) (error "Tree is not ultrametric.")
-  when (dh > branchLengthUnsafe eps && dh < 2e-4) $
+  when (dh > toLengthUnsafe eps && dh < 2e-4) $
     $(logInfo)
       "Tree is nearly ultrametric, ignore branch length differences smaller than 2e-4."
-  when (dh < branchLengthUnsafe eps) $ $(logInfo) "Tree is ultrametric."
+  when (dh < toLengthUnsafe eps) $ $(logInfo) "Tree is ultrametric."
   let cs = filter (> 0) $ labels $ C.extend rootHeight t
       ls = map getName $ leaves t
   $(logDebug) $ "Number of coalescent times: " <> tShow (length cs)
@@ -73,11 +73,11 @@ shuffleCmd = do
 
 shuffleT ::
   Int -> -- How many?
-  BranchLength -> -- Stem length.
-  [BranchLength] -> -- Coalescent times.
+  Length -> -- Stem length.
+  [Length] -> -- Coalescent times.
   [NodeName] -> -- Leave names.
   GenIO ->
-  IO (Forest BranchLength NodeName)
+  IO (Forest Length NodeName)
 shuffleT n o cs ls gen = do
   css <- grabble cs n (length cs) gen
   lss <- grabble ls n (length ls) gen

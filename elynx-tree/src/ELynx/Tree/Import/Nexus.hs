@@ -21,18 +21,19 @@ import Data.Attoparsec.ByteString.Char8
 import qualified Data.ByteString.Char8 as BS
 import ELynx.Import.Nexus
 import ELynx.Tree.Import.Newick
+import ELynx.Tree.Named
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
 import Prelude hiding (takeWhile)
 
 -- | Parse a Nexus files with a TREES block.
-nexusTrees :: NewickFormat -> Parser [(BS.ByteString, Tree Phylo BS.ByteString)]
+nexusTrees :: NewickFormat -> Parser [(BS.ByteString, Tree Phylo NodeName)]
 nexusTrees = nexusBlock . trees
 
-trees :: NewickFormat -> Block [(BS.ByteString, Tree Phylo BS.ByteString)]
+trees :: NewickFormat -> Block [(BS.ByteString, Tree Phylo NodeName)]
 trees f = Block "TREES" (some $ namedNewick f)
 
-namedNewick :: NewickFormat -> Parser (BS.ByteString, Tree Phylo BS.ByteString)
+namedNewick :: NewickFormat -> Parser (BS.ByteString, Tree Phylo NodeName)
 namedNewick f = do
   _ <- skipWhile isSpace
   _ <- stringCI "TREE" <?> "namedNewickTreeStart"

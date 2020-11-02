@@ -29,11 +29,11 @@ import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
 import ELynx.Tree.Supported
 
-buildBrLen :: BranchLength -> BB.Builder
-buildBrLen bl = BB.char8 ':' <> BB.doubleDec (fromBranchLength bl)
+buildBrLen :: Length -> BB.Builder
+buildBrLen bl = BB.char8 ':' <> BB.doubleDec (fromLength bl)
 
-buildBrSup :: BranchSupport -> BB.Builder
-buildBrSup bs = BB.char8 '[' <> BB.doubleDec (fromBranchSupport bs) <> BB.char8 ']'
+buildBrSup :: Support -> BB.Builder
+buildBrSup bs = BB.char8 '[' <> BB.doubleDec (fromSupport bs) <> BB.char8 ']'
 
 -- | See 'toNewick'.
 toNewickBuilder :: Named a => Tree Phylo a -> BB.Builder

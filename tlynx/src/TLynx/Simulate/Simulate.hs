@@ -94,7 +94,7 @@ bdSimulateNTreesConcurrently ::
   PP.TimeSpec ->
   [Int] ->
   [GenIO] ->
-  IO (Forest BranchLength Int)
+  IO (Forest Length Int)
 bdSimulateNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
   let l' = l * r
       m' = m - l * (1.0 - r)
@@ -108,7 +108,7 @@ coalSimulateNTreesConcurrently ::
   Int ->
   [Int] ->
   [GenIO] ->
-  IO (Forest BranchLength Int)
+  IO (Forest Length Int)
 coalSimulateNTreesConcurrently nL chunks gs = do
   trss <-
     mapConcurrently
@@ -125,7 +125,7 @@ bdSimulateAndSubSampleNTreesConcurrently ::
   PP.TimeSpec ->
   [Int] ->
   [GenIO] ->
-  ELynx SimulateArguments (Forest BranchLength Int)
+  ELynx SimulateArguments (Forest Length Int)
 bdSimulateAndSubSampleNTreesConcurrently nLeaves l m r p timeSpec chunks gs = do
   let nLeavesBigTree = (round $ fromIntegral nLeaves / p) :: Int
       l' = l * r
@@ -159,7 +159,7 @@ coalSimulateAndSubSampleNTreesConcurrently ::
   Double ->
   [Int] ->
   [GenIO] ->
-  ELynx SimulateArguments (Forest BranchLength Int)
+  ELynx SimulateArguments (Forest Length Int)
 coalSimulateAndSubSampleNTreesConcurrently nL p chunks gs = do
   let nLeavesBigTree = (round $ fromIntegral nL / p) :: Int
   logNewSection $
@@ -209,10 +209,10 @@ nSubSamples m lvs n tree g
     return [dropLeavesWith (`Set.notMember` ls) tree | ls <- lsSets]
 
 -- Pair of branch length with number of extant children.
-type BrLnNChildren = (BranchLength, Int)
+type BrLnNChildren = (Length, Int)
 
 -- Possible summary statistic of phylogenetic trees. A list of tuples
--- (BranchLength, NumberOfExtantChildrenBelowThisBranch).
+-- (Length, NumberOfExtantChildrenBelowThisBranch).
 type NChildSumStat = [BrLnNChildren]
 
 -- Format the summary statistics in the following form:
@@ -228,7 +228,7 @@ formatNChildSumStat s =
 
 formatNChildSumStatLine :: BrLnNChildren -> BB.Builder
 formatNChildSumStatLine (l, n) =
-  BB.intDec n <> BB.char8 ' ' <> BB.doubleDec (fromBranchLength l) <> BB.char8 '\n'
+  BB.intDec n <> BB.char8 ' ' <> BB.doubleDec (fromLength l) <> BB.char8 '\n'
 
 -- Compute NChilSumStat for a phylogenetic tree.
 toNChildSumStat :: Measurable e => Tree e a -> NChildSumStat

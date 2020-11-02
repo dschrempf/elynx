@@ -148,22 +148,22 @@ name :: Parser NodeName
 name = NodeName . BL.fromStrict <$> takeWhile nameChar <?> "name"
 
 phylo :: Parser Phylo
-phylo = Phylo <$> optional branchLengthP <*> optional branchSupportWithBracketsP <?> "phylo"
+phylo = Phylo <$> optional branchLength <*> optional branchSupport <?> "phylo"
 
 -- Branch length.
-branchLengthP :: Parser BranchLength
-branchLengthP = do
+branchLength :: Parser Length
+branchLength = do
   _ <- char ':' <?> "branchLengthDelimiter"
   l <- double <?> "branchLength"
-  return $ either error id $ branchLength l
+  return $ either error id $ toLength l
 
-branchSupportWithBracketsP :: Parser BranchSupport
-branchSupportWithBracketsP =
+branchSupport :: Parser Support
+branchSupport =
   do
     _ <- char '[' <?> "branchSupportBegin"
     s <- double <?> "branchSupport"
     _ <- char ']' <?> "branchSupportEnd"
-    return $ either error id $ branchSupport s
+    return $ either error id $ toSupport s
 
 --------------------------------------------------------------------------------
 -- IQ-TREE.
@@ -191,9 +191,9 @@ branchedIqTree :: Parser (Tree Phylo NodeName)
 branchedIqTree = (<?> "branchedIqTree") $ do
   f <- forestIqTree
   ms <- optional double
-  let s = either error id . branchSupport <$> ms
+  let s = either error id . toSupport <$> ms
   n <- name
-  b <- optional branchLengthP
+  b <- optional branchLength
   return $ Node (Phylo b s) n f
 
 -- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
@@ -249,8 +249,8 @@ forestRevBayes = (<?> "forestRevBayes") $ do
 nameRevBayes :: Parser NodeName
 nameRevBayes = name <* optional brackets <?> "nameRevBayes"
 
-branchLengthRevBayes :: Parser BranchLength
-branchLengthRevBayes = branchLengthP <* optional brackets <?> "branchLengthRevBayes"
+branchLengthRevBayes :: Parser Length
+branchLengthRevBayes = branchLength <* optional brackets <?> "branchLengthRevBayes"
 
 leafRevBayes :: Parser (Tree Phylo NodeName)
 leafRevBayes = (<?> "leafRevBayes") $ do

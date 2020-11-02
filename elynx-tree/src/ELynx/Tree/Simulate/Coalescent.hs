@@ -28,7 +28,7 @@ simulate ::
   -- | Number of leaves.
   Int ->
   Gen (PrimState m) ->
-  m (Tree BranchLength Int)
+  m (Tree Length Int)
 simulate n = simulate' n 0 trs
   where
     trs = [Node 0 i [] | i <- [0 .. n - 1]]
@@ -37,9 +37,9 @@ simulate' ::
   (PrimMonad m) =>
   Int ->
   Int ->
-  Forest BranchLength Int ->
+  Forest Length Int ->
   Gen (PrimState m) ->
-  m (Tree BranchLength Int)
+  m (Tree Length Int)
 simulate' n a trs g
   | n <= 0 = error "Cannot construct trees without leaves."
   | n == 1 && length trs /= 1 = error "Too many trees provided."
@@ -48,7 +48,7 @@ simulate' n a trs g
     -- Indices of the leaves to join will be i-1 and i.
     i <- uniformR (1, n - 1) g
     -- The time of the coalescent event.
-    t <- branchLengthUnsafe <$> genContVar (coalescentDistributionCont n) g
+    t <- toLengthUnsafe <$> genContVar (coalescentDistributionCont n) g
     let trs' = map (applyStem (+ t)) trs -- Move time 't' up on the tree.
         tl = trs' !! (i - 1)
         tr = trs' !! i

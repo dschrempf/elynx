@@ -16,7 +16,6 @@ module Main where
 import Control.Parallel.Strategies
 import Criterion.Main
 import Data.Bifunctor
-import qualified Data.ByteString.Char8 as BS
 import Data.Foldable
 import ELynx.Tools hiding (Random)
 import ELynx.Tree
@@ -26,19 +25,19 @@ import System.Random.MWC
 treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"
 
-getManyTrees :: IO (Forest Phylo BS.ByteString)
+getManyTrees :: IO (Forest Phylo NodeName)
 getManyTrees = parseFileWith (someNewick Standard) treeFileMany
 
-hugeTree :: IO (Tree BranchLength Int)
+hugeTree :: IO (Tree Length Int)
 hugeTree = create >>= simulateReconstructedTree 50000 Random 1.0 0.9
 
-sinN :: Int -> BranchLength -> BranchLength
+sinN :: Int -> Length -> Length
 sinN n x = iterate sin x !! n
 
-func :: BranchLength -> BranchLength
+func :: Length -> Length
 func = sinN 200
 
-hugeTreeCalcPar :: Int -> Tree BranchLength Int -> Tree BranchLength Int
+hugeTreeCalcPar :: Int -> Tree Length Int -> Tree Length Int
 hugeTreeCalcPar n t = first func t `using` parTree n
 
 main :: IO ()

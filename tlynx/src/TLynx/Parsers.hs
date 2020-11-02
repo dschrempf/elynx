@@ -19,7 +19,6 @@ module TLynx.Parsers
   )
 where
 
-import qualified Data.ByteString.Char8 as BS
 import Data.List
 import ELynx.Tools
 import ELynx.Tree
@@ -35,7 +34,7 @@ printError fn new nex = do
 --
 -- Error if no or more than one trees are found.
 -- Error if both file formats fail to parse.
-parseTree :: NewickFormat -> FilePath -> IO (Tree Phylo BS.ByteString)
+parseTree :: NewickFormat -> FilePath -> IO (Tree Phylo NodeName)
 parseTree fmt fn = do
   parseResultNewick <- runParserOnFile (oneNewick fmt) fn
   case parseResultNewick of
@@ -51,7 +50,7 @@ parseTree fmt fn = do
 -- | Parse a Newick tree file or a Nexus file with Newick trees.
 --
 -- Error if both file formats fail to parse.
-parseTrees :: NewickFormat -> FilePath -> IO (Forest Phylo BS.ByteString)
+parseTrees :: NewickFormat -> FilePath -> IO (Forest Phylo NodeName)
 parseTrees fmt fn = do
   parseResultNewick <- runParserOnFile (someNewick fmt) fn
   case parseResultNewick of

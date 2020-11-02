@@ -16,7 +16,6 @@ module ELynx.Tree.DistanceSpec
   )
 where
 
-import qualified Data.ByteString.Char8 as BS
 import ELynx.Tools
 import ELynx.Tree
 import ELynx.Tree.Arbitrary ()
@@ -26,13 +25,13 @@ import Test.QuickCheck
 treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
 
-getSimpleTrees :: IO (Forest Phylo BS.ByteString)
+getSimpleTrees :: IO (Forest Phylo NodeName)
 getSimpleTrees = parseFileWith (someNewick Standard) treeFileSimple
 
 treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"
 
-getManyTrees :: IO (Forest Phylo BS.ByteString)
+getManyTrees :: IO (Forest Phylo NodeName)
 getManyTrees = parseFileWith (someNewick Standard) treeFileMany
 
 -- I used treedist from Phylip to get the correct results.
@@ -180,19 +179,19 @@ bifurcatingIncomp =
       Node () ' ' [Node () 'B' [], Node () ' ' [Node () 'D' [], Node () 'E' []]]
     ]
 
-incSplitTree1a :: Tree Phylo BS.ByteString
+incSplitTree1a :: Tree Phylo NodeName
 incSplitTree1a = parseByteStringWith (oneNewick IqTree) "((a,b)0.7,(c,d));"
 
-incSplitTree1b :: Tree Phylo BS.ByteString
+incSplitTree1b :: Tree Phylo NodeName
 incSplitTree1b = parseByteStringWith (oneNewick IqTree) "((a,b)0.7,c,d);"
 
-incSplitTree2 :: Tree Phylo BS.ByteString
+incSplitTree2 :: Tree Phylo NodeName
 incSplitTree2 = parseByteStringWith (oneNewick IqTree) "((a,c),(b,d));"
 
-incSplitTree3 :: Tree Phylo BS.ByteString
+incSplitTree3 :: Tree Phylo NodeName
 incSplitTree3 = parseByteStringWith (oneNewick IqTree) "(((a,b)0.7,c),(d,e));"
 
-incSplitTree4 :: Tree Phylo BS.ByteString
+incSplitTree4 :: Tree Phylo NodeName
 incSplitTree4 = parseByteStringWith (oneNewick IqTree) "(((a,c),b),(d,e));"
 
 -- Compute distances between adjacent pairs of a list of input trees. Use given
@@ -255,4 +254,4 @@ spec = do
     it "is zero for a collection of random trees" $
       property $
         prop_dist_same_tree
-          (branchScore :: Tree BranchLength Double -> Tree BranchLength Double -> Either String Double)
+          (branchScore :: Tree Length Double -> Tree Length Double -> Either String Double)

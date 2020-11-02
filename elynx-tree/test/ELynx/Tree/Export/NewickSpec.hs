@@ -16,7 +16,6 @@ module ELynx.Tree.Export.NewickSpec
 where
 
 import Data.Bifunctor
-import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Tools
 import ELynx.Tree
@@ -24,7 +23,7 @@ import ELynx.Tree.Arbitrary ()
 import Test.Hspec
 import Test.QuickCheck hiding (label)
 
-samplePhyloByteStringTree :: Tree Phylo BS.ByteString
+samplePhyloByteStringTree :: Tree Phylo NodeName
 samplePhyloByteStringTree = parseByteStringWith (newick Standard) sampleNewickByteString1
 
 sampleNewickByteString1 :: BL.ByteString
@@ -37,7 +36,7 @@ prop_invariant t =
     -- We have to convert Int to ByteString, but we cannot use
     -- arbitrary instances with ByteStrings because many
     -- characters are disallowed and break the Newick string.
-    second (BL.toStrict . fromNodeName . getName) t
+    second getName t
 
 spec :: Spec
 spec = describe "parseByteStringWith newick $ toNewickPhyloByteString" $ do

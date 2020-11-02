@@ -18,12 +18,12 @@
 -- non-negativity, a newtype wrapper could be used, but this would be a major
 -- refactor.
 module ELynx.Tree.Supported
-  ( BranchSupport (fromBranchSupport),
-    branchSupport,
-    branchSupportUnsafe,
+  ( Support (fromSupport),
+    toSupport,
+    toSupportUnsafe,
     Supported (..),
     applySupported,
-    normalizeBranchSupport,
+    normalizeSupport,
     collapse,
   )
 where
@@ -40,64 +40,64 @@ import GHC.Generics
 
 -- | Non-negative branch support.
 --
--- However, non-negativity is only checked with 'branchSupport'. Negative values
+-- However, non-negativity is only checked with 'toSupport'. Negative values
 -- can be obtained using the 'Num', 'Fractional', and 'Floating' instances.
-newtype BranchSupport = BranchSupport {fromBranchSupport :: Double}
+newtype Support = Support {fromSupport :: Double}
   deriving (Read, Show, Eq, Ord, Generic, NFData)
   deriving (Num, Fractional, Floating) via Double
   deriving (Semigroup) via Min Double
 
-instance Splittable BranchSupport where
+instance Splittable Support where
   split = id
 
-instance ToJSON BranchSupport
+instance ToJSON Support
 
-instance FromJSON BranchSupport
+instance FromJSON Support
 
-instance Supported BranchSupport where
+instance Supported Support where
   getSup = id
   setSup = const
 
 -- | Nothing if support is negative.
-branchSupport :: Double -> Either String BranchSupport
-branchSupport x | x < 0 = Left $ "branchSupport: Branch support is negative: " ++ show x ++ "."
-                | otherwise = Right $ BranchSupport x
+toSupport :: Double -> Either String Support
+toSupport x | x < 0 = Left $ "toSupport: Branch support is negative: " ++ show x ++ "."
+            | otherwise = Right $ Support x
 
 -- | Do not check if support value is negative.
-branchSupportUnsafe :: Double -> BranchSupport
-branchSupportUnsafe = BranchSupport
+toSupportUnsafe :: Double -> Support
+toSupportUnsafe = Support
 
 -- | A branch label that supports extraction and setting of branch support values.
 class Supported e where
-  getSup :: e -> BranchSupport
-  setSup :: BranchSupport -> e -> e
+  getSup :: e -> Support
+  setSup :: Support -> e -> e
 
 -- | Apply a function to a branch support label.
-applySupported :: Supported e => (BranchSupport -> BranchSupport) -> e -> e
+applySupported :: Supported e => (Support -> Support) -> e -> e
 applySupported f l = setSup (f s) l where s = getSup l
 
 -- | Normalize branch support values. The maximum branch support value will be
 -- set to 1.0.
-normalizeBranchSupport :: Supported e => Tree e a -> Tree e a
-normalizeBranchSupport t = first (applySupported (/ m)) t
+normalizeSupport :: Supported e => Tree e a -> Tree e a
+normalizeSupport t = first (applySupported (/ m)) t
   where
     m = bimaximum $ bimap getSup (const 0) t
 
 -- | Collapse branches with support lower than given value.
 --
 -- The branch and node labels of the collapsed branches are discarded.
-collapse :: (Eq e, Eq a, Supported e) => BranchSupport -> Tree e a -> Tree e a
+collapse :: (Eq e, Eq a, Supported e) => Support -> Tree e a -> Tree e a
 collapse th tr =
   let tr' = collapse' th tr
    in if tr == tr' then tr else collapse th tr'
 
 -- A leaf has full support.
-highP :: Supported e => BranchSupport -> Tree e a -> Bool
+highP :: Supported e => Support -> Tree e a -> Bool
 highP _ (Node _ _ []) = True
 highP th (Node br _ _) = getSup br >= th
 
 -- See 'collapse'.
-collapse' :: Supported e => BranchSupport -> Tree e a -> Tree e a
+collapse' :: Supported e => Support -> Tree e a -> Tree e a
 collapse' th (Node br lb ts) = Node br lb $ map (collapse' th) (highSupport ++ lowSupportForest)
   where
     (highSupport, lowSupport) = partition (highP th) ts

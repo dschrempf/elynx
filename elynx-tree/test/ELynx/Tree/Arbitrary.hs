@@ -28,8 +28,8 @@ import Test.QuickCheck
 instance Arbitrary Phylo where
   arbitrary =
     Phylo
-      <$> (Just . branchLengthUnsafe <$> choose (0.001 :: Double, 10))
-      <*> (Just . branchSupportUnsafe . fromIntegral <$> choose (1 :: Int, 100))
+      <$> (Just . toLengthUnsafe <$> choose (0.001 :: Double, 10))
+      <*> (Just . toSupportUnsafe . fromIntegral <$> choose (1 :: Int, 100))
 
 instance Arbitrary2 Tree where
   liftArbitrary2 arbB arbN = go
@@ -65,5 +65,5 @@ instance (CoArbitrary e, CoArbitrary a) => CoArbitrary (Tree e a) where
   coarbitrary (Node br val frst) =
     coarbitrary br . coarbitrary val . coarbitrary frst
 
-instance Arbitrary BranchLength where
-  arbitrary = branchLengthUnsafe . getPositive <$> arbitrary
+instance Arbitrary Length where
+  arbitrary = toLengthUnsafe . getPositive <$> arbitrary

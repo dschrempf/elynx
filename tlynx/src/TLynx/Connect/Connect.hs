@@ -20,7 +20,6 @@ where
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
-import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Set as S
 import ELynx.Tools
@@ -68,9 +67,9 @@ connectCmd = do
   liftIO $ hClose outH
 
 connectTrees ::
-  Tree BranchLength BS.ByteString ->
-  Tree BranchLength BS.ByteString ->
-  Forest BranchLength BS.ByteString
+  Tree Length NodeName ->
+  Tree Length NodeName ->
+  Forest Length NodeName
 connectTrees t = either error id . connect 0 "root" t
 
 type Constraint a = S.Set a
@@ -103,7 +102,7 @@ parseTreeTuple ::
   FilePath ->
   ELynx
     ConnectArguments
-    (Tree BranchLength BS.ByteString, Tree BranchLength BS.ByteString)
+    (Tree Length NodeName, Tree Length NodeName)
 parseTreeTuple l r = do
   nwF <- nwFormat . local <$> ask
   tl <- liftIO $ parseTree nwF l
@@ -130,7 +129,7 @@ connectAndFilter h c l r = do
   $(logInfo) $ fromBs $ BL.intercalate "\n" $ map toNewick cts
   (tl, tr) <- parseTreeTuple l r
   let ts = connectTrees tl tr
-      cs = map S.fromList $ concatMap multifurcatingGroups cts :: [Constraint BS.ByteString]
+      cs = map S.fromList $ concatMap multifurcatingGroups cts :: [Constraint NodeName]
       -- Only collect trees that are compatible with the constraints.
       ts' = filter (compatibleWith getName cs) ts
   $(logInfo) $ "Connected  trees: " <> tShow (length ts)

@@ -241,7 +241,7 @@ simulateNReconstructedTrees ::
   Rate ->
   -- | Generator (see 'System.Random.MWC')
   Gen (PrimState m) ->
-  m (Forest BranchLength Int)
+  m (Forest Length Int)
 simulateNReconstructedTrees nT nP t l m g
   | nT <= 0 = return []
   | otherwise = replicateM nT $ simulateReconstructedTree nP t l m g
@@ -261,10 +261,10 @@ simulateReconstructedTree ::
   Rate ->
   -- | Generator (see 'System.Random.MWC')
   Gen (PrimState m) ->
-  m (Tree BranchLength Int)
+  m (Tree Length Int)
 simulateReconstructedTree n t l m g = do
   PointProcess ns vs o <- simulate n t l m g
-  return $ toReconstructedTree 0 $ PointProcess ns (map branchLengthUnsafe vs) (branchLengthUnsafe o)
+  return $ toReconstructedTree 0 $ PointProcess ns (map toLengthUnsafe vs) (toLengthUnsafe o)
 
 -- | Convert a point process to a reconstructed tree. See Lemma 2.2.
 
@@ -278,8 +278,8 @@ simulateReconstructedTree n t l m g = do
 -- (useless) argument.
 toReconstructedTree ::
   a -> -- Default node label.
-  PointProcess a BranchLength ->
-  Tree BranchLength a
+  PointProcess a Length ->
+  Tree Length a
 toReconstructedTree l pp@(PointProcess ps vs o)
   | length ps /= length vs + 1 = error "Too few or too many points."
   | length vs <= 1 = error "Too few values."
@@ -298,11 +298,11 @@ toReconstructedTree l pp@(PointProcess ps vs o)
 -- Move up the tree, connect nodes when they join according to the point process.
 toReconstructedTree' ::
   [Int] -> -- Sorted indices, see 'sort'.
-  [BranchLength] -> -- Sorted merge values.
+  [Length] -> -- Sorted merge values.
   a -> -- Default node label.
-  Seq (Tree BranchLength a) -> -- Leaves with accumulated root branch lengths.
-  Seq BranchLength -> -- Accumulated heights of the leaves.
-  Tree BranchLength a
+  Seq (Tree Length a) -> -- Leaves with accumulated root branch lengths.
+  Seq Length -> -- Accumulated heights of the leaves.
+  Tree Length a
 toReconstructedTree' [] [] _ trs _ = trs `S.index` 0
 toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
   where

@@ -17,6 +17,7 @@ module ELynx.Tree.Named
   )
 where
 
+import Control.DeepSeq
 import Data.Aeson
 import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Char8 as BS
@@ -29,7 +30,7 @@ import Data.String
 -- Use lazy byte strings because Newick strings are built using chunks.
 newtype NodeName = NodeName {fromNodeName :: BL.ByteString}
   deriving (Show, Eq)
-  deriving (Ord, Monoid, Semigroup, IsString) via BL.ByteString
+  deriving (Ord, Monoid, Semigroup, IsString, NFData) via BL.ByteString
 
 -- XXX: This is pretty lame, but I need those instances. At the moment, I just
 -- go via 'String', but this is certainly not the best solution.

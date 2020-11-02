@@ -134,4 +134,4 @@ branchScore t1 t2
     bpToBr2 <- bipartitionToBranch $ first (Sum . getLen) t2
     let dBs = M.unionWith (-) bpToBr1 bpToBr2
         dsSquared = foldl' (\acc e -> acc + e * e) 0 dBs
-    return $ sqrt $ fromBranchLength $ getSum dsSquared
+    return $ sqrt $ fromLength $ getSum dsSquared

@@ -20,7 +20,6 @@ import Control.Monad (unless)
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
-import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Containers.ListUtils (nubOrd)
 import Data.List ((\\))
@@ -35,8 +34,8 @@ import TLynx.Examine.Options
 import TLynx.Parsers
 import Text.Printf
 
-pretty :: BranchLength -> String
-pretty = printf "%.5f" . fromBranchLength
+pretty :: Length -> String
+pretty = printf "%.5f" . fromLength
 
 prettyRow :: String -> String -> BL.ByteString
 prettyRow name val = alignLeft 33 n <> alignRight 8 v
@@ -45,8 +44,8 @@ prettyRow name val = alignLeft 33 n <> alignRight 8 v
     v = BL.pack val
 
 -- | Examine branches of a tree.
-summarizeBranchLengths :: Measurable e => Tree e a -> BL.ByteString
-summarizeBranchLengths t =
+summarizeLengths :: Measurable e => Tree e a -> BL.ByteString
+summarizeLengths t =
   BL.intercalate
     "\n"
     [ prettyRow "Origin height: " $ pretty h,
@@ -57,9 +56,9 @@ summarizeBranchLengths t =
     n = length $ leaves t
     h = height t
     h' = sum (distancesOriginLeaves t) / fromIntegral n
-    b = totalBranchLength t
+    b = totalLength t
 
-readTrees :: FilePath -> ELynx ExamineArguments (Forest Phylo BS.ByteString)
+readTrees :: FilePath -> ELynx ExamineArguments (Forest Phylo NodeName)
 readTrees fp = do
   $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
   nf <- argsNewickFormat . local <$> ask
@@ -71,7 +70,7 @@ examineTree h t = do
   let l = phyloToLengthTree t
   case l of
     Left _ -> hPutStrLn h "Branch lengths not available."
-    Right t' -> BL.hPutStrLn h $ summarizeBranchLengths t'
+    Right t' -> BL.hPutStrLn h $ summarizeLengths t'
   unless (null dups) $
     hPutStrLn h ""
       >> hPutStrLn
