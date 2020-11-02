@@ -62,9 +62,12 @@ module ELynx.Tree.Rooted
     -- * Access leaves, branches and labels
     leaves,
     duplicateLeaves,
+    setStem,
+    applyStem,
     branches,
     setBranches,
-    applyStem,
+    setLabel,
+    applyLabel,
     labels,
     setLabels,
     applyRoot,
@@ -248,6 +251,14 @@ leaves (Node _ _ ts) = concatMap leaves ts
 duplicateLeaves :: Ord a => Tree e a -> Bool
 duplicateLeaves = duplicates . leaves
 
+-- | Set the stem to a given value.
+setStem :: e -> Tree e a -> Tree e a
+setStem br (Node _ lb ts) = Node br lb ts
+
+-- | Change the root branch of a tree.
+applyStem :: (e -> e) -> Tree e a -> Tree e a
+applyStem f t = t {branch = f $ branch t}
+
 -- | Get branch labels in pre-order.
 branches :: Tree e a -> [e]
 branches t = squish t []
@@ -264,9 +275,13 @@ setBranches xs = bisequenceA . snd . bimapAccumL setBranch noChange xs
     setBranch (y : ys) _ = (ys, Just y)
     noChange ys z = (ys, Just z)
 
+-- | Set the label to a given value.
+setLabel :: a -> Tree e a -> Tree e a
+setLabel lb (Node br _ ts) = Node br lb ts
+
 -- | Change the root branch of a tree.
-applyStem :: (e -> e) -> Tree e a -> Tree e a
-applyStem f t = t {branch = f $ branch t}
+applyLabel :: (a -> a) -> Tree e a -> Tree e a
+applyLabel f t = t {label = f $ label t}
 
 -- | Return node labels in pre-order.
 labels :: Tree e a -> [a]
@@ -278,10 +293,10 @@ labels t = squish t []
 --
 -- Return 'Nothing' if the provided list of node labels is too short.
 setLabels :: Traversable t => [b] -> t a -> Maybe (t b)
-setLabels xs = sequenceA . snd . mapAccumL setLabel xs
+setLabels xs = sequenceA . snd . mapAccumL setLabelM xs
   where
-    setLabel [] _ = ([], Nothing)
-    setLabel (y : ys) _ = (ys, Just y)
+    setLabelM [] _ = ([], Nothing)
+    setLabelM (y : ys) _ = (ys, Just y)
 
 -- | Change the root label of a tree.
 applyRoot :: (a -> a) -> Tree e a -> Tree e a
