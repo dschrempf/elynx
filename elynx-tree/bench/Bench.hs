@@ -74,3 +74,38 @@ main = do
           bench "parallel 3" $ nf (parBranchFoldMap 3 func (+)) ht
         ]
     ]
+-- Results 2020 Nov 2, commit aee6818.
+
+-- benchmarking bipartition/manyTrees
+-- time                 9.631 ms   (9.583 ms .. 9.721 ms)
+--                      0.998 R²   (0.995 R² .. 1.000 R²)
+-- mean                 9.723 ms   (9.670 ms .. 9.879 ms)
+-- std dev              220.5 μs   (87.68 μs .. 421.0 μs)
+
+-- benchmarking map strategies/sequential
+-- time                 851.4 ms   (666.8 ms .. 1.025 s)
+--                      0.994 R²   (0.978 R² .. 1.000 R²)
+-- mean                 735.3 ms   (676.0 ms .. 766.2 ms)
+-- std dev              66.42 ms   (55.94 ms .. 69.47 ms)
+-- variance introduced by outliers: 22% (moderately inflated)
+
+-- benchmarking map strategies/parallel 3
+-- time                 362.1 ms   (348.5 ms .. 377.0 ms)
+--                      1.000 R²   (0.999 R² .. 1.000 R²)
+-- mean                 354.6 ms   (348.1 ms .. 358.2 ms)
+-- std dev              4.959 ms   (1.499 ms .. 6.727 ms)
+-- variance introduced by outliers: 19% (moderately inflated)
+
+-- benchmarking fold strategies/sequential
+-- time                 762.0 ms   (682.7 ms .. 913.8 ms)
+--                      0.995 R²   (0.992 R² .. 1.000 R²)
+-- mean                 676.3 ms   (647.5 ms .. 720.1 ms)
+-- std dev              42.34 ms   (11.72 ms .. 57.27 ms)
+-- variance introduced by outliers: 19% (moderately inflated)
+
+-- benchmarking fold strategies/parallel 3
+-- time                 413.4 ms   (330.2 ms .. 536.7 ms)
+--                      0.990 R²   (0.972 R² .. 1.000 R²)
+-- mean                 368.3 ms   (345.6 ms .. 394.6 ms)
+-- std dev              25.80 ms   (7.999 ms .. 35.08 ms)
+-- variance introduced by outliers: 20% (moderately inflated)
