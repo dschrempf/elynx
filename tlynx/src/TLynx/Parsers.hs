@@ -34,7 +34,7 @@ printError fn new nex = do
 --
 -- Error if no or more than one trees are found.
 -- Error if both file formats fail to parse.
-parseTree :: NewickFormat -> FilePath -> IO (Tree Phylo NodeName)
+parseTree :: NewickFormat -> FilePath -> IO (Tree Phylo Name)
 parseTree fmt fn = do
   parseResultNewick <- runParserOnFile (oneNewick fmt) fn
   case parseResultNewick of
@@ -50,7 +50,7 @@ parseTree fmt fn = do
 -- | Parse a Newick tree file or a Nexus file with Newick trees.
 --
 -- Error if both file formats fail to parse.
-parseTrees :: NewickFormat -> FilePath -> IO (Forest Phylo NodeName)
+parseTrees :: NewickFormat -> FilePath -> IO (Forest Phylo Name)
 parseTrees fmt fn = do
   parseResultNewick <- runParserOnFile (someNewick fmt) fn
   case parseResultNewick of

@@ -23,7 +23,7 @@ import ELynx.Tree.Arbitrary ()
 import Test.Hspec
 import Test.QuickCheck hiding (label)
 
-samplePhyloByteStringTree :: Tree Phylo NodeName
+samplePhyloByteStringTree :: Tree Phylo Name
 samplePhyloByteStringTree = parseByteStringWith (newick Standard) sampleNewickByteString1
 
 sampleNewickByteString1 :: BL.ByteString

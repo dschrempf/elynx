@@ -45,7 +45,7 @@ treesOneFile ::
   FilePath ->
   ELynx
     CompareArguments
-    (Tree Phylo NodeName, Tree Phylo NodeName)
+    (Tree Phylo Name, Tree Phylo Name)
 treesOneFile tf = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse file '" ++ tf ++ "'."
@@ -62,7 +62,7 @@ treesTwoFiles ::
   FilePath ->
   ELynx
     CompareArguments
-    (Tree Phylo NodeName, Tree Phylo NodeName)
+    (Tree Phylo Name, Tree Phylo Name)
 treesTwoFiles tf1 tf2 = do
   nwF <- argsNewickFormat . local <$> ask
   $(logInfo) $ T.pack $ "Parse first tree file '" ++ tf1 ++ "'."
@@ -111,8 +111,8 @@ compareCmd = do
 
 analyzeDistance ::
   Handle ->
-  Tree Phylo NodeName ->
-  Tree Phylo NodeName ->
+  Tree Phylo Name ->
+  Tree Phylo Name ->
   ELynx CompareArguments ()
 analyzeDistance outH t1 t2 = do
   let formatD str val = T.justifyLeft 25 ' ' str <> "  " <> val
@@ -177,8 +177,8 @@ analyzeDistance outH t1 t2 = do
 
 analyzeBipartitions ::
   Handle ->
-  Tree Phylo NodeName ->
-  Tree Phylo NodeName ->
+  Tree Phylo Name ->
+  Tree Phylo Name ->
   ELynx CompareArguments ()
 analyzeBipartitions outH t1 t2 =
   case (phyloToLengthTree t1, phyloToLengthTree t2) of

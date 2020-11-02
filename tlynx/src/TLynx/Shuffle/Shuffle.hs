@@ -75,9 +75,9 @@ shuffleT ::
   Int -> -- How many?
   Length -> -- Stem length.
   [Length] -> -- Coalescent times.
-  [NodeName] -> -- Leave names.
+  [Name] -> -- Leave names.
   GenIO ->
-  IO (Forest Length NodeName)
+  IO (Forest Length Name)
 shuffleT n o cs ls gen = do
   css <- grabble cs n (length cs) gen
   lss <- grabble ls n (length ls) gen

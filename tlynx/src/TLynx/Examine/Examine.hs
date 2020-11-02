@@ -58,7 +58,7 @@ summarizeLengths t =
     h' = sum (distancesOriginLeaves t) / fromIntegral n
     b = totalLength t
 
-readTrees :: FilePath -> ELynx ExamineArguments (Forest Phylo NodeName)
+readTrees :: FilePath -> ELynx ExamineArguments (Forest Phylo Name)
 readTrees fp = do
   $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
   nf <- argsNewickFormat . local <$> ask
@@ -78,7 +78,7 @@ examineTree h t = do
         ("Duplicate leaves: " ++ show dups)
   BL.hPutStrLn h $ "Leave names: " <> BL.intercalate " " lvs
   where
-    lvs = map (fromNodeName . getName) $ leaves t
+    lvs = map (fromName . getName) $ leaves t
     dups = lvs \\ nubOrd lvs
 
 -- | Examine phylogenetic trees.

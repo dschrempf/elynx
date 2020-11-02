@@ -20,10 +20,10 @@ import ELynx.Tools
 import ELynx.Tree
 import Test.Hspec
 
-collapseTree :: Tree Phylo NodeName
+collapseTree :: Tree Phylo Name
 collapseTree = parseByteStringWith (oneNewick IqTree) "((a,b),(c,d));"
 
-collapseStarTree :: Tree Phylo NodeName
+collapseStarTree :: Tree Phylo Name
 collapseStarTree = parseByteStringWith (oneNewick Standard) "(a[1.0],b[1.0],c[1.0],d[1.0])[1.0];"
 
 spec :: Spec

@@ -25,13 +25,13 @@ import Test.QuickCheck
 treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
 
-getSimpleTrees :: IO (Forest Phylo NodeName)
+getSimpleTrees :: IO (Forest Phylo Name)
 getSimpleTrees = parseFileWith (someNewick Standard) treeFileSimple
 
 treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"
 
-getManyTrees :: IO (Forest Phylo NodeName)
+getManyTrees :: IO (Forest Phylo Name)
 getManyTrees = parseFileWith (someNewick Standard) treeFileMany
 
 -- I used treedist from Phylip to get the correct results.
@@ -179,19 +179,19 @@ bifurcatingIncomp =
       Node () ' ' [Node () 'B' [], Node () ' ' [Node () 'D' [], Node () 'E' []]]
     ]
 
-incSplitTree1a :: Tree Phylo NodeName
+incSplitTree1a :: Tree Phylo Name
 incSplitTree1a = parseByteStringWith (oneNewick IqTree) "((a,b)0.7,(c,d));"
 
-incSplitTree1b :: Tree Phylo NodeName
+incSplitTree1b :: Tree Phylo Name
 incSplitTree1b = parseByteStringWith (oneNewick IqTree) "((a,b)0.7,c,d);"
 
-incSplitTree2 :: Tree Phylo NodeName
+incSplitTree2 :: Tree Phylo Name
 incSplitTree2 = parseByteStringWith (oneNewick IqTree) "((a,c),(b,d));"
 
-incSplitTree3 :: Tree Phylo NodeName
+incSplitTree3 :: Tree Phylo Name
 incSplitTree3 = parseByteStringWith (oneNewick IqTree) "(((a,b)0.7,c),(d,e));"
 
-incSplitTree4 :: Tree Phylo NodeName
+incSplitTree4 :: Tree Phylo Name
 incSplitTree4 = parseByteStringWith (oneNewick IqTree) "(((a,c),b),(d,e));"
 
 -- Compute distances between adjacent pairs of a list of input trees. Use given

@@ -135,8 +135,8 @@ distance = do
             ++ "."
     BranchScore -> $(logInfo) "Use branch score distance."
   let distanceMeasure' ::
-        Tree Phylo NodeName ->
-        Tree Phylo NodeName ->
+        Tree Phylo Name ->
+        Tree Phylo Name ->
         Double
       distanceMeasure' t1 t2 = either error id $ case dist of
         Symmetric -> second fromIntegral $ symmetric t1 t2

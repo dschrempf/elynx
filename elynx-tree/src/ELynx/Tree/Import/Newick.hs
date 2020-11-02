@@ -77,51 +77,51 @@ description RevBayes =
   "RevBayes: Key-value pairs is provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are ignored at the moment."
 
 -- | Newick tree parser. Also succeeds when more trees follow.
-newick :: NewickFormat -> Parser (Tree Phylo NodeName)
+newick :: NewickFormat -> Parser (Tree Phylo Name)
 newick Standard = newickStandard
 newick IqTree = newickIqTree
 newick RevBayes = newickRevBayes
 
 -- | See 'newick'.
-parseNewick :: NewickFormat -> BS.ByteString -> Tree Phylo NodeName
+parseNewick :: NewickFormat -> BS.ByteString -> Tree Phylo Name
 parseNewick f = either error id . parseOnly (newick f)
 
 -- | One Newick tree parser. Fails when end of input is not reached.
-oneNewick :: NewickFormat -> Parser (Tree Phylo NodeName)
+oneNewick :: NewickFormat -> Parser (Tree Phylo Name)
 oneNewick Standard = oneNewickStandard
 oneNewick IqTree = oneNewickIqTree
 oneNewick RevBayes = oneNewickRevBayes
 
 -- | See 'oneNewick'.
-parseOneNewick :: NewickFormat -> BS.ByteString -> Tree Phylo NodeName
+parseOneNewick :: NewickFormat -> BS.ByteString -> Tree Phylo Name
 parseOneNewick f = either error id . parseOnly (oneNewick f)
 
 -- | One or more Newick trees parser.
-someNewick :: NewickFormat -> Parser (Forest Phylo NodeName)
+someNewick :: NewickFormat -> Parser (Forest Phylo Name)
 someNewick Standard = someNewickStandard
 someNewick IqTree = someNewickIqTree
 someNewick RevBayes = someNewickRevBayes
 
 -- | See 'someNewick'.
-parseSomeNewick :: NewickFormat -> BS.ByteString -> [Tree Phylo NodeName]
+parseSomeNewick :: NewickFormat -> BS.ByteString -> [Tree Phylo Name]
 parseSomeNewick f = either error id . parseOnly (someNewick f)
 
 -- Parse a single Newick tree. Also succeeds when more trees follow.
-newickStandard :: Parser (Tree Phylo NodeName)
+newickStandard :: Parser (Tree Phylo Name)
 newickStandard = skipWhile isSpace *> tree <* char ';' <* skipWhile isSpace <?> "newickStandard"
 
 -- Parse a single Newick tree. Fails when end of file is not reached.
-oneNewickStandard :: Parser (Tree Phylo NodeName)
+oneNewickStandard :: Parser (Tree Phylo Name)
 oneNewickStandard = newickStandard <* endOfInput <?> "oneNewickStandard"
 
 -- Parse one ore more Newick trees until end of file.
-someNewickStandard :: Parser (Forest Phylo NodeName)
+someNewickStandard :: Parser (Forest Phylo Name)
 someNewickStandard = some newickStandard <* endOfInput <?> "someNewickStandard"
 
-tree :: Parser (Tree Phylo NodeName)
+tree :: Parser (Tree Phylo Name)
 tree = branched <|> leaf <?> "tree"
 
-branched :: Parser (Tree Phylo NodeName)
+branched :: Parser (Tree Phylo Name)
 branched = (<?> "branched") $ do
   f <- forest
   n <- name
@@ -129,11 +129,11 @@ branched = (<?> "branched") $ do
   return $ Node p n f
 
 -- A 'forest' is a set of trees separated by @,@ and enclosed by parentheses.
-forest :: Parser (Forest Phylo NodeName)
+forest :: Parser (Forest Phylo Name)
 forest = char '(' *> (tree `sepBy1` char ',') <* char ')' <?> "forest"
 
 -- A 'leaf' has a 'name' and a 'phylo' branch.
-leaf :: Parser (Tree Phylo NodeName)
+leaf :: Parser (Tree Phylo Name)
 leaf = (<?> "leaf") $ do
   n <- name
   p <- phylo
@@ -144,8 +144,8 @@ nameChar c = c `notElem` " :;()[],"
 
 -- A name can be any string of printable characters except blanks, colons,
 -- semicolons, parentheses, and square brackets (and commas).
-name :: Parser NodeName
-name = NodeName . BL.fromStrict <$> takeWhile nameChar <?> "name"
+name :: Parser Name
+name = Name . BL.fromStrict <$> takeWhile nameChar <?> "name"
 
 phylo :: Parser Phylo
 phylo = Phylo <$> optional branchLength <*> optional branchSupport <?> "phylo"
@@ -170,24 +170,24 @@ branchSupport =
 
 -- IQ-TREE stores the branch support as node names after the closing bracket of
 -- a forest. Parse a single Newick tree. Also succeeds when more trees follow.
-newickIqTree :: Parser (Tree Phylo NodeName)
+newickIqTree :: Parser (Tree Phylo Name)
 newickIqTree = skipWhile isSpace *> treeIqTree <* char ';' <* skipWhile isSpace <?> "newickIqTree"
 
 -- See 'newickIqTree'. Parse a single Newick tree. Fails when end of file is not
 -- reached.
-oneNewickIqTree :: Parser (Tree Phylo NodeName)
+oneNewickIqTree :: Parser (Tree Phylo Name)
 oneNewickIqTree = newickIqTree <* endOfInput <?> "oneNewickIqTree"
 
 -- See 'newickIqTree'. Parse one ore more Newick trees until end of file.
-someNewickIqTree :: Parser (Forest Phylo NodeName)
+someNewickIqTree :: Parser (Forest Phylo Name)
 someNewickIqTree = some newickIqTree <* endOfInput <?> "someNewickIqTree"
 
 -- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
-treeIqTree :: Parser (Tree Phylo NodeName)
+treeIqTree :: Parser (Tree Phylo Name)
 treeIqTree = branchedIqTree <|> leaf <?> "treeIqTree"
 
 -- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
-branchedIqTree :: Parser (Tree Phylo NodeName)
+branchedIqTree :: Parser (Tree Phylo Name)
 branchedIqTree = (<?> "branchedIqTree") $ do
   f <- forestIqTree
   ms <- optional double
@@ -197,7 +197,7 @@ branchedIqTree = (<?> "branchedIqTree") $ do
   return $ Node (Phylo b s) n f
 
 -- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
-forestIqTree :: Parser (Forest Phylo NodeName)
+forestIqTree :: Parser (Forest Phylo Name)
 forestIqTree = (<?> "forestIqTree") $ do
   _ <- char '('
   f <- treeIqTree `sepBy1` char ','
@@ -212,7 +212,7 @@ forestIqTree = (<?> "forestIqTree") $ do
 -- trees follow.
 --
 -- TODO: Key value pairs are ignored at the moment.
-newickRevBayes :: Parser (Tree Phylo NodeName)
+newickRevBayes :: Parser (Tree Phylo Name)
 newickRevBayes =
   skipWhile isSpace
     *> optional brackets
@@ -222,37 +222,37 @@ newickRevBayes =
 
 -- See 'newickRevBayes'. Parse a single Newick tree. Fails when end of file is
 -- not reached.
-oneNewickRevBayes :: Parser (Tree Phylo NodeName)
+oneNewickRevBayes :: Parser (Tree Phylo Name)
 oneNewickRevBayes = newickRevBayes <* endOfInput <?> "oneNewickRevBayes"
 
 -- See 'newickRevBayes'. Parse one ore more Newick trees until end of file.
-someNewickRevBayes :: Parser (Forest Phylo NodeName)
+someNewickRevBayes :: Parser (Forest Phylo Name)
 someNewickRevBayes = some newickRevBayes <* endOfInput <?> "someNewickRevBayes"
 
-treeRevBayes :: Parser (Tree Phylo NodeName)
+treeRevBayes :: Parser (Tree Phylo Name)
 treeRevBayes = branchedRevBayes <|> leafRevBayes <?> "treeRevBayes"
 
-branchedRevBayes :: Parser (Tree Phylo NodeName)
+branchedRevBayes :: Parser (Tree Phylo Name)
 branchedRevBayes = (<?> "branchedRevgBayes") $ do
   f <- forestRevBayes
   n <- nameRevBayes
   b <- optional branchLengthRevBayes
   return $ Node (Phylo b Nothing) n f
 
-forestRevBayes :: Parser (Forest Phylo NodeName)
+forestRevBayes :: Parser (Forest Phylo Name)
 forestRevBayes = (<?> "forestRevBayes") $ do
   _ <- char '('
   f <- treeRevBayes `sepBy1` char ','
   _ <- char ')'
   return f
 
-nameRevBayes :: Parser NodeName
+nameRevBayes :: Parser Name
 nameRevBayes = name <* optional brackets <?> "nameRevBayes"
 
 branchLengthRevBayes :: Parser Length
 branchLengthRevBayes = branchLength <* optional brackets <?> "branchLengthRevBayes"
 
-leafRevBayes :: Parser (Tree Phylo NodeName)
+leafRevBayes :: Parser (Tree Phylo Name)
 leafRevBayes = (<?> "leafRevBayes") $ do
   n <- nameRevBayes
   b <- optional branchLengthRevBayes

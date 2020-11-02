@@ -27,13 +27,13 @@ import ELynx.Tree.Rooted
 import Prelude hiding (takeWhile)
 
 -- | Parse a Nexus files with a TREES block.
-nexusTrees :: NewickFormat -> Parser [(BS.ByteString, Tree Phylo NodeName)]
+nexusTrees :: NewickFormat -> Parser [(BS.ByteString, Tree Phylo Name)]
 nexusTrees = nexusBlock . trees
 
-trees :: NewickFormat -> Block [(BS.ByteString, Tree Phylo NodeName)]
+trees :: NewickFormat -> Block [(BS.ByteString, Tree Phylo Name)]
 trees f = Block "TREES" (some $ namedNewick f)
 
-namedNewick :: NewickFormat -> Parser (BS.ByteString, Tree Phylo NodeName)
+namedNewick :: NewickFormat -> Parser (BS.ByteString, Tree Phylo Name)
 namedNewick f = do
   _ <- skipWhile isSpace
   _ <- stringCI "TREE" <?> "namedNewickTreeStart"

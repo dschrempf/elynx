@@ -25,7 +25,7 @@ import System.Random.MWC
 treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"
 
-getManyTrees :: IO (Forest Phylo NodeName)
+getManyTrees :: IO (Forest Phylo Name)
 getManyTrees = parseFileWith (someNewick Standard) treeFileMany
 
 hugeTree :: IO (Tree Length Int)

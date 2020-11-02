@@ -56,7 +56,7 @@ sampleNewickByteString2 =
 sampleNewickEmptyByteString :: BS.ByteString
 sampleNewickEmptyByteString = "(,(,,),);"
 
-sampleNewickEmpty :: Tree Phylo NodeName
+sampleNewickEmpty :: Tree Phylo Name
 sampleNewickEmpty =
   Node
     noPL

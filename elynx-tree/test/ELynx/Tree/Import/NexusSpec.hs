@@ -26,7 +26,7 @@ file = "data/SimpleTree.nex"
 noPL :: Phylo
 noPL = Phylo Nothing Nothing
 
-res :: Tree Phylo NodeName
+res :: Tree Phylo Name
 res =
   Node
     noPL

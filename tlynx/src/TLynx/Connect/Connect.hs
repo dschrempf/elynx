@@ -67,9 +67,9 @@ connectCmd = do
   liftIO $ hClose outH
 
 connectTrees ::
-  Tree Length NodeName ->
-  Tree Length NodeName ->
-  Forest Length NodeName
+  Tree Length Name ->
+  Tree Length Name ->
+  Forest Length Name
 connectTrees t = either error id . connect 0 "root" t
 
 type Constraint a = S.Set a
@@ -102,7 +102,7 @@ parseTreeTuple ::
   FilePath ->
   ELynx
     ConnectArguments
-    (Tree Length NodeName, Tree Length NodeName)
+    (Tree Length Name, Tree Length Name)
 parseTreeTuple l r = do
   nwF <- nwFormat . local <$> ask
   tl <- liftIO $ parseTree nwF l
@@ -129,7 +129,7 @@ connectAndFilter h c l r = do
   $(logInfo) $ fromBs $ BL.intercalate "\n" $ map toNewick cts
   (tl, tr) <- parseTreeTuple l r
   let ts = connectTrees tl tr
-      cs = map S.fromList $ concatMap multifurcatingGroups cts :: [Constraint NodeName]
+      cs = map S.fromList $ concatMap multifurcatingGroups cts :: [Constraint Name]
       -- Only collect trees that are compatible with the constraints.
       ts' = filter (compatibleWith getName cs) ts
   $(logInfo) $ "Connected  trees: " <> tShow (length ts)

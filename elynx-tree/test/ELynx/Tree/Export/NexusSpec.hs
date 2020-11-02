@@ -20,7 +20,7 @@ import ELynx.Tools
 import ELynx.Tree
 import Test.Hspec
 
-tree :: Tree Phylo NodeName
+tree :: Tree Phylo Name
 tree =
   Node
     (Phylo Nothing Nothing)

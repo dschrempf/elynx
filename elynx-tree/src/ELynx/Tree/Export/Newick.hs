@@ -48,7 +48,7 @@ toNewickBuilder t = go t <> BB.char8 ';'
     mBrSupBuilder x = maybe mempty buildBrSup (brSup x)
     mBrLenBuilder x = maybe mempty buildBrLen (brLen x)
     lbl x y =
-      BB.lazyByteString (fromNodeName $ getName y)
+      BB.lazyByteString (fromName $ getName y)
         <> mBrLenBuilder x
         -- After reading several discussions, I go for the "more semantical
         -- form" with branch support values in square brackets.

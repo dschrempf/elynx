@@ -23,16 +23,16 @@ import ELynx.Tools
 import ELynx.Tree
 import Test.Hspec
 
-sfrom :: [NodeName] -> S.Set NodeName
+sfrom :: [Name] -> S.Set Name
 sfrom = S.fromList
 
 treeFileSimple :: FilePath
 treeFileSimple = "data/TreeDist.trees"
 
-getSimpleTrees :: IO (Forest Phylo NodeName)
+getSimpleTrees :: IO (Forest Phylo Name)
 getSimpleTrees = parseFileWith (someNewick Standard) treeFileSimple
 
-bipartitionToBranchAnswer :: Map (Bipartition NodeName) Length
+bipartitionToBranchAnswer :: Map (Bipartition Name) Length
 bipartitionToBranchAnswer =
   M.fromList
     [ (bpUnsafe (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]), 0.3),
@@ -44,7 +44,7 @@ bipartitionToBranchAnswer =
       (bpUnsafe (sfrom ["E"]) (sfrom ["A", "B", "C", "D"]), 0.8)
     ]
 
-bipartitionsFirstTree :: Set (Bipartition NodeName)
+bipartitionsFirstTree :: Set (Bipartition Name)
 bipartitionsFirstTree =
   S.fromList
     [ bpUnsafe (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]),
@@ -56,7 +56,7 @@ bipartitionsFirstTree =
       bpUnsafe (sfrom ["E"]) (sfrom ["A", "B", "C", "D"])
     ]
 
-bipartitionsSecondTree :: Set (Bipartition NodeName)
+bipartitionsSecondTree :: Set (Bipartition Name)
 bipartitionsSecondTree =
   S.fromList
     [ bpUnsafe (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]),

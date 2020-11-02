@@ -99,7 +99,7 @@ simulateAlignment pm t' n g = do
       -- XXX: Probably use type safe stuff here?
       alph = A.all $ alphabetSpec code
       sequences =
-        [ Seq.Sequence (fromNodeName sName) "" code (V.fromList $ map (`Set.elemAt` alph) ss)
+        [ Seq.Sequence (fromName sName) "" code (V.fromList $ map (`Set.elemAt` alph) ss)
           | (sName, ss) <- zip leafNames leafStates
         ]
   return $ either error id $ A.fromSequences sequences
