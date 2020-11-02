@@ -215,8 +215,8 @@ analyzeBipartitions outH t1 t2 =
           liftIO $ hPutStrLn outH "There are no common bipartitions."
           liftIO $ hPutStrLn outH "No plots have been generated."
         else do
-          let bpToBrLen1 = M.map getLen $ either error id $ bipartitionToBranch t1l
-              bpToBrLen2 = M.map getLen $ either error id $ bipartitionToBranch t2l
+          let bpToBrLen1 = M.map (fromBranchLength . getLen) $ either error id $ bipartitionToBranch t1l
+              bpToBrLen2 = M.map (fromBranchLength . getLen) $ either error id $ bipartitionToBranch t2l
           liftIO $
             hPutStrLn
               outH

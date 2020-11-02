@@ -255,4 +255,4 @@ spec = do
     it "is zero for a collection of random trees" $
       property $
         prop_dist_same_tree
-          (branchScore :: Tree Length Double -> Tree Length Double -> Either String Double)
+          (branchScore :: Tree BranchLength Double -> Tree BranchLength Double -> Either String Double)

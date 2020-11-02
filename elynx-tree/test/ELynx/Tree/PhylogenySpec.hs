@@ -42,7 +42,7 @@ instance Splittable () where
 prop_roots :: Tree () a -> Bool
 prop_roots t@(Node _ _ [_, _])
   | length (leaves t) == 2 = (length <$> roots t) == Right 1
-  | otherwise = (length <$> roots t) == (Right $ length (labels t) - 2)
+  | otherwise = (length <$> roots t) == Right (length (labels t) - 2)
 prop_roots _ = True
 
 -- -- Skip leaves and trees with multifurcating root nodes.
@@ -94,7 +94,7 @@ prop_roots _ = True
 --   :: (Ord a, Measurable a, Named a, BranchSupported a) => Tree a -> Bool
 -- prop_bifurcating_tree t = partitions (resolve t) == empty
 
-prop_roots_total_length :: Tree Length a -> Bool
+prop_roots_total_length :: Tree BranchLength a -> Bool
 prop_roots_total_length t@(Node _ _ [_, _]) =
   all (\b -> abs (b - l) < 1e-8) $
     map totalBranchLength $
@@ -132,7 +132,7 @@ spec = do
   describe "rootsWithBranch" $
     modifyMaxSize (* 100) $
       it "does not change the tree height" $
-        property (prop_roots_total_length :: Tree Length Int -> Bool)
+        property (prop_roots_total_length :: Tree BranchLength Int -> Bool)
 
 -- -- TODO: Move this test to the executable.
 -- describe "connect" $

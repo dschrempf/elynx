@@ -36,7 +36,7 @@ import TLynx.Parsers
 import Text.Printf
 
 pretty :: BranchLength -> String
-pretty = printf "%.5f"
+pretty = printf "%.5f" . fromBranchLength
 
 prettyRow :: String -> String -> BL.ByteString
 prettyRow name val = alignLeft 33 n <> alignRight 8 v
@@ -79,7 +79,7 @@ examineTree h t = do
         ("Duplicate leaves: " ++ show dups)
   BL.hPutStrLn h $ "Leave names: " <> BL.intercalate " " lvs
   where
-    lvs = map getName $ leaves t
+    lvs = map (fromNodeName . getName) $ leaves t
     dups = lvs \\ nubOrd lvs
 
 -- | Examine phylogenetic trees.

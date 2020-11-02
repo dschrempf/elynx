@@ -1,3 +1,5 @@
+{-# LANGUAGE DerivingVia #-}
+
 -- |
 -- Module      :  ELynx.Tree.Named
 -- Description :  Trees with named nodes
@@ -10,39 +12,56 @@
 --
 -- Creation date: Thu Jan 24 20:09:20 2019.
 module ELynx.Tree.Named
-  ( NodeName,
+  ( NodeName (..),
     Named (..),
   )
 where
 
+import Data.Aeson
 import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Double.Conversion.ByteString as BC
+import Data.String
 
 -- | Node name.
 --
 -- Use lazy byte strings because Newick strings are built using chunks.
-type NodeName = BL.ByteString
+newtype NodeName = NodeName {fromNodeName :: BL.ByteString}
+  deriving (Show, Eq)
+  deriving (Ord, Monoid, Semigroup, IsString) via BL.ByteString
+
+-- XXX: This is pretty lame, but I need those instances. At the moment, I just
+-- go via 'String', but this is certainly not the best solution.
+
+instance ToJSON NodeName where
+  toJSON = toJSON . BL.unpack . fromNodeName
+  toEncoding = toEncoding . BL.unpack . fromNodeName
+
+instance FromJSON NodeName where
+  parseJSON = fmap (NodeName . BL.pack) . parseJSON
+
+instance Named NodeName where
+  getName = id
 
 -- | Data types with names.
 class Named a where
   getName :: a -> NodeName
 
 instance Named () where
-  getName = const BL.empty
+  getName = const (NodeName BL.empty)
 
 instance Named Int where
-  getName = BB.toLazyByteString . BB.intDec
+  getName = NodeName . BB.toLazyByteString . BB.intDec
 
 instance Named Double where
-  getName = BL.fromStrict . toShortest
+  getName = NodeName . BL.fromStrict . toShortest
 
 instance Named Char where
-  getName = BB.toLazyByteString . BB.char8
+  getName = NodeName . BB.toLazyByteString . BB.char8
 
 instance Named BL.ByteString where
-  getName = id
+  getName = NodeName
 
 instance Named BS.ByteString where
-  getName = BL.fromStrict
+  getName = NodeName . BL.fromStrict

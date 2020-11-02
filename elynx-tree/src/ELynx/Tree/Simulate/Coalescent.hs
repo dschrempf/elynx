@@ -17,7 +17,6 @@ where
 import Control.Monad.Primitive
 import ELynx.Tree.Distribution.CoalescentContinuous
 import ELynx.Tree.Measurable
-import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
 import Statistics.Distribution
 import System.Random.MWC
@@ -29,18 +28,18 @@ simulate ::
   -- | Number of leaves.
   Int ->
   Gen (PrimState m) ->
-  m (Tree Length Int)
+  m (Tree BranchLength Int)
 simulate n = simulate' n 0 trs
   where
-    trs = [Node (Length 0) i [] | i <- [0 .. n - 1]]
+    trs = [Node 0 i [] | i <- [0 .. n - 1]]
 
 simulate' ::
   (PrimMonad m) =>
   Int ->
   Int ->
-  Forest Length Int ->
+  Forest BranchLength Int ->
   Gen (PrimState m) ->
-  m (Tree Length Int)
+  m (Tree BranchLength Int)
 simulate' n a trs g
   | n <= 0 = error "Cannot construct trees without leaves."
   | n == 1 && length trs /= 1 = error "Too many trees provided."
@@ -49,12 +48,12 @@ simulate' n a trs g
     -- Indices of the leaves to join will be i-1 and i.
     i <- uniformR (1, n - 1) g
     -- The time of the coalescent event.
-    t <- genContVar (coalescentDistributionCont n) g
+    t <- branchLengthUnsafe <$> genContVar (coalescentDistributionCont n) g
     let trs' = map (applyStem (+ t)) trs -- Move time 't' up on the tree.
         tl = trs' !! (i - 1)
         tr = trs' !! i
         -- Join the two chosen trees.
-        tm = Node (Length 0) a [tl, tr]
+        tm = Node 0 a [tl, tr]
         -- Take the trees on the left, the merged tree, and the trees on the right.
         trs'' = take (i - 1) trs' ++ [tm] ++ drop (i + 1) trs'
     simulate' (n - 1) a trs'' g

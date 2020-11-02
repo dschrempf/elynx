@@ -33,7 +33,7 @@ treeFileSimple = "data/TreeDist.trees"
 getSimpleTrees :: IO (Forest Phylo BS.ByteString)
 getSimpleTrees = parseFileWith (someNewick Standard) treeFileSimple
 
-bipartitionToBranchAnswer :: Map (Bipartition BS.ByteString) Length
+bipartitionToBranchAnswer :: Map (Bipartition BS.ByteString) BranchLength
 bipartitionToBranchAnswer =
   M.fromList
     [ (bpUnsafe (sfrom ["B"]) (sfrom ["A", "C", "D", "E"]), 0.3),

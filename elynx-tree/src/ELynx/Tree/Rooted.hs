@@ -4,6 +4,7 @@
 -- |
 -- Module      :  ELynx.Tree.Rooted
 -- Description :  Rooted trees with labeled branches
+
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -63,11 +64,13 @@ module ELynx.Tree.Rooted
     duplicateLeaves,
     branches,
     setBranches,
+    applyStem,
     labels,
     setLabels,
+    applyRoot,
     identify,
 
-    -- * Change structure
+    -- * Structure
     degree,
     prune,
     dropNodesWith,
@@ -261,6 +264,10 @@ setBranches xs = bisequenceA . snd . bimapAccumL setBranch noChange xs
     setBranch (y : ys) _ = (ys, Just y)
     noChange ys z = (ys, Just z)
 
+-- | Change the root branch of a tree.
+applyStem :: (e -> e) -> Tree e a -> Tree e a
+applyStem f t = t {branch = f $ branch t}
+
 -- | Return node labels in pre-order.
 labels :: Tree e a -> [a]
 labels t = squish t []
@@ -275,6 +282,10 @@ setLabels xs = sequenceA . snd . mapAccumL setLabel xs
   where
     setLabel [] _ = ([], Nothing)
     setLabel (y : ys) _ = (ys, Just y)
+
+-- | Change the root label of a tree.
+applyRoot :: (a -> a) -> Tree e a -> Tree e a
+applyRoot f t = t {label = f $ label t}
 
 -- | Label the nodes with unique integers starting at the root with 0.
 identify :: Traversable t => t a -> t Int

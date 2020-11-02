@@ -23,6 +23,7 @@ where
 import qualified Data.Attoparsec.ByteString.Char8 as AC
 import qualified Data.ByteString.Char8 as BS
 import ELynx.Tools
+import ELynx.Tree (BranchSupport (..), branchSupportUnsafe)
 import Options.Applicative
 import TLynx.Parsers
 import Text.Printf
@@ -33,7 +34,7 @@ data DistanceMeasure
     Symmetric
   | -- | Incompatible split distance; collapse nodes
     -- with branch support below given value.
-    IncompatibleSplit Double
+    IncompatibleSplit BranchSupport
   | -- | Branch score distance.
     BranchScore
   deriving (Eq, Generic)
@@ -44,7 +45,7 @@ instance ToJSON DistanceMeasure
 
 instance Show DistanceMeasure where
   show Symmetric = "Symmetric"
-  show (IncompatibleSplit c) = "Incompatible Split (" ++ printf "%.2f" c ++ ")"
+  show (IncompatibleSplit c) = "Incompatible Split (" ++ printf "%.2f" (fromBranchSupport c) ++ ")"
   show BranchScore = "Branch Score"
 
 -- | Arguments needed to compute distance measures.
@@ -117,7 +118,7 @@ incompatibleSplit = do
   _ <- AC.char ']'
   _ <- AC.endOfInput
   if (0 <= f) && (f <= 1)
-    then pure $ IncompatibleSplit f
+    then pure $ IncompatibleSplit $ branchSupportUnsafe f
     else error "Branch support has to be in [0, 1]."
 
 branchScore :: AC.Parser DistanceMeasure

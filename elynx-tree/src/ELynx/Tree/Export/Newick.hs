@@ -23,15 +23,17 @@ where
 import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (intersperse)
+import ELynx.Tree.Measurable
 import ELynx.Tree.Named
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
+import ELynx.Tree.Supported
 
-buildBrSup :: Double -> BB.Builder
-buildBrSup bs = BB.char8 '[' <> BB.doubleDec bs <> BB.char8 ']'
+buildBrLen :: BranchLength -> BB.Builder
+buildBrLen bl = BB.char8 ':' <> BB.doubleDec (fromBranchLength bl)
 
-buildBrLen :: Double -> BB.Builder
-buildBrLen bl = BB.char8 ':' <> BB.doubleDec bl
+buildBrSup :: BranchSupport -> BB.Builder
+buildBrSup bs = BB.char8 '[' <> BB.doubleDec (fromBranchSupport bs) <> BB.char8 ']'
 
 -- | See 'toNewick'.
 toNewickBuilder :: Named a => Tree Phylo a -> BB.Builder
@@ -46,7 +48,7 @@ toNewickBuilder t = go t <> BB.char8 ';'
     mBrSupBuilder x = maybe mempty buildBrSup (brSup x)
     mBrLenBuilder x = maybe mempty buildBrLen (brLen x)
     lbl x y =
-      BB.lazyByteString (getName y)
+      BB.lazyByteString (fromNodeName $ getName y)
         <> mBrLenBuilder x
         -- After reading several discussions, I go for the "more semantical
         -- form" with branch support values in square brackets.

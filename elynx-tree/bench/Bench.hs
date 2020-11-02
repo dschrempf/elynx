@@ -29,16 +29,16 @@ treeFileMany = "data/Many.trees"
 getManyTrees :: IO (Forest Phylo BS.ByteString)
 getManyTrees = parseFileWith (someNewick Standard) treeFileMany
 
-hugeTree :: IO (Tree Length Int)
+hugeTree :: IO (Tree BranchLength Int)
 hugeTree = create >>= simulateReconstructedTree 50000 Random 1.0 0.9
 
-sinN :: Int -> Double -> Double
+sinN :: Int -> BranchLength -> BranchLength
 sinN n x = iterate sin x !! n
 
-func :: Double -> Double
+func :: BranchLength -> BranchLength
 func = sinN 200
 
-hugeTreeCalcPar :: Int -> Tree Double Int -> Tree Double Int
+hugeTreeCalcPar :: Int -> Tree BranchLength Int -> Tree BranchLength Int
 hugeTreeCalcPar n t = first func t `using` parTree n
 
 main :: IO ()

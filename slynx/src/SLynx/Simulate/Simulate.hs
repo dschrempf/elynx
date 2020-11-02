@@ -68,7 +68,7 @@ simulateAlignment ::
   GenIO ->
   IO A.Alignment
 simulateAlignment pm t' n g = do
-  let t = getLen <$> toTreeBranchLabels t'
+  let t = fromBranchLength . getLen <$> toTreeBranchLabels t'
   c <- getNumCapabilities
   gs <- splitGen c g
   let chunks = getChunks c n
@@ -99,7 +99,7 @@ simulateAlignment pm t' n g = do
       -- XXX: Probably use type safe stuff here?
       alph = A.all $ alphabetSpec code
       sequences =
-        [ Seq.Sequence sName "" code (V.fromList $ map (`Set.elemAt` alph) ss)
+        [ Seq.Sequence (fromNodeName sName) "" code (V.fromList $ map (`Set.elemAt` alph) ss)
           | (sName, ss) <- zip leafNames leafStates
         ]
   return $ either error id $ A.fromSequences sequences
@@ -126,7 +126,7 @@ reportModel m = do
     else $(logInfo) "No elynx file required; omit writing machine-readable phylogenetic model."
 
 pretty :: BranchLength -> String
-pretty = printf "%.5f"
+pretty = printf "%.5f" . fromBranchLength
 
 prettyRow :: String -> String -> BL.ByteString
 prettyRow name val = alignLeft 33 n <> alignRight 8 v

@@ -26,7 +26,10 @@ import Test.QuickCheck
 -- XXX: This instance does not produce values without branch lengths nor branch
 -- supports.
 instance Arbitrary Phylo where
-  arbitrary = Phylo <$> (Just <$> choose (1, 100)) <*> (Just <$> choose (0.001, 10))
+  arbitrary =
+    Phylo
+      <$> (Just . branchLengthUnsafe <$> choose (0.001 :: Double, 10))
+      <*> (Just . branchSupportUnsafe . fromIntegral <$> choose (1 :: Int, 100))
 
 instance Arbitrary2 Tree where
   liftArbitrary2 arbB arbN = go
@@ -62,5 +65,5 @@ instance (CoArbitrary e, CoArbitrary a) => CoArbitrary (Tree e a) where
   coarbitrary (Node br val frst) =
     coarbitrary br . coarbitrary val . coarbitrary frst
 
-instance Arbitrary Length where
-  arbitrary = Length . getPositive <$> arbitrary
+instance Arbitrary BranchLength where
+  arbitrary = branchLengthUnsafe . getPositive <$> arbitrary

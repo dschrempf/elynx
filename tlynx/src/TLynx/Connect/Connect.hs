@@ -68,9 +68,9 @@ connectCmd = do
   liftIO $ hClose outH
 
 connectTrees ::
-  Tree Length BS.ByteString ->
-  Tree Length BS.ByteString ->
-  Forest Length BS.ByteString
+  Tree BranchLength BS.ByteString ->
+  Tree BranchLength BS.ByteString ->
+  Forest BranchLength BS.ByteString
 connectTrees t = either error id . connect 0 "root" t
 
 type Constraint a = S.Set a
@@ -103,7 +103,7 @@ parseTreeTuple ::
   FilePath ->
   ELynx
     ConnectArguments
-    (Tree Length BS.ByteString, Tree Length BS.ByteString)
+    (Tree BranchLength BS.ByteString, Tree BranchLength BS.ByteString)
 parseTreeTuple l r = do
   nwF <- nwFormat . local <$> ask
   tl <- liftIO $ parseTree nwF l

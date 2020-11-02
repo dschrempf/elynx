@@ -53,9 +53,7 @@ module ELynx.Tree.Phylogeny
     toPhyloTree,
     measurableToPhyloTree,
     supportedToPhyloTree,
-    Length (..),
     phyloToLengthTree,
-    Support (..),
     phyloToSupportTree,
     phyloToSupportTreeUnsafe,
     PhyloExplicit (..),
@@ -196,7 +194,12 @@ getMidpoint ts = case t of
     let hl = height l
         hr = height r
         dh = (hl - hr) / 2
-     in Node br lb [applyStem (subtract dh) l, applyStem (+ dh) r]
+     in Node
+          br
+          lb
+          [ applyStem (applyMeasurable (subtract dh)) l,
+            applyStem (applyMeasurable (+ dh)) r
+          ]
   -- Explicitly use 'error' here, because roots is supposed to return trees with
   -- bifurcating root nodes.
   _ -> error "getMidpoint: Root node is not bifurcating."
@@ -208,7 +211,7 @@ getMidpoint ts = case t of
 -- find index of minimum; take this tree and move root to the midpoint of the branch
 
 -- Get delta height of left and right sub tree.
-getDeltaHeight :: Measurable e => Tree e a -> Double
+getDeltaHeight :: Measurable e => Tree e a -> BranchLength
 getDeltaHeight (Node _ _ [l, r]) = abs $ height l - height r
 -- Explicitly use 'error' here, because roots is supposed to return trees with
 -- bifurcating root nodes.
@@ -354,65 +357,24 @@ supportedToPhyloTree = first supportedToPhyloLabel
 supportedToPhyloLabel :: Supported e => e -> Phylo
 supportedToPhyloLabel x = Phylo Nothing (Just $ getSup x)
 
--- | Branch length label.
---
--- For conversion, see 'phyloToLengthTree'.
-newtype Length = Length {fromLength :: BranchLength}
-  deriving (Read, Show, Eq, Ord, Generic, NFData)
-  deriving (Num, Fractional, Floating) via Double
-  deriving (Semigroup, Monoid) via Sum Double
-
-instance Measurable Length where
-  getLen = fromLength
-  setLen b _ = Length b
-
-instance Splittable Length where
-  split = Length . (/ 2.0) . fromLength
-
-instance ToJSON Length
-
-instance FromJSON Length
-
 -- | If root branch length is not available, set it to 0.
 --
 -- Return 'Left' if any other branch length is unavailable.
-phyloToLengthTree :: Tree Phylo a -> Either String (Tree Length a)
+phyloToLengthTree :: Tree Phylo a -> Either String (Tree BranchLength a)
 phyloToLengthTree =
   maybe (Left "phyloToLengthTree: Length unavailable for some branches.") Right
-    . bitraverse toLength pure
+    . bitraverse brLen pure
     . cleanRootLength
 
 cleanRootLength :: Tree Phylo a -> Tree Phylo a
 cleanRootLength (Node (Phylo Nothing s) l f) = Node (Phylo (Just 0) s) l f
 cleanRootLength t = t
 
-toLength :: Phylo -> Maybe Length
-toLength p = Length <$> brLen p
-
--- | Branch support label.
---
--- For conversion, see 'phyloToSupportTree'.
-newtype Support = Support {fromSupport :: BranchSupport}
-  deriving (Read, Show, Eq, Ord, Generic, NFData)
-  deriving (Num, Fractional, Floating) via Double
-  deriving (Semigroup) via Min Double
-
-instance Supported Support where
-  getSup = fromSupport
-  setSup s _ = Support s
-
-instance Splittable Support where
-  split = id
-
-instance ToJSON Support
-
-instance FromJSON Support
-
 -- | Set branch support values of branches leading to the leaves and of the root
 -- branch to maximum support.
 --
 -- Return 'Left' if any other branch has no available support value.
-phyloToSupportTree :: Tree Phylo a -> Either String (Tree Support a)
+phyloToSupportTree :: Tree Phylo a -> Either String (Tree BranchSupport a)
 phyloToSupportTree t =
   maybe
     (Left "phyloToSupportTree: Support unavailable for some branches.")
@@ -424,7 +386,7 @@ phyloToSupportTree t =
     m = getMaxSupport t
 
 -- | Set all unavailable branch support values to maximum support.
-phyloToSupportTreeUnsafe :: Tree Phylo a -> Tree Support a
+phyloToSupportTreeUnsafe :: Tree Phylo a -> Tree BranchSupport a
 phyloToSupportTreeUnsafe t = cleanSupport m t
   where
     m = getMaxSupport t
@@ -441,12 +403,12 @@ cleanLeafSupport :: BranchSupport -> Tree Phylo a -> Tree Phylo a
 cleanLeafSupport s (Node (Phylo b Nothing) l []) = Node (Phylo b (Just s)) l []
 cleanLeafSupport s (Node b l xs) = Node b l $ map (cleanLeafSupport s) xs
 
-toSupport :: Phylo -> Maybe Support
+toSupport :: Phylo -> Maybe BranchSupport
 toSupport (Phylo _ Nothing) = Nothing
-toSupport (Phylo _ (Just s)) = Just $ Support s
+toSupport (Phylo _ (Just s)) = Just s
 
-cleanSupport :: BranchSupport -> Tree Phylo a -> Tree Support a
-cleanSupport maxSup (Node (Phylo _ s) l xs) = Node (Support $ fromMaybe maxSup s) l $ map (cleanSupport maxSup) xs
+cleanSupport :: BranchSupport -> Tree Phylo a -> Tree BranchSupport a
+cleanSupport maxSup (Node (Phylo _ s) l xs) = Node (fromMaybe maxSup s) l $ map (cleanSupport maxSup) xs
 
 -- | Explicit branch label for phylogenetic trees.
 data PhyloExplicit = PhyloExplicit
@@ -480,8 +442,8 @@ instance FromJSON PhyloExplicit
 -- See 'phyloToLengthTree' and 'phyloToSupportTree'.
 toExplicitTree :: Tree Phylo a -> Either String (Tree PhyloExplicit a)
 toExplicitTree t = do
-  lt <- first fromLength <$> phyloToLengthTree t
-  st <- first fromSupport <$> phyloToSupportTree t
+  lt <- phyloToLengthTree t
+  st <- phyloToSupportTree t
   case zipTreesWith PhyloExplicit const lt st of
     Nothing -> error "toExplicitTree: This is a bug. Can not zip two trees with the same topology."
     Just zt -> return zt

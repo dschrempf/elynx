@@ -37,7 +37,7 @@ prop_invariant t =
     -- We have to convert Int to ByteString, but we cannot use
     -- arbitrary instances with ByteStrings because many
     -- characters are disallowed and break the Newick string.
-    second (BL.toStrict . getName) t
+    second (BL.toStrict . fromNodeName . getName) t
 
 spec :: Spec
 spec = describe "parseByteStringWith newick $ toNewickPhyloByteString" $ do

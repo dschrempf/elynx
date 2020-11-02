@@ -1,3 +1,7 @@
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+
 -- |
 -- Module      :  ELynx.Tree.Measurable
 -- Description :  Measurable branch labels
@@ -14,11 +18,11 @@
 -- non-negativity, a newtype wrapper could be used, but this would be a major
 -- refactor.
 module ELynx.Tree.Measurable
-  ( BranchLength,
+  ( BranchLength (fromBranchLength),
+    branchLength,
+    branchLengthUnsafe,
     Measurable (..),
-    applyStem,
-    getStem,
-    setStem,
+    applyMeasurable,
     height,
     rootHeight,
     distancesOriginLeaves,
@@ -30,12 +34,43 @@ module ELynx.Tree.Measurable
   )
 where
 
+import Control.DeepSeq
+import Data.Aeson
 import Data.Bifoldable
 import Data.Bifunctor
+import Data.Semigroup
 import ELynx.Tree.Rooted
+import ELynx.Tree.Splittable
+import GHC.Generics
 
--- | Branch length.
-type BranchLength = Double
+-- | Non-negative branch length.
+--
+-- However, non-negativity is only checked with 'branchLength'. Negative values
+-- can be obtained using the 'Num', 'Fractional', and 'Floating' instances.
+newtype BranchLength = BranchLength {fromBranchLength :: Double}
+  deriving (Read, Show, Generic, NFData)
+  deriving (Eq, Ord, Num, Floating, Fractional) via Double
+  deriving (Semigroup, Monoid) via Sum Double
+
+instance Splittable BranchLength where
+  split = (/ 2.0)
+
+instance ToJSON BranchLength
+
+instance FromJSON BranchLength
+
+instance Measurable BranchLength where
+  getLen = id
+  setLen = const
+
+-- | Nothing if support is negative.
+branchLength :: Double -> Either String BranchLength
+branchLength x | x < 0 = Left $ "branchLength: Branch length is negative: " ++ show x ++ "."
+               | otherwise = Right $ BranchLength x
+
+-- | Do not check if support value is negative.
+branchLengthUnsafe :: Double -> BranchLength
+branchLengthUnsafe = BranchLength
 
 -- | A branch label with measurable and modifiable branch length.
 class Measurable e where
@@ -45,27 +80,9 @@ class Measurable e where
   -- | Set attached branch length.
   setLen :: BranchLength -> e -> e
 
-instance Measurable Double where
-  getLen = id
-  setLen = const
-
--- Apply a function to a branch support label.
-apply :: Measurable e => (BranchLength -> BranchLength) -> e -> e
-apply f l = setLen (f s) l where s = getLen l
-
--- | Lengthen the stem of a tree.
-applyStem :: Measurable e => (BranchLength -> BranchLength) -> Tree e a -> Tree e a
-applyStem f t = t {branch = apply f b}
-  where
-    b = branch t
-
--- | Get the length of the stem of a tree.
-getStem :: Measurable e => Tree e a -> BranchLength
-getStem = getLen . branch
-
--- | Set the length of the stem of a tree.
-setStem :: Measurable e => BranchLength -> Tree e a -> Tree e a
-setStem x = applyStem (const x)
+-- | Apply a function to a branch length label.
+applyMeasurable :: Measurable e => (BranchLength -> BranchLength) -> e -> e
+applyMeasurable f l = setLen (f s) l where s = getLen l
 
 -- | The maximum distance between origin and leaves.
 --
@@ -91,22 +108,22 @@ totalBranchLength = bifoldl' (+) const 0 . first getLen
 
 -- | Normalize branch lengths so that the sum is 1.0.
 normalizeBranchLengths :: Measurable e => Tree e a -> Tree e a
-normalizeBranchLengths t = first (apply (/ s)) t
+normalizeBranchLengths t = first (applyMeasurable (/ s)) t
   where
     s = totalBranchLength t
 
 -- | Normalize height of tree to 1.0.
 normalizeHeight :: Measurable e => Tree e a -> Tree e a
-normalizeHeight t = first (apply (/ h)) t
+normalizeHeight t = first (applyMeasurable (/ h)) t
   where
     h = height t
 
 eps :: Double
 eps = 1e-12
 
-allNearlyEqual :: [Double] -> Bool
+allNearlyEqual :: [BranchLength] -> Bool
 allNearlyEqual [] = True
-allNearlyEqual xs = all (\y -> eps > abs (x - y)) (tail xs)
+allNearlyEqual xs = all (\y -> eps > abs (fromBranchLength $ x - y)) (tail xs)
   where
     x = head xs
 
@@ -120,5 +137,5 @@ makeUltrametric t = go 0 t
   where
     h = height t
     go :: Measurable e => BranchLength -> Tree e a -> Tree e a
-    go h' (Node br lb []) = let dh = h - h' - getLen br in Node (apply (+ dh) br) lb []
+    go h' (Node br lb []) = let dh = h - h' - getLen br in Node (applyMeasurable (+ dh) br) lb []
     go h' (Node br lb ts) = let h'' = h' + getLen br in Node br lb $ map (go h'') ts
