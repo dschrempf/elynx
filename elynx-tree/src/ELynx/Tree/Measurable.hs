@@ -71,7 +71,7 @@ import GHC.Generics
 -- @
 newtype Length = Length {fromLength :: Double}
   deriving (Read, Show, Generic, NFData)
-  deriving (Eq, Ord, Num, Enum, Floating, Fractional) via Double
+  deriving (Enum, Eq, Floating, Fractional, Num, Ord, Real, RealFloat, RealFrac) via Double
   deriving (Semigroup, Monoid) via Sum Double
 
 instance Splittable Length where

@@ -40,8 +40,8 @@ import GHC.Generics
 --
 -- See also the documentation of 'ELynx.Tree.Measurable.Length'.
 newtype Support = Support {fromSupport :: Double}
-  deriving (Read, Show, Eq, Ord, Generic, NFData)
-  deriving (Num, Fractional, Floating) via Double
+  deriving (Read, Show, Generic, NFData)
+  deriving (Enum, Eq, Floating, Fractional, Num, Ord, Real, RealFloat, RealFrac) via Double
   deriving (Semigroup) via Min Double
 
 instance Splittable Support where
