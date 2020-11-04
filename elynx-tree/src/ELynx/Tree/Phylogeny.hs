@@ -197,8 +197,8 @@ getMidpoint ts = case t of
      in Node
           br
           lb
-          [ applyStem (applyMeasurable (subtract dh)) l,
-            applyStem (applyMeasurable (+ dh)) r
+          [ applyStem (modLen (subtract dh)) l,
+            applyStem (modLen (+ dh)) r
           ]
   -- Explicitly use 'error' here, because roots is supposed to return trees with
   -- bifurcating root nodes.
@@ -418,7 +418,8 @@ instance Semigroup PhyloExplicit where
 
 instance Measurable PhyloExplicit where
   getLen = sBrLen
-  setLen b l = l {sBrLen = b}
+  setLen b pl = pl {sBrLen = b}
+  modLen f (PhyloExplicit l s) = PhyloExplicit (f l) s
 
 instance Splittable PhyloExplicit where
   split l = l {sBrLen = b'}
@@ -427,7 +428,8 @@ instance Splittable PhyloExplicit where
 
 instance Supported PhyloExplicit where
   getSup = sBrSup
-  setSup s l = l {sBrSup = s}
+  setSup s pl = pl {sBrSup = s}
+  modSup f (PhyloExplicit l s) = PhyloExplicit l (f s)
 
 instance ToJSON PhyloExplicit
 

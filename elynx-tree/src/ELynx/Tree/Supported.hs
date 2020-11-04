@@ -13,16 +13,11 @@
 -- Portability :  portable
 --
 -- Creation date: Thu Jun 13 14:06:45 2019.
---
--- Non-negativity of branch support values is not (yet) ensured. To ensure
--- non-negativity, a newtype wrapper could be used, but this would be a major
--- refactor.
 module ELynx.Tree.Supported
   ( Support (fromSupport),
     toSupport,
     toSupportUnsafe,
     Supported (..),
-    applySupported,
     normalizeSupport,
     collapse,
   )
@@ -40,8 +35,10 @@ import GHC.Generics
 
 -- | Non-negative branch support.
 --
--- However, non-negativity is only checked with 'toSupport'. Negative values
--- can be obtained using the 'Num', 'Fractional', and 'Floating' instances.
+-- However, non-negativity is only checked with 'toSupport', and negative values
+-- can be obtained using the 'Num' and related instances.
+--
+-- See also the documentation of 'ELynx.Tree.Measurable.Length'.
 newtype Support = Support {fromSupport :: Double}
   deriving (Read, Show, Eq, Ord, Generic, NFData)
   deriving (Num, Fractional, Floating) via Double
@@ -57,6 +54,7 @@ instance FromJSON Support
 instance Supported Support where
   getSup = id
   setSup = const
+  modSup f = f
 
 -- | Nothing if support is negative.
 toSupport :: Double -> Either String Support
@@ -67,19 +65,18 @@ toSupport x | x < 0 = Left $ "toSupport: Branch support is negative: " ++ show x
 toSupportUnsafe :: Double -> Support
 toSupportUnsafe = Support
 
--- | A branch label that supports extraction and setting of branch support values.
+-- | A branch label that supports extraction, setting and modifying of branch
+-- support values.
 class Supported e where
   getSup :: e -> Support
   setSup :: Support -> e -> e
-
--- | Apply a function to a branch support label.
-applySupported :: Supported e => (Support -> Support) -> e -> e
-applySupported f l = setSup (f s) l where s = getSup l
+  -- For computational efficiency.
+  modSup :: (Support -> Support) -> e -> e
 
 -- | Normalize branch support values. The maximum branch support value will be
 -- set to 1.0.
 normalizeSupport :: Supported e => Tree e a -> Tree e a
-normalizeSupport t = first (applySupported (/ m)) t
+normalizeSupport t = first (modSup (/ m)) t
   where
     m = bimaximum $ bimap getSup (const 0) t
 

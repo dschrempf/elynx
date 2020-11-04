@@ -20,6 +20,8 @@ import Data.Foldable
 import ELynx.Tools hiding (Random)
 import ELynx.Tree
 import ELynx.Tree.Simulate.PointProcess
+import Length
+import Lens
 import System.Random.MWC
 
 treeFileMany :: FilePath
@@ -71,8 +73,26 @@ main = do
         "fold strategies"
         [ bench "sequential" $ nf (parBranchFoldMap 0 func (+)) ht,
           bench "parallel 3" $ nf (parBranchFoldMap 3 func (+)) ht
+        ],
+      -- Unsafe operations are fast, safe operations are roughly 50 percent slower.
+      bgroup
+        "length"
+        [ bench "length sum foldl' safe" $ nf lengthSumFoldl' [0 .. 10000000],
+          bench "length sum foldl' unsafe" $ nf lengthSumFoldl'Unsafe [0 .. 10000000],
+          bench "length sum foldl' num instance" $ nf lengthSumFoldl'NumInstance [0 .. 10000000],
+          bench "double sum foldl'" $ nf doubleSumFoldl' [0 .. 10000000],
+          bench "double sum" $ nf doubleSum [0 .. 10000000]
+        ],
+      -- Lenses are fast.
+      bgroup
+        "lens"
+        [ bench "sum with getter" $ nf sumWithGetter [0 .. 1000000 :: Length],
+          bench "sum with accessor function" $ nf sumWithAccessorFunction [0 .. 1000000 :: Length],
+          bench "sum with setter and getter" $ nf sumWithSetter [0 .. 1000000 :: Length],
+          bench "sum with modify and accessor functions" $ nf sumWithModifyFunction [0 .. 1000000 :: Length]
         ]
     ]
+
 -- Results 2020 Nov 2, commit aee6818.
 
 -- benchmarking bipartition/manyTrees

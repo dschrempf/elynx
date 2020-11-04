@@ -127,6 +127,8 @@ benchmark tree-bench
   type: exitcode-stdio-1.0
   main-is: Bench.hs
   other-modules:
+      Length
+      Lens
       Paths_elynx_tree
   hs-source-dirs:
       bench
@@ -139,6 +141,7 @@ benchmark tree-bench
     , deepseq
     , elynx-tools
     , elynx-tree
+    , microlens
     , mwc-random
     , parallel
   default-language: Haskell2010

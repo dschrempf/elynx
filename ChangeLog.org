@@ -1,5 +1,6 @@
 * Changelog for ELynx
 ** Unreleased changes
+- =modLen=, =modSup=.
 - Newtype wrappers for branch length, branch support, and node name. Those data
   types were also renamed.
 - Add =Path=, and =getSubTreeUnsafe= to tree zipper.
