@@ -147,7 +147,7 @@ summarizeLengths t =
     n = length $ leaves t
     h = height t
     h' = sum (distancesOriginLeaves t) / fromIntegral n
-    b = totalLength t
+    b = totalBranchLength t
 
 -- Summarize a substitution model; lines to be printed to screen or log.
 summarizeSM :: SM.SubstitutionModel -> [BL.ByteString]

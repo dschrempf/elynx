@@ -4,7 +4,7 @@
 
 -- |
 -- Module      :  ELynx.Tree.Measurable
--- Description :  Measurable branch labels
+-- Description :  Measurable labels
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -14,19 +14,22 @@
 --
 -- Creation date: Thu Jan 17 14:16:34 2019.
 --
--- Non-negativity of branch lengths is not (yet) ensured. To ensure
--- non-negativity, a newtype wrapper could be used, but this would be a major
--- refactor.
+-- Non-negativity of lengths is not completely ensured. See the documentation of
+-- 'Length'.
 module ELynx.Tree.Measurable
-  ( Length (fromLength),
+  ( -- * Non-negative length
+    Length (fromLength),
     toLength,
     toLengthUnsafe,
+    checkLength,
     Measurable (..),
     height,
     rootHeight,
+
+    -- * Functions on trees
     distancesOriginLeaves,
-    totalLength,
-    normalizeLengths,
+    totalBranchLength,
+    normalizeBranchLengths,
     normalizeHeight,
     ultrametric,
     makeUltrametric,
@@ -42,16 +45,16 @@ import ELynx.Tree.Rooted
 import ELynx.Tree.Splittable
 import GHC.Generics
 
--- | Non-negative branch length.
+-- | Non-negative length.
 --
 -- However, non-negativity is only checked with 'toLength', and negative values
--- can be obtained by using the 'Num' and related instances.
+-- can be obtained using the 'Num' and related instances.
 --
 -- Safe operations with conversion from and to length are roughly 50 percent
 -- slower.
 --
 -- @
--- benchmarking length/length sum foldl' safe
+-- benchmarking length/length sum foldl' with safe conversion
 -- time                 110.4 ms   (109.8 ms .. 111.0 ms)
 --                      1.000 R²   (1.000 R² .. 1.000 R²)
 -- mean                 110.2 ms   (110.0 ms .. 110.6 ms)
@@ -86,30 +89,36 @@ instance Measurable Length where
   setLen = const
   modLen f = f
 
--- | Nothing if support is negative.
+-- | 'Nothing' if length is negative.
 toLength :: Double -> Either String Length
-toLength x | x < 0 = Left $ "length: Length is negative: " ++ show x ++ "."
-         | otherwise = Right $ Length x
+toLength x
+  | x < 0 = Left $ "length: Length is negative: " ++ show x ++ "."
+  | otherwise = Right $ Length x
 
 -- | Do not check if support value is negative.
 toLengthUnsafe :: Double -> Length
 toLengthUnsafe = Length
 
--- | A branch label with measurable and modifiable branch length.
+-- | 'Nothing' if length is negative.
+checkLength :: Length -> Either String Length
+checkLength = toLength . fromLength
+
+-- | A data type with measurable and modifiable length.
 class Measurable e where
-  -- | Length of attached branch.
+  -- | Get length.
   getLen :: e -> Length
 
-  -- | Set attached branch length.
+  -- | Set length.
   setLen :: Length -> e -> e
 
   -- For computational efficiency.
-  -- | Modify attached branch length.
+
+  -- | Modify length.
   modLen :: (Length -> Length) -> e -> e
 
 -- | The maximum distance between origin and leaves.
 --
--- The height includes the length of the stem.
+-- The height includes the branch length of the stem.
 height :: Measurable e => Tree e a -> Length
 height = maximum . distancesOriginLeaves
 
@@ -120,20 +129,20 @@ rootHeight t = maximum $ concatMap distancesOriginLeaves (forest t)
 
 -- | Distances from the origin of a tree to the leaves.
 --
--- The distances include the length of the stem.
+-- The distances include the branch length of the stem.
 distancesOriginLeaves :: Measurable e => Tree e a -> [Length]
 distancesOriginLeaves (Node br _ []) = [getLen br]
 distancesOriginLeaves (Node br _ ts) = map (getLen br +) (concatMap distancesOriginLeaves ts)
 
 -- | Total branch length of a tree.
-totalLength :: Measurable e => Tree e a -> Length
-totalLength = bifoldl' (+) const 0 . first getLen
+totalBranchLength :: Measurable e => Tree e a -> Length
+totalBranchLength = bifoldl' (+) const 0 . first getLen
 
 -- | Normalize branch lengths so that the sum is 1.0.
-normalizeLengths :: Measurable e => Tree e a -> Tree e a
-normalizeLengths t = first (modLen (/ s)) t
+normalizeBranchLengths :: Measurable e => Tree e a -> Tree e a
+normalizeBranchLengths t = first (modLen (/ s)) t
   where
-    s = totalLength t
+    s = totalBranchLength t
 
 -- | Normalize height of tree to 1.0.
 normalizeHeight :: Measurable e => Tree e a -> Tree e a

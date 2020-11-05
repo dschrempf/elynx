@@ -134,8 +134,8 @@ analyzeDistance outH t1 t2 = do
       $(logInfo) "Distances involving length cannot be calculated."
   case (toExplicitTree t1, toExplicitTree t2) of
     (Right t1', Right t2') -> do
-      let t1n = normalizeSupport t1'
-          t2n = normalizeSupport t2'
+      let t1n = normalizeBranchSupport t1'
+          t2n = normalizeBranchSupport t2'
       $(logDebug) "Trees with normalized branch support values:"
       $(logDebug) $ E.decodeUtf8 $ BL.toStrict $ toNewick $ toPhyloTree t1n
       $(logDebug) $ E.decodeUtf8 $ BL.toStrict $ toNewick $ toPhyloTree t2n

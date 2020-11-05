@@ -56,7 +56,7 @@ summarizeLengths t =
     n = length $ leaves t
     h = height t
     h' = sum (distancesOriginLeaves t) / fromIntegral n
-    b = totalLength t
+    b = totalBranchLength t
 
 readTrees :: FilePath -> ELynx ExamineArguments (Forest Phylo Name)
 readTrees fp = do

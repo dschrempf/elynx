@@ -143,12 +143,12 @@ distance = do
         IncompatibleSplit val ->
           second fromIntegral $
             incompatibleSplits
-              (collapse val $ normalizeSupport $ either error id $ phyloToSupportTree t1)
-              (collapse val $ normalizeSupport $ either error id $ phyloToSupportTree t2)
+              (collapse val $ normalizeBranchSupport $ either error id $ phyloToSupportTree t1)
+              (collapse val $ normalizeBranchSupport $ either error id $ phyloToSupportTree t2)
         BranchScore ->
           branchScore (normalizeF $ either error id $ phyloToLengthTree t1) (normalizeF $ either error id $ phyloToLengthTree t2)
         where
-          normalizeF = if argsNormalize l then normalizeLengths else id
+          normalizeF = if argsNormalize l then normalizeBranchLengths else id
   -- Possibly intersect trees before distance calculation.
   when (argsIntersect l) $
     $(logInfo) "Intersect trees before calculation of distances."

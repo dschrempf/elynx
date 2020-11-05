@@ -4,7 +4,7 @@
 
 -- |
 -- Module      :  ELynx.Tree.Supported
--- Description :  Branch label with support value
+-- Description :  Labels with support values
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -14,11 +14,14 @@
 --
 -- Creation date: Thu Jun 13 14:06:45 2019.
 module ELynx.Tree.Supported
-  ( Support (fromSupport),
+  ( -- * Non-negative support value
+    Support (fromSupport),
     toSupport,
     toSupportUnsafe,
     Supported (..),
-    normalizeSupport,
+
+    -- * Functions on trees
+    normalizeBranchSupport,
     collapse,
   )
 where
@@ -33,7 +36,7 @@ import ELynx.Tree.Rooted
 import ELynx.Tree.Splittable
 import GHC.Generics
 
--- | Non-negative branch support.
+-- | Non-negative support value.
 --
 -- However, non-negativity is only checked with 'toSupport', and negative values
 -- can be obtained using the 'Num' and related instances.
@@ -58,25 +61,27 @@ instance Supported Support where
 
 -- | Nothing if support is negative.
 toSupport :: Double -> Either String Support
-toSupport x | x < 0 = Left $ "toSupport: Support is negative: " ++ show x ++ "."
-            | otherwise = Right $ Support x
+toSupport x
+  | x < 0 = Left $ "toSupport: Support is negative: " ++ show x ++ "."
+  | otherwise = Right $ Support x
 
 -- | Do not check if support value is negative.
 toSupportUnsafe :: Double -> Support
 toSupportUnsafe = Support
 
--- | A branch label that supports extraction, setting and modifying of branch
--- support values.
+-- | A data type that supports extraction, setting and modifying of support
+-- values.
 class Supported e where
   getSup :: e -> Support
   setSup :: Support -> e -> e
+
   -- For computational efficiency.
   modSup :: (Support -> Support) -> e -> e
 
 -- | Normalize branch support values. The maximum branch support value will be
 -- set to 1.0.
-normalizeSupport :: Supported e => Tree e a -> Tree e a
-normalizeSupport t = first (modSup (/ m)) t
+normalizeBranchSupport :: Supported e => Tree e a -> Tree e a
+normalizeBranchSupport t = first (modSup (/ m)) t
   where
     m = bimaximum $ bimap getSup (const 0) t
 
