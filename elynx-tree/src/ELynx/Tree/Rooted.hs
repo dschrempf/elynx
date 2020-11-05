@@ -4,7 +4,6 @@
 -- |
 -- Module      :  ELynx.Tree.Rooted
 -- Description :  Rooted trees with labeled branches
-
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -40,18 +39,8 @@
 -- The value constructor /Node/ and the record function /label/ are not to be
 -- confused. The elements of the sub-forest are often called /children/.
 --
--- With respect to phylogenetic analyses, using the 'Tree' data type has some
--- disadvantages:
---
--- 1. All trees are rooted. Unrooted trees can be treated with a rooted data
--- structure, as it is used here. However, some functions may be meaningless.
---
--- 2. Changing branch labels, node labels, or the topology of the tree are slow
--- operations, especially, when the changes are close to the leaves of the tree.
---
 -- In mathematical terms: A 'Tree' is a directed acyclic graph without loops,
--- with vertex labels, with edge labels. Let me know if this definition is
--- incomplete.
+-- with vertex labels, and with edge labels.
 module ELynx.Tree.Rooted
   ( -- * Data type
     Tree (..),

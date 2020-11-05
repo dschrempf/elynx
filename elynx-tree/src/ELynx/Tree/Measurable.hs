@@ -88,7 +88,7 @@ instance Measurable Length where
 
 -- | Nothing if support is negative.
 toLength :: Double -> Either String Length
-toLength x | x < 0 = Left $ "length: Branch length is negative: " ++ show x ++ "."
+toLength x | x < 0 = Left $ "length: Length is negative: " ++ show x ++ "."
          | otherwise = Right $ Length x
 
 -- | Do not check if support value is negative.

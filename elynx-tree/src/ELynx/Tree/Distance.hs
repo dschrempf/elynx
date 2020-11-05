@@ -29,8 +29,6 @@ module ELynx.Tree.Distance
   )
 where
 
--- adjacent,
-
 import Data.Bifunctor
 import Data.List
 import qualified Data.Map as M
@@ -53,7 +51,7 @@ symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
 --
 -- Return 'Nothing' if the trees contain different leaves.
 --
--- XXX: Comparing a list of trees may recompute bipartitions.
+-- XXX: Comparing a list of trees recomputes bipartitions.
 symmetric :: Ord a => Tree e1 a -> Tree e2 a -> Either String Int
 symmetric t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "symmetric: Trees contain different leaves."
@@ -99,7 +97,7 @@ countIncompatibilities bs ms =
 -- A bipartition is incompatible with a tree if it is incompatible with all
 -- induced multifurcations of the tree.
 --
--- XXX: Comparing a list of trees with this function recomputes bipartitions.
+-- XXX: Comparing a list of trees recomputes bipartitions.
 incompatibleSplits :: (Show a, Ord a) => Tree e1 a -> Tree e2 a -> Either String Int
 incompatibleSplits t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) =
@@ -125,7 +123,7 @@ incompatibleSplits t1 t2
 -- Although a rooted tree data type is used, the distance between the unrooted
 -- trees is returned.
 --
--- XXX: Comparing a list of trees with this function recomputes bipartitions.
+-- XXX: Comparing a list of trees recomputes bipartitions.
 branchScore :: (Measurable e1, Measurable e2, Ord a) => Tree e1 a -> Tree e2 a -> Either String Double
 branchScore t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "branchScoreWith: Trees do not have equal leaf sets."

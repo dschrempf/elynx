@@ -58,7 +58,7 @@ instance Supported Support where
 
 -- | Nothing if support is negative.
 toSupport :: Double -> Either String Support
-toSupport x | x < 0 = Left $ "toSupport: Branch support is negative: " ++ show x ++ "."
+toSupport x | x < 0 = Left $ "toSupport: Support is negative: " ++ show x ++ "."
             | otherwise = Right $ Support x
 
 -- | Do not check if support value is negative.

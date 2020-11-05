@@ -14,17 +14,26 @@
 --
 -- Creation date: Thu Jan 17 16:08:54 2019.
 --
--- A phylogeny is a 'Tree' with unique leaf labels, and the order of the trees
--- in the sub-forest is considered to be meaningless.
+-- The purpose of this module is to facilitate usage of 'Tree's in phylogenetic
+-- analyses. A /phylogeny/ is a 'Tree' with unique leaf labels, and unordered
+-- sub-forest.
 --
--- Internally, however, the underlying 'Tree' data structure stores the
--- sub-forest as a list, which has a specific order. Hence, we have to do some
--- tricks when comparing trees, and tree comparison is slow.
+-- Using the 'Tree' data type has some disadvantages.
 --
--- Also, the uniqueness of the leaves is not ensured by the data type, but has
--- to be checked at runtime. Functions relying on the tree to have unique leaves
--- do perform this check, and return 'Left' with an error message, if the tree
--- has duplicate leaves.
+-- 1. All trees are rooted. Unrooted trees can be treated with a rooted data
+-- structure, as it is used here. However, some functions may be meaningless.
+--
+-- 2. Changing branch labels, node labels, or the topology of the tree are slow
+-- operations, especially, when the changes are close to the leaves of the tree.
+--
+-- 3. Internally, the underlying 'Tree' data structure stores the sub-forest as
+-- an ordered list. Hence, we have to do some tricks when comparing phylogenies
+-- (see 'equal'), and comparison is slow.
+--
+-- 4. Uniqueness of the leaves is not ensured by the data type, but has to be
+-- checked at runtime. Functions relying on the tree to have unique leaves do
+-- perform this check, and return 'Left' with an error message, if the tree has
+-- duplicate leaves.
 --
 -- Note: 'Tree's are rooted.
 --
@@ -34,10 +43,10 @@
 -- convention is not used here. Newick trees are just parsed as they are, and a
 -- rooted tree is returned.
 --
--- The bifurcating root of a tree can be changed with 'rootAt' or 'midpoint'; a
--- list of all rooted trees is returned by 'roots'.
---
 -- Trees with multifurcating root nodes can be rooted using 'outgroup'.
+--
+-- Trees with bifurcating root nodes can be changed with 'rootAt' or 'midpoint';
+-- a list of all rooted trees is returned by 'roots'.
 module ELynx.Tree.Phylogeny
   ( -- * Functions
     equal,
@@ -79,6 +88,8 @@ import ELynx.Tree.Splittable
 import ELynx.Tree.Supported
 import GHC.Generics
 
+-- A faster check could probably be done using 'Ord' and sets. The leave set
+-- could be precomputed.
 -- | The equality check is slow because the order of children is considered to
 -- be arbitrary.
 equal :: (Eq e, Eq a) => Tree e a -> Tree e a -> Bool
@@ -147,8 +158,8 @@ bifurcating _ = False
 -- If the root node is bifurcating, use 'rootAt'.
 --
 -- Return 'Left' if
--- - the tree has duplicate leaves;
 -- - the root node is not multifurcating;
+-- - the tree has duplicate leaves;
 -- - the provided outgroup is not found on the tree or is polyphyletic.
 outgroup :: (Semigroup e, Splittable e, Ord a) => Set a -> a -> Tree e a -> Either String (Tree e a)
 outgroup _ _ (Node _ _ []) = Left "outgroup: Root node is a leaf."
@@ -220,7 +231,7 @@ getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating."
 -- | For a rooted tree with a bifurcating root node, get all possible rooted
 -- trees.
 --
--- The root node is moved.
+-- The root node (label and branch) is moved.
 --
 -- For a tree with @l=2@ leaves, there is one rooted tree. For a bifurcating
 -- tree with @l>2@ leaves, there are @(2l-3)@ rooted trees. For a general tree
@@ -330,7 +341,7 @@ instance ToJSON Phylo
 
 instance FromJSON Phylo
 
--- | Set all branch length and support values to 'Just' the value.
+-- | Set all branch lengths and support values to 'Just' the value.
 --
 -- Useful to export a tree with branch lengths in Newick format.
 toPhyloTree :: (Measurable e, Supported e) => Tree e a -> Tree Phylo a
@@ -339,18 +350,22 @@ toPhyloTree = first toPhyloLabel
 toPhyloLabel :: (Measurable e, Supported e) => e -> Phylo
 toPhyloLabel x = Phylo (Just $ getLen x) (Just $ getSup x)
 
--- | Set all branch support values to 'Nothing'.
+-- | Set all branch lengths to 'Just' the values, and all support values to
+-- 'Nothing'.
 --
--- Useful to export a tree with branch lengths to Newick format.
+-- Useful to export a tree with branch lengths but without branch support values
+-- to Newick format.
 measurableToPhyloTree :: Measurable e => Tree e a -> Tree Phylo a
 measurableToPhyloTree = first measurableToPhyloLabel
 
 measurableToPhyloLabel :: Measurable e => e -> Phylo
 measurableToPhyloLabel x = Phylo (Just $ getLen x) Nothing
 
--- | Set all branch lengths to 'Nothing'.
+-- | Set all branch lengths to 'Nothing', and all support values to 'Just' the
+-- values.
 --
--- Useful to export a tree with branch support to Newick format.
+-- Useful to export a tree with branch support values but without branch lengths
+-- to Newick format.
 supportedToPhyloTree :: Supported e => Tree e a -> Tree Phylo a
 supportedToPhyloTree = first supportedToPhyloLabel
 
@@ -364,11 +379,11 @@ phyloToLengthTree :: Tree Phylo a -> Either String (Tree Length a)
 phyloToLengthTree =
   maybe (Left "phyloToLengthTree: Length unavailable for some branches.") Right
     . bitraverse brLen pure
-    . cleanRootLength
+    . cleanStemLength
 
-cleanRootLength :: Tree Phylo a -> Tree Phylo a
-cleanRootLength (Node (Phylo Nothing s) l f) = Node (Phylo (Just 0) s) l f
-cleanRootLength t = t
+cleanStemLength :: Tree Phylo a -> Tree Phylo a
+cleanStemLength (Node (Phylo Nothing s) l f) = Node (Phylo (Just 0) s) l f
+cleanStemLength t = t
 
 -- | Set branch support values of branches leading to the leaves and of the root
 -- branch to maximum support.
@@ -377,7 +392,7 @@ cleanRootLength t = t
 phyloToSupportTree :: Tree Phylo a -> Either String (Tree Support a)
 phyloToSupportTree t =
   maybe
-    (Left "phyloToSupportTree: Support unavailable for some branches.")
+    (Left "phyloToSupportTree: Support value unavailable for some branches.")
     Right
     $ bitraverse brSup pure $
       cleanLeafSupport m $
@@ -406,7 +421,7 @@ cleanLeafSupport s (Node b l xs) = Node b l $ map (cleanLeafSupport s) xs
 cleanSupport :: Support -> Tree Phylo a -> Tree Support a
 cleanSupport maxSup (Node (Phylo _ s) l xs) = Node (fromMaybe maxSup s) l $ map (cleanSupport maxSup) xs
 
--- | Explicit branch label for phylogenetic trees.
+-- | Explicit branch label with branch length and branch support value.
 data PhyloExplicit = PhyloExplicit
   { sBrLen :: Length,
     sBrSup :: Support
@@ -443,5 +458,6 @@ toExplicitTree t = do
   lt <- phyloToLengthTree t
   st <- phyloToSupportTree t
   case zipTreesWith PhyloExplicit const lt st of
-    Nothing -> error "toExplicitTree: This is a bug. Can not zip two trees with the same topology."
+    -- Explicit use of error, since this case should not happen.
+    Nothing -> error "toExplicitTree: Can not zip two trees with the same topology."
     Just zt -> return zt

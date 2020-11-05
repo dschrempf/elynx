@@ -61,3 +61,4 @@
 /.dir-locals.el
 /stack.yaml.lock
 /temp/
+/.rsync-project
