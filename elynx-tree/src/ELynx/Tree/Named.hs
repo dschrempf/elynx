@@ -1,4 +1,5 @@
 {-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 -- |
 -- Module      :  ELynx.Tree.Named
@@ -60,6 +61,9 @@ instance Named Double where
 
 instance Named Char where
   getName = Name . BB.toLazyByteString . BB.char8
+
+instance (Named a) => Named [a] where
+  getName = Name . BL.concat . map (fromName . getName)
 
 instance Named BL.ByteString where
   getName = Name

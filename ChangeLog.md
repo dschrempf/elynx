@@ -5,6 +5,16 @@
 ## Unreleased changes
 
 
+## Version 0.5.0
+
+-   `modLen`, `modSup`.
+-   Newtype wrappers for branch length, branch support, and node name. Those data
+    types and some functions were also renamed.
+-   Add `Path`, and `getSubTreeUnsafe` to tree zipper.
+-   Rename `unsafe` functions so that `unsafe` is at the end.
+-   Many small changes.
+
+
 ## Version 0.4.1
 
 -   Improve `TimeSpec` (Point process).
