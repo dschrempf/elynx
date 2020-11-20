@@ -71,7 +71,8 @@ simulateAndFlatten n d e t g = do
   simulateAndFlatten' is pt g
 
 -- This is the heart of the simulation. Take a tree and a list of root states.
--- Recursively jump down the branches to the leafs. Forget states at internal.
+-- Recursively jump down the branches to the leafs. Forget states at internal
+-- nodes.
 simulateAndFlatten' ::
   (PrimMonad m) =>
   [State] ->

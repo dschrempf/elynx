@@ -10,8 +10,7 @@
 --
 -- Creation date: Wed Apr 22 13:34:35 2020.
 module TLynx.Parsers
-  (
-    parseTree,
+  ( parseTree,
     parseTrees,
     NewickFormat,
     newickFormat,
@@ -69,13 +68,21 @@ newickFormat =
       <> short 'f'
       <> metavar "FORMAT"
       <> value Standard
-      <> help ("Newick tree format: " ++ nwlist ++ "; default: Standard; for detailed help, see 'tlynx --help'")
+      <> help
+        ( "Newick tree format: "
+            ++ nwlist
+            ++ "; default: Standard; for detailed help, see 'tlynx --help'"
+        )
   where
     nwfs = map show (allValues :: [NewickFormat])
     nwlist = intercalate ", " (init nwfs) <> ", or " <> last nwfs
 
 -- | Help for different 'NewickFormat's.
 newickHelp :: [String]
-newickHelp = map (toListItem . description) (allValues :: [NewickFormat]) ++ ["- Nexus file including Newick trees"]
+newickHelp =
+  map
+    (toListItem . describeNewickFormat)
+    (allValues :: [NewickFormat])
+    ++ ["- Nexus file including Newick trees"]
   where
     toListItem = ("- Newick " ++)

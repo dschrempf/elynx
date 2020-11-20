@@ -41,12 +41,10 @@ probMatrix q t
   | otherwise = expm $ scale t q
 
 -- | Move from a given state to a new one according to a transition probability
--- matrix (for performance reasons this probability matrix needs to be given as
--- a list of generators, see
--- https://hackage.haskell.org/package/distribution-1.1.0.0/docs/Data-Distribution-Sample.html).
+-- matrix .
+--
 -- This function is the bottleneck of the simulator and takes up most of the
--- computation time. However, I was not able to find a faster implementation
--- than the one from Data.Distribution.
+-- computation time.
 jump :: (PrimMonad m) => State -> ProbMatrix -> Gen (PrimState m) -> m State
 jump i p = categorical (p ! i)
 

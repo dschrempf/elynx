@@ -31,7 +31,7 @@
 -- @
 module ELynx.Tree.Import.Newick
   ( NewickFormat (..),
-    description,
+    describeNewickFormat,
     newick,
     parseNewick,
     oneNewick,
@@ -68,12 +68,12 @@ instance FromJSON NewickFormat
 instance ToJSON NewickFormat
 
 -- | Short description of the supported Newick formats.
-description :: NewickFormat -> String
-description Standard =
+describeNewickFormat :: NewickFormat -> String
+describeNewickFormat Standard =
   "Standard: Branch support values are stored in square brackets after branch lengths."
-description IqTree =
+describeNewickFormat IqTree =
   "IqTree:   Branch support values are stored as node names after the closing bracket of forests."
-description RevBayes =
+describeNewickFormat RevBayes =
   "RevBayes: Key-value pairs is provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are ignored at the moment."
 
 -- | Newick tree parser. Also succeeds when more trees follow.

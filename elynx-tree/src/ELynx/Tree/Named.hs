@@ -30,7 +30,7 @@ import Data.String
 --
 -- Use lazy byte strings because Newick strings are built using chunks.
 newtype Name = Name {fromName :: BL.ByteString}
-  deriving (Show, Eq)
+  deriving (Show, Read, Eq)
   deriving (Ord, Monoid, Semigroup, IsString, NFData) via BL.ByteString
 
 -- XXX: This is pretty lame, but I need those instances. At the moment, I just
