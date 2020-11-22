@@ -36,7 +36,7 @@ import Data.Monoid
 import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Tree.Bipartition
-import ELynx.Tree.Measurable
+import ELynx.Tree.Length
 import ELynx.Tree.Partition
 import ELynx.Tree.Rooted
 
@@ -124,7 +124,7 @@ incompatibleSplits t1 t2
 -- trees is returned.
 --
 -- XXX: Comparing a list of trees recomputes bipartitions.
-branchScore :: (Measurable e1, Measurable e2, Ord a) => Tree e1 a -> Tree e2 a -> Either String Double
+branchScore :: (HasLength e1, HasLength e2, Ord a) => Tree e1 a -> Tree e2 a -> Either String Double
 branchScore t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "branchScoreWith: Trees do not have equal leaf sets."
   | otherwise = do

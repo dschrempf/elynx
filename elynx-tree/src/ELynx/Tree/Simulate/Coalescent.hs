@@ -16,7 +16,7 @@ where
 
 import Control.Monad.Primitive
 import ELynx.Tree.Distribution.CoalescentContinuous
-import ELynx.Tree.Measurable
+import ELynx.Tree.Length
 import ELynx.Tree.Rooted
 import Statistics.Distribution
 import System.Random.MWC

@@ -231,7 +231,7 @@ formatNChildSumStatLine (l, n) =
   BB.intDec n <> BB.char8 ' ' <> BB.doubleDec (fromLength l) <> BB.char8 '\n'
 
 -- Compute NChilSumStat for a phylogenetic tree.
-toNChildSumStat :: Measurable e => Tree e a -> NChildSumStat
+toNChildSumStat :: HasLength e => Tree e a -> NChildSumStat
 toNChildSumStat (Node br _ []) = [(getLen br, 1)]
 toNChildSumStat (Node br _ ts) = (getLen br, sumCh) : concat nChSS
   where

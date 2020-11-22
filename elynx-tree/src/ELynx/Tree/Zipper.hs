@@ -18,11 +18,13 @@ module ELynx.Tree.Zipper
     toTree,
 
     -- * Movement
-    goUp,
+    goParent,
+    goParentUnsafe,
     goRoot,
     goLeft,
     goRight,
     goChild,
+    goChildUnsafe,
     Path,
     goPath,
     goPathUnsafe,
@@ -30,6 +32,7 @@ module ELynx.Tree.Zipper
 
     -- * Modification
     insertTree,
+    modifyTree,
     insertBranch,
     insertLabel,
   )
@@ -63,8 +66,8 @@ getForest :: TreePos e a -> Forest e a
 getForest pos = foldl (flip (:)) (current pos : after pos) (before pos)
 
 -- | Go to parent.
-goUp :: TreePos e a -> Maybe (TreePos e a)
-goUp pos = case parents pos of
+goParent :: TreePos e a -> Maybe (TreePos e a)
+goParent pos = case parents pos of
   (ls, br, lb, rs) : ps ->
     Just
       Pos
@@ -75,9 +78,23 @@ goUp pos = case parents pos of
         }
   [] -> Nothing
 
+-- | Go to parent.
+--
+-- Call 'error' if no parent is found.
+goParentUnsafe :: TreePos e a -> TreePos e a
+goParentUnsafe pos = case parents pos of
+  (ls, br, lb, rs) : ps ->
+      Pos
+        { current = Node br lb $ getForest pos,
+          before = ls,
+          after = rs,
+          parents = ps
+        }
+  [] -> error "goUpUnsafe: No parent found."
+
 -- | Go to root.
 goRoot :: TreePos e a -> TreePos e a
-goRoot pos = maybe pos goRoot (goUp pos)
+goRoot pos = maybe pos goRoot (goParent pos)
 
 -- | Go to left sibling in current forest.
 goLeft :: TreePos e a -> Maybe (TreePos e a)
@@ -122,16 +139,6 @@ goChild n pos = case current pos of
     where
       (ls', rs') = splitAt n ts
 
--- | Path from the root of a tree to the node of the tree.
---
--- The position is specific to a tree topology. If the topology changes, the
--- position becomes invalid.
-type Path = [Int]
-
--- | Go to node with given path.
-goPath :: Path -> TreePos e a -> Maybe (TreePos e a)
-goPath pos pth = foldlM (flip goChild) pth pos
-
 -- | Go to child with given index in forest. Call 'error' if child does not
 -- exist.
 goChildUnsafe :: Int -> TreePos e a -> TreePos e a
@@ -149,6 +156,16 @@ goChildUnsafe n pos = case current pos of
     where
       (ls', rs') = splitAt n ts
 
+-- | Path from the root of a tree to the node of the tree.
+--
+-- The position is specific to a tree topology. If the topology changes, the
+-- position becomes invalid.
+type Path = [Int]
+
+-- | Go to node with given path.
+goPath :: Path -> TreePos e a -> Maybe (TreePos e a)
+goPath pos pth = foldlM (flip goChild) pth pos
+
 -- | Got to node with given path.
 --
 -- Call 'error' if path is invalid.
@@ -164,6 +181,11 @@ getSubTreeUnsafe p = current . goPathUnsafe p . fromTree
 -- | Insert a new tree into the current focus of the zipper.
 insertTree :: Tree e a -> TreePos e a -> TreePos e a
 insertTree t pos = pos {current = t}
+
+-- | Modify the tree at the current focus of the zipper.
+modifyTree :: (Tree e a -> Tree e a) -> TreePos e a -> TreePos e a
+modifyTree f pos = pos {current = f t}
+  where t = current pos
 
 -- | Insert a new branch label into the current focus of the zipper.
 insertBranch :: e -> TreePos e a -> TreePos e a

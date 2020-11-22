@@ -1,5 +1,7 @@
 * Changelog for ELynx
 ** Unreleased changes
+- Rename =Measurable= to =HasLength=, =Supported= to =HasSupport=, and =Named=
+  to =HasLength=.
 
 ** Version 0.5.0
 - =modLen=, =modSup=.

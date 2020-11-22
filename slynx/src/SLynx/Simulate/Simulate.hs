@@ -61,7 +61,7 @@ import Text.Printf
 -- Simulate a 'Alignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
 simulateAlignment ::
-  (Measurable e, Named a) =>
+  (HasLength e, HasName a) =>
   P.PhyloModel ->
   Tree e a ->
   Int ->
@@ -135,7 +135,7 @@ prettyRow name val = alignLeft 33 n <> alignRight 8 v
     v = BL.pack val
 
 -- | Examine branches of a tree.
-summarizeLengths :: Measurable e => Tree e a -> BL.ByteString
+summarizeLengths :: HasLength e => Tree e a -> BL.ByteString
 summarizeLengths t =
   BL.intercalate
     "\n"

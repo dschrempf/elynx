@@ -22,12 +22,12 @@ module ELynx.Tree
     module ELynx.Tree.Parallel,
 
     -- * Branch label classes
-    module ELynx.Tree.Measurable,
+    module ELynx.Tree.Length,
     module ELynx.Tree.Splittable,
-    module ELynx.Tree.Supported,
+    module ELynx.Tree.Support,
 
     -- * Node label classes
-    module ELynx.Tree.Named,
+    module ELynx.Tree.Name,
 
     -- * Phylogenies
     module ELynx.Tree.Phylogeny,
@@ -51,14 +51,14 @@ import ELynx.Tree.Export.Newick
 import ELynx.Tree.Export.Nexus
 import ELynx.Tree.Import.Newick
 import ELynx.Tree.Import.Nexus
-import ELynx.Tree.Measurable
-import ELynx.Tree.Named
+import ELynx.Tree.Length
+import ELynx.Tree.Name
 import ELynx.Tree.Parallel
 import ELynx.Tree.Partition
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
 import ELynx.Tree.Splittable
-import ELynx.Tree.Supported
+import ELynx.Tree.Support
 import ELynx.Tree.Zipper
 
 -- -- | An evolutionary label has some information about where the corresponding

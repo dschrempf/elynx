@@ -18,20 +18,20 @@ module Lens
 where
 
 import Data.Foldable
-import ELynx.Tree.Measurable
+import ELynx.Tree.Length
 import Lens.Micro
 
-len :: Measurable a => Lens' a Length
+len :: HasLength a => Lens' a Length
 len = lens getLen (flip setLen)
 
-sumWithGetter :: Measurable a => [a] -> Length
+sumWithGetter :: HasLength a => [a] -> Length
 sumWithGetter = foldl' (\x y -> x ^. len + y ^. len) 0
 
-sumWithSetter :: Measurable a => [a] -> Length
+sumWithSetter :: HasLength a => [a] -> Length
 sumWithSetter = sumWithGetter . map (\x -> x & len %~ (+ 10))
 
-sumWithAccessorFunction :: Measurable a => [a] -> Length
+sumWithAccessorFunction :: HasLength a => [a] -> Length
 sumWithAccessorFunction = foldl' (\x y -> getLen x + getLen y) 0
 
-sumWithModifyFunction :: Measurable a => [a] -> Length
+sumWithModifyFunction :: HasLength a => [a] -> Length
 sumWithModifyFunction = sumWithAccessorFunction . map (modLen (+ 10))

@@ -46,11 +46,11 @@ import Data.Aeson (FromJSON, ToJSON)
 import Data.Attoparsec.ByteString.Char8
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
-import ELynx.Tree.Measurable
-import ELynx.Tree.Named
+import ELynx.Tree.Length
+import ELynx.Tree.Name
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted hiding (forest, label)
-import ELynx.Tree.Supported
+import ELynx.Tree.Support
 import GHC.Generics
 import Prelude hiding (takeWhile)
 
@@ -155,7 +155,7 @@ branchLength :: Parser Length
 branchLength = do
   _ <- char ':' <?> "branchLengthDelimiter"
   l <- double <?> "branchLength"
-  return $ either error id $ toLength l
+  return $ toLength "branchLength" l
 
 branchSupport :: Parser Support
 branchSupport =
@@ -163,7 +163,7 @@ branchSupport =
     _ <- char '[' <?> "branchSupportBegin"
     s <- double <?> "branchSupport"
     _ <- char ']' <?> "branchSupportEnd"
-    return $ either error id $ toSupport s
+    return $ toSupport "branchSupport" s
 
 --------------------------------------------------------------------------------
 -- IQ-TREE.
@@ -191,7 +191,7 @@ branchedIqTree :: Parser (Tree Phylo Name)
 branchedIqTree = (<?> "branchedIqTree") $ do
   f <- forestIqTree
   ms <- optional double
-  let s = either error id . toSupport <$> ms
+  let s = toSupport "branchedIqTree" <$> ms
   n <- name
   b <- optional branchLength
   return $ Node (Phylo b s) n f

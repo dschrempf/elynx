@@ -91,7 +91,7 @@ prop_roots _ = True
 
 -- -- TODO.
 -- prop_bifurcating_tree
---   :: (Ord a, Measurable a, Named a, Supported a) => Tree a -> Bool
+--   :: (Ord a, HasLength a, HasName a, HasSupport a) => Tree a -> Bool
 -- prop_bifurcating_tree t = partitions (resolve t) == empty
 
 prop_roots_total_length :: Tree Length a -> Bool

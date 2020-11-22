@@ -19,10 +19,10 @@ module Length
 where
 
 import Data.Foldable
-import ELynx.Tree.Measurable
+import ELynx.Tree.Length
 
 lengthSumFoldl' :: [Length] -> Length
-lengthSumFoldl' = foldl' (\x y -> either error id $ toLength $ fromLength x + fromLength y) 0
+lengthSumFoldl' = foldl' (\x y -> toLength "lengthSumFoldl'" $ fromLength x + fromLength y) 0
 
 lengthSumFoldl'Unsafe :: [Length] -> Length
 lengthSumFoldl'Unsafe = foldl' (\x y -> toLengthUnsafe $ fromLength x + fromLength y) 0

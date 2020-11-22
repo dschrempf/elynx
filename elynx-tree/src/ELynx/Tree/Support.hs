@@ -3,7 +3,7 @@
 {-# LANGUAGE DerivingVia #-}
 
 -- |
--- Module      :  ELynx.Tree.Supported
+-- Module      :  ELynx.Tree.Support
 -- Description :  Labels with support values
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
@@ -13,12 +13,12 @@
 -- Portability :  portable
 --
 -- Creation date: Thu Jun 13 14:06:45 2019.
-module ELynx.Tree.Supported
+module ELynx.Tree.Support
   ( -- * Non-negative support value
     Support (fromSupport),
     toSupport,
     toSupportUnsafe,
-    Supported (..),
+    HasSupport (..),
 
     -- * Functions on trees
     normalizeBranchSupport,
@@ -41,7 +41,7 @@ import GHC.Generics
 -- However, non-negativity is only checked with 'toSupport', and negative values
 -- can be obtained using the 'Num' and related instances.
 --
--- See also the documentation of 'ELynx.Tree.Measurable.Length'.
+-- See also the documentation of 'ELynx.Tree.Length.Length'.
 newtype Support = Support {fromSupport :: Double}
   deriving (Read, Show, Generic, NFData)
   deriving (Enum, Eq, Floating, Fractional, Num, Ord, Real, RealFloat, RealFrac) via Double
@@ -54,24 +54,23 @@ instance ToJSON Support
 
 instance FromJSON Support
 
-instance Supported Support where
+instance HasSupport Support where
   getSup = id
   setSup = const
   modSup f = f
 
--- | Nothing if support is negative.
-toSupport :: Double -> Either String Support
-toSupport x
-  | x < 0 = Left $ "toSupport: Support is negative: " ++ show x ++ "."
-  | otherwise = Right $ Support x
+-- | If negative, call 'error' indicating the calling function name.
+toSupport :: String -> Double -> Support
+toSupport s x
+  | x < 0 = error $ s ++ ": Support is negative: " ++ show x ++ "."
+  | otherwise = Support x
 
--- | Do not check if support value is negative.
+-- | Do not check if value is negative.
 toSupportUnsafe :: Double -> Support
 toSupportUnsafe = Support
 
--- | A data type that supports extraction, setting and modifying of support
--- values.
-class Supported e where
+-- | A data type with measurable and modifiable values.
+class HasSupport e where
   getSup :: e -> Support
   setSup :: Support -> e -> e
 
@@ -80,7 +79,7 @@ class Supported e where
 
 -- | Normalize branch support values. The maximum branch support value will be
 -- set to 1.0.
-normalizeBranchSupport :: Supported e => Tree e a -> Tree e a
+normalizeBranchSupport :: HasSupport e => Tree e a -> Tree e a
 normalizeBranchSupport t = first (modSup (/ m)) t
   where
     m = bimaximum $ bimap getSup (const 0) t
@@ -88,18 +87,18 @@ normalizeBranchSupport t = first (modSup (/ m)) t
 -- | Collapse branches with support lower than given value.
 --
 -- The branch and node labels of the collapsed branches are discarded.
-collapse :: (Eq e, Eq a, Supported e) => Support -> Tree e a -> Tree e a
+collapse :: (Eq e, Eq a, HasSupport e) => Support -> Tree e a -> Tree e a
 collapse th tr =
   let tr' = collapse' th tr
    in if tr == tr' then tr else collapse th tr'
 
 -- A leaf has full support.
-highP :: Supported e => Support -> Tree e a -> Bool
+highP :: HasSupport e => Support -> Tree e a -> Bool
 highP _ (Node _ _ []) = True
 highP th (Node br _ _) = getSup br >= th
 
 -- See 'collapse'.
-collapse' :: Supported e => Support -> Tree e a -> Tree e a
+collapse' :: HasSupport e => Support -> Tree e a -> Tree e a
 collapse' th (Node br lb ts) = Node br lb $ map (collapse' th) (highSupport ++ lowSupportForest)
   where
     (highSupport, lowSupport) = partition (highP th) ts

@@ -50,7 +50,7 @@ spec = do
       prune largeTree `shouldBe` largeTree
     it "correctly prunes a small example" $
       prune smallSubTree `shouldBe` smallSubTreePruned
-    it "leaves height constant for Measurable trees" $ do
+    it "leaves height constant for trees with branch lengths" $ do
       let t' =
             either error id $
               phyloToLengthTree subSampleLargeTree

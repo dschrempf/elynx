@@ -23,11 +23,11 @@ where
 import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (intersperse)
-import ELynx.Tree.Measurable
-import ELynx.Tree.Named
+import ELynx.Tree.Length
+import ELynx.Tree.Name
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
-import ELynx.Tree.Supported
+import ELynx.Tree.Support
 
 buildBrLen :: Length -> BB.Builder
 buildBrLen bl = BB.char8 ':' <> BB.doubleDec (fromLength bl)
@@ -36,7 +36,7 @@ buildBrSup :: Support -> BB.Builder
 buildBrSup bs = BB.char8 '[' <> BB.doubleDec (fromSupport bs) <> BB.char8 ']'
 
 -- | See 'toNewick'.
-toNewickBuilder :: Named a => Tree Phylo a -> BB.Builder
+toNewickBuilder :: HasName a => Tree Phylo a -> BB.Builder
 toNewickBuilder t = go t <> BB.char8 ';'
   where
     go (Node b l []) = lbl b l
@@ -65,5 +65,5 @@ toNewickBuilder t = go t <> BB.char8 ';'
 -- @
 -- "ACTUALNAME[posterior=-2839.2,age_95%_HPD={4.80804,31.6041}]"
 -- @
-toNewick :: Named a => Tree Phylo a -> BL.ByteString
+toNewick :: HasName a => Tree Phylo a -> BL.ByteString
 toNewick = BB.toLazyByteString . toNewickBuilder

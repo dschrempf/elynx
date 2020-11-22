@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
--- Module      :  ELynx.Tree.SupportedSpec
--- Description :  Unit tests for ELynx.Tree.SupportedSpec
+-- Module      :  ELynx.Tree.SupportSpec
+-- Description :  Unit tests for ELynx.Tree.SupportSpec
 -- Copyright   :  (c) Dominik Schrempf, 2020
 -- License     :  GPL-3.0-or-later
 --
@@ -11,7 +11,7 @@
 -- Portability :  portable
 --
 -- Creation date: Fri Aug 21 14:20:09 2020.
-module ELynx.Tree.SupportedSpec
+module ELynx.Tree.SupportSpec
   ( spec,
   )
 where

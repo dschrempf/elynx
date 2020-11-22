@@ -82,10 +82,10 @@ import Data.Semigroup
 import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Tree.Bipartition
-import ELynx.Tree.Measurable
+import ELynx.Tree.Length
 import ELynx.Tree.Rooted
 import ELynx.Tree.Splittable
-import ELynx.Tree.Supported
+import ELynx.Tree.Support
 import GHC.Generics
 
 -- A faster check could probably be done using 'Ord' and sets. The leave set
@@ -186,7 +186,7 @@ outgroup o r t@(Node b l ts)
 --
 -- Return 'Left' if
 -- - the root node is not bifurcating.
-midpoint :: (Semigroup e, Splittable e, Measurable e) => Tree e a -> Either String (Tree e a)
+midpoint :: (Semigroup e, Splittable e, HasLength e) => Tree e a -> Either String (Tree e a)
 midpoint (Node _ _ []) = Left "midpoint: Root node is a leaf."
 midpoint (Node _ _ [_]) = Left "midpoint: Root node has degree two."
 midpoint t@(Node _ _ [_, _]) = getMidpoint <$> roots t
@@ -199,7 +199,7 @@ findMinIndex (x : xs) = go (0, x) 1 xs
     go (i, z) j (y : ys) = if z < y then go (i, z) (j + 1) ys else go (j, y) (j + 1) ys
 findMinIndex [] = error "findMinIndex: Empty list."
 
-getMidpoint :: Measurable e => [Tree e a] -> Tree e a
+getMidpoint :: HasLength e => [Tree e a] -> Tree e a
 getMidpoint ts = case t of
   (Node br lb [l, r]) ->
     let hl = height l
@@ -222,7 +222,7 @@ getMidpoint ts = case t of
 -- find index of minimum; take this tree and move root to the midpoint of the branch
 
 -- Get delta height of left and right sub tree.
-getDeltaHeight :: Measurable e => Tree e a -> Length
+getDeltaHeight :: HasLength e => Tree e a -> Length
 getDeltaHeight (Node _ _ [l, r]) = abs $ height l - height r
 -- Explicitly use 'error' here, because roots is supposed to return trees with
 -- bifurcating root nodes.
@@ -344,10 +344,10 @@ instance FromJSON Phylo
 -- | Set all branch lengths and support values to 'Just' the value.
 --
 -- Useful to export a tree with branch lengths in Newick format.
-toPhyloTree :: (Measurable e, Supported e) => Tree e a -> Tree Phylo a
+toPhyloTree :: (HasLength e, HasSupport e) => Tree e a -> Tree Phylo a
 toPhyloTree = first toPhyloLabel
 
-toPhyloLabel :: (Measurable e, Supported e) => e -> Phylo
+toPhyloLabel :: (HasLength e, HasSupport e) => e -> Phylo
 toPhyloLabel x = Phylo (Just $ getLen x) (Just $ getSup x)
 
 -- | Set all branch lengths to 'Just' the values, and all support values to
@@ -355,10 +355,10 @@ toPhyloLabel x = Phylo (Just $ getLen x) (Just $ getSup x)
 --
 -- Useful to export a tree with branch lengths but without branch support values
 -- to Newick format.
-measurableToPhyloTree :: Measurable e => Tree e a -> Tree Phylo a
+measurableToPhyloTree :: HasLength e => Tree e a -> Tree Phylo a
 measurableToPhyloTree = first measurableToPhyloLabel
 
-measurableToPhyloLabel :: Measurable e => e -> Phylo
+measurableToPhyloLabel :: HasLength e => e -> Phylo
 measurableToPhyloLabel x = Phylo (Just $ getLen x) Nothing
 
 -- | Set all branch lengths to 'Nothing', and all support values to 'Just' the
@@ -366,10 +366,10 @@ measurableToPhyloLabel x = Phylo (Just $ getLen x) Nothing
 --
 -- Useful to export a tree with branch support values but without branch lengths
 -- to Newick format.
-supportedToPhyloTree :: Supported e => Tree e a -> Tree Phylo a
+supportedToPhyloTree :: HasSupport e => Tree e a -> Tree Phylo a
 supportedToPhyloTree = first supportedToPhyloLabel
 
-supportedToPhyloLabel :: Supported e => e -> Phylo
+supportedToPhyloLabel :: HasSupport e => e -> Phylo
 supportedToPhyloLabel x = Phylo Nothing (Just $ getSup x)
 
 -- | If root branch length is not available, set it to 0.
@@ -431,7 +431,7 @@ data PhyloExplicit = PhyloExplicit
 instance Semigroup PhyloExplicit where
   PhyloExplicit bL sL <> PhyloExplicit bR sR = PhyloExplicit (bL + bR) (min sL sR)
 
-instance Measurable PhyloExplicit where
+instance HasLength PhyloExplicit where
   getLen = sBrLen
   setLen b pl = pl {sBrLen = b}
   modLen f (PhyloExplicit l s) = PhyloExplicit (f l) s
@@ -441,7 +441,7 @@ instance Splittable PhyloExplicit where
     where
       b' = sBrLen l / 2.0
 
-instance Supported PhyloExplicit where
+instance HasSupport PhyloExplicit where
   getSup = sBrSup
   setSup s pl = pl {sBrSup = s}
   modSup f (PhyloExplicit l s) = PhyloExplicit l (f s)

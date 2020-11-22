@@ -40,7 +40,7 @@ import ELynx.Tree.Distribution.BirthDeathNearlyCritical
 import ELynx.Tree.Distribution.TimeOfOrigin
 import ELynx.Tree.Distribution.TimeOfOriginNearCritical
 import ELynx.Tree.Distribution.Types
-import ELynx.Tree.Measurable
+import ELynx.Tree.Length
 import ELynx.Tree.Rooted
 import qualified Statistics.Distribution as D
   ( genContVar,

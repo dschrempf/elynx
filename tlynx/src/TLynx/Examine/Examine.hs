@@ -44,7 +44,7 @@ prettyRow name val = alignLeft 33 n <> alignRight 8 v
     v = BL.pack val
 
 -- | Examine branches of a tree.
-summarizeLengths :: Measurable e => Tree e a -> BL.ByteString
+summarizeLengths :: HasLength e => Tree e a -> BL.ByteString
 summarizeLengths t =
   BL.intercalate
     "\n"
@@ -64,7 +64,7 @@ readTrees fp = do
   nf <- argsNewickFormat . local <$> ask
   liftIO $ parseTrees nf fp
 
-examineTree :: Named a => Handle -> Tree Phylo a -> IO ()
+examineTree :: HasName a => Handle -> Tree Phylo a -> IO ()
 examineTree h t = do
   hPutStrLn h $ "Number of leaves: " ++ show (length lvs)
   let l = phyloToLengthTree t

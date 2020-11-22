@@ -19,13 +19,13 @@ where
 import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Export.Nexus
 import ELynx.Tree.Export.Newick
-import ELynx.Tree.Named
+import ELynx.Tree.Name
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
 
 -- | Export a list of (NAME, TREE) to a Nexus file.
-toNexusTrees :: Named a => [(BL.ByteString, Tree Phylo a)] -> BL.ByteString
+toNexusTrees :: HasName a => [(BL.ByteString, Tree Phylo a)] -> BL.ByteString
 toNexusTrees ts = toNexus "TREES" (map tree ts)
 
-tree :: Named a => (BL.ByteString, Tree Phylo a) -> BL.ByteString
+tree :: HasName a => (BL.ByteString, Tree Phylo a) -> BL.ByteString
 tree (n, t) = "  TREE " <> n <> " = " <> toNewick t

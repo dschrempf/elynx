@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 
 -- |
--- Module      :  ELynx.Tree.Named
+-- Module      :  ELynx.Tree.Name
 -- Description :  Trees with named nodes
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
@@ -12,9 +12,9 @@
 -- Portability :  portable
 --
 -- Creation date: Thu Jan 24 20:09:20 2019.
-module ELynx.Tree.Named
+module ELynx.Tree.Name
   ( Name (..),
-    Named (..),
+    HasName (..),
   )
 where
 
@@ -43,30 +43,30 @@ instance ToJSON Name where
 instance FromJSON Name where
   parseJSON = fmap (Name . BL.pack) . parseJSON
 
-instance Named Name where
-  getName = id
-
--- | Data types with names.
-class Named a where
+-- | Class of types having a name.
+class HasName a where
   getName :: a -> Name
 
-instance Named () where
+instance HasName Name where
+  getName = id
+
+instance HasName () where
   getName = const (Name BL.empty)
 
-instance Named Int where
+instance HasName Int where
   getName = Name . BB.toLazyByteString . BB.intDec
 
-instance Named Double where
+instance HasName Double where
   getName = Name . BL.fromStrict . toShortest
 
-instance Named Char where
+instance HasName Char where
   getName = Name . BB.toLazyByteString . BB.char8
 
-instance (Named a) => Named [a] where
+instance (HasName a) => HasName [a] where
   getName = Name . BL.concat . map (fromName . getName)
 
-instance Named BL.ByteString where
+instance HasName BL.ByteString where
   getName = Name
 
-instance Named BS.ByteString where
+instance HasName BS.ByteString where
   getName = Name . BL.fromStrict

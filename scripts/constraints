@@ -59,7 +59,7 @@ isInternal :: Tree a -> Bool
 isInternal (Node _ []) = False
 isInternal _           = True
 
-getOrderedNodeZippers :: Measurable a => Tree a -> Forest a
+getOrderedNodeZippers :: HasLength a => Tree a -> Forest a
 getOrderedNodeZippers t = filter isInternal $ map snd $ sortOn (Down . fst)
                                                                labels
  where

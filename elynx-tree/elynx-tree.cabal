@@ -45,14 +45,14 @@ library
       ELynx.Tree
       ELynx.Tree.Bipartition
       ELynx.Tree.Distance
-      ELynx.Tree.Measurable
-      ELynx.Tree.Named
+      ELynx.Tree.Length
+      ELynx.Tree.Name
       ELynx.Tree.Parallel
       ELynx.Tree.Partition
       ELynx.Tree.Phylogeny
       ELynx.Tree.Rooted
       ELynx.Tree.Splittable
-      ELynx.Tree.Supported
+      ELynx.Tree.Support
       ELynx.Tree.Zipper
       ELynx.Tree.Distribution.BirthDeath
       ELynx.Tree.Distribution.BirthDeathCritical
@@ -103,7 +103,7 @@ test-suite tree-test
       ELynx.Tree.PartitionSpec
       ELynx.Tree.PhylogenySpec
       ELynx.Tree.RootedSpec
-      ELynx.Tree.SupportedSpec
+      ELynx.Tree.SupportSpec
       ELynx.Tree.Export.NewickSpec
       ELynx.Tree.Export.NexusSpec
       ELynx.Tree.Import.NewickSpec

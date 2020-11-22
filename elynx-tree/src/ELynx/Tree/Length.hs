@@ -3,7 +3,7 @@
 {-# LANGUAGE DerivingVia #-}
 
 -- |
--- Module      :  ELynx.Tree.Measurable
+-- Module      :  ELynx.Tree.Length
 -- Description :  Measurable labels
 -- Copyright   :  (c) Dominik Schrempf 2020
 -- License     :  GPL-3.0-or-later
@@ -16,13 +16,13 @@
 --
 -- Non-negativity of lengths is not completely ensured. See the documentation of
 -- 'Length'.
-module ELynx.Tree.Measurable
+module ELynx.Tree.Length
   ( -- * Non-negative length
     Length (fromLength),
     toLength,
     toLengthUnsafe,
     checkLength,
-    Measurable (..),
+    HasLength (..),
     height,
     rootHeight,
 
@@ -50,8 +50,7 @@ import GHC.Generics
 -- However, non-negativity is only checked with 'toLength', and negative values
 -- can be obtained using the 'Num' and related instances.
 --
--- Safe operations with conversion from and to length are roughly 50 percent
--- slower.
+-- Safe conversion is roughly 50 percent slower.
 --
 -- @
 -- benchmarking length/length sum foldl' with safe conversion
@@ -84,27 +83,27 @@ instance ToJSON Length
 
 instance FromJSON Length
 
-instance Measurable Length where
+instance HasLength Length where
   getLen = id
   setLen = const
   modLen f = f
 
--- | 'Nothing' if length is negative.
-toLength :: Double -> Either String Length
-toLength x
-  | x < 0 = Left $ "length: Length is negative: " ++ show x ++ "."
-  | otherwise = Right $ Length x
+-- | If negative, call 'error' indicating the calling function name.
+toLength :: String -> Double -> Length
+toLength s x
+  | x < 0 = error $ s ++ ": Length is negative: " ++ show x ++ "."
+  | otherwise = Length x
 
--- | Do not check if support value is negative.
+-- | Do not check if value is negative.
 toLengthUnsafe :: Double -> Length
 toLengthUnsafe = Length
 
--- | 'Nothing' if length is negative.
-checkLength :: Length -> Either String Length
-checkLength = toLength . fromLength
+-- | If negative, call 'error' with given calling function name.
+checkLength :: String -> Length -> Length
+checkLength s = toLength s . fromLength
 
--- | A data type with measurable and modifiable length.
-class Measurable e where
+-- | A data type with measurable and modifiable values.
+class HasLength e where
   -- | Get length.
   getLen :: e -> Length
 
@@ -119,33 +118,33 @@ class Measurable e where
 -- | The maximum distance between origin and leaves.
 --
 -- The height includes the branch length of the stem.
-height :: Measurable e => Tree e a -> Length
+height :: HasLength e => Tree e a -> Length
 height = maximum . distancesOriginLeaves
 
 -- | The maximum distance between root node and leaves.
-rootHeight :: Measurable e => Tree e a -> Length
+rootHeight :: HasLength e => Tree e a -> Length
 rootHeight (Node _ _ []) = 0
 rootHeight t = maximum $ concatMap distancesOriginLeaves (forest t)
 
 -- | Distances from the origin of a tree to the leaves.
 --
 -- The distances include the branch length of the stem.
-distancesOriginLeaves :: Measurable e => Tree e a -> [Length]
+distancesOriginLeaves :: HasLength e => Tree e a -> [Length]
 distancesOriginLeaves (Node br _ []) = [getLen br]
 distancesOriginLeaves (Node br _ ts) = map (getLen br +) (concatMap distancesOriginLeaves ts)
 
 -- | Total branch length of a tree.
-totalBranchLength :: Measurable e => Tree e a -> Length
+totalBranchLength :: HasLength e => Tree e a -> Length
 totalBranchLength = bifoldl' (+) const 0 . first getLen
 
 -- | Normalize branch lengths so that the sum is 1.0.
-normalizeBranchLengths :: Measurable e => Tree e a -> Tree e a
+normalizeBranchLengths :: HasLength e => Tree e a -> Tree e a
 normalizeBranchLengths t = first (modLen (/ s)) t
   where
     s = totalBranchLength t
 
 -- | Normalize height of tree to 1.0.
-normalizeHeight :: Measurable e => Tree e a -> Tree e a
+normalizeHeight :: HasLength e => Tree e a -> Tree e a
 normalizeHeight t = first (modLen (/ h)) t
   where
     h = height t
@@ -160,14 +159,14 @@ allNearlyEqual xs = all (\y -> eps > abs (fromLength $ x - y)) (tail xs)
     x = head xs
 
 -- | Check if a tree is ultrametric.
-ultrametric :: Measurable e => Tree e a -> Bool
+ultrametric :: HasLength e => Tree e a -> Bool
 ultrametric = allNearlyEqual . distancesOriginLeaves
 
 -- | Elongate terminal branches such that the tree becomes ultrametric.
-makeUltrametric :: Measurable e => Tree e a -> Tree e a
+makeUltrametric :: HasLength e => Tree e a -> Tree e a
 makeUltrametric t = go 0 t
   where
     h = height t
-    go :: Measurable e => Length -> Tree e a -> Tree e a
+    go :: HasLength e => Length -> Tree e a -> Tree e a
     go h' (Node br lb []) = let dh = h - h' - getLen br in Node (modLen (+ dh) br) lb []
     go h' (Node br lb ts) = let h'' = h' + getLen br in Node br lb $ map (go h'') ts

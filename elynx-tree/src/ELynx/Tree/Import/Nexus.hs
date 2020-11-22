@@ -21,7 +21,7 @@ import Data.Attoparsec.ByteString.Char8
 import qualified Data.ByteString.Char8 as BS
 import ELynx.Import.Nexus
 import ELynx.Tree.Import.Newick
-import ELynx.Tree.Named
+import ELynx.Tree.Name
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
 import Prelude hiding (takeWhile)
