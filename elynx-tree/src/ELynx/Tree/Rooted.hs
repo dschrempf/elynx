@@ -41,6 +41,21 @@
 --
 -- In mathematical terms: A 'Tree' is a directed acyclic graph without loops,
 -- with vertex labels, and with edge labels.
+--
+-- A short recap of recursive tree traversals:
+--
+-- - Pre-order: Root first, then sub trees from left to right. Also called depth
+--   first.
+--
+-- - In-order: Only valid for bifurcating trees. Left sub tree first, then root,
+--   then right sub tree.
+--
+-- - Post-order: Sub trees from left to right, then the root. Also called
+--   breadth first.
+--
+-- Here, pre-order traversals are used exclusively, for example, by accessor
+-- functions such as 'branches', or 'labels'. Please let me know, if post-order
+-- algorithms are required.
 module ELynx.Tree.Rooted
   ( -- * Data type
     Tree (..),
