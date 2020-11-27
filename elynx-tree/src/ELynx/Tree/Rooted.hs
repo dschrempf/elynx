@@ -168,7 +168,7 @@ instance Bitraversable Tree where
 --
 -- The 'Monoid' instance of the branch labels determines the default branch
 -- label when using 'pure'.
-instance Monoid e => Applicative (Tree e) where
+instance (Semigroup e, Monoid e) => Applicative (Tree e) where
   pure lb = Node mempty lb []
   ~(Node brF lbF tsF) <*> ~tx@(Node brX lbX tsX) =
     Node (brF <> brX) (lbF lbX) (map (lbF <$>) tsX ++ map (<*> tx) tsF)
@@ -182,7 +182,10 @@ instance Monoid e => Applicative (Tree e) where
 -- | The 'Semigroup' instance of the branch labels determines how the branches
 -- are combined. For example, distances can be summed using
 -- 'Data.Semigroup.Sum'.
-instance Monoid e => Monad (Tree e) where
+--
+-- The 'Monoid' instance of the branch labels determines the default branch
+-- label when using 'return'.
+instance (Semigroup e, Monoid e) => Monad (Tree e) where
   ~(Node br lb ts) >>= f = case f lb of
     Node br' lb' ts' -> Node (br <> br') lb' (ts' ++ map (>>= f) ts)
 
