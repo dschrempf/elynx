@@ -54,8 +54,8 @@
 --   breadth first.
 --
 -- Here, pre-order traversals are used exclusively, for example, by accessor
--- functions such as 'branches', or 'labels'. Please let me know, if post-order
--- algorithms are required.
+-- functions such as 'branches', or 'labels' which is the same as 'toList'.
+-- Please let me know, if post-order algorithms are required.
 module ELynx.Tree.Rooted
   ( -- * Data type
     Tree (..),
