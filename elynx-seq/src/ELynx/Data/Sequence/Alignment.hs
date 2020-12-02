@@ -244,7 +244,7 @@ filterColsNoGaps a = filterColsWith (V.all $ not . A.isGap (alphabet a)) a
 -- the number of characters.
 type FrequencyData = M.Matrix Double
 
--- Map a function on each row of a DIM2 array; parallel version with given chunk size.
+-- Map a function on each column of a DIM2 array; parallel version with given chunk size.
 fMapColParChunk ::
   (V.Unbox a, V.Unbox b) =>
   Int ->

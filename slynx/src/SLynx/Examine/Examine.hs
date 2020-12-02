@@ -143,7 +143,7 @@ examineAlignment perSiteFlag a =
       if perSiteFlag
         then
           BL.unlines
-            [ BL.pack "Effective number of used states per site:",
+            [ BL.pack "Effective number of used states per site (measured using entropy):",
               BL.pack . show $ kEffs
             ]
         else BL.empty

@@ -273,7 +273,7 @@ toStdPS 'Y' = "Y"
 toStdPS '-' = ""
 toStdPS '.' = ""
 toStdPS '*' = ""
-toStdPS _ = error "toStdPX: Cannot convert to standard amino acid."
+toStdPS _ = error "toStdPS: Cannot convert to standard amino acid."
 
 proteinI :: AlphabetSpec
 proteinI = fromChars "ACDEFGHIKLMNPQRSTVWY" "-." "X?" "*JBZ" toStdPI
@@ -307,4 +307,4 @@ toStdPI 'B' = "DN"
 toStdPI 'Z' = "EQ"
 toStdPI 'X' = "ACDEFGHIKLMNPQRSTVWY"
 toStdPI '?' = "ACDEFGHIKLMNPQRSTVWY"
-toStdPI _ = error "toStdPX: Cannot convert to standard amino acid."
+toStdPI _ = error "toStdPI: Cannot convert to standard amino acid."
