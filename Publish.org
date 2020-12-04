@@ -15,10 +15,11 @@ Check module dependencies.
 
 #+NAME: CheckModuleDependencies
 #+BEGIN_SRC sh :exports both :results output verbatim
-./scripts/module-dependencies
+stack-module-dependencies
 #+END_SRC
 
 #+RESULTS: CheckModuleDependencies
+: Graphs will be created in project root: /home/dominik/Shared/haskell/elynx.
 : Draw and analyze graphs with 'xdot'.
 
 * Format source files
@@ -26,7 +27,7 @@ Format all source files.
 
 #+NAME: CleanFilesStylishHaskell
 #+BEGIN_SRC sh :exports both :results output verbatim
-./scripts/format-all
+stack-format-all
 #+END_SRC
 
 #+RESULTS: CleanFilesStylishHaskell
