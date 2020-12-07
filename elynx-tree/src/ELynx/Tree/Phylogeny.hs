@@ -43,10 +43,11 @@
 -- convention is not used here. Newick trees are just parsed as they are, and a
 -- rooted tree is returned.
 --
--- Trees with multifurcating root nodes can be rooted using 'outgroup'.
+-- Unrooted trees with multifurcating root nodes can be rooted using 'outgroup'.
+-- Note that a new root node is introduced in this case.
 --
--- Trees with bifurcating root nodes can be changed with 'rootAt' or 'midpoint';
--- a list of all rooted trees is returned by 'roots'.
+-- The roots of trees with bifurcating root nodes can be changed with 'rootAt'
+-- or 'midpoint'; a list of all rooted trees is returned by 'roots'.
 module ELynx.Tree.Phylogeny
   ( -- * Functions
     equal,
