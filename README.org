@@ -15,7 +15,7 @@
 # SHOW UP UGLY ON HACKAGE.
 
 * The ELynx Suite
-Version: 0.5.0.
+Version: 0.5.0.1.
 Reproducible evolution made easy.
 
 #+html: <p align="center"><img src="https://travis-ci.org/dschrempf/elynx.svg?branch=master"/></p>
@@ -107,7 +107,7 @@ slynx --help | head -n -16
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 
@@ -157,7 +157,7 @@ slynx concatenate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 
@@ -181,7 +181,7 @@ slynx examine --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 
@@ -206,7 +206,7 @@ slynx filter-rows --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 
@@ -234,7 +234,7 @@ slynx filter-columns --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 
@@ -261,7 +261,7 @@ slynx simulate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 
@@ -343,7 +343,7 @@ slynx sub-sample --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 
@@ -376,7 +376,7 @@ slynx translate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 
@@ -404,7 +404,7 @@ tlynx --help | head -n -16
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 
@@ -447,7 +447,7 @@ tlynx compare --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 
@@ -479,7 +479,7 @@ tlynx examine --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 
@@ -506,7 +506,7 @@ tlynx simulate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 
@@ -546,7 +546,7 @@ elynx --help | head -n -16
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.
+ELynx Suite version 0.5.0.1.
 Developed by Dominik Schrempf.
 Compiled on November 10, 2020, at 14:29 pm, UTC.
 

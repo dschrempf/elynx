@@ -2,7 +2,7 @@
 
 # The ELynx Suite
 
-Version: 0.5.0.
+Version: 0.5.0.1.
 Reproducible evolution made easy.
 
 <p align="center"><img src="https://travis-ci.org/dschrempf/elynx.svg?branch=master"/></p>
@@ -90,7 +90,7 @@ Handle evolutionary sequences.
 
     slynx --help | head -n -16
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     
@@ -137,7 +137,7 @@ Concatenate multi sequence alignments.
 
     slynx concatenate --help
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     
@@ -158,7 +158,7 @@ Examine sequence with `slynx examine`.
 
     slynx examine --help
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     
@@ -180,7 +180,7 @@ Filter sequences with `filer-rows`.
 
     slynx filter-rows --help
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     
@@ -203,7 +203,7 @@ Filter columns of multi sequence alignments with `filter-columns`.
 
     slynx filter-columns --help
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     
@@ -227,7 +227,7 @@ Simulate sequences with `slynx simulate`.
 
     slynx simulate --help
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     
@@ -306,7 +306,7 @@ Sub-sample columns from multi sequence alignments.
 
     slynx sub-sample --help
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     
@@ -336,7 +336,7 @@ Translate sequences.
 
     slynx translate --help
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     
@@ -361,7 +361,7 @@ Handle phylogenetic trees in Newick format.
 
     tlynx --help | head -n -16
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     
@@ -401,7 +401,7 @@ Compute distances between phylogenetic trees.
 
     tlynx compare --help
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     
@@ -430,7 +430,7 @@ Compute summary statistics of phylogenetic trees.
 
     tlynx examine --help
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     
@@ -454,7 +454,7 @@ Simulate phylogenetic trees using birth and death processes.
 
     tlynx simulate --help
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     
@@ -491,7 +491,7 @@ Validate and (optionally) redo past ELynx analyses.
 
     elynx --help | head -n -16
 
-    ELynx Suite version 0.5.0.
+    ELynx Suite version 0.5.0.1.
     Developed by Dominik Schrempf.
     Compiled on November 10, 2020, at 14:29 pm, UTC.
     

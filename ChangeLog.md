@@ -4,8 +4,11 @@
 
 ## Unreleased changes
 
+-   Rename `Measurable` to `HasLength`, `Supported` to `HasSupport`, and `Named`
+    to `HasLength`.
 
-## Version 0.5.0
+
+## Version 0.5.0.1
 
 -   `modLen`, `modSup`.
 -   Newtype wrappers for branch length, branch support, and node name. Those data
