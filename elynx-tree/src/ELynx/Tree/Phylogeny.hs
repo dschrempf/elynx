@@ -106,6 +106,7 @@ equal ~(Node brL lbL tsL) ~(Node brR lbR tsR) =
 -- Degree two nodes are pruned with 'prune'.
 --
 -- Return 'Left' if:
+--
 -- - the intersection of leaves is empty.
 intersect ::
   (Semigroup e, Eq e, Ord a) => Forest e a -> Either String (Forest e a)
@@ -158,8 +159,11 @@ bifurcating _ = False
 -- If the root node is bifurcating, use 'rootAt'.
 --
 -- Return 'Left' if
+--
 -- - the root node is not multifurcating;
+--
 -- - the tree has duplicate leaves;
+--
 -- - the provided outgroup is not found on the tree or is polyphyletic.
 outgroup :: (Semigroup e, Splittable e, Ord a) => Set a -> a -> Tree e a -> Either String (Tree e a)
 outgroup _ _ (Node _ _ []) = Left "outgroup: Root node is a leaf."
@@ -185,6 +189,7 @@ outgroup o r t@(Node b l ts)
 -- | Root tree at the midpoint.
 --
 -- Return 'Left' if
+--
 -- - the root node is not bifurcating.
 midpoint :: (Semigroup e, Splittable e, HasLength e) => Tree e a -> Either String (Tree e a)
 midpoint (Node _ _ []) = Left "midpoint: Root node is a leaf."
@@ -290,8 +295,11 @@ descend brR lbR tC (Node brD lbD tsD) =
 -- provided 'Splittable' instance.
 --
 -- Return 'Left', if:
+--
 -- - the root node is not bifurcating;
+--
 -- - the tree has duplicate leaves;
+--
 -- - the bipartition does not match the leaves of the tree.
 rootAt ::
   (Semigroup e, Splittable e, Eq a, Ord a) =>
