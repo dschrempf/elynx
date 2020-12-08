@@ -170,8 +170,8 @@ goPath :: Path -> TreePos e a -> Maybe (TreePos e a)
 goPath pos pth = foldlM (flip goChild) pth pos
 
 -- | Check if a path is valid in that it leads to a node on a tree.
-validPath :: Path -> Tree e a -> Either String Path
-validPath p t = case goPath p (fromTree t) of
+validPath :: Tree e a -> Path -> Either String Path
+validPath t p = case goPath p (fromTree t) of
   Nothing -> Left "validPath: Path is invalid."
   Just _ -> Right p
 
