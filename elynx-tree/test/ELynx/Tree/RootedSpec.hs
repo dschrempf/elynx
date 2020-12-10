@@ -62,5 +62,3 @@ spec = do
       dropLeavesWith (const True) smallTree `shouldBe` Nothing
     it "returns the correct subtree for a small example" $
       dropLeavesWith (== 2) smallTree `shouldBe` Just smallSubTree
-
--- TODO: intersect.

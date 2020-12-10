@@ -25,8 +25,17 @@ import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck hiding (labels)
 
-simpleTree :: Tree () String
-simpleTree = Node () "i" [Node () "j" [Node () "x" [], Node () "y" []], Node () "z" []]
+simpleTree1 :: Tree () String
+simpleTree1 = Node () "i" [Node () "j" [Node () "x" [], Node () "y" []], Node () "z" []]
+
+simpleTree2 :: Tree () String
+simpleTree2 = Node () "i" [Node () "j" [Node () "y" [], Node () "x" []], Node () "z" []]
+
+simpleTree3 :: Tree () String
+simpleTree3 = Node () "i" [Node () "j" [Node () "x" [], Node () "z" []], Node () "y" []]
+
+prop_commutative :: Eq a => Tree () a -> Tree () a -> Bool
+prop_commutative t1 t2 = t1 `equal` t2 == t2 `equal` t1
 
 simpleSol :: Forest () String
 simpleSol =
@@ -97,16 +106,21 @@ prop_roots _ = True
 prop_roots_total_length :: Tree Length a -> Bool
 prop_roots_total_length t@(Node _ _ [_, _]) =
   all (\x -> abs (totalBranchLength x - l) < 1e-8) $
-      either error id $
-        roots t
+    either error id $
+      roots t
   where
     l = totalBranchLength t
 prop_roots_total_length _ = True
 
 spec :: Spec
 spec = do
-  -- TODO: describe "Resolve"
-
+  describe "equal" $ do
+    it "correctly handles some test cases" $ do
+      simpleTree1 `shouldSatisfy` equal simpleTree2
+      simpleTree1 `shouldSatisfy` (not . equal simpleTree3)
+      simpleTree2 `shouldSatisfy` (not . equal simpleTree3)
+    it "is commutative" $
+      property (prop_commutative :: Tree () Int -> Tree () Int -> Bool)
   describe "roots" $ do
     it "correctly handles leaves and cherries" $ do
       let tleaf = Node () 0 [] :: Tree () Int
@@ -114,7 +128,7 @@ spec = do
       roots tleaf `shouldSatisfy` isLeft
       roots tcherry `shouldBe` Right [tcherry]
     it "correctly handles simple trees" $
-      either error id (roots simpleTree) `shouldBe` simpleSol
+      either error id (roots simpleTree1) `shouldBe` simpleSol
     modifyMaxSize (* 100) $
       it "returns the correct number of rooted trees for arbitrary trees" $
         property (prop_roots :: (Tree () Int -> Bool))
@@ -122,10 +136,10 @@ spec = do
     modifyMaxSize (* 100) $
       it "correctly handles simple trees" $
         do
-          let p = fst $ fromBipartition $ either error id $ bipartition simpleTree
-          outgroup p simpleTree `shouldBe` Right simpleTree
+          let p = fst $ fromBipartition $ either error id $ bipartition simpleTree1
+          outgroup p simpleTree1 `shouldBe` Right simpleTree1
           let l = S.singleton "x"
-          either error id (outgroup l simpleTree) `shouldSatisfy` (`equal` (simpleSol !! 1))
+          either error id (outgroup l simpleTree1) `shouldSatisfy` (`equal` (simpleSol !! 1))
   describe "rootsWithBranch" $
     modifyMaxSize (* 100) $
       it "does not change the tree height" $

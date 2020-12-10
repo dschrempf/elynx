@@ -90,11 +90,11 @@ import ELynx.Tree.Splittable
 import ELynx.Tree.Support
 import GHC.Generics
 
--- A faster check could probably be done using 'Ord' and sets. The leave set
--- could be precomputed.
-
 -- | The equality check is slow because the order of children is considered to
 -- be arbitrary.
+--
+-- NOTE: The equality check is only meaningful if the tree has unique leaves.
+-- However, this condition is not checked.
 equal :: (Eq e, Eq a) => Tree e a -> Tree e a -> Bool
 equal ~(Node brL lbL tsL) ~(Node brR lbR tsR) =
   (brL == brR)

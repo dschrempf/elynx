@@ -43,11 +43,11 @@ import Data.List
 import Data.Maybe
 import ELynx.Topology.Rooted
 
--- A faster check could probably be done using 'Ord' and sets. The leave set
--- could be precomputed.
-
 -- | The equality check is slow because the order of children is considered to
 -- be arbitrary.
+--
+-- NOTE: The equality check is only meaningful if the topology has unique
+-- leaves. However, this condition is not checked.
 equal :: Eq a => Topology a -> Topology a -> Bool
 equal (Node tsL) (Node tsR) =
   (length tsL == length tsR)
