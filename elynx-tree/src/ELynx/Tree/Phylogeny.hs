@@ -39,15 +39,14 @@
 --
 -- Note: 'Tree's encoded in Newick format correspond to rooted trees. By
 -- convention only, a tree parsed from Newick format is usually thought to be
--- unrooted, when the root node is multifurcating and has three children. This
--- convention is not used here. Newick trees are just parsed as they are, and a
--- rooted tree is returned.
+-- unrooted, when the root node is multifurcating and has three or more
+-- children. This convention is not used here. Newick trees are just parsed as
+-- they are, and a rooted tree is returned.
 --
 -- A multifurcating root node can be resolved to a bifurcating root node with
 -- 'outgroup'.
 --
--- The position of a bifurcating root node can be changed with 'outgroup' or
--- 'midpoint'.
+-- The bifurcating root node can be changed with 'outgroup' or 'midpoint'.
 --
 -- For a given tree with bifurcating root node, a list of all rooted trees is
 -- returned by 'roots'.
@@ -101,7 +100,7 @@ equal ~(Node brL lbL tsL) ~(Node brR lbR tsR) =
   (brL == brR)
     && (lbL == lbR)
     && (length tsL == length tsR)
-    && all (`elem` tsR) tsL
+    && all (\t -> isJust $ find (equal t) tsR) tsL
 
 -- | Compute the intersection of trees.
 --
