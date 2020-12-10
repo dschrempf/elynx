@@ -96,8 +96,7 @@ prop_roots _ = True
 
 prop_roots_total_length :: Tree Length a -> Bool
 prop_roots_total_length t@(Node _ _ [_, _]) =
-  all (\b -> abs (b - l) < 1e-8) $
-    map totalBranchLength $
+  all (\x -> abs (totalBranchLength x - l) < 1e-8) $
       either error id $
         roots t
   where
@@ -119,16 +118,14 @@ spec = do
     modifyMaxSize (* 100) $
       it "returns the correct number of rooted trees for arbitrary trees" $
         property (prop_roots :: (Tree () Int -> Bool))
-  describe "rootAt" $
+  describe "outgroup" $
     modifyMaxSize (* 100) $
       it "correctly handles simple trees" $
         do
-          let p = either error id $ bipartition simpleTree
-          rootAt p simpleTree `shouldBe` Right simpleTree
+          let p = fst $ fromBipartition $ either error id $ bipartition simpleTree
+          outgroup p simpleTree `shouldBe` Right simpleTree
           let l = S.singleton "x"
-              r = S.fromList ["y", "z"]
-              p' = either error id $ bp l r
-          either error id (rootAt p' simpleTree) `shouldSatisfy` (`equal` (simpleSol !! 1))
+          either error id (outgroup l simpleTree) `shouldSatisfy` (`equal` (simpleSol !! 1))
   describe "rootsWithBranch" $
     modifyMaxSize (* 100) $
       it "does not change the tree height" $

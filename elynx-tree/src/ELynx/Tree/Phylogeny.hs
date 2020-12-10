@@ -43,11 +43,14 @@
 -- convention is not used here. Newick trees are just parsed as they are, and a
 -- rooted tree is returned.
 --
--- Unrooted trees with multifurcating root nodes can be rooted using 'outgroup'.
--- Note that a new root node is introduced in this case.
+-- A multifurcating root node can be resolved to a bifurcating root node with
+-- 'outgroup'.
 --
--- The roots of trees with bifurcating root nodes can be changed with 'rootAt'
--- or 'midpoint'; a list of all rooted trees is returned by 'roots'.
+-- The position of a bifurcating root node can be changed with 'outgroup' or
+-- 'midpoint'.
+--
+-- For a given tree with bifurcating root node, a list of all rooted trees is
+-- returned by 'roots'.
 module ELynx.Tree.Phylogeny
   ( -- * Functions
     equal,
@@ -56,7 +59,6 @@ module ELynx.Tree.Phylogeny
     outgroup,
     midpoint,
     roots,
-    rootAt,
 
     -- * Branch labels
     Phylo (..),
@@ -91,6 +93,7 @@ import GHC.Generics
 
 -- A faster check could probably be done using 'Ord' and sets. The leave set
 -- could be precomputed.
+
 -- | The equality check is slow because the order of children is considered to
 -- be arbitrary.
 equal :: (Eq e, Eq a) => Tree e a -> Tree e a -> Bool
@@ -150,14 +153,21 @@ bifurcating _ = False
 -- resolve (Node br lb (Node brL lbL xsL : xs)) = Node br lb [Node brL' lbL (map resolve xsL), Node brL' lb (map resolve xs)]
 --   where brL' = split brL
 
--- | Resolve a multifurcating root using an outgroup.
+-- | Root the tree using an outgroup.
 --
--- A bifurcating root node with the provided label is introduced. The affected
--- branch is 'split'.
+-- If the current root node is multifurcating, a bifurcating root node with the
+-- empty label is introduced by 'split'ting the leftmost branch. The 'Monoid'
+-- instance of the node label and the 'Splittable' instance of the branch length
+-- are used. Note that in this case, the degree of the former root node is
+-- decreased by one!
 --
--- Note, the degree of the former root node is decreased by one.
+-- Given that the root note is bifurcating, the root node is moved to the
+-- required position specified by the outgroup.
 --
--- If the root node is bifurcating, use 'rootAt'.
+-- Branches are connected according to the provided 'Semigroup' instance.
+--
+-- Upon insertion of the root node at the required position, the affected branch
+-- is 'split' according to the provided 'Splittable' instance.
 --
 -- Return 'Left' if
 --
@@ -166,20 +176,17 @@ bifurcating _ = False
 -- - the tree has duplicate leaves;
 --
 -- - the provided outgroup is not found on the tree or is polyphyletic.
-outgroup :: (Semigroup e, Splittable e, Ord a) => Set a -> a -> Tree e a -> Either String (Tree e a)
-outgroup _ _ (Node _ _ []) = Left "outgroup: Root node is a leaf."
-outgroup _ _ (Node _ _ [_]) = Left "outgroup: Root node has degree two."
-outgroup _ _ (Node _ _ [_, _]) = Left "outgroup: Root node is bifurcating."
-outgroup o r t@(Node b l ts)
-  | duplicateLeaves t = Left "outgroup: Tree has duplicate leaves."
-  | otherwise = do
-    bip <- bp o (S.fromList lvs S.\\ o)
-    rootAt bip t'
+outgroup :: (Semigroup e, Splittable e, Monoid a, Ord a) => Set a -> Tree e a -> Either String (Tree e a)
+outgroup _ (Node _ _ []) = Left "outgroup: Root node is a leaf."
+outgroup _ (Node _ _ [_]) = Left "outgroup: Root node has degree two."
+outgroup o t@(Node _ _ [_, _]) = do
+  bip <- bp o (S.fromList (leaves t) S.\\ o)
+  rootAt bip t
+outgroup o (Node b l ts) = outgroup o t'
   where
-    lvs = leaves t
     (Node brO lbO tsO) = head ts
     -- Introduce a bifurcating root node.
-    t' = Node b r [Node (split brO) lbO tsO, Node (split brO) l (tail ts)]
+    t' = Node b mempty [Node (split brO) lbO tsO, Node (split brO) l (tail ts)]
 
 -- The 'midpoint' algorithm is pretty stupid because it calculates all rooted
 -- trees and then finds the one minimizing the difference between the heights of
@@ -283,7 +290,7 @@ descend brR lbR tC (Node brD lbD tsD) =
     tC' = tC {branch = brC'}
     cfs = complementaryForests tC' tsD
 
--- | Root a tree at a specific position.
+-- Root a tree at a specific position.
 --
 -- Root the tree at the branch defined by the given bipartition. The original
 -- root node is moved to the new position.
@@ -327,7 +334,7 @@ rootAt' ::
   Either String (Tree e a)
 rootAt' b t = do
   ts <- roots t
-  case find (\x -> Right b == bipartition x) ts of
+  case find (\x -> bipartition x == Right b) ts of
     Nothing -> Left "rootAt': Bipartition not found on tree."
     Just t' -> Right t'
 
