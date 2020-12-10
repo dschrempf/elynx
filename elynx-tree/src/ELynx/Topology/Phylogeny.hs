@@ -34,7 +34,26 @@
 -- parsed as they are, and a rooted topology is returned.
 --
 -- THIS MODULE IS INCOMPLETE.
-module ELynx.Topology.Phylogeny () where
+module ELynx.Topology.Phylogeny
+  ( equal,
+  )
+where
+
+import Data.List
+import Data.Maybe
+import ELynx.Topology.Rooted
+
+-- A faster check could probably be done using 'Ord' and sets. The leave set
+-- could be precomputed.
+
+-- | The equality check is slow because the order of children is considered to
+-- be arbitrary.
+equal :: Eq a => Topology a -> Topology a -> Bool
+equal (Node tsL) (Node tsR) =
+  (length tsL == length tsR)
+    && all (\t -> isJust $ find (equal t) tsR) tsL
+equal (Leaf lbL) (Leaf lbR) = lbL == lbR
+equal _ _ = False
 
 -- TODO.
 
@@ -45,4 +64,3 @@ module ELynx.Topology.Phylogeny () where
 --
 -- For a given topology with bifurcating root node, a list of all rooted
 -- topologies is returned by 'roots'.
-
