@@ -13,15 +13,15 @@
 --
 -- Creation date: Sat Jul 11 10:28:28 2020.
 --
--- A 'Topology' differs from a classical rose 'Data.Tree.Tree' in that it does
--- not have internal node labels. The leaves have labels.
+-- THIS MODULE IS INCOMPLETE.
 --
--- For rooted trees, please see 'ELynx.Tree.Rooted'.
+-- A rooted 'Topology' differs from a classical rooted rose 'Data.Tree.Tree' in
+-- that it does not have internal node labels. The leaves have labels.
 --
--- In phylogenetics, the order of children of a topology node is arbitrary.
--- Internally, however, the underlying 'Topology' data structure stores the
--- sub-forest as a (non-empty) list, which has a specific order. Hence, we have
--- to do some tricks when comparing topologies, and topology comparison is slow.
+-- For rooted trees with branch labels, please see "ELynx.Tree.Rooted". Please
+-- also see the note about tree traversals therein.
+--
+-- THIS MODULE IS INCOMPLETE.
 module ELynx.Topology.Rooted
   ( -- * Data type
     Topology (..),
@@ -29,16 +29,17 @@ module ELynx.Topology.Rooted
     fromTree,
     fromLabeledTree,
 
-    -- * Functions
-    degree,
+    -- * Access leaves, branches and labels
     leaves,
-    flatten,
+    duplicateLeaves,
     identify,
+
+    -- * Structure
+    degree,
     prune,
     dropLeavesWith,
     zipTreesWith,
     zipTrees,
-    duplicateLeaves,
   )
 where
 
@@ -80,7 +81,7 @@ instance Foldable Topology where
   null _ = False
   {-# INLINE null #-}
 
-  toList = flatten
+  toList = leaves
   {-# INLINE toList #-}
 
 instance Traversable Topology where
@@ -120,23 +121,6 @@ instance ToJSON a => ToJSON (Topology a)
 
 instance FromJSON a => FromJSON (Topology a)
 
--- | The degree of the root node.
-degree :: Topology a -> Int
-degree (Node ts) = (+ 1) $ length ts
-degree (Leaf _) = 1
-
--- | Set of leaves.
-leaves :: Ord a => Topology a -> [a]
-leaves (Leaf lb) = [lb]
-leaves (Node ts) = concatMap leaves ts
-
--- | Return leaf labels in pre-order.
-flatten :: Topology a -> [a]
-flatten t = squish t []
-  where
-    squish (Node ts) xs = foldr squish xs ts
-    squish (Leaf lb) xs = lb : xs
-
 -- TODO: Provide and fix tests, provide arbitrary instances.
 
 -- | Convert a rooted rose tree to a rooted topology. Internal node labels are lost.
@@ -150,9 +134,39 @@ fromLabeledTree :: R.Tree e a -> Topology a
 fromLabeledTree (R.Node _ lb []) = Leaf lb
 fromLabeledTree (R.Node _ _ xs) = Node $ fromLabeledTree <$> N.fromList xs
 
+-- TODO: Maybe use foldr similar to 'flatten'.
+-- | Set of leaves.
+leaves :: Topology a -> [a]
+leaves (Leaf lb) = [lb]
+leaves (Node ts) = concatMap leaves ts
+
+-- -- TODO: Check if this implementation of 'leaves' is faster.
+-- -- | Return leaf labels in pre-order.
+-- flatten :: Topology a -> [a]
+-- flatten t = squish t []
+--   where
+--     squish (Node ts) xs = foldr squish xs ts
+--     squish (Leaf lb) xs = lb : xs
+
+duplicates :: Ord a => [a] -> Bool
+duplicates = go S.empty
+  where
+    go _ [] = False
+    go seen (x : xs) = x `S.member` seen || go (S.insert x seen) xs
+
+-- | Check if a topology has duplicate leaves.
+duplicateLeaves :: Ord a => Topology a -> Bool
+duplicateLeaves = duplicates . leaves
+
+-- TODO: This is the same as in ELynx.Tree.Rooted.
 -- | Label the leaves with unique integers starting at 0.
 identify :: Traversable t => t a -> t Int
 identify = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
+
+-- | The degree of the root node.
+degree :: Topology a -> Int
+degree (Node ts) = (+ 1) $ length ts
+degree (Leaf _) = 1
 
 -- | Prune degree two nodes.
 prune :: Topology a -> Topology a
@@ -195,13 +209,3 @@ zipTreesWith _ _ _ = Nothing
 -- Return 'Nothing' if the topologies are different.
 zipTrees :: Topology a1 -> Topology a2 -> Maybe (Topology (a1, a2))
 zipTrees = zipTreesWith (,)
-
-duplicates :: Ord a => [a] -> Bool
-duplicates = go S.empty
-  where
-    go _ [] = False
-    go seen (x : xs) = x `S.member` seen || go (S.insert x seen) xs
-
--- | Check if a topology has duplicate leaves.
-duplicateLeaves :: Ord a => Topology a -> Bool
-duplicateLeaves = duplicates . leaves

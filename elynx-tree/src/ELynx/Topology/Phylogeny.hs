@@ -46,8 +46,10 @@ import ELynx.Topology.Rooted
 -- | The equality check is slow because the order of children is considered to
 -- be arbitrary.
 --
--- NOTE: The equality check is only meaningful if the topology has unique
--- leaves. However, this condition is not checked.
+-- NOTE: The equality check is only meaningful if the topologies have unique
+-- leaves.
+--
+-- Return 'Left' if a topology does not have unique leaves.
 equal :: Eq a => Topology a -> Topology a -> Bool
 equal (Node tsL) (Node tsR) =
   (length tsL == length tsR)
