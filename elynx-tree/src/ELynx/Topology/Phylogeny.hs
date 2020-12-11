@@ -50,12 +50,20 @@ import ELynx.Topology.Rooted
 -- leaves.
 --
 -- Return 'Left' if a topology does not have unique leaves.
-equal :: Eq a => Topology a -> Topology a -> Bool
-equal (Node tsL) (Node tsR) =
+equal :: (Eq a, Ord a) => Topology a -> Topology a -> Either String Bool
+equal tL tR
+  | duplicateLeaves tL = Left "equal: Left topology has duplicate leaves."
+  | duplicateLeaves tR = Left "equal: Right topology has duplicate leaves."
+  | otherwise = Right $ equal' tL tR
+
+equal' :: Eq a => Topology a -> Topology a -> Bool
+equal' (Leaf lbL) (Leaf lbR) = lbL == lbR
+equal' (Node tsL) (Node tsR) =
   (length tsL == length tsR)
-    && all (\t -> isJust $ find (equal t) tsR) tsL
-equal (Leaf lbL) (Leaf lbR) = lbL == lbR
-equal _ _ = False
+    && all (`elem'` tsR) tsL
+  where
+    elem' t ts = isJust $ find (equal' t) ts
+equal' _ _ = False
 
 -- TODO.
 
