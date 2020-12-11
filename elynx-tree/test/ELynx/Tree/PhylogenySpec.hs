@@ -34,8 +34,14 @@ simpleTree2 = Node () "i" [Node () "j" [Node () "y" [], Node () "x" []], Node ()
 simpleTree3 :: Tree () String
 simpleTree3 = Node () "i" [Node () "j" [Node () "x" [], Node () "z" []], Node () "y" []]
 
-prop_commutative :: Eq a => Tree () a -> Tree () a -> Bool
-prop_commutative t1 t2 = t1 `equal` t2 == t2 `equal` t1
+prop_commutative :: (Eq a, Ord a) => Tree () a -> Tree () a -> Bool
+prop_commutative t1 t2 = case (s1, s2) of
+  (Left _, Left _) -> True
+  (Right x1, Right x2) -> x1 == x2
+  _ -> False
+  where
+    s1 = t1 `equal` t2
+    s2 = t2 `equal` t1
 
 simpleSol :: Forest () String
 simpleSol =
@@ -116,9 +122,9 @@ spec :: Spec
 spec = do
   describe "equal" $ do
     it "correctly handles some test cases" $ do
-      simpleTree1 `shouldSatisfy` equal simpleTree2
-      simpleTree1 `shouldSatisfy` (not . equal simpleTree3)
-      simpleTree2 `shouldSatisfy` (not . equal simpleTree3)
+      simpleTree1 `equal` simpleTree2 `shouldBe` Right True
+      simpleTree1 `equal` simpleTree3 `shouldBe` Right False
+      simpleTree2 `equal` simpleTree3 `shouldBe` Right False
     it "is commutative" $
       property (prop_commutative :: Tree () Int -> Tree () Int -> Bool)
   describe "roots" $ do
@@ -139,7 +145,8 @@ spec = do
           let p = fst $ fromBipartition $ either error id $ bipartition simpleTree1
           outgroup p simpleTree1 `shouldBe` Right simpleTree1
           let l = S.singleton "x"
-          either error id (outgroup l simpleTree1) `shouldSatisfy` (`equal` (simpleSol !! 1))
+          either error id (outgroup l simpleTree1) `equal` (simpleSol !! 1)
+            `shouldBe` Right True
   describe "rootsWithBranch" $
     modifyMaxSize (* 100) $
       it "does not change the tree height" $

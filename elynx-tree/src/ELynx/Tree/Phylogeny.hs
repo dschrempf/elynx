@@ -94,13 +94,19 @@ import GHC.Generics
 -- be arbitrary.
 --
 -- NOTE: The equality check is only meaningful if the tree has unique leaves.
--- However, this condition is not checked.
-equal :: (Eq e, Eq a) => Tree e a -> Tree e a -> Bool
-equal ~(Node brL lbL tsL) ~(Node brR lbR tsR) =
-  (brL == brR)
-    && (lbL == lbR)
-    && (length tsL == length tsR)
-    && all (\t -> isJust $ find (equal t) tsR) tsL
+--
+-- Return 'Left' if a tree does not have unique leaves.
+equal :: (Eq e, Eq a, Ord a) => Tree e a -> Tree e a -> Either String Bool
+equal ~tL@(Node brL lbL tsL) ~tR@(Node brR lbR tsR)
+  | duplicateLeaves tL = Left "equal: Left tree has duplicate leaves."
+  | duplicateLeaves tR = Left "equal: Right tree has duplicate leaves."
+  | otherwise =
+    Right $
+      (brL == brR)
+        && (lbL == lbR)
+        && (length tsL == length tsR)
+        && all (elem' tsR) tsL
+  where elem' ts t = isJust $ find (either (const False) id . equal t) ts
 
 -- | Compute the intersection of trees.
 --
