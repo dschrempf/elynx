@@ -249,10 +249,17 @@ toTreeBranchLabels (Node br _ ts) = T.Node br (map toTreeBranchLabels ts)
 toTreeNodeLabels :: Tree e a -> T.Tree a
 toTreeNodeLabels (Node _ lb ts) = T.Node lb (map toTreeNodeLabels ts)
 
+-- TODO: Maybe use foldr similar to 'labels'.
 -- | Get leaves.
 leaves :: Tree e a -> [a]
 leaves (Node _ lb []) = [lb]
 leaves (Node _ _ ts) = concatMap leaves ts
+
+duplicates :: Ord a => [a] -> Bool
+duplicates = go S.empty
+  where
+    go _ [] = False
+    go seen (x : xs) = x `S.member` seen || go (S.insert x seen) xs
 
 -- | Check if a tree has duplicate leaves.
 duplicateLeaves :: Ord a => Tree e a -> Bool
@@ -382,9 +389,3 @@ zipTreesWith f g (Node brL lbL tsL) (Node brR lbR tsR) =
 -- Return 'Nothing' if the topologies are different.
 zipTrees :: Tree e1 a1 -> Tree e2 a2 -> Maybe (Tree (e1, e2) (a1, a2))
 zipTrees = zipTreesWith (,) (,)
-
-duplicates :: Ord a => [a] -> Bool
-duplicates = go S.empty
-  where
-    go _ [] = False
-    go seen (x : xs) = x `S.member` seen || go (S.insert x seen) xs

@@ -93,7 +93,7 @@ import GHC.Generics
 -- | The equality check is slow because the order of children is considered to
 -- be arbitrary.
 --
--- NOTE: The equality check is only meaningful if the tree has unique leaves.
+-- NOTE: The equality check is only meaningful if the trees have unique leaves.
 --
 -- Return 'Left' if a tree does not have unique leaves.
 equal :: (Eq e, Eq a, Ord a) => Tree e a -> Tree e a -> Either String Bool
