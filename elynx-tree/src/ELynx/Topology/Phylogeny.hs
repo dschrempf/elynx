@@ -36,6 +36,7 @@
 -- THIS MODULE IS INCOMPLETE.
 module ELynx.Topology.Phylogeny
   ( equal,
+    equal',
   )
 where
 
@@ -56,6 +57,7 @@ equal tL tR
   | duplicateLeaves tR = Left "equal: Right topology has duplicate leaves."
   | otherwise = Right $ equal' tL tR
 
+-- | Same as 'equal', but assume that leaves are unique.
 equal' :: Eq a => Topology a -> Topology a -> Bool
 equal' (Leaf lbL) (Leaf lbR) = lbL == lbR
 equal' (Node tsL) (Node tsR) =

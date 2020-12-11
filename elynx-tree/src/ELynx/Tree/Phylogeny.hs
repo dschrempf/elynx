@@ -53,6 +53,7 @@
 module ELynx.Tree.Phylogeny
   ( -- * Functions
     equal,
+    equal',
     intersect,
     bifurcating,
     outgroup,
@@ -102,7 +103,7 @@ equal tL tR
   | duplicateLeaves tR = Left "equal: Right tree has duplicate leaves."
   | otherwise = Right $ equal' tL tR
 
--- Same as equal, but assume that leaves are unique.
+-- | Same as 'equal', but assume that leaves are unique.
 equal' :: (Eq e, Eq a) => Tree e a -> Tree e a -> Bool
 equal' ~(Node brL lbL tsL) ~(Node brR lbR tsR) =
   (brL == brR)
