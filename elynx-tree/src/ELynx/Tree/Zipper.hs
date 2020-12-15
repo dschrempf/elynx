@@ -87,12 +87,12 @@ goParent pos = case parents pos of
 goParentUnsafe :: TreePos e a -> TreePos e a
 goParentUnsafe pos = case parents pos of
   (ls, br, lb, rs) : ps ->
-      Pos
-        { current = Node br lb $ getForest pos,
-          before = ls,
-          after = rs,
-          parents = ps
-        }
+    Pos
+      { current = Node br lb $ getForest pos,
+        before = ls,
+        after = rs,
+        parents = ps
+      }
   [] -> error "goUpUnsafe: No parent found."
 
 -- | Go to root.
@@ -196,7 +196,8 @@ insertTree t pos = pos {current = t}
 -- | Modify the tree at the current focus of the zipper.
 modifyTree :: (Tree e a -> Tree e a) -> TreePos e a -> TreePos e a
 modifyTree f pos = pos {current = f t}
-  where t = current pos
+  where
+    t = current pos
 
 -- | Insert a new branch label into the current focus of the zipper.
 insertBranch :: e -> TreePos e a -> TreePos e a
