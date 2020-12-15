@@ -179,7 +179,9 @@ validPath t p = case goPath p (fromTree t) of
 --
 -- Call 'error' if path is invalid.
 goPathUnsafe :: Path -> TreePos e a -> TreePos e a
-goPathUnsafe pos pth = foldl (flip goChildUnsafe) pth pos
+goPathUnsafe pos pth =
+  {-# SCC "goPathUnsafe" #-}
+  foldl (flip goChildUnsafe) pth pos
 
 -- | Get the sub tree at path.
 --
