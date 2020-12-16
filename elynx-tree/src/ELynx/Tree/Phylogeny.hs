@@ -261,14 +261,14 @@ getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating."
 -- with a bifurcating root node, and a total number of @n>2@ nodes, there are
 -- (n-2) rooted trees.
 --
--- Moving a multifurcating root node to another branch would change the degree
--- of the root node. Hence, a bifurcating root is required. To resolve a
+-- A bifurcating root is required because moving a multifurcating root node to
+-- another branch would change the degree of the root node. To resolve a
 -- multifurcating root, please use 'outgroup'.
 --
 -- Connect branches according to the provided 'Semigroup' instance.
 --
--- Upon insertion of the root, split the affected branch into one out of two
--- equal entities according to a given function.
+-- Split the affected branch into one out of two equal entities according the
+-- provided 'Splittable' instance.
 --
 -- Return 'Left' if the root node is not 'bifurcating'.
 roots :: (Semigroup e, Splittable e) => Tree e a -> Either String (Forest e a)
