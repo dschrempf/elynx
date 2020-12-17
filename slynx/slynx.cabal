@@ -43,9 +43,8 @@ library
       Paths_slynx
   autogen-modules:
       Paths_slynx
-  hs-source-dirs:
-      src
-  ghc-options: -Wall
+  hs-source-dirs: src
+  ghc-options: -Wall -Wunused-packages
   build-depends:
       async
     , attoparsec
@@ -70,9 +69,8 @@ executable slynx
   main-is: Main.hs
   other-modules:
       Paths_slynx
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+  hs-source-dirs: app
+  ghc-options: -Wall -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , slynx

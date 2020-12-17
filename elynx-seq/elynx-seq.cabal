@@ -54,9 +54,8 @@ library
       Paths_elynx_seq
   autogen-modules:
       Paths_elynx_seq
-  hs-source-dirs:
-      src
-  ghc-options: -Wall
+  hs-source-dirs: src
+  ghc-options: -Wall -Wunused-packages
   build-depends:
       aeson
     , attoparsec
@@ -83,9 +82,8 @@ test-suite seq-test
       ELynx.Export.Sequence.FastaSpec
       ELynx.Import.Sequence.FastaSpec
       Paths_elynx_seq
-  hs-source-dirs:
-      test
-  ghc-options: -Wall
+  hs-source-dirs: test
+  ghc-options: -Wall -Wunused-packages
   build-depends:
       base >=4.7 && <5
     , bytestring

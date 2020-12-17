@@ -40,9 +40,8 @@ library
       Paths_elynx_tools
   autogen-modules:
       Paths_elynx_tools
-  hs-source-dirs:
-      src
-  ghc-options: -Wall
+  hs-source-dirs: src
+  ghc-options: -Wall -Wunused-packages
   build-depends:
       aeson
     , attoparsec

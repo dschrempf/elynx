@@ -44,9 +44,8 @@ library
       Paths_elynx_markov
   autogen-modules:
       Paths_elynx_markov
-  hs-source-dirs:
-      src
-  ghc-options: -Wall
+  hs-source-dirs: src
+  ghc-options: -Wall -Wunused-packages
   build-depends:
       async
     , attoparsec
@@ -75,9 +74,8 @@ test-suite markov-test
       ELynx.Import.MarkovProcess.SiteprofilesPhylobayesSpec
       ELynx.Simulate.MarkovProcessAlongTreeSpec
       Paths_elynx_markov
-  hs-source-dirs:
-      test
-  ghc-options: -Wall
+  hs-source-dirs: test
+  ghc-options: -Wall -Wunused-packages
   build-depends:
       base >=4.7 && <5
     , containers

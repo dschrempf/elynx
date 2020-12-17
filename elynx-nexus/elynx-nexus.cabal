@@ -29,9 +29,8 @@ library
       Paths_elynx_nexus
   autogen-modules:
       Paths_elynx_nexus
-  hs-source-dirs:
-      src
-  ghc-options: -Wall
+  hs-source-dirs: src
+  ghc-options: -Wall -Wunused-packages
   build-depends:
       attoparsec
     , base >=4.7 && <5
@@ -43,9 +42,8 @@ test-suite seq-test
   main-is: Spec.hs
   other-modules:
       Paths_elynx_nexus
-  hs-source-dirs:
-      test
-  ghc-options: -Wall
+  hs-source-dirs: test
+  ghc-options: -Wall -Wunused-packages
   build-depends:
       base >=4.7 && <5
     , hspec
