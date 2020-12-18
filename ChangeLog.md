@@ -1,11 +1,15 @@
 
-# Changelog for ELynx
+# Revision history for ELynx
 
 
 ## Unreleased changes
 
+-   Improve rooting functions.
+-   Improve `Topology` data type (but still a lot to do).
+-   Various additions to the documentation.
 -   Rename `Measurable` to `HasLength`, `Supported` to `HasSupport`, and `Named`
     to `HasLength`.
+-   Cabal and stack file changes.
 
 
 ## Version 0.5.0.1
