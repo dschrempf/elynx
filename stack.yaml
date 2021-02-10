@@ -19,7 +19,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 # resolver: lts-13.19
-resolver: nightly-2020-12-14
+resolver: nightly-2021-01-17
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -73,17 +73,15 @@ packages:
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
 
-# # Turn on all optimizations.
 # ghc-options:
-#     "$locals": -O2
+#   # Optimizations.
+#   "$everything": -fllvm -O2
+#   # # Profiling.
+#   # "$locals": -eventlog
+#   # Weeder 2.0.
+#   "$locals": -fwrite-ide-info
 
-# # Profiling.
-# ghc-options:
-#     "$locals": -eventlog
-
-# Weeder 2.0.
-ghc-options:
-  "$locals": -fwrite-ide-info
-
-# # Weeder 1.0.
-# ghc-options: {"$locals": -ddump-to-file -ddump-hi}
+# Nix integration via shell because the unfree mkl library is used.
+nix:
+  add-gc-roots: true
+  shell-file: shell.nix
