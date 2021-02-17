@@ -46,8 +46,7 @@ library
   hs-source-dirs: src
   ghc-options: -Wall -Wunused-packages
   build-depends:
-      async
-    , attoparsec
+      attoparsec
     , base >=4.7 && <5
     , bytestring
     , containers

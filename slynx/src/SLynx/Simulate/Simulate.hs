@@ -18,8 +18,6 @@ module SLynx.Simulate.Simulate
 where
 
 import Control.Applicative ((<|>))
-import Control.Concurrent
-import Control.Concurrent.Async
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
@@ -27,19 +25,22 @@ import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Lazy.Char8 as BL
+import Data.List
 import Data.Maybe
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Encoding as LT
 import qualified Data.Vector as V
+import qualified Data.Vector.Storable as VS
 import qualified Data.Vector.Unboxed as U
 import ELynx.Data.Alphabet.Alphabet as A
+import qualified ELynx.Data.MarkovProcess.AminoAcid as MA
 import ELynx.Data.MarkovProcess.GammaRateHeterogeneity
-import qualified ELynx.Data.MarkovProcess.MixtureModel as M
-import qualified ELynx.Data.MarkovProcess.PhyloModel as P
-import qualified ELynx.Data.MarkovProcess.SubstitutionModel as SM
-import qualified ELynx.Data.Sequence.Alignment as A
+import qualified ELynx.Data.MarkovProcess.MixtureModel as MM
+import qualified ELynx.Data.MarkovProcess.PhyloModel as MP
+import qualified ELynx.Data.MarkovProcess.RateMatrix as MR
+import qualified ELynx.Data.MarkovProcess.SubstitutionModel as MS
 import qualified ELynx.Data.Sequence.Sequence as Seq hiding
   ( name,
   )
@@ -54,39 +55,63 @@ import SLynx.Simulate.PhyloModel
 import System.Random.MWC
 import Text.Printf
 
+getDistLine :: Int -> MR.StationaryDistribution -> BB.Builder
+getDistLine i d =
+  BB.intDec i
+    <> BB.char8 ' '
+    <> s
+  where
+    s = mconcat $ intersperse (BB.char8 ' ') $ map BB.doubleDec $ VS.toList d
+
+writeSiteDists :: [Int] -> V.Vector MR.StationaryDistribution -> ELynx SimulateArguments ()
+-- writeSiteDists is ds = out "site distributions of distribution mixture model" output ".sitedists"
+writeSiteDists componentIs ds = do
+  mbn <- outFileBaseName . global <$> ask
+  case mbn of
+    Nothing -> return ()
+    Just bn -> liftIO $ BL.writeFile (bn <> ".sitedists") output
+  where
+    dsPaml = V.map MA.alphaToPamlVec ds
+    lns = [getDistLine i d | (i, c) <- zip [1 ..] componentIs, let d = dsPaml V.! c]
+    output = BB.toLazyByteString $ mconcat $ intersperse (BB.char8 '\n') lns
+
 -- Simulate a 'Alignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
 simulateAlignment ::
   (HasLength e, HasName a) =>
-  P.PhyloModel ->
+  MP.PhyloModel ->
   Tree e a ->
   Int ->
   GenIO ->
-  IO A.Alignment
+  ELynx SimulateArguments ()
 simulateAlignment pm t' n g = do
   let t = fromLength . getLen <$> toTreeBranchLabels t'
   leafStates <- case pm of
-    P.SubstitutionModel sm -> simulateAndFlattenPar n d e t g
+    MP.SubstitutionModel sm -> liftIO $ simulateAndFlattenPar n d e t g
       where
-        d = SM.stationaryDistribution sm
-        e = SM.exchangeabilityMatrix sm
-    P.MixtureModel mm -> do
-      (cs, ss) <- simulateAndFlattenMixtureModelPar n ws ds es t g
-      -- TODO: Write profiles.
+        d = MS.stationaryDistribution sm
+        e = MS.exchangeabilityMatrix sm
+    MP.MixtureModel mm -> do
+      (cs, ss) <- liftIO $ simulateAndFlattenMixtureModelPar n ws ds es t g
+      -- TODO: Writing site distributions only makes sense for EDM models.
+      -- Remove this if not needed or improve to be helpful in general.
+      writeSiteDists cs ds
       return ss
       where
-        ws = M.getWeights mm
-        ds = V.map SM.stationaryDistribution $ M.getSubstitutionModels mm
-        es = V.map SM.exchangeabilityMatrix $ M.getSubstitutionModels mm
+        ws = MM.getWeights mm
+        ds = V.map MS.stationaryDistribution $ MM.getSubstitutionModels mm
+        es = V.map MS.exchangeabilityMatrix $ MM.getSubstitutionModels mm
   let leafNames = map getName $ leaves t'
-      code = P.getAlphabet pm
+      code = MP.getAlphabet pm
       -- XXX: Probably use type safe stuff here?
       alph = A.all $ alphabetSpec code
       sequences =
         [ Seq.Sequence (fromName sName) "" code (U.fromList $ map (`Set.elemAt` alph) ss)
           | (sName, ss) <- zip leafNames leafStates
         ]
-  return $ either error id $ A.fromSequences sequences
+      output = sequencesToFasta sequences
+  $(logInfo) ""
+  out "simulated multi sequence alignment" output ".fasta"
 
 -- Summarize EDM components; line to be printed to screen or log.
 summarizeEDMComponents :: [EDMComponent] -> BL.ByteString
@@ -96,7 +121,7 @@ summarizeEDMComponents cs =
       ++ show (length cs)
       ++ " components."
 
-reportModel :: P.PhyloModel -> ELynx SimulateArguments ()
+reportModel :: MP.PhyloModel -> ELynx SimulateArguments ()
 reportModel m = do
   as <- global <$> ask
   if writeElynxFile as
@@ -137,60 +162,60 @@ summarizeLengths t =
     b = totalBranchLength t
 
 -- Summarize a substitution model; lines to be printed to screen or log.
-summarizeSM :: SM.SubstitutionModel -> [BL.ByteString]
+summarizeSM :: MS.SubstitutionModel -> [BL.ByteString]
 summarizeSM sm =
   map BL.pack $
-    (show (SM.alphabet sm) ++ " substitution model: " ++ SM.name sm ++ ".") :
-    ["Parameters: " ++ show (SM.params sm) ++ "." | not (null (SM.params sm))]
-      ++ case SM.alphabet sm of
+    (show (MS.alphabet sm) ++ " substitution model: " ++ MS.name sm ++ ".") :
+    ["Parameters: " ++ show (MS.params sm) ++ "." | not (null (MS.params sm))]
+      ++ case MS.alphabet sm of
         DNA ->
           [ "Stationary distribution: "
-              ++ dispv precision (SM.stationaryDistribution sm)
+              ++ dispv precision (MS.stationaryDistribution sm)
               ++ ".",
             "Exchangeability matrix:\n"
-              ++ dispmi 2 precision (SM.exchangeabilityMatrix sm)
+              ++ dispmi 2 precision (MS.exchangeabilityMatrix sm)
               ++ ".",
-            "Scale: " ++ show (roundN precision $ SM.totalRate sm) ++ "."
+            "Scale: " ++ show (roundN precision $ MS.totalRate sm) ++ "."
           ]
         Protein ->
           [ "Stationary distribution: "
-              ++ dispv precision (SM.stationaryDistribution sm)
+              ++ dispv precision (MS.stationaryDistribution sm)
               ++ ".",
-            "Scale: " ++ show (roundN precision $ SM.totalRate sm) ++ "."
+            "Scale: " ++ show (roundN precision $ MS.totalRate sm) ++ "."
           ]
         _ ->
           error
             "Extended character sets are not supported with substitution models."
 
 -- Summarize a mixture model component; lines to be printed to screen or log.
-summarizeMMComponent :: M.Component -> [BL.ByteString]
+summarizeMMComponent :: MM.Component -> [BL.ByteString]
 summarizeMMComponent c =
   BL.pack "Weight: "
-    <> (BB.toLazyByteString . BB.doubleDec $ M.weight c) :
-  summarizeSM (M.substModel c)
+    <> (BB.toLazyByteString . BB.doubleDec $ MM.weight c) :
+  summarizeSM (MM.substModel c)
 
 -- Summarize a mixture model; lines to be printed to screen or log.
-summarizeMM :: M.MixtureModel -> [BL.ByteString]
+summarizeMM :: MM.MixtureModel -> [BL.ByteString]
 summarizeMM m =
-  [ BL.pack $ "Mixture model: " ++ M.name m ++ ".",
+  [ BL.pack $ "Mixture model: " ++ MM.name m ++ ".",
     BL.pack $ "Number of components: " ++ show n ++ "."
   ]
     ++ detail
   where
-    n = length $ M.components m
+    n = length $ MM.components m
     detail =
       if n <= 100
         then
           concat
             [ BL.pack ("Component " ++ show i ++ ":") : summarizeMMComponent c
-              | (i, c) <- zip [1 :: Int ..] (V.toList $ M.components m)
+              | (i, c) <- zip [1 :: Int ..] (V.toList $ MM.components m)
             ]
         else []
 
 -- Summarize a phylogenetic model; lines to be printed to screen or log.
-summarizePM :: P.PhyloModel -> [BL.ByteString]
-summarizePM (P.MixtureModel mm) = summarizeMM mm
-summarizePM (P.SubstitutionModel sm) = summarizeSM sm
+summarizePM :: MP.PhyloModel -> [BL.ByteString]
+summarizePM (MP.MixtureModel mm) = summarizeMM mm
+summarizePM (MP.SubstitutionModel sm) = summarizeSM sm
 
 -- | Simulate sequences.
 simulateCmd :: ELynx SimulateArguments ()
@@ -273,7 +298,4 @@ simulateCmd = do
     Random ->
       error "simulateCmd: seed not available; please contact maintainer."
     Fixed s -> liftIO $ initialize s
-  alignment <- liftIO $ simulateAlignment phyloModel t' alignmentLength gen
-  let output = (sequencesToFasta . A.toSequences) alignment
-  $(logInfo) ""
-  out "simulated multi sequence alignment" output ".fasta"
+  simulateAlignment phyloModel t' alignmentLength gen

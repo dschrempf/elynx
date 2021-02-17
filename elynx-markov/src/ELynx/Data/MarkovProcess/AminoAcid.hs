@@ -12,18 +12,22 @@
 --
 -- The order of amino acids is alphabetic.
 module ELynx.Data.MarkovProcess.AminoAcid
-  ( lg,
+  ( -- * Amino acid substitution models
+    lg,
     lgCustom,
     wag,
     wagCustom,
     poisson,
     poissonCustom,
     gtr20,
+
+    -- * Convenience functions
+    alphaToPamlVec,
+    pamlToAlphaVec,
   )
 where
 
 import Data.ByteString.Internal (c2w)
-import Data.List (elemIndex)
 import Data.Maybe (fromMaybe)
 import qualified Data.Vector.Storable as V
 import Data.Word (Word8)
@@ -39,80 +43,84 @@ n = 20
 -- 'pamlToAlphaVec' and 'pamlToAlphaMat'.
 
 -- Amno acids in alphabetical order.
-aaAlphaOrder :: [Word8]
+aaAlphaOrder :: V.Vector Word8
 aaAlphaOrder =
-  map
+  V.map
     c2w
-    [ 'A',
-      'C',
-      'D',
-      'E',
-      'F',
-      'G',
-      'H',
-      'I',
-      'K',
-      'L',
-      'M',
-      'N',
-      'P',
-      'Q',
-      'R',
-      'S',
-      'T',
-      'V',
-      'W',
-      'Y'
-    ]
+    $ V.fromList
+      [ 'A',
+        'C',
+        'D',
+        'E',
+        'F',
+        'G',
+        'H',
+        'I',
+        'K',
+        'L',
+        'M',
+        'N',
+        'P',
+        'Q',
+        'R',
+        'S',
+        'T',
+        'V',
+        'W',
+        'Y'
+      ]
 
 -- Amino acids in PAML oder.
-aaPamlOrder :: [Word8]
+aaPamlOrder :: V.Vector Word8
 aaPamlOrder =
-  map
+  V.map
     c2w
-    [ 'A',
-      'R',
-      'N',
-      'D',
-      'C',
-      'Q',
-      'E',
-      'G',
-      'H',
-      'I',
-      'L',
-      'K',
-      'M',
-      'F',
-      'P',
-      'S',
-      'T',
-      'W',
-      'Y',
-      'V'
-    ]
+    $ V.fromList
+      [ 'A',
+        'R',
+        'N',
+        'D',
+        'C',
+        'Q',
+        'E',
+        'G',
+        'H',
+        'I',
+        'L',
+        'K',
+        'M',
+        'F',
+        'P',
+        'S',
+        'T',
+        'W',
+        'Y',
+        'V'
+      ]
 
--- -- This is a very slow implementation; since I only convert matrices once it
--- -- should not be a problem. A map would be better if performance is an issue.
--- pamlIndexToAlphaIndex :: Int -> Int
--- pamlIndexToAlphaIndex i = fromMaybe
---                           (error $ "Could not convert index " ++ show i ++ ".")
---                           (elemIndex aa aaAlphaOrder)
---   where aa = aaPamlOrder !! i
-
--- This is a very slow implementation; since I only convert matrices once it
--- should not be a problem. A map would be better if performance is an issue.
 alphaIndexToPamlIndex :: Int -> Int
 alphaIndexToPamlIndex i =
   fromMaybe
     (error $ "Could not convert index " ++ show i ++ ".")
-    (elemIndex aa aaPamlOrder)
+    (V.elemIndex aa aaPamlOrder)
   where
-    aa = aaAlphaOrder !! i
+    aa = aaAlphaOrder V.! i
 
--- Convert an amino acid vector in PAML order to a vector in alphabetical order.
+pamlIndexToAlphaIndex :: Int -> Int
+pamlIndexToAlphaIndex i =
+  fromMaybe
+    (error $ "Could not convert index " ++ show i ++ ".")
+    (V.elemIndex aa aaAlphaOrder)
+  where
+    aa = aaPamlOrder V.! i
+
+-- | Convert an amino acid vector in PAML order to a vector in alphabetical order.
 pamlToAlphaVec :: Vector R -> Vector R
 pamlToAlphaVec v = build n (\i -> v ! alphaIndexToPamlIndex (round i))
+
+-- | Convert an amino acid vector in alphabetical order to a vector in PAML order.
+alphaToPamlVec :: Vector R -> Vector R
+alphaToPamlVec v = build n (\i -> v ! pamlIndexToAlphaIndex (round i))
 
 -- Convert an amino acid matrix in PAML order to a matrix in alphabetical order.
 pamlToAlphaMat :: Matrix R -> Matrix R
