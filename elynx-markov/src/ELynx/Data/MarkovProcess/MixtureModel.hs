@@ -14,7 +14,7 @@
 module ELynx.Data.MarkovProcess.MixtureModel
   ( -- * Types
     Weight,
-    Component (weight, substModel),
+    Component,
     MixtureModel (name, alphabet, components),
 
     -- * Getters
@@ -32,8 +32,7 @@ module ELynx.Data.MarkovProcess.MixtureModel
   )
 where
 
-import qualified Data.List.NonEmpty as N
-import Data.Semigroup
+import qualified Data.Vector as V
 import ELynx.Data.Alphabet.Alphabet hiding (all)
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
 import Prelude
@@ -53,40 +52,38 @@ data MixtureModel = MixtureModel
   { -- | Name
     name :: S.Name,
     alphabet :: Alphabet,
-    components :: N.NonEmpty Component
+    components :: V.Vector Component
   }
   deriving (Show, Read)
 
 -- | Get weights.
-getWeights :: MixtureModel -> N.NonEmpty Weight
-getWeights = N.map weight . components
+getWeights :: MixtureModel -> V.Vector Weight
+getWeights = V.map weight . components
 
 -- | Get substitution models.
-getSubstitutionModels :: MixtureModel -> N.NonEmpty S.SubstitutionModel
-getSubstitutionModels = N.map substModel . components
+getSubstitutionModels :: MixtureModel -> V.Vector S.SubstitutionModel
+getSubstitutionModels = V.map substModel . components
 
 -- | Create a mixture model from a list of substitution models.
-fromSubstitutionModels ::
-  S.Name -> N.NonEmpty Weight -> N.NonEmpty S.SubstitutionModel -> MixtureModel
-fromSubstitutionModels n ws sms =
-  if allEqual $ N.toList alphs
-    then MixtureModel n (N.head alphs) comps
-    else
-      error
-        "fromSubstitutionModels: alphabets of substitution models are not equal."
+fromSubstitutionModels :: S.Name -> V.Vector Weight -> V.Vector S.SubstitutionModel -> MixtureModel
+fromSubstitutionModels n ws sms
+  | null ws = error "fromSubstitutionModels: No weights given."
+  | length ws /= length sms = error "fromSubstitutionModels: Number of weights and substitution models does not match."
+  | not $ allEqual alphs = error "fromSubstitutionModels: alphabets of substitution models are not equal."
+  | otherwise = MixtureModel n (V.head alphs) comps
   where
-    comps = N.zipWith Component ws sms
-    alphs = N.map S.alphabet sms
-    allEqual [] = True
-    allEqual xs = all (== head xs) $ tail xs
+    comps = V.zipWith Component ws sms
+    alphs = V.map S.alphabet sms
+    allEqual xs | V.null xs = True
+                | otherwise = V.all (== V.head xs) xs
 
 -- | Concatenate mixture models.
-concatenate :: S.Name -> N.NonEmpty MixtureModel -> MixtureModel
+concatenate :: S.Name -> V.Vector MixtureModel -> MixtureModel
 concatenate n mms = fromSubstitutionModels n ws sms
   where
-    comps = sconcat $ N.map components mms
-    ws = N.map weight comps
-    sms = N.map substModel comps
+    comps = V.concatMap components mms
+    ws = V.map weight comps
+    sms = V.map substModel comps
 
 scaleComponent :: Double -> Component -> Component
 scaleComponent s c = c {substModel = s'} where s' = S.scale s $ substModel c
@@ -96,16 +93,16 @@ scale :: Double -> MixtureModel -> MixtureModel
 scale s m = m {components = cs'}
   where
     cs = components m
-    cs' = N.map (scaleComponent s) cs
+    cs' = V.map (scaleComponent s) cs
 
 -- | Globally normalize a mixture model so that on average one event happens per
 -- unit time.
 normalize :: MixtureModel -> MixtureModel
 normalize mm = scale (1 / c) mm
   where
-    c = sum $ N.zipWith (*) weights scales
+    c = sum $ V.zipWith (*) weights scales
     weights = getWeights mm
-    scales = N.map S.totalRate $ getSubstitutionModels mm
+    scales = V.map S.totalRate $ getSubstitutionModels mm
 
 appendNameComponent :: S.Name -> Component -> Component
 appendNameComponent n c = c {substModel = s'}
@@ -117,4 +114,4 @@ appendNameComponents :: S.Name -> MixtureModel -> MixtureModel
 appendNameComponents n m = m {components = cs'}
   where
     cs = components m
-    cs' = N.map (appendNameComponent n) cs
+    cs' = V.map (appendNameComponent n) cs

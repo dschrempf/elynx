@@ -20,9 +20,8 @@ module ELynx.Data.MarkovProcess.GammaRateHeterogeneity
   )
 where
 
+import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy.Char8 as BL
-import Data.List.NonEmpty (NonEmpty)
-import qualified Data.List.NonEmpty as N
 import qualified ELynx.Data.MarkovProcess.MixtureModel as M
 import qualified ELynx.Data.MarkovProcess.PhyloModel as P
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
@@ -60,20 +59,20 @@ getName n alpha =
     ++ show alpha
 
 splitSubstitutionModel ::
-  Int -> Double -> S.SubstitutionModel -> NonEmpty S.SubstitutionModel
+  Int -> Double -> S.SubstitutionModel -> V.Vector S.SubstitutionModel
 splitSubstitutionModel n alpha sm = renamedSMs
   where
     means = getMeans n alpha
-    scaledSMs = N.map (`S.scale` sm) means
-    names = N.fromList $ map (("; gamma rate category " ++) . show) [1 :: Int ..]
-    renamedSMs = N.zipWith S.appendName names scaledSMs
+    scaledSMs = V.map (`S.scale` sm) means
+    names = V.fromList $ map (("; gamma rate category " ++) . show) [1 :: Int ..]
+    renamedSMs = V.zipWith S.appendName names scaledSMs
 
 expandSubstitutionModel ::
   Int -> Double -> S.SubstitutionModel -> M.MixtureModel
 expandSubstitutionModel n alpha sm = M.fromSubstitutionModels name ws sms
   where
     name = S.name sm <> getName n alpha
-    ws = N.repeat 1.0
+    ws = V.replicate n 1.0
     sms = splitSubstitutionModel n alpha sm
 
 expandMixtureModel :: Int -> Double -> M.MixtureModel -> M.MixtureModel
@@ -81,15 +80,17 @@ expandMixtureModel n alpha mm = M.concatenate name renamedMMs
   where
     name = M.name mm <> getName n alpha
     means = getMeans n alpha
-    scaledMMs = N.map (`M.scale` mm) means
-    names = N.fromList $ map (("; gamma rate category " ++) . show) [1 :: Int ..]
-    renamedMMs = N.zipWith M.appendNameComponents names scaledMMs
+    scaledMMs = V.map (`M.scale` mm) means
+    names = V.fromList $ map (("; gamma rate category " ++) . show) [1 :: Int ..]
+    renamedMMs = V.zipWith M.appendNameComponents names scaledMMs
 
 -- For a given number of rate categories 'n' and a shape parameter 'alpha' (the
 -- rate or scale is set such that the mean is 1.0), return a list of rates that
 -- represent the respective categories. Use the mean rate for each category.
-getMeans :: Int -> Double -> NonEmpty Double
-getMeans n alpha = N.fromList $ means <> pure lastMean
+getMeans :: Int -> Double -> V.Vector Double
+getMeans n alpha
+  | n <= 0 = error "getMeans: Number of rate categories is zero or negative."
+  | otherwise = means <> pure lastMean
   where
     gamma = gammaDistr alpha (1.0 / alpha)
     quantiles =
@@ -99,7 +100,7 @@ getMeans n alpha = N.fromList $ means <> pure lastMean
     -- probability mass is 1/n.
     meanFunc x = fromIntegral n * x * density gamma x
     -- Only calculate the first (n-1) categories with normal integration.
-    means =
+    means = V.fromList
       [ integralAToB meanFunc (quantiles !! i) (quantiles !! (i + 1))
         | i <- [0 .. n - 2]
       ]

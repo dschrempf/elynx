@@ -19,7 +19,7 @@ module ELynx.Data.MarkovProcess.CXXModels
   )
 where
 
-import Data.List.NonEmpty (fromList)
+import qualified Data.Vector as V
 import ELynx.Data.MarkovProcess.AminoAcid
 import ELynx.Data.MarkovProcess.CXXModelsData
 import qualified ELynx.Data.MarkovProcess.MixtureModel as M
@@ -139,8 +139,8 @@ cxxFromStatDistsAndWeights ::
 cxxFromStatDistsAndWeights ws ds =
   M.fromSubstitutionModels
     (cxxName n)
-    (fromList ws)
+    (V.fromList ws)
     sms
   where
     n = length ds
-    sms = fromList $ cxxSubstitutionModelsFromStatDists ds
+    sms = V.fromList $ cxxSubstitutionModelsFromStatDists ds
