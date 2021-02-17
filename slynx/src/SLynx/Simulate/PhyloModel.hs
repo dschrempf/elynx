@@ -21,8 +21,8 @@ import Control.Monad (when)
 import Data.Attoparsec.ByteString.Char8
 import qualified Data.ByteString.Char8 as BS
 import Data.Either (rights)
-import Data.List.NonEmpty (fromList)
 import Data.Maybe
+import qualified Data.Vector as V
 import ELynx.Data.MarkovProcess.AminoAcid
 import ELynx.Data.MarkovProcess.CXXModels
 import qualified ELynx.Data.MarkovProcess.MixtureModel as M
@@ -170,7 +170,7 @@ edmModel cs mws = do
     then fail $ head errs
     else
       return $
-        M.fromSubstitutionModels edmName (fromList ws) (fromList $ rights sms)
+        M.fromSubstitutionModels edmName (V.fromList ws) (V.fromList $ rights sms)
 
 cxxModel :: Maybe [M.Weight] -> Parser M.MixtureModel
 cxxModel mws = do
@@ -185,7 +185,7 @@ standardMixtureModel ws = do
   sms <- parseSubstitutionModel `sepBy1` char separator
   _ <- char mmEnd
   -- XXX: The use of `Data.List.NonEmpty.fromList` leads to uninformative error messages.
-  return $ M.fromSubstitutionModels "MIXTURE" (fromList ws) (fromList sms)
+  return $ M.fromSubstitutionModels "MIXTURE" (V.fromList ws) (V.fromList sms)
 
 mixtureModel ::
   Maybe [EDMComponent] -> Maybe [M.Weight] -> Parser M.MixtureModel

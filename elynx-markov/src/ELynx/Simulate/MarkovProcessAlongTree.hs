@@ -30,13 +30,11 @@ import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Monad
 import Control.Monad.Primitive
-import Control.Parallel.Strategies
 import Data.Tree
-import qualified Data.Vector.Storable as V
+import qualified Data.Vector as V
 import Data.Word (Word32)
 import ELynx.Data.MarkovProcess.RateMatrix
 import ELynx.Simulate.MarkovProcess
-import Numeric.LinearAlgebra
 import System.Random.MWC
 import System.Random.MWC.Distributions (categorical)
 
@@ -55,7 +53,8 @@ getRootStates n d g = replicateM n $ categorical d g
 -- at the leafs are retained. The states at internal nodes are removed. This has
 -- a lower memory footprint.
 --
--- XXX: Improve performance. Use vectors, not lists.
+-- XXX: Improve performance. Use vectors, not lists. I am actually not sure if
+-- this improves performance...
 simulateAndFlatten ::
   PrimMonad m =>
   Int ->
@@ -116,20 +115,21 @@ simulate' is (Node p f) g = do
   return $ Node is' f'
 
 toProbTreeMixtureModel ::
-  [RateMatrix] -> Tree Double -> Tree [ProbMatrix]
+  V.Vector RateMatrix -> Tree Double -> Tree (V.Vector ProbMatrix)
 toProbTreeMixtureModel qs =
-  fmap (\a -> [probMatrix q a | q <- qs] `using` parList rpar)
+  -- XXX: This function is slow. Parallelization?
+  fmap (\a -> V.map (`probMatrix` a) qs)
 
 getComponentsAndRootStates ::
   PrimMonad m =>
   Int ->
-  Vector R ->
-  [StationaryDistribution] ->
+  V.Vector Double ->
+  V.Vector StationaryDistribution ->
   Gen (PrimState m) ->
   m ([Int], [State])
 getComponentsAndRootStates n ws ds g = do
   cs <- replicateM n $ categorical ws g
-  is <- sequence [categorical (ds !! c) g | c <- cs]
+  is <- sequence [categorical (ds V.! c) g | c <- cs]
   return (cs, is)
 
 -- | Simulate a number of sites for a given set of substitution models with
@@ -138,14 +138,14 @@ getComponentsAndRootStates n ws ds g = do
 simulateAndFlattenMixtureModel ::
   PrimMonad m =>
   Int ->
-  Vector R ->
-  [StationaryDistribution] ->
-  [ExchangeabilityMatrix] ->
+  V.Vector Double ->
+  V.Vector StationaryDistribution ->
+  V.Vector ExchangeabilityMatrix ->
   Tree Double ->
   Gen (PrimState m) ->
   m [[State]]
 simulateAndFlattenMixtureModel n ws ds es t g = do
-  let qs = zipWith fromExchangeabilityMatrix es ds
+  let qs = V.zipWith fromExchangeabilityMatrix es ds
       pt = toProbTreeMixtureModel qs t
   (cs, is) <- getComponentsAndRootStates n ws ds g
   simulateAndFlattenMixtureModel' is cs pt g
@@ -154,11 +154,11 @@ simulateAndFlattenMixtureModel' ::
   (PrimMonad m) =>
   [State] ->
   [Int] ->
-  Tree [ProbMatrix] ->
+  Tree (V.Vector ProbMatrix) ->
   Gen (PrimState m) ->
   m [[State]]
 simulateAndFlattenMixtureModel' is cs (Node ps f) g = do
-  is' <- sequence [jump i (ps !! c) g | (i, c) <- zip is cs]
+  is' <- sequence [jump i (ps V.! c) g | (i, c) <- zip is cs]
   if null f
     then return [is']
     else
@@ -189,14 +189,14 @@ parComp num fun gen = do
 -- | See 'simulateAndFlattenMixtureModel', parallel version.
 simulateAndFlattenMixtureModelPar ::
   Int ->
-  Vector R ->
-  [StationaryDistribution] ->
-  [ExchangeabilityMatrix] ->
+  V.Vector Double ->
+  V.Vector StationaryDistribution ->
+  V.Vector ExchangeabilityMatrix ->
   Tree Double ->
   GenIO ->
   IO [[[State]]]
 simulateAndFlattenMixtureModelPar n ws ds es t g = do
-  let qs = zipWith fromExchangeabilityMatrix es ds
+  let qs = V.zipWith fromExchangeabilityMatrix es ds
       pt = toProbTreeMixtureModel qs t
   parComp
     n
@@ -212,14 +212,14 @@ simulateAndFlattenMixtureModelPar n ws ds es t g = do
 simulateMixtureModel ::
   PrimMonad m =>
   Int ->
-  Vector R ->
-  [StationaryDistribution] ->
-  [ExchangeabilityMatrix] ->
+  V.Vector Double ->
+  V.Vector StationaryDistribution ->
+  V.Vector ExchangeabilityMatrix ->
   Tree Double ->
   Gen (PrimState m) ->
   m (Tree [State])
 simulateMixtureModel n ws ds es t g = do
-  let qs = zipWith fromExchangeabilityMatrix es ds
+  let qs = V.zipWith fromExchangeabilityMatrix es ds
       pt = toProbTreeMixtureModel qs t
   (cs, is) <- getComponentsAndRootStates n ws ds g
   simulateMixtureModel' is cs pt g
@@ -230,10 +230,10 @@ simulateMixtureModel' ::
   (PrimMonad m) =>
   [State] ->
   [Int] ->
-  Tree [ProbMatrix] ->
+  Tree (V.Vector ProbMatrix) ->
   Gen (PrimState m) ->
   m (Tree [State])
 simulateMixtureModel' is cs (Node ps f) g = do
-  is' <- sequence [jump i (ps !! c) g | (i, c) <- zip is cs]
+  is' <- sequence [jump i (ps V.! c) g | (i, c) <- zip is cs]
   f' <- sequence [simulateMixtureModel' is' cs t g | t <- f]
   return $ Node is' f'

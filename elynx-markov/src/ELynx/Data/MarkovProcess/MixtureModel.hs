@@ -14,7 +14,7 @@
 module ELynx.Data.MarkovProcess.MixtureModel
   ( -- * Types
     Weight,
-    Component,
+    Component (weight, substModel),
     MixtureModel (name, alphabet, components),
 
     -- * Getters

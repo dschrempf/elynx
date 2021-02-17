@@ -27,13 +27,13 @@ import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Lazy.Char8 as BL
-import Data.List.NonEmpty (toList)
 import Data.Maybe
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Encoding as LT
-import qualified Data.Vector.Unboxed as V
+import qualified Data.Vector as V
+import qualified Data.Vector.Unboxed as U
 import ELynx.Data.Alphabet.Alphabet as A
 import ELynx.Data.MarkovProcess.GammaRateHeterogeneity
 import qualified ELynx.Data.MarkovProcess.MixtureModel as M
@@ -49,10 +49,6 @@ import ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
 import ELynx.Simulate.MarkovProcessAlongTree
 import ELynx.Tools
 import ELynx.Tree
-import Numeric.LinearAlgebra hiding
-  ( toList,
-    (<>),
-  )
 import SLynx.Simulate.Options
 import SLynx.Simulate.PhyloModel
 import System.Random.MWC
@@ -87,9 +83,9 @@ simulateAlignment pm t' n g = do
     --   (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws ds es t gen) (zip chunks gs)
     P.MixtureModel mm -> simulateAndFlattenMixtureModelPar n ws ds es t g
       where
-        ws = vector . toList $ M.getWeights mm
-        ds = map SM.stationaryDistribution $ toList $ M.getSubstitutionModels mm
-        es = map SM.exchangeabilityMatrix $ toList $ M.getSubstitutionModels mm
+        ws = M.getWeights mm
+        ds = V.map SM.stationaryDistribution $ M.getSubstitutionModels mm
+        es = V.map SM.exchangeabilityMatrix $ M.getSubstitutionModels mm
   -- XXX @performace. The horizontal concatenation might be slow. If so,
   -- 'concatenateSeqs' or 'concatenateAlignments' can be used, which directly
   -- appends vectors.
@@ -99,7 +95,7 @@ simulateAlignment pm t' n g = do
       -- XXX: Probably use type safe stuff here?
       alph = A.all $ alphabetSpec code
       sequences =
-        [ Seq.Sequence (fromName sName) "" code (V.fromList $ map (`Set.elemAt` alph) ss)
+        [ Seq.Sequence (fromName sName) "" code (U.fromList $ map (`Set.elemAt` alph) ss)
           | (sName, ss) <- zip leafNames leafStates
         ]
   return $ either error id $ A.fromSequences sequences
@@ -116,13 +112,16 @@ reportModel :: P.PhyloModel -> ELynx SimulateArguments ()
 reportModel m = do
   as <- global <$> ask
   if writeElynxFile as
-    then (do let bn = outFileBaseName as
-             case bn of
-               Nothing ->
-                 $(logInfo)
-                   "No output file provided; omit writing machine-readable phylogenetic model."
-               Just _ ->
-                 out "model definition (machine readable)" (BL.pack (show m) <> "\n") ".model.gz")
+    then
+      ( do
+          let bn = outFileBaseName as
+          case bn of
+            Nothing ->
+              $(logInfo)
+                "No output file provided; omit writing machine-readable phylogenetic model."
+            Just _ ->
+              out "model definition (machine readable)" (BL.pack (show m) <> "\n") ".model.gz"
+      )
     else $(logInfo) "No elynx file required; omit writing machine-readable phylogenetic model."
 
 pretty :: Length -> String
@@ -196,7 +195,7 @@ summarizeMM m =
         then
           concat
             [ BL.pack ("Component " ++ show i ++ ":") : summarizeMMComponent c
-              | (i, c) <- zip [1 :: Int ..] (toList $ M.components m)
+              | (i, c) <- zip [1 :: Int ..] (V.toList $ M.components m)
             ]
         else []
 
