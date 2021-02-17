@@ -18,6 +18,7 @@ module ELynx.Simulate.MarkovProcessAlongTree
   ( -- * Single rate matrix.
     simulate,
     simulateAndFlatten,
+    simulateAndFlattenPar,
 
     -- * Mixture models.
     simulateMixtureModel,
@@ -38,6 +39,18 @@ import ELynx.Simulate.MarkovProcess
 import System.Random.MWC
 import System.Random.MWC.Distributions (categorical)
 
+-- XXX @performace. The horizontal concatenation might be slow. If so,
+-- 'concatenateSeqs' or 'concatenateAlignments' can be used, which directly
+-- appends vectors.
+
+-- A brain f***. As an example, let @xss@ be a list of alignments (i.e., a list
+-- of a list of a list of alleles). This function horizontally concatenates the
+-- sites. The number of species needs to be same in each alignment. No checks
+-- are performed!
+horizontalConcat :: [[[a]]] -> [[a]]
+horizontalConcat [xs] = xs
+horizontalConcat xss = foldr1 (zipWith (++)) xss
+
 toProbTree :: RateMatrix -> Tree Double -> Tree ProbMatrix
 toProbTree q = fmap (probMatrix q)
 
@@ -52,7 +65,7 @@ getRootStates n d g = replicateM n $ categorical d g
 -- | Simulate a number of sites for a given substitution model. Only the states
 -- at the leafs are retained. The states at internal nodes are removed. This has
 -- a lower memory footprint.
---
+
 -- XXX: Improve performance. Use vectors, not lists. I am actually not sure if
 -- this improves performance...
 simulateAndFlatten ::
@@ -83,6 +96,31 @@ simulateAndFlatten' is (Node p f) g = do
   if null f
     then return [is']
     else concat <$> sequence [simulateAndFlatten' is' t g | t <- f]
+
+-- | See 'simulateAndFlatten', parallel version.
+simulateAndFlattenPar ::
+  Int ->
+  StationaryDistribution ->
+  ExchangeabilityMatrix ->
+  Tree Double ->
+  GenIO ->
+  IO [[State]]
+simulateAndFlattenPar n d e t g = do
+  c <- getNumCapabilities
+  gs <- splitGen c g
+  let chunks = getChunks c n
+      q = fromExchangeabilityMatrix e d
+      pt = toProbTree q t
+  -- The concurrent map returns a list of [[State]] objects. They have to be
+  -- concatenated horizontally.
+  sss <-
+    mapConcurrently
+      ( \(num, gen) -> do
+          is <- getRootStates num d gen
+          simulateAndFlatten' is pt gen
+      )
+      (zip chunks gs)
+  return $ horizontalConcat sss
 
 -- | Simulate a number of sites for a given substitution model. Keep states at
 -- internal nodes. The result is a tree with the list of simulated states as
@@ -143,12 +181,14 @@ simulateAndFlattenMixtureModel ::
   V.Vector ExchangeabilityMatrix ->
   Tree Double ->
   Gen (PrimState m) ->
-  m [[State]]
+  -- | (IndicesOfComponents, [SimulatedSequenceForEachTip])
+  m ([Int], [[State]])
 simulateAndFlattenMixtureModel n ws ds es t g = do
   let qs = V.zipWith fromExchangeabilityMatrix es ds
       pt = toProbTreeMixtureModel qs t
   (cs, is) <- getComponentsAndRootStates n ws ds g
-  simulateAndFlattenMixtureModel' is cs pt g
+  ss <- simulateAndFlattenMixtureModel' is cs pt g
+  return (cs, ss)
 
 simulateAndFlattenMixtureModel' ::
   (PrimMonad m) =>
@@ -194,17 +234,23 @@ simulateAndFlattenMixtureModelPar ::
   V.Vector ExchangeabilityMatrix ->
   Tree Double ->
   GenIO ->
-  IO [[[State]]]
+  IO ([Int], [[State]])
 simulateAndFlattenMixtureModelPar n ws ds es t g = do
   let qs = V.zipWith fromExchangeabilityMatrix es ds
       pt = toProbTreeMixtureModel qs t
-  parComp
-    n
-    ( \n' g' -> do
-        (cs, is) <- getComponentsAndRootStates n' ws ds g'
-        simulateAndFlattenMixtureModel' is cs pt g'
-    )
-    g
+  -- The concurrent computation returns a list of ([Int], [[State]]) objects.
+  -- They have to be concatenated horizontally.
+  csss <-
+    parComp
+      n
+      ( \n' g' ->
+          do
+            (cs, is) <- getComponentsAndRootStates n' ws ds g'
+            ss <- simulateAndFlattenMixtureModel' is cs pt g'
+            return (cs, ss)
+      )
+      g
+  return (concatMap fst csss, horizontalConcat $ map snd csss)
 
 -- | Simulate a number of sites for a given set of substitution models with
 -- corresponding weights. Keep states at internal nodes. See also

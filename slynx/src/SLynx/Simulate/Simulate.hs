@@ -65,32 +65,20 @@ simulateAlignment ::
   IO A.Alignment
 simulateAlignment pm t' n g = do
   let t = fromLength . getLen <$> toTreeBranchLabels t'
-  c <- getNumCapabilities
-  gs <- splitGen c g
-  let chunks = getChunks c n
-  leafStatesS <- case pm of
-    -- TODO @performace: This parallelization is not very intelligent, because
-    -- the matrix exponentiation is done in all threads. So ten threads will
-    -- exponentiate the same matrix ten times.
-    P.SubstitutionModel sm ->
-      mapConcurrently
-        (\(num, gen) -> simulateAndFlatten num d e t gen)
-        (zip chunks gs)
+  leafStates <- case pm of
+    P.SubstitutionModel sm -> simulateAndFlattenPar n d e t g
       where
         d = SM.stationaryDistribution sm
         e = SM.exchangeabilityMatrix sm
-    -- P.MixtureModel mm      -> mapConcurrently
-    --   (\(num, gen) -> simulateAndFlattenNSitesAlongTreeMixtureModel num ws ds es t gen) (zip chunks gs)
-    P.MixtureModel mm -> simulateAndFlattenMixtureModelPar n ws ds es t g
+    P.MixtureModel mm -> do
+      (cs, ss) <- simulateAndFlattenMixtureModelPar n ws ds es t g
+      -- TODO: Write profiles.
+      return ss
       where
         ws = M.getWeights mm
         ds = V.map SM.stationaryDistribution $ M.getSubstitutionModels mm
         es = V.map SM.exchangeabilityMatrix $ M.getSubstitutionModels mm
-  -- XXX @performace. The horizontal concatenation might be slow. If so,
-  -- 'concatenateSeqs' or 'concatenateAlignments' can be used, which directly
-  -- appends vectors.
-  let leafStates = horizontalConcat leafStatesS
-      leafNames = map getName $ leaves t'
+  let leafNames = map getName $ leaves t'
       code = P.getAlphabet pm
       -- XXX: Probably use type safe stuff here?
       alph = A.all $ alphabetSpec code

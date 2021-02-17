@@ -14,7 +14,6 @@ module ELynx.Tools.Misc
   ( -- * Weird stuff
     compose,
     allValues,
-    horizontalConcat,
   )
 where
 
@@ -25,11 +24,3 @@ compose = foldl (flip (.)) id
 -- | Get all values of a bounded enumerated type.
 allValues :: (Bounded a, Enum a) => [a]
 allValues = [minBound ..]
-
--- | A brain f***. As an example, let @xss@ be a list of alignments (i.e., a
--- list of a list of a list of alleles). This function horizontally concatenates
--- the sites. The number of species needs to be same in each alignment. No
--- checks are performed!
-horizontalConcat :: [[[a]]] -> [[a]]
-horizontalConcat [xs] = xs
-horizontalConcat xss = foldr1 (zipWith (++)) xss
