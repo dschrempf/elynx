@@ -230,7 +230,7 @@ forceOpt =
 
 writeELynxOpt :: Parser Bool
 writeELynxOpt = flag True False ( long "no-elynx-file"
-                                  <> help "Do not write files for needed for reproducibility." )
+                                  <> help "Do not write data required to reproduce an analysis." )
 
 -- | Random or fixed seed.
 data Seed = Random | Fixed (Vector Word32)
