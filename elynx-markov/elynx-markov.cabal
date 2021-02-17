@@ -86,3 +86,16 @@ test-suite markov-test
     , mwc-random
     , vector
   default-language: Haskell2010
+
+benchmark markov-bench
+  type:            exitcode-stdio-1.0
+  main-is:         Bench.hs
+  -- other-modules:
+  -- autogen-modules:
+  -- ghc-options:
+  hs-source-dirs:  bench
+  ghc-options: -Wall -Wunused-packages
+  build-depends:
+      base
+    , elynx-markov
+  default-language: Haskell2010

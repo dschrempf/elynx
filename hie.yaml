@@ -9,6 +9,9 @@ cradle:
     - path: "elynx-markov/test"
       component: "elynx-markov:test:markov-test"
 
+    - path: "elynx-markov/bench"
+      component: "elynx-markov:bench:markov-bench"
+
     - path: "elynx-nexus/src"
       component: "elynx-nexus:lib"
 
