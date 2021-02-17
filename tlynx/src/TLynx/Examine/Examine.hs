@@ -71,11 +71,9 @@ examineTree h t = do
   case l of
     Left _ -> hPutStrLn h "Branch lengths not available."
     Right t' -> BL.hPutStrLn h $ summarizeLengths t'
-  unless (null dups) $
+  unless (null dups) $ do
     hPutStrLn h ""
-      >> hPutStrLn
-        h
-        ("Duplicate leaves: " ++ show dups)
+    hPutStrLn h ("Duplicate leaves: " ++ show dups)
   BL.hPutStrLn h $ "Leave names: " <> BL.intercalate " " lvs
   where
     lvs = map (fromName . getName) $ leaves t

@@ -19,7 +19,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 # resolver: lts-13.19
-resolver: nightly-2021-01-17
+resolver: nightly-2021-02-12
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -83,5 +83,4 @@ packages:
 
 # Nix integration via shell because the unfree mkl library is used.
 nix:
-  add-gc-roots: true
   shell-file: shell.nix
