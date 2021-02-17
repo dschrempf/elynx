@@ -1,5 +1,5 @@
 -- |
--- Module      :  Bench
+-- Module      :  Main
 -- Description :  Benchmark Markov process along tree
 -- Copyright   :  (c) 2021 Dominik Schrempf
 -- License     :  GPL-3.0-or-later
@@ -9,10 +9,12 @@
 -- Portability :  portable
 --
 -- Creation date: Wed Feb 17 17:42:30 2021.
-module Bench
-  (
+module Main
+  ( main,
   )
 where
 
-import qualified ELynx.Simulate.MarkovProcessAlongTree as M
+-- Stub.
 
+main :: IO ()
+main = return ()
