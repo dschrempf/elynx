@@ -4,6 +4,10 @@
 
 ## Unreleased changes
 
+
+## Version 0.5.0.2
+
+-   Speed up mixture model simulation.
 -   Improve rooting functions.
 -   Improve `Topology` data type (but still a lot to do).
 -   Various additions to the documentation.

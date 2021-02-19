@@ -2,7 +2,7 @@
 
 # The ELynx Suite
 
-Version: 0.5.0.1.
+Version: 0.5.0.2.
 Reproducible evolution made easy.
 
 <p align="center"><img src="https://travis-ci.org/dschrempf/elynx.svg?branch=master"/></p>
@@ -73,9 +73,9 @@ Handle evolutionary sequences.
 
     slynx --help | head -n -16
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
                  [-f|--force] [--no-elynx-file] COMMAND
@@ -90,7 +90,7 @@ Handle evolutionary sequences.
                                Specify base name of output file
       -f,--force               Ignore previous analysis and overwrite existing
                                output files.
-      --no-elynx-file          Do not write files for needed for reproducibility.
+      --no-elynx-file          Do not write data required to reproduce an analysis.
     
     Available commands:
       concatenate              Concatenate sequences found in input files.
@@ -120,9 +120,9 @@ Concatenate multi sequence alignments.
 
     slynx concatenate --help
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: slynx concatenate (-a|--alphabet NAME) INPUT-FILE
       Concatenate sequences found in input files.
@@ -141,9 +141,9 @@ Examine sequence with `slynx examine`.
 
     slynx examine --help
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: slynx examine (-a|--alphabet NAME) INPUT-FILE [--per-site]
       Examine sequences. If data is a multi sequence alignment, additionally analyze columns.
@@ -163,9 +163,9 @@ Filter sequences with `filer-rows`.
 
     slynx filter-rows --help
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: slynx filter-rows (-a|--alphabet NAME) INPUT-FILE [--longer-than LENGTH] 
                              [--shorter-than LENGTH] [--standard-characters]
@@ -186,9 +186,9 @@ Filter columns of multi sequence alignments with `filter-columns`.
 
     slynx filter-columns --help
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: slynx filter-columns (-a|--alphabet NAME) INPUT-FILE 
                                 [--standard-chars DOUBLE]
@@ -210,9 +210,9 @@ Simulate sequences with `slynx simulate`.
 
     slynx simulate --help
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL] 
                           [-m|--mixture-model MODEL] [-e|--edm-file NAME] 
@@ -289,9 +289,9 @@ Sub-sample columns from multi sequence alignments.
 
     slynx sub-sample --help
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: slynx sub-sample (-a|--alphabet NAME) INPUT-FILE
                             (-n|--number-of-sites INT)
@@ -319,9 +319,9 @@ Translate sequences.
 
     slynx translate --help
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: slynx translate (-a|--alphabet NAME) INPUT-FILE (-r|--reading-frame INT)
                            (-u|--universal-code CODE)
@@ -344,9 +344,9 @@ Handle phylogenetic trees in Newick format.
 
     tlynx --help | head -n -16
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
                  [-f|--force] [--no-elynx-file] COMMAND
@@ -361,7 +361,7 @@ Handle phylogenetic trees in Newick format.
                                Specify base name of output file
       -f,--force               Ignore previous analysis and overwrite existing
                                output files.
-      --no-elynx-file          Do not write files for needed for reproducibility.
+      --no-elynx-file          Do not write data required to reproduce an analysis.
     
     Available commands:
       compare                  Compare two phylogenetic trees (compute distances and branch-wise differences).
@@ -384,9 +384,9 @@ Compute distances between phylogenetic trees.
 
     tlynx compare --help
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: tlynx compare [-n|--normalize] [-b|--bipartitions] [-t|--intersect] 
                          [-f|--newick-format FORMAT] NAMES
@@ -413,9 +413,9 @@ Compute summary statistics of phylogenetic trees.
 
     tlynx examine --help
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: tlynx examine INPUT-FILE [-f|--newick-format FORMAT]
       Compute summary statistics of phylogenetic trees.
@@ -437,9 +437,9 @@ Simulate phylogenetic trees using birth and death processes.
 
     tlynx simulate --help
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: tlynx simulate (-t|--nTrees INT) (-n|--nLeaves INT) PROCESS 
                           [-u|--sub-sample DOUBLE] [-s|--summary-statistics] 
@@ -474,9 +474,9 @@ Validate and (optionally) redo past ELynx analyses.
 
     elynx --help | head -n -16
 
-    ELynx Suite version 0.5.0.1.
+    ELynx Suite version 0.5.0.2.
     Developed by Dominik Schrempf.
-    Compiled on December 18, 2020, at 10:14 am, UTC.
+    Compiled on February 19, 2021, at 13:42 pm, UTC.
     
     Usage: elynx COMMAND
       Validate and redo past ELynx analyses
