@@ -72,19 +72,19 @@ each package.
 for p in elynx-markov elynx-nexus elynx-seq elynx-tools elynx-tree slynx tlynx elynx
 do
     (cd "$p" || exit 1
-    stack upload . --pvp-bounds both)
+    stack upload . --pvp-bounds lower)
 done
 #+END_SRC
 
 #+RESULTS: HackageUploadTarballs
-: Uploading elynx-markov-0.5.0.1.tar.gz... done!
-: Uploading elynx-nexus-0.5.0.1.tar.gz... done!
-: Uploading elynx-seq-0.5.0.1.tar.gz... done!
-: Uploading elynx-tools-0.5.0.1.tar.gz... done!
-: Uploading elynx-tree-0.5.0.1.tar.gz... done!
-: Uploading slynx-0.5.0.1.tar.gz... done!
-: Uploading tlynx-0.5.0.1.tar.gz... done!
-: Uploading elynx-0.5.0.1.tar.gz... done!
+: Uploading elynx-markov-0.5.0.2.tar.gz... done!
+: Uploading elynx-nexus-0.5.0.2.tar.gz... done!
+: Uploading elynx-seq-0.5.0.2.tar.gz... done!
+: Uploading elynx-tools-0.5.0.2.tar.gz... done!
+: Uploading elynx-tree-0.5.0.2.tar.gz... done!
+: Uploading slynx-0.5.0.2.tar.gz... done!
+: Uploading tlynx-0.5.0.2.tar.gz... done!
+: Uploading elynx-0.5.0.2.tar.gz... done!
 
 * Documentation
 Documentation can be built manually.
