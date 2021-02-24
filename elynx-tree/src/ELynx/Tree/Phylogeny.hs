@@ -94,8 +94,6 @@ import GHC.Generics
 -- | The equality check is slow because the order of children is considered to
 -- be arbitrary.
 --
--- NOTE: The equality check is only meaningful if the trees have unique leaves.
---
 -- Return 'Left' if a tree does not have unique leaves.
 equal :: (Eq e, Eq a, Ord a) => Tree e a -> Tree e a -> Either String Bool
 equal tL tR
@@ -168,8 +166,9 @@ bifurcating _ = False
 -- If the current root node is multifurcating, a bifurcating root node with the
 -- empty label is introduced by 'split'ting the leftmost branch. The 'Monoid'
 -- instance of the node label and the 'Splittable' instance of the branch length
--- are used. Note that in this case, the degree of the former root node is
--- decreased by one!
+-- are used.
+--
+-- NOTE: In this case, the degree of the former root node is decreased by one!
 --
 -- Given that the root note is bifurcating, the root node is moved to the
 -- required position specified by the outgroup.
