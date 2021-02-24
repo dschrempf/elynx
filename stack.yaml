@@ -83,4 +83,5 @@ packages:
 
 # Nix integration via shell because the unfree mkl library is used.
 nix:
+  add-gc-roots: true
   shell-file: shell.nix
