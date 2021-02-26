@@ -28,6 +28,7 @@ module ELynx.Topology.Rooted
     Forest,
     fromTree,
     fromLabeledTree,
+    toLabeledTreeWith,
 
     -- * Access leaves, branches and labels
     leaves,
@@ -128,11 +129,17 @@ fromTree :: T.Tree a -> Topology a
 fromTree (T.Node lb []) = Leaf lb
 fromTree (T.Node _ xs) = Node $ fromTree <$> N.fromList xs
 
--- | Convert a rooted, labeled rose tree to a rooted topology. Branch labels and
--- internal node labels are lost.
+-- | Convert a rooted, branch-labeled rose tree to a rooted topology. Branch
+-- labels and internal node labels are lost.
 fromLabeledTree :: R.Tree e a -> Topology a
 fromLabeledTree (R.Node _ lb []) = Leaf lb
 fromLabeledTree (R.Node _ _ xs) = Node $ fromLabeledTree <$> N.fromList xs
+
+-- | Convert a rooted topology to a rooted, branch-labeled rose tree. Use the
+-- given node label at internal nodes.
+toLabeledTreeWith :: a -> Topology a -> R.Tree () a
+toLabeledTreeWith _ (Leaf lb) = R.Node () lb []
+toLabeledTreeWith x (Node ts) = R.Node () x $ map (toLabeledTreeWith x) $ N.toList ts
 
 -- TODO: Maybe use foldr similar to 'flatten'.
 -- | Set of leaves.
