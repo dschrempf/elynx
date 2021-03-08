@@ -17,8 +17,8 @@ Length: 10.13
 #+end_example
 
 * Total functions
-If possible, use total functions. In particular, avoid using =error=. Non-total
-functions should be called =functionNameUnsafe=.
+If possible, use total functions. In particular, avoid using =error=. Functions
+that are pure but non-total should be called =functionNameUnsafe=.
 
 * Design principles
 ** Files and standard input

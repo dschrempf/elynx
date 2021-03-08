@@ -22,7 +22,14 @@ import Data.Foldable
 import ELynx.Tree.Length
 
 lengthSumFoldl' :: [Length] -> Length
-lengthSumFoldl' = foldl' (\x y -> toLength "lengthSumFoldl'" $ fromLength x + fromLength y) 0
+lengthSumFoldl' =
+  foldl'
+    ( \x y ->
+        either (error . ("lengthSumFoldl'" ++)) id $
+          toLength $
+            fromLength x + fromLength y
+    )
+    0
 
 lengthSumFoldl'Unsafe :: [Length] -> Length
 lengthSumFoldl'Unsafe = foldl' (\x y -> toLengthUnsafe $ fromLength x + fromLength y) 0
