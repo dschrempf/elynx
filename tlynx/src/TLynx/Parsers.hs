@@ -86,3 +86,12 @@ newickHelp =
     ++ ["- Nexus file including Newick trees"]
   where
     toListItem = ("- Newick " ++)
+
+-- Short description of the supported Newick formats.
+describeNewickFormat :: NewickFormat -> String
+describeNewickFormat Standard =
+  "Standard: Branch support values are stored in square brackets after branch lengths."
+describeNewickFormat IqTree =
+  "IqTree:   Branch support values are stored as node names after the closing bracket of forests."
+describeNewickFormat RevBayes =
+  "RevBayes: Key-value pairs is provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are ignored at the moment."

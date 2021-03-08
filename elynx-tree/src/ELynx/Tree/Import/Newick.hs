@@ -31,7 +31,6 @@
 -- @
 module ELynx.Tree.Import.Newick
   ( NewickFormat (..),
-    describeNewickFormat,
     newick,
     parseNewick,
     oneNewick,
@@ -56,25 +55,20 @@ import Prelude hiding (takeWhile)
 
 -- | Newick tree format.
 --
--- >>> unlines $ map (("- " <>) . description) (allValues :: [NewickFormat])
--- - Standard: Branch support values are stored in square brackets after branch lengths.
--- - IqTree:   Branch support values are stored as node names after the closing bracket of forests.
--- - RevBayes: Key-value pairs are provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are ignored at the moment.
+-- - Standard: Branch support values are stored in square brackets after branch
+--   lengths.
+--
+-- - IqTree: Branch support values are stored as node names after the closing
+--   bracket of forests.
+--
+-- - RevBayes: Key-value pairs are provided in square brackets after node names
+--   as well as branch lengths. XXX: Key value pairs are ignored at the moment.
 data NewickFormat = Standard | IqTree | RevBayes
   deriving (Eq, Show, Read, Bounded, Enum, Generic)
 
 instance FromJSON NewickFormat
 
 instance ToJSON NewickFormat
-
--- | Short description of the supported Newick formats.
-describeNewickFormat :: NewickFormat -> String
-describeNewickFormat Standard =
-  "Standard: Branch support values are stored in square brackets after branch lengths."
-describeNewickFormat IqTree =
-  "IqTree:   Branch support values are stored as node names after the closing bracket of forests."
-describeNewickFormat RevBayes =
-  "RevBayes: Key-value pairs is provided in square brackets after node names as well as branch lengths. XXX: Key value pairs are ignored at the moment."
 
 -- | Newick tree parser. Also succeeds when more trees follow.
 newick :: NewickFormat -> Parser (Tree Phylo Name)
