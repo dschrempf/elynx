@@ -89,18 +89,18 @@ instance HasLength Length where
   modLen f = f
 
 -- | If negative, call 'error' indicating the calling function name.
-toLength :: String -> Double -> Length
-toLength s x
-  | x < 0 = error $ s ++ ": Length is negative: " ++ show x ++ "."
-  | otherwise = Length x
+toLength :: Double -> Either String Length
+toLength x
+  | x < 0 = Left $ "Length is negative: " ++ show x ++ "."
+  | otherwise = Right $ Length x
 
 -- | Do not check if value is negative.
 toLengthUnsafe :: Double -> Length
 toLengthUnsafe = Length
 
 -- | If negative, call 'error' with given calling function name.
-checkLength :: String -> Length -> Length
-checkLength s = toLength s . fromLength
+checkLength :: Length -> Either String Length
+checkLength = toLength . fromLength
 
 -- | A data type with measurable and modifiable values.
 class HasLength e where
