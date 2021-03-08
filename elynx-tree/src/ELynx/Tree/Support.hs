@@ -59,11 +59,10 @@ instance HasSupport Support where
   setSup = const
   modSup f = f
 
--- | If negative, call 'error' indicating the calling function name.
-toSupport :: String -> Double -> Support
-toSupport s x
-  | x < 0 = error $ s ++ ": Support is negative: " ++ show x ++ "."
-  | otherwise = Support x
+-- | Return 'Left' if negative.
+toSupport :: Double -> Either String Support
+toSupport x | x < 0 = Left $ "Support is negative: " ++ show x ++ "."
+            | otherwise = Right $ Support x
 
 -- | Do not check if value is negative.
 toSupportUnsafe :: Double -> Support
