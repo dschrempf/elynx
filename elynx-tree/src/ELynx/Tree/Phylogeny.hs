@@ -211,35 +211,42 @@ outgroup o (Node b l ts) = outgroup o t'
 midpoint :: (Semigroup e, Splittable e, HasLength e) => Tree e a -> Either String (Tree e a)
 midpoint (Node _ _ []) = Left "midpoint: Root node is a leaf."
 midpoint (Node _ _ [_]) = Left "midpoint: Root node has degree two."
-midpoint t@(Node _ _ [_, _]) = getMidpoint <$> roots t
+midpoint t@(Node _ _ [_, _]) = roots t >>= getMidpoint
 midpoint _ = Left "midpoint: Root node is multifurcating."
 
-findMinIndex :: Ord a => [a] -> Int
+-- Find the index of the smallest element.
+findMinIndex :: Ord a => [a] -> Either String Int
 findMinIndex (x : xs) = go (0, x) 1 xs
   where
-    go (i, _) _ [] = i
+    go (i, _) _ [] = Right i
     go (i, z) j (y : ys) = if z < y then go (i, z) (j + 1) ys else go (j, y) (j + 1) ys
-findMinIndex [] = error "findMinIndex: Empty list."
+findMinIndex [] = Left "findMinIndex: Empty list."
 
-getMidpoint :: HasLength e => [Tree e a] -> Tree e a
+getMidpoint :: HasLength e => [Tree e a] -> Either String (Tree e a)
 getMidpoint ts = case t of
-  (Node br lb [l, r]) ->
+  Right (Node br lb [l, r]) ->
     let hl = height l
         hr = height r
         dh = (hl - hr) / 2
-     in Node
-          br
-          lb
-          [ applyStem (modLen (subtract dh)) l,
-            applyStem (modLen (+ dh)) r
-          ]
+     in Right $
+          Node
+            br
+            lb
+            [ applyStem (modLen (subtract dh)) l,
+              applyStem (modLen (+ dh)) r
+            ]
   -- Explicitly use 'error' here, because roots is supposed to return trees with
   -- bifurcating root nodes.
-  _ -> error "getMidpoint: Root node is not bifurcating."
+  Right _ ->
+    error $
+      unlines
+        [ "getMidpoint: Root node is not bifurcating.",
+          "This error should not happen, please contact the maintainer."
+        ]
+  Left e -> Left e
   where
     dhs = map getDeltaHeight ts
-    i = findMinIndex dhs
-    t = ts !! i
+    t = (ts !!) <$> findMinIndex dhs
 
 -- find index of minimum; take this tree and move root to the midpoint of the branch
 
@@ -248,7 +255,12 @@ getDeltaHeight :: HasLength e => Tree e a -> Length
 getDeltaHeight (Node _ _ [l, r]) = abs $ height l - height r
 -- Explicitly use 'error' here, because roots is supposed to return trees with
 -- bifurcating root nodes.
-getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating."
+getDeltaHeight _ =
+  error $
+    unlines
+      [ "getDeltaHeight: Root node is not bifurcating.",
+        "This error should not happen, please contact the maintainer."
+      ]
 
 -- | For a rooted tree with a bifurcating root node, get all possible rooted
 -- trees.
@@ -484,5 +496,10 @@ toExplicitTree t = do
   st <- phyloToSupportTree t
   case zipTreesWith PhyloExplicit const lt st of
     -- Explicit use of error, since this case should not happen.
-    Nothing -> error "toExplicitTree: Can not zip two trees with the same topology."
+    Nothing ->
+      error $
+        unlines
+          [ "toExplicitTree: Can not zip two trees with different topologies.",
+            "This error should not happen, please contact the maintainer."
+          ]
     Just zt -> return zt
