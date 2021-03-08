@@ -153,7 +153,9 @@ phylo = Phylo <$> optional branchLengthStandard <*> optional branchSupportStanda
 branchLengthSimple :: Parser Length
 branchLengthSimple = do
   l <- double <?> "branchLengthSimple"
-  return $ toLength "branchLength" l
+  case toLength l of
+    Left e -> fail e
+    Right pl -> pure pl
 
 -- Branch length.
 branchLengthStandard :: Parser Length

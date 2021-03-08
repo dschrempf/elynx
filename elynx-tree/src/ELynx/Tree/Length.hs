@@ -21,7 +21,6 @@ module ELynx.Tree.Length
     Length (fromLength),
     toLength,
     toLengthUnsafe,
-    checkLength,
     HasLength (..),
     height,
     rootHeight,
@@ -88,7 +87,7 @@ instance HasLength Length where
   setLen = const
   modLen f = f
 
--- | If negative, call 'error' indicating the calling function name.
+-- | Return 'Left' if negative.
 toLength :: Double -> Either String Length
 toLength x
   | x < 0 = Left $ "Length is negative: " ++ show x ++ "."
@@ -97,10 +96,6 @@ toLength x
 -- | Do not check if value is negative.
 toLengthUnsafe :: Double -> Length
 toLengthUnsafe = Length
-
--- | If negative, call 'error' with given calling function name.
-checkLength :: Length -> Either String Length
-checkLength = toLength . fromLength
 
 -- | A data type with measurable and modifiable values.
 class HasLength e where
