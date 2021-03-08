@@ -71,7 +71,7 @@ getOutFilePath ext = do
     then return $ (++ ext) <$> bn
     else
       error
-        "getOutFilePath: out file suffix not registered. Please contact maintainer."
+        "getOutFilePath: out file suffix not registered; please contact maintainer."
 
 checkFile :: Force -> FilePath -> IO ()
 checkFile (Force True) _ = return ()

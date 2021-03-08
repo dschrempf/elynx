@@ -295,7 +295,6 @@ simulateCmd = do
   let alignmentLength = argsLength l
   $(logInfo) $ T.pack $ "Length: " <> show alignmentLength <> "."
   gen <- case argsSeed l of
-    Random ->
-      error "simulateCmd: seed not available; please contact maintainer."
+    Random -> error "simulateCmd: seed not available; please contact maintainer."
     Fixed s -> liftIO $ initialize s
   simulateAlignment phyloModel t' alignmentLength gen

@@ -237,12 +237,7 @@ getMidpoint ts = case t of
             ]
   -- Explicitly use 'error' here, because roots is supposed to return trees with
   -- bifurcating root nodes.
-  Right _ ->
-    error $
-      unlines
-        [ "getMidpoint: Root node is not bifurcating.",
-          "This error should not happen, please contact the maintainer."
-        ]
+  Right _ -> error "getMidpoint: Root node is not bifurcating; please contact maintainer."
   Left e -> Left e
   where
     dhs = map getDeltaHeight ts
@@ -255,12 +250,7 @@ getDeltaHeight :: HasLength e => Tree e a -> Length
 getDeltaHeight (Node _ _ [l, r]) = abs $ height l - height r
 -- Explicitly use 'error' here, because roots is supposed to return trees with
 -- bifurcating root nodes.
-getDeltaHeight _ =
-  error $
-    unlines
-      [ "getDeltaHeight: Root node is not bifurcating.",
-        "This error should not happen, please contact the maintainer."
-      ]
+getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating; please contact maintainer."
 
 -- | For a rooted tree with a bifurcating root node, get all possible rooted
 -- trees.
@@ -496,10 +486,5 @@ toExplicitTree t = do
   st <- phyloToSupportTree t
   case zipTreesWith PhyloExplicit const lt st of
     -- Explicit use of error, since this case should not happen.
-    Nothing ->
-      error $
-        unlines
-          [ "toExplicitTree: Can not zip two trees with different topologies.",
-            "This error should not happen, please contact the maintainer."
-          ]
+    Nothing -> error "toExplicitTree: Can not zip two trees with different topologies; please contact maintainer."
     Just zt -> return zt
