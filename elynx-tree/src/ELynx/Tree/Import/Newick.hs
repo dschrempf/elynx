@@ -32,11 +32,12 @@
 module ELynx.Tree.Import.Newick
   ( NewickFormat (..),
     newick,
-    parseNewick,
     oneNewick,
     parseOneNewick,
+    readOneNewick,
     someNewick,
     parseSomeNewick,
+    readSomeNewick,
   )
 where
 
@@ -76,10 +77,6 @@ newick Standard = newickStandard
 newick IqTree = newickIqTree
 newick RevBayes = newickRevBayes
 
--- | See 'newick'.
-parseNewick :: NewickFormat -> BS.ByteString -> Either String (Tree Phylo Name)
-parseNewick f = parseOnly (newick f)
-
 -- | One Newick tree parser. Fails when end of input is not reached.
 oneNewick :: NewickFormat -> Parser (Tree Phylo Name)
 oneNewick Standard = oneNewickStandard
@@ -90,6 +87,10 @@ oneNewick RevBayes = oneNewickRevBayes
 parseOneNewick :: NewickFormat -> BS.ByteString -> Either String (Tree Phylo Name)
 parseOneNewick f = parseOnly (oneNewick f)
 
+-- | See 'oneNewick'; may fail with 'error'.
+readOneNewick :: NewickFormat -> FilePath -> IO (Tree Phylo Name)
+readOneNewick f fn = BS.readFile fn >>= (either error pure . parseOneNewick f)
+
 -- | One or more Newick trees parser.
 someNewick :: NewickFormat -> Parser (Forest Phylo Name)
 someNewick Standard = someNewickStandard
@@ -99,6 +100,10 @@ someNewick RevBayes = someNewickRevBayes
 -- | See 'someNewick'.
 parseSomeNewick :: NewickFormat -> BS.ByteString -> Either String [Tree Phylo Name]
 parseSomeNewick f = parseOnly (someNewick f)
+
+-- | See 'someNewick'; may fail with 'error'.
+readSomeNewick :: NewickFormat -> FilePath -> IO [Tree Phylo Name]
+readSomeNewick f fn = BS.readFile fn >>= (either error pure . parseSomeNewick f)
 
 -- Parse a single Newick tree. Also succeeds when more trees follow.
 newickStandard :: Parser (Tree Phylo Name)
