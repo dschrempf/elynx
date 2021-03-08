@@ -77,8 +77,8 @@ newick IqTree = newickIqTree
 newick RevBayes = newickRevBayes
 
 -- | See 'newick'.
-parseNewick :: NewickFormat -> BS.ByteString -> Tree Phylo Name
-parseNewick f = either error id . parseOnly (newick f)
+parseNewick :: NewickFormat -> BS.ByteString -> Either String (Tree Phylo Name)
+parseNewick f = parseOnly (newick f)
 
 -- | One Newick tree parser. Fails when end of input is not reached.
 oneNewick :: NewickFormat -> Parser (Tree Phylo Name)
@@ -87,8 +87,8 @@ oneNewick IqTree = oneNewickIqTree
 oneNewick RevBayes = oneNewickRevBayes
 
 -- | See 'oneNewick'.
-parseOneNewick :: NewickFormat -> BS.ByteString -> Tree Phylo Name
-parseOneNewick f = either error id . parseOnly (oneNewick f)
+parseOneNewick :: NewickFormat -> BS.ByteString -> Either String (Tree Phylo Name)
+parseOneNewick f = parseOnly (oneNewick f)
 
 -- | One or more Newick trees parser.
 someNewick :: NewickFormat -> Parser (Forest Phylo Name)
@@ -97,8 +97,8 @@ someNewick IqTree = someNewickIqTree
 someNewick RevBayes = someNewickRevBayes
 
 -- | See 'someNewick'.
-parseSomeNewick :: NewickFormat -> BS.ByteString -> [Tree Phylo Name]
-parseSomeNewick f = either error id . parseOnly (someNewick f)
+parseSomeNewick :: NewickFormat -> BS.ByteString -> Either String [Tree Phylo Name]
+parseSomeNewick f = parseOnly (someNewick f)
 
 -- Parse a single Newick tree. Also succeeds when more trees follow.
 newickStandard :: Parser (Tree Phylo Name)
@@ -142,22 +142,34 @@ name :: Parser Name
 name = Name . BL.fromStrict <$> takeWhile nameChar <?> "name"
 
 phylo :: Parser Phylo
-phylo = Phylo <$> optional branchLength <*> optional branchSupport <?> "phylo"
+phylo = Phylo <$> optional branchLengthStandard <*> optional branchSupportStandard <?> "phylo"
 
 -- Branch length.
-branchLength :: Parser Length
-branchLength = do
-  _ <- char ':' <?> "branchLengthDelimiter"
-  l <- double <?> "branchLength"
+branchLengthSimple :: Parser Length
+branchLengthSimple = do
+  l <- double <?> "branchLengthSimple"
   return $ toLength "branchLength" l
 
-branchSupport :: Parser Support
-branchSupport =
+-- Branch length.
+branchLengthStandard :: Parser Length
+branchLengthStandard = do
+  _ <- char ':' <?> "branchLengthDelimiter"
+  branchLengthSimple
+
+branchSupportSimple :: Parser Support
+branchSupportSimple =
   do
+    s <- double <?> "branchSupportSimple"
+    case toSupport s of
+      Left e -> fail e
+      Right ps -> pure ps
+
+branchSupportStandard :: Parser Support
+branchSupportStandard = (<?> "branchSupportStandard") $ do
     _ <- char '[' <?> "branchSupportBegin"
-    s <- double <?> "branchSupport"
+    s <- branchSupportSimple
     _ <- char ']' <?> "branchSupportEnd"
-    return $ toSupport "branchSupport" s
+    return s
 
 --------------------------------------------------------------------------------
 -- IQ-TREE.
@@ -184,11 +196,10 @@ treeIqTree = branchedIqTree <|> leaf <?> "treeIqTree"
 branchedIqTree :: Parser (Tree Phylo Name)
 branchedIqTree = (<?> "branchedIqTree") $ do
   f <- forestIqTree
-  ms <- optional double
-  let s = toSupport "branchedIqTree" <$> ms
+  ms <- optional branchSupportSimple
   n <- name
-  b <- optional branchLength
-  return $ Node (Phylo b s) n f
+  mb <- optional branchLengthStandard
+  return $ Node (Phylo mb ms) n f
 
 -- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
 forestIqTree :: Parser (Forest Phylo Name)
@@ -244,7 +255,7 @@ nameRevBayes :: Parser Name
 nameRevBayes = name <* optional brackets <?> "nameRevBayes"
 
 branchLengthRevBayes :: Parser Length
-branchLengthRevBayes = branchLength <* optional brackets <?> "branchLengthRevBayes"
+branchLengthRevBayes = branchLengthStandard <* optional brackets <?> "branchLengthRevBayes"
 
 leafRevBayes :: Parser (Tree Phylo Name)
 leafRevBayes = (<?> "leafRevBayes") $ do
