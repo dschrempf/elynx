@@ -73,15 +73,16 @@ instance ToJSON NewickFormat
 
 -- | Newick tree parser. Also succeeds when more trees follow.
 newick :: NewickFormat -> Parser (Tree Phylo Name)
-newick Standard = newickStandard
-newick IqTree = newickIqTree
-newick RevBayes = newickRevBayes
+newick f = case f of
+  Standard -> p tree
+  IqTree -> p treeIqTree
+  RevBayes -> newickRevBayes
+  where
+    p t = skipWhile isSpace *> t <* char ';' <* skipWhile isSpace <?> "newick"
 
 -- | One Newick tree parser. Fails when end of input is not reached.
 oneNewick :: NewickFormat -> Parser (Tree Phylo Name)
-oneNewick Standard = oneNewickStandard
-oneNewick IqTree = oneNewickIqTree
-oneNewick RevBayes = oneNewickRevBayes
+oneNewick f = newick f <* endOfInput <?> "oneNewick"
 
 -- | See 'oneNewick'.
 parseOneNewick :: NewickFormat -> BS.ByteString -> Either String (Tree Phylo Name)
@@ -93,9 +94,7 @@ readOneNewick f fn = BS.readFile fn >>= (either error pure . parseOneNewick f)
 
 -- | One or more Newick trees parser.
 someNewick :: NewickFormat -> Parser (Forest Phylo Name)
-someNewick Standard = someNewickStandard
-someNewick IqTree = someNewickIqTree
-someNewick RevBayes = someNewickRevBayes
+someNewick f = some (newick f) <* endOfInput <?> "someNewick"
 
 -- | See 'someNewick'.
 parseSomeNewick :: NewickFormat -> BS.ByteString -> Either String [Tree Phylo Name]
@@ -104,18 +103,6 @@ parseSomeNewick f = parseOnly (someNewick f)
 -- | See 'someNewick'; may fail with 'error'.
 readSomeNewick :: NewickFormat -> FilePath -> IO [Tree Phylo Name]
 readSomeNewick f fn = BS.readFile fn >>= (either error pure . parseSomeNewick f)
-
--- Parse a single Newick tree. Also succeeds when more trees follow.
-newickStandard :: Parser (Tree Phylo Name)
-newickStandard = skipWhile isSpace *> tree <* char ';' <* skipWhile isSpace <?> "newickStandard"
-
--- Parse a single Newick tree. Fails when end of file is not reached.
-oneNewickStandard :: Parser (Tree Phylo Name)
-oneNewickStandard = newickStandard <* endOfInput <?> "oneNewickStandard"
-
--- Parse one ore more Newick trees until end of file.
-someNewickStandard :: Parser (Forest Phylo Name)
-someNewickStandard = some newickStandard <* endOfInput <?> "someNewickStandard"
 
 tree :: Parser (Tree Phylo Name)
 tree = branched <|> leaf <?> "tree"
@@ -180,20 +167,9 @@ branchSupportStandard = (<?> "branchSupportStandard") $ do
 
 --------------------------------------------------------------------------------
 -- IQ-TREE.
-
+--
 -- IQ-TREE stores the branch support as node names after the closing bracket of
 -- a forest. Parse a single Newick tree. Also succeeds when more trees follow.
-newickIqTree :: Parser (Tree Phylo Name)
-newickIqTree = skipWhile isSpace *> treeIqTree <* char ';' <* skipWhile isSpace <?> "newickIqTree"
-
--- See 'newickIqTree'. Parse a single Newick tree. Fails when end of file is not
--- reached.
-oneNewickIqTree :: Parser (Tree Phylo Name)
-oneNewickIqTree = newickIqTree <* endOfInput <?> "oneNewickIqTree"
-
--- See 'newickIqTree'. Parse one ore more Newick trees until end of file.
-someNewickIqTree :: Parser (Forest Phylo Name)
-someNewickIqTree = some newickIqTree <* endOfInput <?> "someNewickIqTree"
 
 -- IQ-TREE stores the branch support as node names after the closing bracket of a forest.
 treeIqTree :: Parser (Tree Phylo Name)
@@ -231,15 +207,6 @@ newickRevBayes =
     *> treeRevBayes
     <* char ';'
     <* skipWhile isSpace <?> "newickRevBayes"
-
--- See 'newickRevBayes'. Parse a single Newick tree. Fails when end of file is
--- not reached.
-oneNewickRevBayes :: Parser (Tree Phylo Name)
-oneNewickRevBayes = newickRevBayes <* endOfInput <?> "oneNewickRevBayes"
-
--- See 'newickRevBayes'. Parse one ore more Newick trees until end of file.
-someNewickRevBayes :: Parser (Forest Phylo Name)
-someNewickRevBayes = some newickRevBayes <* endOfInput <?> "someNewickRevBayes"
 
 treeRevBayes :: Parser (Tree Phylo Name)
 treeRevBayes = branchedRevBayes <|> leafRevBayes <?> "treeRevBayes"
