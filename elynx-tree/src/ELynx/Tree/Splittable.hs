@@ -14,10 +14,9 @@ module ELynx.Tree.Splittable
   )
 where
 
--- | A data type that can be combined using '<>' and split into one out of two
--- equal entities.
+-- | A data type that can be split into two equal entities.
 --
--- The following equality should hold:
+-- For 'Semigroup's, the following equality should hold:
 --
 -- @
 -- split x <> split x = x
