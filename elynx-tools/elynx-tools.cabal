@@ -51,7 +51,6 @@ library
     , cryptohash-sha256
     , deepseq
     , directory
-    , fast-logger
     , hmatrix
     , monad-control
     , monad-logger
