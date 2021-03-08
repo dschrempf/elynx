@@ -151,8 +151,8 @@ phylo = Phylo <$> optional branchLengthStandard <*> optional branchSupportStanda
 
 -- Branch length.
 branchLengthSimple :: Parser Length
-branchLengthSimple = do
-  l <- double <?> "branchLengthSimple"
+branchLengthSimple = (<?> "branchLengthSimple") $ do
+  l <- double <?> "branchLengthSimple; double"
   case toLength l of
     Left e -> fail e
     Right pl -> pure pl
@@ -164,19 +164,19 @@ branchLengthStandard = do
   branchLengthSimple
 
 branchSupportSimple :: Parser Support
-branchSupportSimple =
+branchSupportSimple = (<?> "branchSupportSimple") $
   do
-    s <- double <?> "branchSupportSimple"
+    s <- double <?> "branchSupportSimple; double"
     case toSupport s of
       Left e -> fail e
       Right ps -> pure ps
 
 branchSupportStandard :: Parser Support
 branchSupportStandard = (<?> "branchSupportStandard") $ do
-    _ <- char '[' <?> "branchSupportBegin"
-    s <- branchSupportSimple
-    _ <- char ']' <?> "branchSupportEnd"
-    return s
+  _ <- char '[' <?> "branchSupportBegin"
+  s <- branchSupportSimple
+  _ <- char ']' <?> "branchSupportEnd"
+  return s
 
 --------------------------------------------------------------------------------
 -- IQ-TREE.
