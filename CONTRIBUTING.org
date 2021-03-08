@@ -1,6 +1,6 @@
 * Style guide
-** Use brittany
-Use [[https://github.com/lspitzner/brittany][Brittany]] to format code.
+** Use Ormolu
+Use [[https://github.com/tweag/ormolu][Ormolu]] to format code.
 
 ** Use complete sentences
 Wherever possible, use complete sentences ended by full stops. This includes
@@ -15,6 +15,10 @@ or,
 #+begin_example
 Length: 10.13
 #+end_example
+
+* Total functions
+If possible, use total functions. In particular, avoid using =error=. Non-total
+functions should be called =functionNameUnsafe=.
 
 * Design principles
 ** Files and standard input
