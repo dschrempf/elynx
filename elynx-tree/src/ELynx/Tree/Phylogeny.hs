@@ -32,7 +32,7 @@
 --
 -- 4. Uniqueness of the leaves is not ensured by the data type, but has to be
 -- checked at runtime. Functions relying on the tree to have unique leaves do
--- perform this check, and return 'Left' with an error message, if the tree has
+-- perform this check, and return 'Left' with a message, if the tree has
 -- duplicate leaves.
 --
 -- Note: 'Tree's are rooted.

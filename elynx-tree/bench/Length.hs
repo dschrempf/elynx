@@ -25,7 +25,7 @@ lengthSumFoldl' :: [Length] -> Length
 lengthSumFoldl' =
   foldl'
     ( \x y ->
-        either (error . ("lengthSumFoldl'" ++)) id $
+        either (error . (<>) "lengthSumFoldl'") id $
           toLength $
             fromLength x + fromLength y
     )

@@ -20,15 +20,6 @@
 -- In particular, no conversion from _ to (space) is done right now.
 --
 -- For a description of rooted 'Tree's, please see the 'ELynx.Tree.Rooted'
---
--- Code snippet:
---
--- @
--- import Data.Attoparsec.ByteString
--- import ELynx.Tree
---
--- getOneNewick = either error id . parseOnly (oneNewick Standard)
--- @
 module ELynx.Tree.Import.Newick
   ( NewickFormat (..),
     newick,
