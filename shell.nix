@@ -9,7 +9,6 @@ haskell.lib.buildStackProject {
     gfortran
     glpk
     gsl
-    llvm_9
     mkl
     pkg-config
     sundials
