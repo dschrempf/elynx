@@ -122,9 +122,7 @@ getStationaryDistribution :: RateMatrix -> StationaryDistribution
 getStationaryDistribution m =
   if eps > abs (magnitude (eVals ! i))
     then normalizeSumVec distReal
-    else
-      error
-        "getStationaryDistribution: Could not retrieve stationary distribution."
+    else error "getStationaryDistribution: Could not retrieve stationary distribution."
   where
     (eVals, eVecs) = eig (tr m)
     i = minIndex eVals
