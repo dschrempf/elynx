@@ -79,6 +79,7 @@ module ELynx.Tree.Rooted
 
     -- * Structure
     degree,
+    depth,
     prune,
     dropNodesWith,
     dropLeavesWith,
@@ -320,9 +321,23 @@ applyRoot f t = t {label = f $ label t}
 identify :: Traversable t => t a -> t Int
 identify = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
 
--- | The degree of the root node.
+-- | Degree of the root node.
+--
+-- The degree of a node is the number of branches attached to the node.
 degree :: Tree e a -> Int
 degree = (+ 1) . length . forest
+
+-- | Depth of a tree.
+--
+-- The depth of a tree is the largest number of nodes traversed on a path from
+-- the root to a leaf.
+--
+-- By convention, the depth is larger equal 1. That is, the depth of a leaf tree
+-- is 1.
+depth :: Tree e a -> Int
+depth = maximum . go 1
+  where go n (Node _ _ []) = [n]
+        go n (Node _ _ xs) = concatMap (go (n+1)) xs
 
 -- | Prune degree two nodes.
 --
