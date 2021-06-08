@@ -329,8 +329,8 @@ degree = (+ 1) . length . forest
 
 -- | Depth of a tree.
 --
--- The depth of a tree is the largest number of nodes traversed on a path from
--- the root to a leaf.
+-- The [depth of a tree](https://en.wikipedia.org/wiki/Tree-depth) is the
+-- largest number of nodes traversed on a path from the root to a leaf.
 --
 -- By convention, the depth is larger equal 1. That is, the depth of a leaf tree
 -- is 1.
