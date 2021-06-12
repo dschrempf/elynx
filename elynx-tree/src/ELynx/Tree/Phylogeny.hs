@@ -5,7 +5,7 @@
 -- |
 -- Module      :  ELynx.Tree.Phylogeny
 -- Description :  Phylogenetic trees
--- Copyright   :  (c) Dominik Schrempf 2020
+-- Copyright   :  (c) Dominik Schrempf 2021
 -- License     :  GPL-3.0-or-later
 --
 -- Maintainer  :  dominik.schrempf@gmail.com

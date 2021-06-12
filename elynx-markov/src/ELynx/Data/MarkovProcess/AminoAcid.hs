@@ -1,7 +1,7 @@
 -- |
 -- Module      :  ELynx.Data.MarkovProcess.AminoAcid
 -- Description :  Amino acid rate matrices such as LG
--- Copyright   :  (c) Dominik Schrempf 2020
+-- Copyright   :  (c) Dominik Schrempf 2021
 -- License     :  GPL-3.0-or-later
 --
 -- Maintainer  :  dominik.schrempf@gmail.com

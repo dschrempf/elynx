@@ -1,7 +1,7 @@
 -- |
 -- Module      :  ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
 -- Description :  Import site profiles in Phylobayes format
--- Copyright   :  (c) Dominik Schrempf 2020
+-- Copyright   :  (c) Dominik Schrempf 2021
 -- License     :  GPL-3.0-or-later
 --
 -- Maintainer  :  dominik.schrempf@gmail.com

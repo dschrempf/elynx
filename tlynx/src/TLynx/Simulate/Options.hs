@@ -6,7 +6,7 @@
 -- |
 -- Module      :  TLynx.Simulate.Options
 -- Description :  Argument parser for seq-ana
--- Copyright   :  (c) Dominik Schrempf 2020
+-- Copyright   :  (c) Dominik Schrempf 2021
 -- License     :  GPL-3.0-or-later
 --
 -- Maintainer  :  dominik.schrempf@gmail.com

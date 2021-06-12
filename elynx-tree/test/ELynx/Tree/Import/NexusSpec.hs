@@ -3,7 +3,7 @@
 -- |
 -- Module      :  ELynx.Tree.Import.NexusSpec
 -- Description :  Test import of trees in Nexus files
--- Copyright   :  (c) Dominik Schrempf 2020
+-- Copyright   :  (c) Dominik Schrempf 2021
 -- License     :  GPL-3
 --
 -- Maintainer  :  dominik.schrempf@gmail.com

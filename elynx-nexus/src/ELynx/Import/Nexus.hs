@@ -3,7 +3,7 @@
 -- |
 -- Module      :  ELynx.Import.Nexus
 -- Description :  Nexus types and classes
--- Copyright   :  (c) Dominik Schrempf 2020
+-- Copyright   :  (c) Dominik Schrempf 2021
 -- License     :  GPL-3
 --
 -- Maintainer  :  dominik.schrempf@gmail.com
