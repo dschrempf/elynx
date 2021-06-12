@@ -15,7 +15,7 @@
 # SHOW UP UGLY ON HACKAGE.
 
 * The ELynx Suite
-Version: 0.5.0.3.
+Version: 0.5.1.0.
 Reproducible evolution made easy.
 
 #+html: <p align="center"><img src="https://travis-ci.org/dschrempf/elynx.svg?branch=master"/></p>
@@ -89,14 +89,14 @@ ELynx is written in [[https://www.haskell.org/][Haskell]] and can be installed w
 Handle evolutionary sequences.
 
 #+BEGIN_SRC sh :exports both :results verbatim output 
-slynx --help | head -n -16
+stack exec slynx -- --help | head -n -16
 #+end_src
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
              [-f|--force] [--no-elynx-file] COMMAND
@@ -105,8 +105,8 @@ Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME]
 Available options:
   -h,--help                Show this help text
   -V,--version             Show version
-  -v,--verbosity VALUE     Be verbose; one of: Quiet Warning Info
-                           Debug (default: Info)
+  -v,--verbosity VALUE     Be verbose; one of: Quiet Warning Info Debug
+                           (default: Info)
   -o,--output-file-basename NAME
                            Specify base name of output file
   -f,--force               Ignore previous analysis and overwrite existing
@@ -139,14 +139,14 @@ Available alphabets:
 Concatenate multi sequence alignments.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-slynx concatenate --help
+stack exec slynx -- concatenate --help
 #+end_src
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: slynx concatenate (-a|--alphabet NAME) INPUT-FILE
   Concatenate sequences found in input files.
@@ -163,14 +163,14 @@ Available options:
 Examine sequence with =slynx examine=.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-slynx examine --help
+stack exec slynx -- examine --help
 #+end_src
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: slynx examine (-a|--alphabet NAME) INPUT-FILE [--per-site]
   Examine sequences. If data is a multi sequence alignment, additionally analyze columns.
@@ -188,14 +188,14 @@ Available options:
 Filter sequences with =filer-rows=.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-slynx filter-rows --help
+stack exec slynx -- filter-rows --help
 #+end_src
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: slynx filter-rows (-a|--alphabet NAME) INPUT-FILE [--longer-than LENGTH] 
                          [--shorter-than LENGTH] [--standard-characters]
@@ -216,14 +216,14 @@ Available options:
 Filter columns of multi sequence alignments with =filter-columns=.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-slynx filter-columns --help
+stack exec slynx -- filter-columns --help
 #+end_src
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: slynx filter-columns (-a|--alphabet NAME) INPUT-FILE 
                             [--standard-chars DOUBLE]
@@ -243,14 +243,14 @@ Available options:
 Simulate sequences with =slynx simulate=.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-slynx simulate --help
+stack exec slynx -- simulate --help
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL] 
                       [-m|--mixture-model MODEL] [-e|--edm-file NAME] 
@@ -325,14 +325,14 @@ For special mixture models, mixture weights are optional.
 Sub-sample columns from multi sequence alignments.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-slynx sub-sample --help
+stack exec slynx -- sub-sample --help
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: slynx sub-sample (-a|--alphabet NAME) INPUT-FILE
                         (-n|--number-of-sites INT)
@@ -358,14 +358,14 @@ Create a given number of multi sequence alignments, each of which contains a giv
 Translate sequences.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-slynx translate --help
+stack exec slynx -- translate --help
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: slynx translate (-a|--alphabet NAME) INPUT-FILE (-r|--reading-frame INT)
                        (-u|--universal-code CODE)
@@ -386,14 +386,14 @@ Available options:
 Handle phylogenetic trees in Newick format.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-tlynx --help | head -n -16
+stack exec tlynx -- --help | head -n -16
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
              [-f|--force] [--no-elynx-file] COMMAND
@@ -402,8 +402,8 @@ Usage: tlynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME]
 Available options:
   -h,--help                Show this help text
   -V,--version             Show version
-  -v,--verbosity VALUE     Be verbose; one of: Quiet Warning Info
-                           Debug (default: Info)
+  -v,--verbosity VALUE     Be verbose; one of: Quiet Warning Info Debug
+                           (default: Info)
   -o,--output-file-basename NAME
                            Specify base name of output file
   -f,--force               Ignore previous analysis and overwrite existing
@@ -429,14 +429,14 @@ Available tree file formats:
 Compute distances between phylogenetic trees.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-tlynx compare --help
+stack exec tlynx -- compare --help
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: tlynx compare [-n|--normalize] [-b|--bipartitions] [-t|--intersect] 
                      [-f|--newick-format FORMAT] NAMES
@@ -457,18 +457,99 @@ Available options:
   -h,--help                Show this help text
 #+end_example
 
-** Examine
-Compute summary statistics of phylogenetic trees.
+** Connect
+Connect two phylogenetic tree in all ways (possibly honoring constraints).
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-tlynx examine --help
+stack exec tlynx -- connect --help
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
+
+Usage: tlynx connect [-f|--newick-format FORMAT] [-c|--contraints CONSTRAINTS]
+                     TREE-FILE-A TREE-FILE-B
+  Connect two phylogenetic trees in all ways (possibly honoring constraints).
+
+Available options:
+  -h,--help                Show this help text
+  -V,--version             Show version
+  -f,--newick-format FORMAT
+                           Newick tree format: Standard, IqTree, or RevBayes;
+                           default: Standard; for detailed help, see 'tlynx
+                           --help'
+  -c,--contraints CONSTRAINTS
+                           File containing one or more Newick trees to be used
+                           as constraints
+  TREE-FILE-A              File containing the first Newick tree
+  TREE-FILE-B              File containing the second Newick tree
+  -h,--help                Show this help text
+#+end_example
+
+** Distancce
+Compute distances between many phylogenetic trees.
+
+#+BEGIN_SRC sh :exports both :results output verbatim
+stack exec tlynx -- distance --help
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ELynx Suite version 0.5.1.0.
+Developed by Dominik Schrempf.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
+
+Usage: tlynx distance (-d|--distance MEASURE) [-n|--normalize] [-t|--intersect] 
+                      [-s|--summary-statistics] 
+                      [-m|--master-tree-file MASTER-TREE-File] 
+                      [-f|--newick-format FORMAT] [INPUT-FILES]
+  Compute distances between many phylogenetic trees.
+
+Available options:
+  -h,--help                Show this help text
+  -V,--version             Show version
+  -d,--distance MEASURE    Type of distance to calculate (available distance
+                           measures are listed below)
+  -n,--normalize           Normalize trees before distance calculation; only
+                           affect distances depending on branch lengths
+  -t,--intersect           Compare intersections; i.e., before comparison, drop
+                           leaves that are not present in the other tree
+  -s,--summary-statistics  Report summary statistics only
+  -m,--master-tree-file MASTER-TREE-File
+                           Compare all trees to the tree in the master tree
+                           file.
+  -f,--newick-format FORMAT
+                           Newick tree format: Standard, IqTree, or RevBayes;
+                           default: Standard; for detailed help, see 'tlynx
+                           --help'
+  INPUT-FILES              Read tree(s) from INPUT-FILES; if more files are
+                           given, one tree is expected per file
+  -h,--help                Show this help text
+
+Distance measures:
+  symmetric                Symmetric distance (Robinson-Foulds distance).
+  incompatible-split[VAL]  Incompatible split distance. Collapse branches with (normalized)
+                           support less than 0.0<=VAL<=1.0 before distance calculation;
+                           if, let's say, VAL>0.7, only well supported differences contribute
+                           to the total distance.
+  branch-score             Branch score distance.
+#+end_example
+
+** Examine
+Compute summary statistics of phylogenetic trees.
+
+#+BEGIN_SRC sh :exports both :results output verbatim
+stack exec tlynx -- examine --help
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ELynx Suite version 0.5.1.0.
+Developed by Dominik Schrempf.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: tlynx examine INPUT-FILE [-f|--newick-format FORMAT]
   Compute summary statistics of phylogenetic trees.
@@ -484,18 +565,50 @@ Available options:
   -h,--help                Show this help text
 #+end_example
 
-** Simulate
-Simulate phylogenetic trees using birth and death processes.
+** Shuffle
+Shuffle a phylogenetic tree (keep coalescent times, but shuffle topology and
+leaves).
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-tlynx simulate --help
+stack exec tlynx -- shuffle --help
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
+
+Usage: tlynx shuffle [-f|--newick-format FORMAT] [-n|--replicates N] TREE-FILE 
+                     [-S|--seed [INT]]
+  Shuffle a phylogenetic tree (keep coalescent times, but shuffle topology and leaves).
+
+Available options:
+  -h,--help                Show this help text
+  -V,--version             Show version
+  -f,--newick-format FORMAT
+                           Newick tree format: Standard, IqTree, or RevBayes;
+                           default: Standard; for detailed help, see 'tlynx
+                           --help'
+  -n,--replicates N        Number of trees to generate
+  TREE-FILE                File containing a Newick tree
+  -S,--seed [INT]          Seed for random number generator; list of 32 bit
+                           integers with up to 256 elements (default: random)
+  -h,--help                Show this help text
+#+end_example
+
+** Simulate
+Simulate phylogenetic trees using birth and death processes.
+
+#+BEGIN_SRC sh :exports both :results output verbatim
+stack exec tlynx -- simulate --help
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ELynx Suite version 0.5.1.0.
+Developed by Dominik Schrempf.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: tlynx simulate (-t|--nTrees INT) (-n|--nLeaves INT) PROCESS 
                       [-u|--sub-sample DOUBLE] [-s|--summary-statistics] 
@@ -528,14 +641,14 @@ Sub-sample with probability p:
 Validate and (optionally) redo past ELynx analyses.
 
 #+BEGIN_SRC sh :exports both :results output verbatim
-elynx --help | head -n -16
+stack exec elynx -- --help | head -n -16
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.5.0.2.
+ELynx Suite version 0.5.1.0.
 Developed by Dominik Schrempf.
-Compiled on February 19, 2021, at 13:42 pm, UTC.
+Compiled on June 12, 2021, at 14:54 pm, UTC.
 
 Usage: elynx COMMAND
   Validate and redo past ELynx analyses

@@ -5,6 +5,15 @@
 ## Unreleased changes
 
 
+## Version 0.5.1.0
+
+-   **elynx-tree:** new functions `isValidPath`, `isLeaf`, `depth`; add conversion
+    topology -> tree; various internal algorithmic improvements; improved error
+    messages; simplified interface to Newick parsers; parallel fold map; Nix
+    flake.
+-   Remove unneeded dependencies.
+
+
 ## Version 0.5.0.2
 
 -   Speed up mixture model simulation.
