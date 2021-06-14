@@ -34,7 +34,7 @@ nullTree :: Tree Double
 nullTree = Node 0 []
 
 nullStateTree :: Tree State
-nullStateTree = fmap (const 0) nullTree
+nullStateTree = fmap (const 2) nullTree
 
 -- uniformStationaryDistribution :: Int -> Vector R
 -- uniformStationaryDistribution n = fromList $ replicate n (1.0 / fromIntegral n)
