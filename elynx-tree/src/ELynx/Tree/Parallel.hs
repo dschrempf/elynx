@@ -19,7 +19,7 @@
 module ELynx.Tree.Parallel
   ( parTree,
     parBranchFoldMap,
-    parBranchFoldMapWithLayer,
+    parBranchFoldMapWithReversedPath,
     parNodeFoldMap,
   )
 where
@@ -27,6 +27,7 @@ where
 import Control.Parallel.Strategies
 import Data.Foldable
 import ELynx.Tree.Rooted
+import ELynx.Tree.Zipper
 
 myParList :: Strategy a -> Strategy [a]
 myParList _ [] = return []
@@ -57,23 +58,45 @@ parBranchFoldMap n f op t@(Node br _ ts)
   | n >= 1 = foldl' op (f br) (map (parBranchFoldMap (n - 1) f op) ts `using` myParList rdeepseq)
   | otherwise = branchFoldMap f op t
 
-branchFoldMapWithLayer :: Int -> (Int -> e -> f) -> (f -> f -> f) -> Tree e a -> f
-branchFoldMapWithLayer d f op (Node br _ ts) =
-  foldl' op (f d br) (map (branchFoldMapWithLayer (d + 1) f op) ts)
+branchFoldMapWithReversedPath ::
+  -- Layer.
+  Int ->
+  [Int] ->
+  (Path -> e -> f) ->
+  (f -> f -> f) ->
+  Tree e a ->
+  f
+branchFoldMapWithReversedPath d p f op (Node br _ ts) =
+  foldl'
+    op
+    (f p br)
+    (zipWith (\t i -> branchFoldMapWithReversedPath (d + 1) (i : p) f op t) ts [0 ..])
 
 -- | Map and fold over branches.
 --
--- The used function has access to the layer of the node to which the handled
--- branch is attached to.
+-- The used function has access to the __reversed__ path of the node to which
+-- the handled branch is attached to. The reversed path is used for reasons of
+-- computational speed.
 --
 -- Evaluate the sub trees up to given layer in parallel.
-parBranchFoldMapWithLayer :: NFData f => Int -> (Int -> e -> f) -> (f -> f -> f) -> Tree e a -> f
-parBranchFoldMapWithLayer = go 0
+parBranchFoldMapWithReversedPath ::
+  NFData f =>
+  Int ->
+  (Path -> e -> f) ->
+  (f -> f -> f) ->
+  Tree e a ->
+  f
+parBranchFoldMapWithReversedPath = go 0 []
   where
-    go d n f op t@(Node br _ ts)
+    go d p n f op tr@(Node br _ ts)
       | n >= 1 =
-        foldl' op (f d br) (map (go (d + 1) (n - 1) f op) ts `using` myParList rdeepseq)
-      | otherwise = branchFoldMapWithLayer d f op t
+        foldl'
+          op
+          (f p br)
+          ( zipWith (\t i -> go (d + 1) (i : p) (n - 1) f op t) ts [0 ..]
+              `using` myParList rdeepseq
+          )
+      | otherwise = branchFoldMapWithReversedPath d p f op tr
 
 nodeFoldMap :: (a -> b) -> (b -> b -> b) -> Tree e a -> b
 nodeFoldMap f op (Node _ lb ts) = foldl' op (f lb) $ map (nodeFoldMap f op) ts

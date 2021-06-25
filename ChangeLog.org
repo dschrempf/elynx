@@ -1,5 +1,7 @@
 * Revision history for ELynx
 ** Unreleased changes
+- elynx-tree :: use path when folding over branches
+  (=parBranchFoldMapWithReversedPath=), this is more general than the layer.
 
 ** Version 0.5.1.0
 - elynx-tree :: new functions =isValidPath=, =isLeaf=, =depth=; add conversion

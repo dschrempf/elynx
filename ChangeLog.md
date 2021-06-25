@@ -4,6 +4,9 @@
 
 ## Unreleased changes
 
+-   **elynx-tree:** use path when folding over branches
+    (`parBranchFoldMapWithReversedPath`), this is more general than the layer.
+
 
 ## Version 0.5.1.0
 
