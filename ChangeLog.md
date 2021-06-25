@@ -4,8 +4,8 @@
 
 ## Unreleased changes
 
--   **elynx-tree:** use path when folding over branches
-    (`parBranchFoldMapWithReversedPath`), this is more general than the layer.
+-   **elynx-tree:** remove parallel folds with layers (`parBranchFoldMapWithLayer`
+    too special and slow).
 
 
 ## Version 0.5.1.0
