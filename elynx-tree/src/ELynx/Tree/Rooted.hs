@@ -13,8 +13,8 @@
 --
 -- Creation date: Thu Jan 17 09:57:29 2019.
 --
--- Rooted 'Tree's differes from a classical rose 'Data.Tree.Tree' in that it has
--- labeled branches.
+-- Rooted 'Tree's differs from a classical rose 'Data.Tree.Tree's in that they
+-- have labeled branches.
 --
 -- For rooted topologies, please see 'ELynx.Topology.Rooted'.
 --
