@@ -1,5 +1,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 -- |
 -- Module      :  ELynx.Tree.Rooted
@@ -85,6 +87,9 @@ module ELynx.Tree.Rooted
     dropLeavesWith,
     zipTreesWith,
     zipTrees,
+
+    -- * ZipTrees
+    ZipTree (..),
   )
 where
 
@@ -117,7 +122,7 @@ data Tree e a = Node
     label :: a,
     forest :: Forest e a
   }
-  deriving (Eq, Read, Show, Data, Generic)
+  deriving (Eq, Read, Show, Data, Generic, Generic1)
 
 -- | A shorthand.
 type Forest e a = [Tree e a]
@@ -149,34 +154,6 @@ instance Traversable (Tree e) where
 
 instance Bitraversable Tree where
   bitraverse f g ~(Node br lb ts) = Node <$> f br <*> g lb <*> traverse (bitraverse f g) ts
-
--- The following code provides a zip-like applicative instance. However,
--- the zip-like instance makes the Monad instance meaningless. So, either we
--- provide only 'Applicative' in zip-like form, or we use the classic instance
--- for 'Applicative' and 'Monad'.
-
--- -- | Note: The 'Applicative' instance of 'Tree' is similar to the one of
--- -- 'Control.Applicative.ZipList', and differs from the instance of
--- -- 'Data.Tree.Tree'!
--- --
--- -- >>> let t = Node "" 0 [Node "" 1 [], Node "" 2 []] :: Tree String Int
--- -- >>> let f = Node "+3" (+3) [Node "*5" (*5) [], Node "+10" (+10) []] :: Tree String (Int -> Int)
--- -- >>> f <*> t
--- -- Node {branch = "+3", label = 3, forest = [Node {branch = "*5", label = 5, forest = []},Node {branch = "+10", label = 12, forest = []}]}
--- --
--- -- Note: The 'Monoid' instance of the branch labels determines how the branches
--- -- are combined. For example, distances can be summed using the
--- -- 'Data.Monoid.Sum' monoid.
--- instance Monoid e => Applicative (Tree e) where
---   pure lb = Node mempty lb []
---   ~(Node brF lbF tsF) <*> ~(Node brX lbX tsX) =
---     Node (brF <> brX) (lbF lbX) (zipWith (<*>) tsF tsX)
---   liftA2 f ~(Node brX lbX tsX) ~(Node brY lbY tsY) =
---     Node (brX <> brY) (f lbX lbY) (zipWith (liftA2 f) tsX tsY)
---   ~(Node brX _ tsX) *> ~(Node brY lbY tsY) =
---     Node (brX <> brY) lbY (zipWith (*>) tsX tsY)
---   ~(Node brX lbX tsX) <* ~(Node brY _ tsY) =
---     Node (brX <> brY) lbX (zipWith (<*) tsX tsY)
 
 -- | The 'Semigroup' instance of the branch labels determines how the
 -- branches are combined. For example, distances can be summed using
@@ -232,7 +209,7 @@ mfixTree f
 
 instance Comonad (Tree e) where
   duplicate t@(Node br _ ts) = Node br t (map duplicate ts)
-  extract (Node _ lb _) = lb
+  extract = label
   {-# INLINE extract #-}
 
 instance (NFData e, NFData a) => NFData (Tree e a) where
@@ -251,6 +228,7 @@ toTreeNodeLabels :: Tree e a -> T.Tree a
 toTreeNodeLabels (Node _ lb ts) = T.Node lb (map toTreeNodeLabels ts)
 
 -- TODO: Maybe use foldr similar to 'labels'.
+
 -- | Get leaves.
 leaves :: Tree e a -> [a]
 leaves (Node _ lb []) = [lb]
@@ -336,8 +314,9 @@ degree = (+ 1) . length . forest
 -- is 1.
 depth :: Tree e a -> Int
 depth = maximum . go 1
-  where go n (Node _ _ []) = [n]
-        go n (Node _ _ xs) = concatMap (go (n+1)) xs
+  where
+    go n (Node _ _ []) = [n]
+    go n (Node _ _ xs) = concatMap (go (n + 1)) xs
 
 -- | Prune degree two nodes.
 --
@@ -386,6 +365,10 @@ dropLeavesWith p (Node br lb ts) =
 
 -- | Zip two trees with the same topology.
 --
+-- This function differs from 'ZipTree' in that it fails when the topologies
+-- don't match. Further, it allows specification of a zipping function for the
+-- branches.
+--
 -- Return 'Nothing' if the topologies are different.
 zipTreesWith ::
   (e1 -> e2 -> e) ->
@@ -399,8 +382,66 @@ zipTreesWith f g (Node brL lbL tsL) (Node brR lbR tsR) =
       zipWithM (zipTreesWith f g) tsL tsR >>= Just . Node (f brL brR) (g lbL lbR)
     else Nothing
 
--- | Zip two trees with the same topology.
---
--- Return 'Nothing' if the topologies are different.
+-- | See 'zipTreesWith'.
 zipTrees :: Tree e1 a1 -> Tree e2 a2 -> Maybe (Tree (e1, e2) (a1, a2))
 zipTrees = zipTreesWith (,) (,)
+
+-- | The following newtype provides a zip-like applicative instance, similar to
+-- 'Control.Applicative.ZipList'.
+--
+-- The default instance is not zip-like, because zip-like instances makes the
+-- Monad instance meaningless (similar to lists).
+newtype ZipTree e a = ZipTree {getZipTree :: Tree e a}
+  deriving (Eq, Read, Show, Data, Generic, Generic1)
+
+deriving instance Functor (ZipTree e)
+
+deriving instance Bifunctor ZipTree
+
+deriving instance Foldable (ZipTree e)
+
+deriving instance Bifoldable ZipTree
+
+instance Traversable (ZipTree e) where
+  traverse f (ZipTree t) = ZipTree <$> traverse f t
+
+instance Bitraversable ZipTree where
+  bitraverse f g (ZipTree t) = ZipTree <$> bitraverse f g t
+
+-- TODO: Test Comonad instance. UNTESTED!
+instance Comonad (ZipTree e) where
+  duplicate (ZipTree t) = ZipTree $ second ZipTree $ duplicate t
+  extract = label . getZipTree
+
+deriving instance (NFData e, NFData a) => NFData (ZipTree e a)
+
+deriving instance (ToJSON e, ToJSON a) => ToJSON (ZipTree e a)
+
+deriving instance (FromJSON e, FromJSON a) => FromJSON (ZipTree e a)
+
+-- TODO: ZipTree instances: MonadFix (?), Alternative (?, see below).
+
+-- instance Alternative ZipList where
+--   empty = ZipList []
+--   ZipList xs <|> ZipList ys = ZipList (xs ++ drop (length xs) ys)
+
+-- | The 'Monoid' instance of the branch labels determines how the branches are
+-- combined. For example, distances can be summed using the 'Data.Monoid.Sum'
+-- monoid.
+--
+-- >>> let t = ZipTree $ Node "" 0 [Node "" 1 [], Node "" 2 []] :: ZipTree String Int
+-- >>> let f = ZipTree $ Node "+3" (+3) [Node "*5" (*5) [], Node "+10" (+10) []] :: ZipTree String (Int -> Int)
+-- >>> f <*> t
+--
+-- ZipTree {getZipTree = Node {branch = "+3", label = 3, forest = [Node {branch = "*5", label = 5, forest = []},Node {branch = "+10", label = 12, forest = []}]}}
+instance Monoid e => Applicative (ZipTree e) where
+  -- Infinite layers with infinite subtrees.
+  pure lb = ZipTree $ Node mempty lb $ repeat (pure lb)
+  (ZipTree ~(Node brF lbF tsF)) <*> (ZipTree ~(Node brX lbX tsX)) =
+    ZipTree $ Node (brF <> brX) (lbF lbX) (zipWith (<*>) tsF tsX)
+  liftA2 f (ZipTree ~(Node brX lbX tsX)) (ZipTree ~(Node brY lbY tsY)) =
+    ZipTree $ Node (brX <> brY) (f lbX lbY) (zipWith (liftA2 f) tsX tsY)
+  (ZipTree ~(Node brX _ tsX)) *> (ZipTree ~(Node brY lbY tsY)) =
+    ZipTree $ Node (brX <> brY) lbY (zipWith (*>) tsX tsY)
+  (ZipTree ~(Node brX lbX tsX)) <* (ZipTree ~(Node brY _ tsY)) =
+    ZipTree $ Node (brX <> brY) lbX (zipWith (<*) tsX tsY)
