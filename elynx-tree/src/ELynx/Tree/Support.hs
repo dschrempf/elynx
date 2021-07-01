@@ -28,8 +28,6 @@ where
 
 import Control.DeepSeq
 import Data.Aeson
-import Data.Bifoldable
-import Data.Bifunctor
 import Data.List
 import Data.Semigroup
 import ELynx.Tree.Rooted
@@ -78,27 +76,27 @@ class HasSupport e where
 
 -- | Normalize branch support values. The maximum branch support value will be
 -- set to 1.0.
-normalizeBranchSupport :: HasSupport e => Tree e a -> Tree e a
-normalizeBranchSupport t = first (modSup (/ m)) t
+normalizeBranchSupport :: HasSupport a => Tree a -> Tree a
+normalizeBranchSupport t = fmap (modSup (/ m)) t
   where
-    m = bimaximum $ bimap getSup (const 0) t
+    m = maximum $ fmap getSup t
 
 -- | Collapse branches with support lower than given value.
 --
 -- The branch and node labels of the collapsed branches are discarded.
-collapse :: (Eq e, Eq a, HasSupport e) => Support -> Tree e a -> Tree e a
+collapse :: (Eq a, HasSupport a) => Support -> Tree a -> Tree a
 collapse th tr =
   let tr' = collapse' th tr
    in if tr == tr' then tr else collapse th tr'
 
 -- A leaf has full support.
-highP :: HasSupport e => Support -> Tree e a -> Bool
-highP _ (Node _ _ []) = True
-highP th (Node br _ _) = getSup br >= th
+highP :: HasSupport a => Support -> Tree a -> Bool
+highP _ (Node _ []) = True
+highP th (Node lb _) = getSup lb >= th
 
 -- See 'collapse'.
-collapse' :: HasSupport e => Support -> Tree e a -> Tree e a
-collapse' th (Node br lb ts) = Node br lb $ map (collapse' th) (highSupport ++ lowSupportForest)
+collapse' :: HasSupport a => Support -> Tree a -> Tree a
+collapse' th (Node lb ts) = Node lb $ map (collapse' th) (highSupport ++ lowSupportForest)
   where
     (highSupport, lowSupport) = partition (highP th) ts
-    lowSupportForest = concatMap forest lowSupport
+    lowSupportForest = concatMap subForest lowSupport

@@ -15,34 +15,34 @@
 --
 -- Creation date: Thu Jan 17 09:57:29 2019.
 --
--- Rooted 'Tree's differs from a classical rose 'Data.Tree.Tree's in that they
--- have labeled branches.
+-- TODO: Documentation.
+--
+-- Rooted 'Tree's are classical rose trees.
 --
 -- For rooted topologies, please see 'ELynx.Topology.Rooted'.
 --
 -- A 'Tree' is defined as:
 --
 -- @
--- data Tree e a = Node
---   { branch :: e,
---     label :: a,
---     forest :: Forest e a
+-- data Tree a = Node
+--   { rootLabel :: a,
+--     subForest :: Forest a
 --   }
 -- @
 --
 -- where
 --
 -- @
--- type Forest e a = [Tree e a]
+-- type Forest a = [Tree a]
 -- @
 --
 -- This means, that the word 'Node' is reserved for the constructor of a tree,
--- and that a 'Node' has an attached 'branch', a 'label', and a sub-'forest'.
--- The value constructor /Node/ and the record function /label/ are not to be
+-- and that a 'Node' has an attached 'rootLabel', and a 'subForest'. The value
+-- constructor /Node/ and the record function /rootLabel/ are not to be
 -- confused. The elements of the sub-forest are often called /children/.
 --
 -- In mathematical terms: A 'Tree' is a directed acyclic graph without loops,
--- with vertex labels, and with edge labels.
+-- with vertex labels.
 --
 -- A short recap of recursive tree traversals:
 --
@@ -56,33 +56,25 @@
 --   breadth first.
 --
 -- Here, pre-order traversals are used exclusively, for example, by accessor
--- functions such as 'branches', or 'labels' which is the same as 'toList'.
--- Please let me know, if post-order algorithms are required.
+-- functions such as 'labels', which is the same as 'toList'.
 module ELynx.Tree.Rooted
   ( -- * Data type
     Tree (..),
     Forest,
-    toTreeBranchLabels,
-    toTreeNodeLabels,
+    rootLabelL,
+    subForestL,
 
     -- * Access leaves, branches and labels
     leaves,
     duplicateLeaves,
-    setStem,
-    applyStem,
-    branches,
-    setBranches,
-    setLabel,
-    applyLabel,
     labels,
     setLabels,
-    applyRoot,
     identify,
 
     -- * Structure
     degree,
     depth,
-    prune,
+    pruneWith,
     dropNodesWith,
     dropLeavesWith,
     zipTreesWith,
@@ -97,142 +89,33 @@ import Control.Applicative
 import Control.Comonad
 import Control.DeepSeq
 import Control.Monad
-import Control.Monad.Fix
 import Data.Aeson
-import Data.Bifoldable
-import Data.Bifunctor
-import Data.Bitraversable
 import Data.Data
 import Data.Foldable
 import Data.List
 import Data.Maybe
 import qualified Data.Set as S
-import qualified Data.Tree as T
+import Data.Tree
+import ELynx.Tree.Name
 import GHC.Generics
+import Lens.Micro
 
--- | Rooted rose trees with branch labels.
---
--- Unary instances such as 'Functor' act on node labels, and not on branch
--- labels. Binary instances such as 'Bifunctor' act on both labels (`first` acts
--- on branches, `second` on node labels).
---
--- Lifted instances are not provided.
-data Tree e a = Node
-  { branch :: e,
-    label :: a,
-    forest :: Forest e a
-  }
-  deriving (Eq, Read, Show, Data, Generic, Generic1)
+-- forall f . Functor f => (a -> f b) -> Tree a -> f (Tree b)
 
--- | A shorthand.
-type Forest e a = [Tree e a]
+-- | Access and modify the root label.
+rootLabelL :: Lens' (Tree a) a
+rootLabelL f (Node lb ts) = flip Node ts <$> f lb
 
--- | Map over node labels.
-instance Functor (Tree e) where
-  fmap f ~(Node br lb ts) = Node br (f lb) $ map (fmap f) ts
-  x <$ ~(Node br _ ts) = Node br x (map (x <$) ts)
+-- forall f . Functor f => ([Tree a] -> f [Tree b]) -> Tree a -> f (Tree b)
 
--- | The function 'first' acts on branch labels, 'second' on node labels.
-instance Bifunctor Tree where
-  bimap f g ~(Node br lb ts) = Node (f br) (g lb) $ map (bimap f g) ts
-  first f ~(Node br lb ts) = Node (f br) lb $ map (first f) ts
-  second g ~(Node br lb ts) = Node br (g lb) $ map (second g) ts
+-- | Access and modify the sub forest.
+subForestL :: Lens' (Tree a) [Tree a]
+subForestL f (Node lb ts) = Node lb <$> f ts
 
--- | Combine node labels in pre-order.
-instance Foldable (Tree e) where
-  foldMap f ~(Node _ lb ts) = f lb <> foldMap (foldMap f) ts
-  null _ = False
-  {-# INLINE null #-}
-  toList = labels
-  {-# INLINE toList #-}
-
-instance Bifoldable Tree where
-  bifoldMap f g ~(Node br lb ts) = f br <> g lb <> foldMap (bifoldMap f g) ts
-
-instance Traversable (Tree e) where
-  traverse g ~(Node br lb ts) = Node br <$> g lb <*> traverse (traverse g) ts
-
-instance Bitraversable Tree where
-  bitraverse f g ~(Node br lb ts) = Node <$> f br <*> g lb <*> traverse (bitraverse f g) ts
-
--- | The 'Semigroup' instance of the branch labels determines how the
--- branches are combined. For example, distances can be summed using
--- 'Data.Semigroup.Sum'.
---
--- The 'Monoid' instance of the branch labels determines the default branch
--- label when using 'pure'.
-instance (Semigroup e, Monoid e) => Applicative (Tree e) where
-  pure lb = Node mempty lb []
-  ~(Node brF lbF tsF) <*> ~tx@(Node brX lbX tsX) =
-    Node (brF <> brX) (lbF lbX) (map (lbF <$>) tsX ++ map (<*> tx) tsF)
-  liftA2 f ~(Node brX lbX tsX) ~ty@(Node brY lbY tsY) =
-    Node (brX <> brY) (f lbX lbY) (map (f lbX <$>) tsY ++ map (\tx -> liftA2 f tx ty) tsX)
-  ~(Node brX _ tsX) *> ~ty@(Node brY lbY tsY) =
-    Node (brX <> brY) lbY (tsY ++ map (*> ty) tsX)
-  ~(Node brX lbX tsX) <* ~ty@(Node brY _ tsY) =
-    Node (brX <> brY) lbX (map (lbX <$) tsY ++ map (<* ty) tsX)
-
--- | The 'Semigroup' instance of the branch labels determines how the branches
--- are combined. For example, distances can be summed using
--- 'Data.Semigroup.Sum'.
---
--- The 'Monoid' instance of the branch labels determines the default branch
--- label when using 'return'.
-instance (Semigroup e, Monoid e) => Monad (Tree e) where
-  ~(Node br lb ts) >>= f = case f lb of
-    Node br' lb' ts' -> Node (br <> br') lb' (ts' ++ map (>>= f) ts)
-
--- -- Cannot provide MonadZip instance because branch labels cannot be
--- -- recovered from combined label.
--- instance Monoid e => MonadZip (Tree e) where
---   mzipWith f (Node brL lbL tsL) (Node brR lbR tsR) =
---     Node (brL <> brR) (f lbL lbR) (mzipWith (mzipWith f) tsL tsR)
---
---   munzip (Node br (lbL, lbR) ts) = (Node ? lbL tsL, Node ? lbR tsR)
---     where
---       (tsL, tsR) = munzip (map munzip ts)
-
-instance Monoid e => MonadFix (Tree e) where
-  mfix = mfixTree
-
-mfixTree :: (a -> Tree e a) -> Tree e a
-mfixTree f
-  | Node br lb ts <- fix (f . label) =
-    Node
-      br
-      lb
-      ( zipWith
-          (\i _ -> mfixTree ((!! i) . forest . f))
-          [0 ..]
-          ts
-      )
-
-instance Comonad (Tree e) where
-  duplicate t@(Node br _ ts) = Node br t (map duplicate ts)
-  extract = label
-  {-# INLINE extract #-}
-
-instance (NFData e, NFData a) => NFData (Tree e a) where
-  rnf (Node br lb ts) = rnf br `seq` rnf lb `seq` rnf ts
-
-instance (ToJSON e, ToJSON a) => ToJSON (Tree e a)
-
-instance (FromJSON e, FromJSON a) => FromJSON (Tree e a)
-
--- | Conversion to 'T.Tree' using branch labels.
-toTreeBranchLabels :: Tree e a -> T.Tree e
-toTreeBranchLabels (Node br _ ts) = T.Node br (map toTreeBranchLabels ts)
-
--- | Conversion to 'T.Tree' using node labels.
-toTreeNodeLabels :: Tree e a -> T.Tree a
-toTreeNodeLabels (Node _ lb ts) = T.Node lb (map toTreeNodeLabels ts)
-
--- TODO: Maybe use foldr similar to 'labels'.
-
--- | Get leaves.
-leaves :: Tree e a -> [a]
-leaves (Node _ lb []) = [lb]
-leaves (Node _ _ ts) = concatMap leaves ts
+-- | Get the leaves of a tree.
+leaves :: Tree a -> [a]
+leaves (Node lb []) = [lb]
+leaves (Node _ ts) = concatMap leaves ts
 
 duplicates :: Ord a => [a] -> Bool
 duplicates = go S.empty
@@ -241,59 +124,21 @@ duplicates = go S.empty
     go seen (x : xs) = x `S.member` seen || go (S.insert x seen) xs
 
 -- | Check if a tree has duplicate leaves.
-duplicateLeaves :: Ord a => Tree e a -> Bool
-duplicateLeaves = duplicates . leaves
+duplicateLeaves :: HasName a => Tree a -> Bool
+duplicateLeaves = duplicates . leaves . fmap getName
 
--- | Set the stem to a given value.
-setStem :: e -> Tree e a -> Tree e a
-setStem br (Node _ lb ts) = Node br lb ts
-
--- | Change the root branch of a tree.
-applyStem :: (e -> e) -> Tree e a -> Tree e a
-applyStem f t = t {branch = f $ branch t}
-
--- | Get branch labels in pre-order.
-branches :: Tree e a -> [e]
-branches t = squish t []
-  where
-    squish (Node br _ ts) xs = br : foldr squish xs ts
-
--- | Set branch labels in pre-order.
---
--- Return 'Nothing' if the provided list of branch labels is too short.
-setBranches :: Bitraversable t => [f] -> t e a -> Maybe (t f a)
-setBranches xs = bisequenceA . snd . bimapAccumL setBranch noChange xs
-  where
-    setBranch [] _ = ([], Nothing)
-    setBranch (y : ys) _ = (ys, Just y)
-    noChange ys z = (ys, Just z)
-
--- | Set the label to a given value.
-setLabel :: a -> Tree e a -> Tree e a
-setLabel lb (Node br _ ts) = Node br lb ts
-
--- | Change the root branch of a tree.
-applyLabel :: (a -> a) -> Tree e a -> Tree e a
-applyLabel f t = t {label = f $ label t}
-
--- | Return node labels in pre-order.
-labels :: Tree e a -> [a]
-labels t = squish t []
-  where
-    squish (Node _ lb ts) xs = lb : foldr squish xs ts
+-- | Get node labels in pre-order.
+labels :: Foldable t => t a -> [a]
+labels = toList
 
 -- | Set node labels in pre-order.
 --
--- Return 'Nothing' if the provided list of node labels is too short.
-setLabels :: Traversable t => [b] -> t a -> Maybe (t b)
-setLabels xs = sequenceA . snd . mapAccumL setLabelM xs
+-- Return 'Nothing' if the provided list of labels is too short.
+setLabels :: Traversable t => [a] -> t b -> Maybe (t a)
+setLabels xs = sequenceA . snd . mapAccumL setLabel xs
   where
-    setLabelM [] _ = ([], Nothing)
-    setLabelM (y : ys) _ = (ys, Just y)
-
--- | Change the root label of a tree.
-applyRoot :: (a -> a) -> Tree e a -> Tree e a
-applyRoot f t = t {label = f $ label t}
+    setLabel [] _ = ([], Nothing)
+    setLabel (y : ys) _ = (ys, Just y)
 
 -- | Label the nodes with unique integers starting at the root with 0.
 identify :: Traversable t => t a -> t Int
@@ -302,8 +147,8 @@ identify = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
 -- | Degree of the root node.
 --
 -- The degree of a node is the number of branches attached to the node.
-degree :: Tree e a -> Int
-degree = (+ 1) . length . forest
+degree :: Tree a -> Int
+degree = (+ 1) . length . subForest
 
 -- | Depth of a tree.
 --
@@ -312,36 +157,39 @@ degree = (+ 1) . length . forest
 --
 -- By convention, the depth is larger equal 1. That is, the depth of a leaf tree
 -- is 1.
-depth :: Tree e a -> Int
+depth :: Tree a -> Int
 depth = maximum . go 1
   where
-    go n (Node _ _ []) = [n]
-    go n (Node _ _ xs) = concatMap (go (n + 1)) xs
+    go n (Node _ []) = [n]
+    go n (Node _ xs) = concatMap (go (n + 1)) xs
 
 -- | Prune degree two nodes.
 --
--- The information stored in a pruned node is lost. The branches are combined
--- according to their 'Semigroup' instance of the form @\daughterBranch
--- parentBranch -> combinedBranch@.
-prune :: Semigroup e => Tree e a -> Tree e a
-prune t@(Node _ _ []) = t
-prune (Node paBr _ [Node daBr daLb daTs]) = Node (daBr <> paBr) daLb daTs
-prune (Node paBr paLb paTs) = Node paBr paLb $ map prune paTs
+-- The information stored in pruned nodes is combined according to a given
+-- function of the form @\daughterLabel parentLabel -> combinedLabel@.
+pruneWith :: (a -> a -> a) -> Tree a -> Tree a
+pruneWith _ t@(Node _ []) = t
+pruneWith f (Node paLb [Node daLb daTs]) = Node (f daLb paLb) daTs
+pruneWith f (Node paLb paTs) = Node paLb $ map (pruneWith f) paTs
 
 -- | Drop nodes satisfying predicate.
 --
--- Degree two nodes may arise.
---
 -- Also drop parent nodes of which all daughter nodes are dropped.
 --
--- Return 'Nothing' if the root node satisfies the predicate.
-dropNodesWith :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
-dropNodesWith p (Node br lb ts)
+-- Degree two nodes may arise.
+--
+-- Return 'Nothing' if:
+--
+-- - The root node satisfies the predicate.
+--
+-- - All daughter nodes of the root are dropped.
+dropNodesWith :: (a -> Bool) -> Tree a -> Maybe (Tree a)
+dropNodesWith p (Node lb ts)
   | p lb = Nothing
   | otherwise =
     if null ts'
       then Nothing
-      else Just $ Node br lb ts'
+      else Just $ Node lb ts'
   where
     ts' = mapMaybe (dropNodesWith p) ts
 
@@ -352,72 +200,62 @@ dropNodesWith p (Node br lb ts)
 -- Also drop parent nodes of which all leaves are dropped.
 --
 -- Return 'Nothing' if all leaves satisfy the predicate.
-dropLeavesWith :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
-dropLeavesWith p (Node br lb [])
+dropLeavesWith :: (a -> Bool) -> Tree a -> Maybe (Tree a)
+dropLeavesWith p (Node lb [])
   | p lb = Nothing
-  | otherwise = Just $ Node br lb []
-dropLeavesWith p (Node br lb ts) =
+  | otherwise = Just $ Node lb []
+dropLeavesWith p (Node lb ts) =
   if null ts'
     then Nothing
-    else Just $ Node br lb ts'
+    else Just $ Node lb ts'
   where
     ts' = mapMaybe (dropLeavesWith p) ts
 
 -- | Zip two trees with the same topology.
 --
 -- This function differs from 'ZipTree' in that it fails when the topologies
--- don't match. Further, it allows specification of a zipping function for the
--- branches.
+-- don't match.
 --
 -- Return 'Nothing' if the topologies are different.
 zipTreesWith ::
-  (e1 -> e2 -> e) ->
   (a1 -> a2 -> a) ->
-  Tree e1 a1 ->
-  Tree e2 a2 ->
-  Maybe (Tree e a)
-zipTreesWith f g (Node brL lbL tsL) (Node brR lbR tsR) =
+  Tree a1 ->
+  Tree a2 ->
+  Maybe (Tree a)
+zipTreesWith f (Node lbL tsL) (Node lbR tsR) =
   if length tsL == length tsR
     then -- I am proud of that :)).
-      zipWithM (zipTreesWith f g) tsL tsR >>= Just . Node (f brL brR) (g lbL lbR)
+      zipWithM (zipTreesWith f) tsL tsR >>= Just . Node (f lbL lbR)
     else Nothing
 
 -- | See 'zipTreesWith'.
-zipTrees :: Tree e1 a1 -> Tree e2 a2 -> Maybe (Tree (e1, e2) (a1, a2))
-zipTrees = zipTreesWith (,) (,)
+zipTrees :: Tree a1 -> Tree a2 -> Maybe (Tree (a1, a2))
+zipTrees = zipTreesWith (,)
 
 -- | The following newtype provides a zip-like applicative instance, similar to
 -- 'Control.Applicative.ZipList'.
 --
 -- The default instance is not zip-like, because zip-like instances makes the
 -- Monad instance meaningless (similar to lists).
-newtype ZipTree e a = ZipTree {getZipTree :: Tree e a}
+newtype ZipTree a = ZipTree {getZipTree :: Tree a}
   deriving (Eq, Read, Show, Data, Generic, Generic1)
 
-deriving instance Functor (ZipTree e)
+deriving instance Functor ZipTree
 
-deriving instance Bifunctor ZipTree
+deriving instance Foldable ZipTree
 
-deriving instance Foldable (ZipTree e)
-
-deriving instance Bifoldable ZipTree
-
-instance Traversable (ZipTree e) where
+instance Traversable ZipTree where
   traverse f (ZipTree t) = ZipTree <$> traverse f t
 
-instance Bitraversable ZipTree where
-  bitraverse f g (ZipTree t) = ZipTree <$> bitraverse f g t
+instance Comonad ZipTree where
+  duplicate (ZipTree t) = ZipTree $ ZipTree <$> duplicate t
+  extract = rootLabel . getZipTree
 
--- TODO: Test Comonad instance. UNTESTED!
-instance Comonad (ZipTree e) where
-  duplicate (ZipTree t) = ZipTree $ second ZipTree $ duplicate t
-  extract = label . getZipTree
+deriving instance NFData a => NFData (ZipTree a)
 
-deriving instance (NFData e, NFData a) => NFData (ZipTree e a)
+deriving instance ToJSON a => ToJSON (ZipTree a)
 
-deriving instance (ToJSON e, ToJSON a) => ToJSON (ZipTree e a)
-
-deriving instance (FromJSON e, FromJSON a) => FromJSON (ZipTree e a)
+deriving instance FromJSON a => FromJSON (ZipTree a)
 
 -- TODO: ZipTree instances: MonadFix (?), Alternative (?, see below).
 
@@ -425,23 +263,20 @@ deriving instance (FromJSON e, FromJSON a) => FromJSON (ZipTree e a)
 --   empty = ZipList []
 --   ZipList xs <|> ZipList ys = ZipList (xs ++ drop (length xs) ys)
 
--- | The 'Monoid' instance of the branch labels determines how the branches are
--- combined. For example, distances can be summed using the 'Data.Monoid.Sum'
--- monoid.
---
+-- |
 -- >>> let t = ZipTree $ Node "" 0 [Node "" 1 [], Node "" 2 []] :: ZipTree String Int
 -- >>> let f = ZipTree $ Node "+3" (+3) [Node "*5" (*5) [], Node "+10" (+10) []] :: ZipTree String (Int -> Int)
 -- >>> f <*> t
 --
 -- ZipTree {getZipTree = Node {branch = "+3", label = 3, forest = [Node {branch = "*5", label = 5, forest = []},Node {branch = "+10", label = 12, forest = []}]}}
-instance Monoid e => Applicative (ZipTree e) where
+instance Applicative ZipTree where
   -- Infinite layers with infinite subtrees.
-  pure lb = ZipTree $ Node mempty lb $ repeat (pure lb)
-  (ZipTree ~(Node brF lbF tsF)) <*> (ZipTree ~(Node brX lbX tsX)) =
-    ZipTree $ Node (brF <> brX) (lbF lbX) (zipWith (<*>) tsF tsX)
-  liftA2 f (ZipTree ~(Node brX lbX tsX)) (ZipTree ~(Node brY lbY tsY)) =
-    ZipTree $ Node (brX <> brY) (f lbX lbY) (zipWith (liftA2 f) tsX tsY)
-  (ZipTree ~(Node brX _ tsX)) *> (ZipTree ~(Node brY lbY tsY)) =
-    ZipTree $ Node (brX <> brY) lbY (zipWith (*>) tsX tsY)
-  (ZipTree ~(Node brX lbX tsX)) <* (ZipTree ~(Node brY _ tsY)) =
-    ZipTree $ Node (brX <> brY) lbX (zipWith (<*) tsX tsY)
+  pure lb = ZipTree $ Node lb $ repeat (pure lb)
+  ~(ZipTree (Node lbF tsF)) <*> ~(ZipTree (Node lbX tsX)) =
+    ZipTree $ Node (lbF lbX) (zipWith (<*>) tsF tsX)
+  liftA2 f ~(ZipTree (Node lbX tsX)) ~(ZipTree (Node lbY tsY)) =
+    ZipTree $ Node (f lbX lbY) (zipWith (liftA2 f) tsX tsY)
+  ~(ZipTree (Node _ tsX)) *> ~(ZipTree (Node lbY tsY)) =
+    ZipTree $ Node lbY (zipWith (*>) tsX tsY)
+  ~(ZipTree (Node lbX tsX)) <* ~(ZipTree (Node _ tsY)) =
+    ZipTree $ Node lbX (zipWith (<*) tsX tsY)

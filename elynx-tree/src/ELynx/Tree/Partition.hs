@@ -9,9 +9,6 @@
 -- Portability :  portable
 --
 -- Creation date: Thu Dec 12 12:58:49 2019.
---
--- A multifurcation induces a 'Partition', similar to branches inducing
--- 'ELynx.Tree.Bipartition's.
 module ELynx.Tree.Partition
   ( -- * Data type
     Partition (fromPartition),
@@ -31,18 +28,21 @@ import Data.List hiding (partition)
 import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Tree.Bipartition
+import ELynx.Tree.Name
 import ELynx.Tree.Rooted
 
 -- | A partition of a tree is a grouping of the leaves of the tree into
 -- non-overlapping, non-empty sub sets.
 --
--- For example, each branch of a tree partitions the leaves of the tree into two
--- subsets (see 'ELynx.Tree.Bipartition'). In a similar way, each bifurcating
--- internal node (excluding the root node) partitions the leaves into three
--- subsets called a 'Partition'. If the tree is multifurcating, and a specific
--- node has more than two children, the number of subsets induced by this node
--- is larger than three. Partitions are interesting in that we can use them for
--- calculating incompatible splits, see 'ELynx.Tree.Distance'.
+-- For example, each branch of an unrooted tree partitions the leaves of the
+-- tree into two subsets (see 'ELynx.Tree.Bipartition').
+--
+-- In a similar way and for rooted trees, each bifurcating internal node
+-- (excluding the root node) partitions the leaves into three subsets called a
+-- 'Partition'. If the tree is multifurcating, and a specific node has more than
+-- two children, the number of subsets induced by this node is larger than
+-- three. Partitions are interesting in that we can use them for calculating
+-- incompatible splits, see 'ELynx.Tree.Distance'.
 --
 -- The order of the subsets of a 'Partition' is meaningless. We ensure by
 -- construction that the subsets are ordered, and hence, that equality checks
@@ -89,26 +89,26 @@ setShow = intercalate "," . map show . S.toList
 -- Return 'Left' if:
 -- - the tree is a leaf;
 -- - the tree contains duplicate leaves.
-partition :: Ord a => Tree e a -> Either String (Partition a)
-partition (Node _ _ []) = Left "partition: Encountered a leaf."
-partition t@(Node _ _ ts)
+partition :: (HasName a, Ord a) => Tree a -> Either String (Partition a)
+partition (Node _ []) = Left "partition: Encountered a leaf."
+partition t@(Node _ ts)
   | duplicateLeaves t = Left "partition: Tree contains duplicate leaves."
   | otherwise = pt $ map (S.fromList . leaves) ts
 
 -- | Get all 'Partition's of a tree.
 --
 -- Return 'Left' if tree contains duplicate leaves.
-partitions :: Ord a => Tree e a -> Either String (Set (Partition a))
+partitions :: (HasName a, Ord a) => Tree a -> Either String (Set (Partition a))
 partitions t
   | duplicateLeaves t = Left "partitions: Tree contains duplicate leaves."
   | otherwise = Right $ partitions' S.empty $ S.fromList <$> groups t
 
 -- See 'partitions', but do not check if leaves are unique.
-partitions' :: Ord a => Set a -> Tree e (Set a) -> Set (Partition a)
-partitions' _ (Node _ _ []) = S.empty
-partitions' p t@(Node _ _ ts) =
+partitions' :: Ord a => Set a -> Tree (Set a) -> Set (Partition a)
+partitions' _ (Node _ []) = S.empty
+partitions' p t@(Node _ ts) =
   S.unions $
-    either (const S.empty) S.singleton (pt (p : map label ts)) :
+    either (const S.empty) S.singleton (pt (p : map rootLabel ts)) :
     zipWith partitions' cs ts
   where
     cs = getComplementaryLeaves p t

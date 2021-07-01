@@ -85,6 +85,7 @@ library
     , double-conversion
     , elynx-nexus
     , math-functions
+    , microlens
     , mwc-random
     , parallel
     , primitive

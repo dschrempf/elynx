@@ -18,8 +18,7 @@
 -- a tree.
 module ELynx.Tree.Parallel
   ( parTree,
-    parBranchFoldMap,
-    parNodeFoldMap,
+    parFoldMapTree',
   )
 where
 
@@ -37,30 +36,19 @@ myParList s xs = do
 -- | Parallel evaluation strategy for a tree into normal form.
 --
 -- Evaluate the sub trees up to given layer in parallel.
-parTree :: (NFData e, NFData a) => Int -> Strategy (Tree e a)
-parTree n t@(Node br lb ts)
+parTree :: NFData a => Int -> Strategy (Tree a)
+parTree n t@(Node lb ts)
   | n == 1 = do
     ts' <- myParList rdeepseq ts
-    return $ Node br lb ts'
+    return $ Node lb ts'
   | n >= 2 = do
     ts' <- myParList (parTree (n -1)) ts
-    return $ Node br lb ts'
+    return $ Node lb ts'
   | otherwise = rdeepseq t
 
-branchFoldMap :: (e -> f) -> (f -> f -> f) -> Tree e a -> f
-branchFoldMap f op (Node br _ ts) = foldl' op (f br) $ map (branchFoldMap f op) ts
-
--- | Map and fold over branches. Evaluate the sub trees up to given layer in parallel.
-parBranchFoldMap :: NFData f => Int -> (e -> f) -> (f -> f -> f) -> Tree e a -> f
-parBranchFoldMap n f op t@(Node br _ ts)
-  | n >= 1 = foldl' op (f br) (map (parBranchFoldMap (n - 1) f op) ts `using` myParList rdeepseq)
-  | otherwise = branchFoldMap f op t
-
-nodeFoldMap :: (a -> b) -> (b -> b -> b) -> Tree e a -> b
-nodeFoldMap f op (Node _ lb ts) = foldl' op (f lb) $ map (nodeFoldMap f op) ts
-
--- | Map and fold over nodes. Evaluate the sub trees up to given layer in parallel.
-parNodeFoldMap :: NFData b => Int -> (a -> b) -> (b -> b -> b) -> Tree e a -> b
-parNodeFoldMap n f op t@(Node _ lb ts)
-  | n >= 1 = foldl' op (f lb) (map (parNodeFoldMap (n - 1) f op) ts `using` myParList rdeepseq)
-  | otherwise = nodeFoldMap f op t
+-- | Strict 'foldMap'' of a tree with parallel evaluation of the sub trees up to
+-- a given layer.
+parFoldMapTree' :: (NFData m, Monoid m) => Int -> (a -> m) -> Tree a -> m
+parFoldMapTree' n f t@(Node lb ts)
+  | n >= 1 = foldl' mappend (f lb) (map (parFoldMapTree' (n - 1) f) ts `using` myParList rdeepseq)
+  | otherwise = foldMap' f t

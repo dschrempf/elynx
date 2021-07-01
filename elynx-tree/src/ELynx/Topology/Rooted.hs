@@ -16,10 +16,10 @@
 -- THIS MODULE IS INCOMPLETE.
 --
 -- A rooted 'Topology' differs from a classical rooted rose 'Data.Tree.Tree' in
--- that it does not have internal node labels. The leaves have labels.
+-- that it does not have internal node labels. Only the leaves have labels.
 --
--- For rooted trees with branch labels, please see "ELynx.Tree.Rooted". Please
--- also see the note about tree traversals therein.
+-- For rooted trees with internal node labels, please see "ELynx.Tree.Rooted".
+-- Please also see the note about tree traversals therein.
 --
 -- THIS MODULE IS INCOMPLETE.
 module ELynx.Topology.Rooted

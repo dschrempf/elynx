@@ -37,7 +37,6 @@ module ELynx.Tree.Zipper
     -- * Modification
     insertTree,
     modifyTree,
-    insertBranch,
     insertLabel,
   )
 where
@@ -46,36 +45,36 @@ import Data.Foldable
 import ELynx.Tree.Rooted
 
 -- | Tree zipper. For reference, please see http://hackage.haskell.org/package/rosezipper.
-data TreePos e a = Pos
+data TreePos a = Pos
   { -- | The currently selected tree.
-    current :: Tree e a,
-    -- | Forest to the left in reversed order.
-    before :: Forest e a,
-    -- | Forest to the right
-    after :: Forest e a,
+    current :: Tree a,
+    -- | Sub-forest to the left in reversed order.
+    before :: Forest a,
+    -- | Sub-forest to the right
+    after :: Forest a,
     -- | Finger to the selected tree
-    parents :: [([Tree e a], e, a, [Tree e a])]
+    parents :: [([Tree a], a, [Tree a])]
   }
   deriving (Show, Eq)
 
 -- | Get a zipper pointing to the root.
-fromTree :: Tree e a -> TreePos e a
+fromTree :: Tree a -> TreePos a
 fromTree t = Pos {current = t, before = [], after = [], parents = []}
 
 -- | Get the complete tree of the zipper.
-toTree :: TreePos e a -> Tree e a
+toTree :: TreePos a -> Tree a
 toTree = current . goRoot
 
-getForest :: TreePos e a -> Forest e a
-getForest pos = foldl (flip (:)) (current pos : after pos) (before pos)
+getSubForest :: TreePos a -> Forest a
+getSubForest pos = foldl (flip (:)) (current pos : after pos) (before pos)
 
 -- | Go to parent.
-goParent :: TreePos e a -> Maybe (TreePos e a)
+goParent :: TreePos a -> Maybe (TreePos a)
 goParent pos = case parents pos of
-  (ls, br, lb, rs) : ps ->
+  (ls, lb, rs) : ps ->
     Just
       Pos
-        { current = Node br lb $ getForest pos,
+        { current = Node lb $ getSubForest pos,
           before = ls,
           after = rs,
           parents = ps
@@ -85,11 +84,11 @@ goParent pos = case parents pos of
 -- | Go to parent.
 --
 -- Call 'error' if no parent is found.
-goParentUnsafe :: TreePos e a -> TreePos e a
+goParentUnsafe :: TreePos a -> TreePos a
 goParentUnsafe pos = case parents pos of
-  (ls, br, lb, rs) : ps ->
+  (ls, lb, rs) : ps ->
     Pos
-      { current = Node br lb $ getForest pos,
+      { current = Node lb $ getSubForest pos,
         before = ls,
         after = rs,
         parents = ps
@@ -97,11 +96,11 @@ goParentUnsafe pos = case parents pos of
   [] -> error "goUpUnsafe: No parent found."
 
 -- | Go to root.
-goRoot :: TreePos e a -> TreePos e a
+goRoot :: TreePos a -> TreePos a
 goRoot pos = maybe pos goRoot (goParent pos)
 
 -- | Go to left sibling in current forest.
-goLeft :: TreePos e a -> Maybe (TreePos e a)
+goLeft :: TreePos a -> Maybe (TreePos a)
 goLeft pos =
   case before pos of
     t : ts ->
@@ -114,7 +113,7 @@ goLeft pos =
     [] -> Nothing
 
 -- | Go to right sibling in current forest.
-goRight :: TreePos e a -> Maybe (TreePos e a)
+goRight :: TreePos a -> Maybe (TreePos a)
 goRight pos =
   case after pos of
     t : ts ->
@@ -127,9 +126,9 @@ goRight pos =
     [] -> Nothing
 
 -- | Go to child with given index in forest.
-goChild :: Int -> TreePos e a -> Maybe (TreePos e a)
+goChild :: Int -> TreePos a -> Maybe (TreePos a)
 goChild n pos = case current pos of
-  (Node br lb ts)
+  (Node lb ts)
     | null ts -> Nothing
     | length ts <= n -> Nothing
     | otherwise ->
@@ -138,16 +137,16 @@ goChild n pos = case current pos of
           { current = head rs',
             before = reverse ls',
             after = tail rs',
-            parents = (before pos, br, lb, after pos) : parents pos
+            parents = (before pos, lb, after pos) : parents pos
           }
     where
       (ls', rs') = splitAt n ts
 
 -- | Go to child with given index in forest. Call 'error' if child does not
 -- exist.
-goChildUnsafe :: Int -> TreePos e a -> TreePos e a
+goChildUnsafe :: Int -> TreePos a -> TreePos a
 goChildUnsafe n pos = case current pos of
-  (Node br lb ts)
+  (Node lb ts)
     | null ts -> error "goChildUnsafe: Forest is empty."
     | length ts <= n -> error "goChildUnsafe: Forest is too short."
     | otherwise ->
@@ -155,7 +154,7 @@ goChildUnsafe n pos = case current pos of
         { current = head rs',
           before = reverse ls',
           after = tail rs',
-          parents = (before pos, br, lb, after pos) : parents pos
+          parents = (before pos, lb, after pos) : parents pos
         }
     where
       (ls', rs') = splitAt n ts
@@ -167,25 +166,25 @@ goChildUnsafe n pos = case current pos of
 type Path = [Int]
 
 -- | Go to node with given path.
-goPath :: Path -> TreePos e a -> Maybe (TreePos e a)
+goPath :: Path -> TreePos a -> Maybe (TreePos a)
 goPath pos pth = foldlM (flip goChild) pth pos
 
 -- | Check if a path is valid in that it leads to a node on a tree.
-isValidPath :: Tree e a -> Path -> Bool
+isValidPath :: Tree a -> Path -> Bool
 isValidPath t p = case goPath p (fromTree t) of
   Nothing -> False
   Just _ -> True
 
 -- | Check if a path leads to a leaf.
-isLeafPath :: Tree e a -> Path -> Bool
+isLeafPath :: Tree a -> Path -> Bool
 isLeafPath t p = case goPath p (fromTree t) of
   Nothing -> False
-  Just pos -> null $ forest (current pos)
+  Just pos -> null $ subForest (current pos)
 
 -- | Got to node with given path.
 --
 -- Call 'error' if path is invalid.
-goPathUnsafe :: Path -> TreePos e a -> TreePos e a
+goPathUnsafe :: Path -> TreePos a -> TreePos a
 goPathUnsafe pos pth =
   {-# SCC "goPathUnsafe" #-}
   foldl (flip goChildUnsafe) pth pos
@@ -193,25 +192,20 @@ goPathUnsafe pos pth =
 -- | Get the sub tree at path.
 --
 -- Call 'error' if path is invalid.
-getSubTreeUnsafe :: Path -> Tree e a -> Tree e a
+getSubTreeUnsafe :: Path -> Tree a -> Tree a
 getSubTreeUnsafe p = current . goPathUnsafe p . fromTree
 
 -- | Insert a new tree into the current focus of the zipper.
-insertTree :: Tree e a -> TreePos e a -> TreePos e a
+insertTree :: Tree a -> TreePos a -> TreePos a
 insertTree t pos = pos {current = t}
 
 -- | Modify the tree at the current focus of the zipper.
-modifyTree :: (Tree e a -> Tree e a) -> TreePos e a -> TreePos e a
+modifyTree :: (Tree a -> Tree a) -> TreePos a -> TreePos a
 modifyTree f pos = pos {current = f t}
   where
     t = current pos
 
--- | Insert a new branch label into the current focus of the zipper.
-insertBranch :: e -> TreePos e a -> TreePos e a
-insertBranch br pos = case current pos of
-  Node _ lb ts -> pos {current = Node br lb ts}
-
 -- | Insert a new node label into the current focus of the zipper.
-insertLabel :: a -> TreePos e a -> TreePos e a
+insertLabel :: a -> TreePos a -> TreePos a
 insertLabel lb pos = case current pos of
-  Node br _ ts -> pos {current = Node br lb ts}
+  Node _ ts -> pos {current = Node lb ts}

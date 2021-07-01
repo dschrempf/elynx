@@ -99,15 +99,11 @@ toLengthUnsafe = Length
 
 -- | A data type with measurable and modifiable values.
 class HasLength e where
-  -- | Get length.
   getLen :: e -> Length
 
-  -- | Set length.
   setLen :: Length -> e -> e
 
   -- For computational efficiency.
-
-  -- | Modify length.
   modLen :: (Length -> Length) -> e -> e
 
 -- | The maximum distance between origin and leaves.

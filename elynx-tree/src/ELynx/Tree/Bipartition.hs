@@ -11,18 +11,6 @@
 -- Portability :  portable
 --
 -- Creation date: Fri Aug 30 15:28:17 2019.
---
--- 'Bipartition's are weird in that
--- > Bipartition x y == Bipartition y x
--- is True.
---
--- Also,
--- > Bipartition x y > Bipartition y x
--- is False, even when @x > y@.
---
--- That's why we have to make sure that for
--- > Bipartition x y
--- we always have @x >= y@.
 module ELynx.Tree.Bipartition
   ( groups,
 
@@ -30,6 +18,7 @@ module ELynx.Tree.Bipartition
     Bipartition (fromBipartition),
     bp,
     bpUnsafe,
+    bpMap,
     toSet,
     bpHuman,
 
@@ -48,32 +37,54 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
+import ELynx.Tree.Name
 import ELynx.Tree.Rooted
-
--- | Each node of a tree is root of an induced subtree. Set the node labels to
--- the leaves of the induced subtrees.
-groups :: Tree e a -> Tree e [a]
--- I am proud of this awesome 'Comonad' usage here :).
-groups = extend leaves
 
 -- | A bipartition of a tree is a grouping of the leaves of the tree into two
 -- non-overlapping, non-empty sub sets.
 --
--- For example, each branch of a tree partitions the leaves of the tree into two
--- subsets, or a bipartition. Also, a bifurcating root induces a bipartition;
--- see 'bipartition'.
+-- For unrooted trees:
 --
--- The order of the two subsets of a 'Bipartition' is meaningless. We ensure by
--- construction that the smaller subset comes first, and hence, that equality
--- checks are meaningful.
+-- - Each branch partitions the leaves of the tree into two subsets, or a
+--   bipartition.
+--
+-- For rooted trees:
+--
+-- - A bifurcating root node induces a bipartition; see 'bipartition'.
+--
+-- - Each node induces a bipartition by taking the leaves of the induces subtree
+--   and the complement leaf set of the full tree.
+--
+-- The order of the two subsets of a 'Bipartition' is meaningless. That is,
+-- 'Bipartition's are weird in that
+--
+-- > Bipartition x y == Bipartition y x
+--
+-- is 'True'. Also,
+--
+-- > Bipartition x y > Bipartition y x
+--
+-- is False, even when @x > y@. That's why we have to make sure that for
+--
+-- > Bipartition x y
+--
+-- we always have @x >= y@. We ensure by construction that the larger subset
+-- comes first, and so that equality checks are meaningful; see 'bp' and
+-- 'bpUnsafe'.
 newtype Bipartition a = Bipartition
   { fromBipartition :: (Set a, Set a)
   }
   deriving (Eq, Ord, Show, Read, NFData)
 
+-- | Each node of a tree is root of an induced subtree. Set the node labels to
+-- the leaves of the induced subtrees.
+groups :: Tree a -> Tree [a]
+-- I am proud of this awesome 'Comonad' usage here :).
+groups = extend leaves
+
 -- | Create a bipartition from two sets.
 --
--- Ensure that the smaller set comes first.
+-- Ensure that the larger set comes first.
 --
 -- Return 'Left' if one set is empty.
 bp :: Ord a => Set a -> Set a -> Either String (Bipartition a)
@@ -84,9 +95,13 @@ bp xs ys
 
 -- | Create a bipartition from two sets.
 --
--- Ensure that the smaller set comes first.
+-- Ensure that the larger set comes first.
 bpUnsafe :: Ord a => Set a -> Set a -> Bipartition a
 bpUnsafe xs ys = if xs >= ys then Bipartition (xs, ys) else Bipartition (ys, xs)
+
+-- | Map a function over all elements in the 'Bipartition'.
+bpMap :: Ord b => (a -> b) -> Bipartition a -> Bipartition b
+bpMap f (Bipartition (x, y)) = bpUnsafe (S.map f x) (S.map f y)
 
 -- | Conversion to a set containing both partitions.
 toSet :: Ord a => Bipartition a -> Set a
@@ -98,7 +113,8 @@ toSet (Bipartition (x, y)) = S.union x y
 -- > read . show = id
 --
 -- This identity is met by the derived instance anyways. A more human readable
--- instance would most likely violate the identity.
+-- instance would most likely violate the identity. However, I provide functions
+-- to convrt bipartitions into human readable strings.
 
 -- | Show a bipartition in a human readable format. Use a provided function to
 -- extract information of interest.
@@ -109,23 +125,19 @@ bpHuman (Bipartition (x, y)) = "(" ++ setShow x ++ "|" ++ setShow y ++ ")"
 setShow :: Show a => Set a -> String
 setShow = intercalate "," . map show . S.toList
 
--- -- | Map a function over all elements in the 'Bipartition'.
--- bpMap :: Ord b => (a -> b) -> Bipartition a -> Bipartition b
--- bpMap f (Bipartition (x, y)) = bp (S.map f x) (S.map f y)
-
 -- | For a bifurcating root, get the bipartition induced by the root node.
 --
 -- Return 'Left' if
 -- - the root node is not bifurcating;
 -- - a leave set is empty.
-bipartition :: Ord a => Tree e a -> Either String (Bipartition a)
-bipartition (Node _ _ [x, y]) = bp (S.fromList $ leaves x) (S.fromList $ leaves y)
+bipartition :: Ord a => Tree a -> Either String (Bipartition a)
+bipartition (Node _ [x, y]) = bp (S.fromList $ leaves x) (S.fromList $ leaves y)
 bipartition _ = Left "bipartition: Root node is not bifurcating."
 
 -- | Get all bipartitions of the tree.
 --
 -- Return 'Left' if the tree contains duplicate leaves.
-bipartitions :: Ord a => Tree e a -> Either String (Set (Bipartition a))
+bipartitions :: (HasName a, Ord a) => Tree a -> Either String (Set (Bipartition a))
 bipartitions t
   | duplicateLeaves t = Left "bipartitions: Tree contains duplicate leaves."
   | otherwise = Right $ bipartitions' S.empty $ S.fromList <$> groups t
@@ -136,28 +148,28 @@ getComplementaryLeaves ::
   -- Complementary leaves.
   Set a ->
   -- Tree with node labels storing leaves.
-  Tree e (Set a) ->
+  Tree (Set a) ->
   [Set a]
-getComplementaryLeaves p (Node _ _ ts) =
+getComplementaryLeaves p (Node _ ts) =
   [ S.unions $ p : take i lvsChildren ++ drop (i + 1) lvsChildren
     | i <- [0 .. (n -1)]
   ]
   where
     n = length ts
-    lvsChildren = map label ts
+    lvsChildren = map rootLabel ts
 
 -- See 'bipartitions', but do not check if leaves are unique, nor if
 -- bipartitions are valid.
-bipartitions' :: Ord a => Set a -> Tree e (Set a) -> Set (Bipartition a)
-bipartitions' p (Node _ p' []) = either (const S.empty) S.singleton $ bp p p'
-bipartitions' p t@(Node _ p' ts) =
+bipartitions' :: Ord a => Set a -> Tree (Set a) -> Set (Bipartition a)
+bipartitions' p (Node p' []) = either (const S.empty) S.singleton $ bp p p'
+bipartitions' p t@(Node p' ts) =
   S.unions $
     either (const S.empty) S.singleton (bp p p') :
       [bipartitions' c s | (c, s) <- zip cs ts]
   where
     cs = getComplementaryLeaves p t
 
--- | Convert a tree into a 'Map' from each 'Bipartition' to the branch inducing
+-- | Convert a tree into a 'Map' from each 'Bipartition' to the node inducing
 -- the respective 'Bipartition'.
 --
 -- Since the induced bipartitions of the daughter branches of a bifurcating root
@@ -169,32 +181,38 @@ bipartitions' p t@(Node _ p' ts) =
 -- bipartitions and have to be combined.
 --
 -- For combining branches, a binary function is required. This requirement is
--- encoded in the 'Semigroup' type class constraint (see 'prune').
+-- encoded in the 'Semigroup' type class constraint.
 --
 -- Return 'Left' if the tree contains duplicate leaves.
 bipartitionToBranch ::
-  (Semigroup e, Ord a) =>
-  Tree e a ->
-  Either String (Map (Bipartition a) e)
-bipartitionToBranch t
-  | duplicateLeaves t = Left "bipartitionToBranch: Tree contains duplicate leaves."
-  | otherwise = Right $ bipartitionToBranch' S.empty pTree
+  (HasName a, Ord a, Semigroup a) =>
+  Tree a ->
+  Either String (Map (Bipartition a) a)
+bipartitionToBranch tr
+  | duplicateLeaves tr = Left "bipartitionToBranch: Tree contains duplicate leaves."
+  | otherwise = Right $ bipartitionToBranch' S.empty tr pTr
   where
-    pTree = S.fromList <$> groups t
+    pTr = S.fromList <$> groups tr
 
 -- When calculating the map, branches separated by various degree two nodes have
 -- to be combined. Hence, not only the complementary leaves, but also the branch
 -- label itself have to be passed along.
 bipartitionToBranch' ::
-  (Semigroup e, Ord a) =>
+  (Semigroup a, Ord a) =>
   -- Complementary leaves.
   Set a ->
+  -- Original tree.
+  Tree a ->
   -- Partition tree.
-  Tree e (Set a) ->
-  Map (Bipartition a) e
-bipartitionToBranch' p t@(Node b p' ts) =
+  Tree (Set a) ->
+  Map (Bipartition a) a
+bipartitionToBranch' p tr pTr =
   M.unionsWith (<>) $
-    either (const M.empty) (`M.singleton` b) (bp p p') :
-      [bipartitionToBranch' c s | (c, s) <- zip cs ts]
+    either (const M.empty) (`M.singleton` lb) (bp p p') :
+      [bipartitionToBranch' c tr' pTr' | (c, tr', pTr') <- zip3 cs trs pTrs]
   where
-    cs = getComplementaryLeaves p t
+    lb = rootLabel tr
+    p' = rootLabel pTr
+    trs = subForest tr
+    pTrs = subForest pTr
+    cs = getComplementaryLeaves p pTr
