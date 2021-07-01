@@ -50,9 +50,6 @@ simpleSol =
     Node () "i" [Node () "j" [Node () "z" [], Node () "x" []], Node () "y" []]
   ]
 
-instance Splittable () where
-  split = id
-
 -- Skip leaves and trees with multifurcating root nodes.
 prop_roots :: Tree () a -> Bool
 prop_roots t@(Node _ _ [_, _])

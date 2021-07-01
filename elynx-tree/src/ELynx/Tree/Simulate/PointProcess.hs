@@ -293,7 +293,7 @@ toReconstructedTree l pp@(PointProcess ps vs o)
     !heights = S.replicate (length ps) 0
     !treeRoot = toReconstructedTree' isSorted vsSorted l lvs heights
     !h = last vsSorted
-    !treeOrigin = applyStem (+ (o - h)) treeRoot
+    !treeOrigin = modifyStem (+ (o - h)) treeRoot
 
 -- Move up the tree, connect nodes when they join according to the point process.
 toReconstructedTree' ::
@@ -317,8 +317,8 @@ toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
     !hr = hs `S.index` (i + 1)
     !dvl = v - hl
     !dvr = v - hr
-    !tl = applyStem (+ dvl) $ trs `S.index` i
-    !tr = applyStem (+ dvr) $ trs `S.index` (i + 1)
+    !tl = modifyStem (+ dvl) $ trs `S.index` i
+    !tr = modifyStem (+ dvr) $ trs `S.index` (i + 1)
     !h' = hl + dvl -- Should be the same as 'hr + dvr'.
     !tm = Node 0 l [tl, tr]
     !trs'' = (S.take i trs S.|> tm) S.>< S.drop (i + 2) trs

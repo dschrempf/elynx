@@ -67,7 +67,7 @@ readTrees fp = do
 examineTree :: HasName a => Handle -> Tree Phylo a -> IO ()
 examineTree h t = do
   hPutStrLn h $ "Number of leaves: " ++ show (length lvs)
-  let l = phyloToLengthTree t
+  let l = toLengthTree t
   case l of
     Left _ -> hPutStrLn h "Branch lengths not available."
     Right t' -> BL.hPutStrLn h $ summarizeLengths t'

@@ -180,19 +180,19 @@ bifurcatingIncomp =
     ]
 
 incSplitTree1a :: Tree Phylo Name
-incSplitTree1a = parseByteStringWith (oneNewick IqTree) "((a,b)0.7,(c,d));"
+incSplitTree1a = parseByteStringWith (oneNewick IqTree) "((a,b)0.7,(c,d)1.0);"
 
 incSplitTree1b :: Tree Phylo Name
 incSplitTree1b = parseByteStringWith (oneNewick IqTree) "((a,b)0.7,c,d);"
 
 incSplitTree2 :: Tree Phylo Name
-incSplitTree2 = parseByteStringWith (oneNewick IqTree) "((a,c),(b,d));"
+incSplitTree2 = parseByteStringWith (oneNewick IqTree) "((a,c)1.0,(b,d)1.0);"
 
 incSplitTree3 :: Tree Phylo Name
-incSplitTree3 = parseByteStringWith (oneNewick IqTree) "(((a,b)0.7,c),(d,e));"
+incSplitTree3 = parseByteStringWith (oneNewick IqTree) "(((a,b)0.7,c)1.0,(d,e)1.0);"
 
 incSplitTree4 :: Tree Phylo Name
-incSplitTree4 = parseByteStringWith (oneNewick IqTree) "(((a,c),b),(d,e));"
+incSplitTree4 = parseByteStringWith (oneNewick IqTree) "(((a,c)1.0,b)1.0,(d,e)1.0);"
 
 -- Compute distances between adjacent pairs of a list of input trees. Use given
 -- distance measure.
@@ -233,11 +233,11 @@ spec = do
     it "calculates correct distances for sample trees with branch support" $ do
       incompatibleSplits incSplitTree1a incSplitTree2 `shouldBe` Right 2
       incompatibleSplits incSplitTree1b incSplitTree2 `shouldBe` Right 2
-      let t1a = phyloToSupportTreeUnsafe incSplitTree1a
-          t1b = phyloToSupportTreeUnsafe incSplitTree1b
-          tr2 = phyloToSupportTreeUnsafe incSplitTree2
-          tr3 = phyloToSupportTreeUnsafe incSplitTree3
-          tr4 = phyloToSupportTreeUnsafe incSplitTree4
+      let t1a = either error id $ toSupportTree incSplitTree1a
+          t1b = either error id $ toSupportTree incSplitTree1b
+          tr2 = either error id $ toSupportTree incSplitTree2
+          tr3 = either error id $ toSupportTree incSplitTree3
+          tr4 = either error id $ toSupportTree incSplitTree4
       incompatibleSplits (collapse 0.7 t1a) tr2 `shouldBe` Right 2
       incompatibleSplits (collapse 0.71 t1b) tr2 `shouldBe` Right 0
       incompatibleSplits (collapse 0.71 tr3) tr4 `shouldBe` Right 0
@@ -248,7 +248,7 @@ spec = do
   describe "branchScore" $ do
     it "calculates correct distances for sample trees" $ do
       manyTrees <- getManyTrees
-      let ts = map (either error id . phyloToLengthTree) manyTrees
+      let ts = map (either error id . toLengthTree) manyTrees
       let ds = map (either error id) $ each 2 $ adjacent branchScore ts
       ds `shouldSatisfy` nearlyEqListWith 1e-5 branchScoreAnswers
     it "is zero for a collection of random trees" $

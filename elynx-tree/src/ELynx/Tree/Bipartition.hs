@@ -11,18 +11,6 @@
 -- Portability :  portable
 --
 -- Creation date: Fri Aug 30 15:28:17 2019.
---
--- 'Bipartition's are weird in that
--- > Bipartition x y == Bipartition y x
--- is True.
---
--- Also,
--- > Bipartition x y > Bipartition y x
--- is False, even when @x > y@.
---
--- That's why we have to make sure that for
--- > Bipartition x y
--- we always have @x >= y@.
 module ELynx.Tree.Bipartition
   ( groups,
 
@@ -59,13 +47,34 @@ groups = extend leaves
 -- | A bipartition of a tree is a grouping of the leaves of the tree into two
 -- non-overlapping, non-empty sub sets.
 --
--- For example, each branch of a tree partitions the leaves of the tree into two
--- subsets, or a bipartition. Also, a bifurcating root induces a bipartition;
--- see 'bipartition'.
+-- For unrooted trees:
 --
--- The order of the two subsets of a 'Bipartition' is meaningless. We ensure by
--- construction that the smaller subset comes first, and hence, that equality
--- checks are meaningful.
+-- - Each branch partitions the leaves of the tree into two subsets, or a
+--   bipartition.
+--
+-- For rooted trees:
+--
+-- - A bifurcating root node induces a bipartition; see 'bipartition'.
+--
+-- - Each inner node induces a bipartition by taking the leaves of the sub tree
+--   and the complement leaf set of the full tree.
+--
+-- The order of the two subsets of a 'Bipartition' is meaningless. That is,
+-- 'Bipartition's are weird in that
+--
+-- > Bipartition x y == Bipartition y x
+--
+-- is 'True'. Also,
+--
+-- > Bipartition x y > Bipartition y x
+--
+-- is False, even when @x > y@. That's why we have to make sure that for
+--
+-- > Bipartition x y
+--
+-- we always have @x >= y@. We ensure by construction that the larger subset
+-- comes first, and so that equality checks are meaningful; see 'bp' and
+-- 'bpUnsafe'.
 newtype Bipartition a = Bipartition
   { fromBipartition :: (Set a, Set a)
   }
@@ -73,7 +82,7 @@ newtype Bipartition a = Bipartition
 
 -- | Create a bipartition from two sets.
 --
--- Ensure that the smaller set comes first.
+-- Ensure that the larger set comes first.
 --
 -- Return 'Left' if one set is empty.
 bp :: Ord a => Set a -> Set a -> Either String (Bipartition a)
@@ -84,7 +93,7 @@ bp xs ys
 
 -- | Create a bipartition from two sets.
 --
--- Ensure that the smaller set comes first.
+-- Ensure that the larger set comes first.
 bpUnsafe :: Ord a => Set a -> Set a -> Bipartition a
 bpUnsafe xs ys = if xs >= ys then Bipartition (xs, ys) else Bipartition (ys, xs)
 
@@ -98,7 +107,8 @@ toSet (Bipartition (x, y)) = S.union x y
 -- > read . show = id
 --
 -- This identity is met by the derived instance anyways. A more human readable
--- instance would most likely violate the identity.
+-- instance would most likely violate the identity. However, I provide separate
+-- functions to convert bipartitions into human readable strings.
 
 -- | Show a bipartition in a human readable format. Use a provided function to
 -- extract information of interest.
@@ -108,10 +118,6 @@ bpHuman (Bipartition (x, y)) = "(" ++ setShow x ++ "|" ++ setShow y ++ ")"
 -- Show the elements of a set in a human readable format.
 setShow :: Show a => Set a -> String
 setShow = intercalate "," . map show . S.toList
-
--- -- | Map a function over all elements in the 'Bipartition'.
--- bpMap :: Ord b => (a -> b) -> Bipartition a -> Bipartition b
--- bpMap f (Bipartition (x, y)) = bp (S.map f x) (S.map f y)
 
 -- | For a bifurcating root, get the bipartition induced by the root node.
 --
@@ -163,7 +169,7 @@ bipartitions' p t@(Node _ p' ts) =
 -- Since the induced bipartitions of the daughter branches of a bifurcating root
 -- node are equal, the branches leading to the root have to be combined in this
 -- case. See http://evolution.genetics.washington.edu/phylip/doc/treedist.html
--- and how unrooted trees should be handled.
+-- and how unrooted trees are handled.
 --
 -- Further, branches connected to degree two nodes also induce the same
 -- bipartitions and have to be combined.

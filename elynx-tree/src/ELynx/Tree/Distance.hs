@@ -54,7 +54,8 @@ symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
 -- XXX: Comparing a list of trees recomputes bipartitions.
 symmetric :: Ord a => Tree e1 a -> Tree e2 a -> Either String Int
 symmetric t1 t2
-  | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "symmetric: Trees contain different leaves."
+  | S.fromList (leaves t1) /= S.fromList (leaves t2) =
+    Left "symmetric: Trees contain different leaves."
   | otherwise = do
     bps1 <- bipartitions t1
     bps2 <- bipartitions t2
@@ -101,7 +102,7 @@ countIncompatibilities bs ms =
 incompatibleSplits :: (Show a, Ord a) => Tree e1 a -> Tree e2 a -> Either String Int
 incompatibleSplits t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) =
-    Left "incompatibleSplits: Trees do not have equal leaf sets."
+    Left "incompatibleSplits: Trees contain different leaves."
   | otherwise = do
     -- Bipartitions.
     bs1 <- bipartitions t1
@@ -126,10 +127,11 @@ incompatibleSplits t1 t2
 -- XXX: Comparing a list of trees recomputes bipartitions.
 branchScore :: (HasLength e1, HasLength e2, Ord a) => Tree e1 a -> Tree e2 a -> Either String Double
 branchScore t1 t2
-  | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "branchScoreWith: Trees do not have equal leaf sets."
+  | S.fromList (leaves t1) /= S.fromList (leaves t2) =
+    Left "branchScoreWith: Trees contain different leaves."
   | otherwise = do
-    bpToBr1 <- bipartitionToBranch $ first (Sum . getLen) t1
-    bpToBr2 <- bipartitionToBranch $ first (Sum . getLen) t2
+    bpToBr1 <- bipartitionToBranch $ first (Sum . getLength) t1
+    bpToBr2 <- bipartitionToBranch $ first (Sum . getLength) t2
     let dBs = M.unionWith (-) bpToBr1 bpToBr2
         dsSquared = foldl' (\acc e -> acc + e * e) 0 dBs
     return $ sqrt $ fromLength $ getSum dsSquared

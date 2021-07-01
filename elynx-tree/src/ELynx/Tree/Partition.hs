@@ -9,9 +9,6 @@
 -- Portability :  portable
 --
 -- Creation date: Thu Dec 12 12:58:49 2019.
---
--- A multifurcation induces a 'Partition', similar to branches inducing
--- 'ELynx.Tree.Bipartition's.
 module ELynx.Tree.Partition
   ( -- * Data type
     Partition (fromPartition),
@@ -36,13 +33,19 @@ import ELynx.Tree.Rooted
 -- | A partition of a tree is a grouping of the leaves of the tree into
 -- non-overlapping, non-empty sub sets.
 --
--- For example, each branch of a tree partitions the leaves of the tree into two
--- subsets (see 'ELynx.Tree.Bipartition'). In a similar way, each bifurcating
--- internal node (excluding the root node) partitions the leaves into three
--- subsets called a 'Partition'. If the tree is multifurcating, and a specific
--- node has more than two children, the number of subsets induced by this node
--- is larger than three. Partitions are interesting in that we can use them for
--- calculating incompatible splits, see 'ELynx.Tree.Distance'.
+-- For unrooted trees:
+--
+-- - For example, each branch of an unrooted tree partitions the leaves of the
+--   tree into two subsets (see 'ELynx.Tree.Bipartition').
+--
+-- For rooted trees:
+--
+-- - In a similar way, each bifurcating internal node (excluding the root node)
+--   partitions the leaves into three subsets called a 'Partition'. If the tree
+--   is multifurcating, and a specific node has more than two children, the
+--   number of subsets induced by this node is larger than three. Partitions are
+--   interesting in that we can use them for calculating incompatible splits,
+--   see 'ELynx.Tree.Distance'.
 --
 -- The order of the subsets of a 'Partition' is meaningless. We ensure by
 -- construction that the subsets are ordered, and hence, that equality checks

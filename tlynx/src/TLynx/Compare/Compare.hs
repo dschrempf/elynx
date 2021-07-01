@@ -122,7 +122,7 @@ analyzeDistance outH t1 t2 = do
       formatD
         "Symmetric"
         (T.pack $ show $ symmetric t1 t2)
-  case (phyloToLengthTree t1, phyloToLengthTree t2) of
+  case (toLengthTree t1, toLengthTree t2) of
     (Right t1', Right t2') -> do
       liftIO $
         T.hPutStrLn outH $
@@ -181,7 +181,7 @@ analyzeBipartitions ::
   Tree Phylo Name ->
   ELynx CompareArguments ()
 analyzeBipartitions outH t1 t2 =
-  case (phyloToLengthTree t1, phyloToLengthTree t2) of
+  case (toLengthTree t1, toLengthTree t2) of
     (Right t1l, Right t2l) -> do
       let bp1 = either error id $ bipartitions t1l
           bp2 = either error id $ bipartitions t2l
@@ -214,8 +214,8 @@ analyzeBipartitions outH t1 t2 =
           liftIO $ hPutStrLn outH "There are no common bipartitions."
           liftIO $ hPutStrLn outH "No plots have been generated."
         else do
-          let bpToBrLen1 = M.map (fromLength . getLen) $ either error id $ bipartitionToBranch t1l
-              bpToBrLen2 = M.map (fromLength . getLen) $ either error id $ bipartitionToBranch t2l
+          let bpToBrLen1 = M.map (fromLength . getLength) $ either error id $ bipartitionToBranch t1l
+              bpToBrLen2 = M.map (fromLength . getLength) $ either error id $ bipartitionToBranch t2l
           liftIO $
             hPutStrLn
               outH

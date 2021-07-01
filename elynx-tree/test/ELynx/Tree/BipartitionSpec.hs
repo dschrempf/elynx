@@ -82,5 +82,5 @@ spec = do
     it "creates a map from bipartitions to branch lengths" $
       do
         simpleTrees <- getSimpleTrees
-        (phyloToLengthTree (simpleTrees !! 2) >>= bipartitionToBranch)
+        (toLengthTree (simpleTrees !! 2) >>= bipartitionToBranch)
           `shouldBe` Right bipartitionToBranchAnswer

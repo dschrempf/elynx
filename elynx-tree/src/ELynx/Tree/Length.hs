@@ -4,7 +4,7 @@
 
 -- |
 -- Module      :  ELynx.Tree.Length
--- Description :  Measurable labels
+-- Description :  Labels having a length
 -- Copyright   :  (c) Dominik Schrempf 2021
 -- License     :  GPL-3.0-or-later
 --
@@ -21,6 +21,7 @@ module ELynx.Tree.Length
     Length (fromLength),
     toLength,
     toLengthUnsafe,
+    HasMaybeLength (..),
     HasLength (..),
     height,
     rootHeight,
@@ -82,10 +83,13 @@ instance ToJSON Length
 
 instance FromJSON Length
 
+instance HasMaybeLength Length where
+  getMaybeLength = Just
+  setMaybeLength = const
+
 instance HasLength Length where
-  getLen = id
-  setLen = const
-  modLen f = f
+  getLength = id
+  modifyLength f = f
 
 -- | Return 'Left' if negative.
 toLength :: Double -> Either String Length
@@ -97,18 +101,17 @@ toLength x
 toLengthUnsafe :: Double -> Length
 toLengthUnsafe = Length
 
--- | A data type with measurable and modifiable values.
-class HasLength e where
-  -- | Get length.
-  getLen :: e -> Length
+-- | Class of data types that may have a length.
+class HasMaybeLength e where
+  getMaybeLength :: e -> Maybe Length
+  setMaybeLength :: Length -> e -> e
 
-  -- | Set length.
-  setLen :: Length -> e -> e
-
-  -- For computational efficiency.
-
-  -- | Modify length.
-  modLen :: (Length -> Length) -> e -> e
+-- | Class of data types with measurable and modifiable length.
+class HasMaybeLength e => HasLength e where
+  getLength :: e -> Length
+  setLength :: Length -> e -> e
+  setLength = setMaybeLength
+  modifyLength :: (Length -> Length) -> e -> e
 
 -- | The maximum distance between origin and leaves.
 --
@@ -125,22 +128,22 @@ rootHeight t = maximum $ concatMap distancesOriginLeaves (forest t)
 --
 -- The distances include the branch length of the stem.
 distancesOriginLeaves :: HasLength e => Tree e a -> [Length]
-distancesOriginLeaves (Node br _ []) = [getLen br]
-distancesOriginLeaves (Node br _ ts) = map (getLen br +) (concatMap distancesOriginLeaves ts)
+distancesOriginLeaves (Node br _ []) = [getLength br]
+distancesOriginLeaves (Node br _ ts) = map (getLength br +) (concatMap distancesOriginLeaves ts)
 
 -- | Total branch length of a tree.
 totalBranchLength :: HasLength e => Tree e a -> Length
-totalBranchLength = bifoldl' (+) const 0 . first getLen
+totalBranchLength = bifoldl' (+) const 0 . first getLength
 
 -- | Normalize branch lengths so that the sum is 1.0.
 normalizeBranchLengths :: HasLength e => Tree e a -> Tree e a
-normalizeBranchLengths t = first (modLen (/ s)) t
+normalizeBranchLengths t = first (modifyLength (/ s)) t
   where
     s = totalBranchLength t
 
 -- | Normalize height of tree to 1.0.
 normalizeHeight :: HasLength e => Tree e a -> Tree e a
-normalizeHeight t = first (modLen (/ h)) t
+normalizeHeight t = first (modifyLength (/ h)) t
   where
     h = height t
 
@@ -163,5 +166,5 @@ makeUltrametric t = go 0 t
   where
     h = height t
     go :: HasLength e => Length -> Tree e a -> Tree e a
-    go h' (Node br lb []) = let dh = h - h' - getLen br in Node (modLen (+ dh) br) lb []
-    go h' (Node br lb ts) = let h'' = h' + getLen br in Node br lb $ map (go h'') ts
+    go h' (Node br lb []) = let dh = h - h' - getLength br in Node (modifyLength (+ dh) br) lb []
+    go h' (Node br lb ts) = let h'' = h' + getLength br in Node br lb $ map (go h'') ts

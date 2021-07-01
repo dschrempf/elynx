@@ -18,17 +18,17 @@
 -- A rooted 'Topology' differs from a classical rooted rose 'Data.Tree.Tree' in
 -- that it does not have internal node labels. The leaves have labels.
 --
--- For rooted trees with branch labels, please see "ELynx.Tree.Rooted". Please
--- also see the note about tree traversals therein.
+-- For rooted trees with branch labels, see "ELynx.Tree.Rooted". Please also see
+-- the note about tree traversals therein.
 --
 -- THIS MODULE IS INCOMPLETE.
 module ELynx.Topology.Rooted
   ( -- * Data type
     Topology (..),
     Forest,
-    fromTree,
-    fromLabeledTree,
-    toLabeledTreeWith,
+    fromRoseTree,
+    fromBranchLabelTree,
+    toBranchLabelTreeWith,
 
     -- * Access leaves, branches and labels
     leaves,
@@ -125,21 +125,21 @@ instance FromJSON a => FromJSON (Topology a)
 -- TODO: Provide and fix tests, provide arbitrary instances.
 
 -- | Convert a rooted rose tree to a rooted topology. Internal node labels are lost.
-fromTree :: T.Tree a -> Topology a
-fromTree (T.Node lb []) = Leaf lb
-fromTree (T.Node _ xs) = Node $ fromTree <$> N.fromList xs
+fromRoseTree :: T.Tree a -> Topology a
+fromRoseTree (T.Node lb []) = Leaf lb
+fromRoseTree (T.Node _ xs) = Node $ fromRoseTree <$> N.fromList xs
 
--- | Convert a rooted, branch-labeled rose tree to a rooted topology. Branch
--- labels and internal node labels are lost.
-fromLabeledTree :: R.Tree e a -> Topology a
-fromLabeledTree (R.Node _ lb []) = Leaf lb
-fromLabeledTree (R.Node _ _ xs) = Node $ fromLabeledTree <$> N.fromList xs
+-- | Convert a rooted, branch-label tree to a rooted topology. Branch labels and
+-- internal node labels are lost.
+fromBranchLabelTree :: R.Tree e a -> Topology a
+fromBranchLabelTree (R.Node _ lb []) = Leaf lb
+fromBranchLabelTree (R.Node _ _ xs) = Node $ fromBranchLabelTree <$> N.fromList xs
 
--- | Convert a rooted topology to a rooted, branch-labeled rose tree. Use the
--- given node label at internal nodes.
-toLabeledTreeWith :: a -> Topology a -> R.Tree () a
-toLabeledTreeWith _ (Leaf lb) = R.Node () lb []
-toLabeledTreeWith x (Node ts) = R.Node () x $ map (toLabeledTreeWith x) $ N.toList ts
+-- | Convert a rooted topology to a rooted, branch-label tree. Use the given
+-- node label at internal nodes.
+toBranchLabelTreeWith :: a -> Topology a -> R.Tree () a
+toBranchLabelTreeWith _ (Leaf lb) = R.Node () lb []
+toBranchLabelTreeWith x (Node ts) = R.Node () x $ map (toBranchLabelTreeWith x) $ N.toList ts
 
 -- TODO: Maybe use foldr similar to 'flatten'.
 -- | Set of leaves.

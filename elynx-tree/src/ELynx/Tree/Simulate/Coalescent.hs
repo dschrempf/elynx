@@ -49,7 +49,7 @@ simulate' n a trs g
     i <- uniformR (1, n - 1) g
     -- The time of the coalescent event.
     t <- toLengthUnsafe <$> genContVar (coalescentDistributionCont n) g
-    let trs' = map (applyStem (+ t)) trs -- Move time 't' up on the tree.
+    let trs' = map (modifyStem (+ t)) trs -- Move time 't' up on the tree.
         tl = trs' !! (i - 1)
         tr = trs' !! i
         -- Join the two chosen trees.

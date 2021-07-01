@@ -23,8 +23,8 @@
 -- 1. All trees are rooted. Unrooted trees can be treated with a rooted data
 -- structure, as it is used here. However, some functions may be meaningless.
 --
--- 2. Changing branch labels, node labels, or the topology of the tree are slow
--- operations, especially, when the changes are close to the leaves of the tree.
+-- 2. Changing branch labels, node labels, or the topology of the tree is slow,
+-- especially when the changes are close to the leaves of the tree.
 --
 -- 3. Internally, the underlying 'Tree' data structure stores the sub-forest as
 -- an ordered list. Hence, we have to do some tricks when comparing phylogenies
@@ -35,9 +35,9 @@
 -- perform this check, and return 'Left' with a message, if the tree has
 -- duplicate leaves.
 --
--- Note: 'Tree's are rooted.
+-- NOTE: 'Tree's are rooted.
 --
--- Note: 'Tree's encoded in Newick format correspond to rooted trees. By
+-- NOTE: 'Tree's encoded in Newick format correspond to rooted trees. By
 -- convention only, a tree parsed from Newick format is usually thought to be
 -- unrooted, when the root node is multifurcating and has three or more
 -- children. This convention is not used here. Newick trees are just parsed as
@@ -63,11 +63,10 @@ module ELynx.Tree.Phylogeny
     -- * Branch labels
     Phylo (..),
     toPhyloTree,
-    measurableToPhyloTree,
-    supportedToPhyloTree,
-    phyloToLengthTree,
-    phyloToSupportTree,
-    phyloToSupportTreeUnsafe,
+    lengthToPhyloTree,
+    supportToPhyloTree,
+    toLengthTree,
+    toSupportTree,
     PhyloExplicit (..),
     toExplicitTree,
   )
@@ -146,29 +145,13 @@ bifurcating (Node _ _ []) = True
 bifurcating (Node _ _ [x, y]) = bifurcating x && bifurcating y
 bifurcating _ = False
 
--- I believe that manual treatment with 'outgroup' is preferable.
-
--- -- | Remove multifurcations.
--- --
--- -- A caterpillar like bifurcating structure is used to resolve all
--- -- multifurcations on a tree.
--- --
--- -- Multifurcating nodes are copied and branches are 'split'.
--- resolve :: Splittable e => Tree e a -> Tree e a
--- resolve t@(Node _ _ []) = t
--- resolve (Node br lb [x]) = Node br lb [resolve x]
--- resolve (Node br lb [x, y]) = Node br lb $ map resolve [x, y]
--- resolve (Node br lb (Node brL lbL xsL : xs)) = Node br lb [Node brL' lbL (map resolve xsL), Node brL' lb (map resolve xs)]
---   where brL' = split brL
-
 -- | Root the tree using an outgroup.
 --
--- If the current root node is multifurcating, a bifurcating root node with the
--- empty label is introduced by 'split'ting the leftmost branch. The 'Monoid'
--- instance of the node label and the 'Splittable' instance of the branch length
--- are used.
---
--- NOTE: In this case, the degree of the former root node is decreased by one!
+-- NOTE: If the current root node is multifurcating, a bifurcating root node
+-- with the empty label is introduced by 'split'ting the leftmost branch. In
+-- this case, the 'Monoid' instance of the node label and the 'Splittable'
+-- instance of the branch length are used, and the degree of the former root
+-- node is decreased by one.
 --
 -- Given that the root note is bifurcating, the root node is moved to the
 -- required position specified by the outgroup.
@@ -180,7 +163,9 @@ bifurcating _ = False
 --
 -- Return 'Left' if
 --
--- - the root node is not multifurcating;
+-- - the root node is a leaf;
+--
+-- - the root node has degree two;
 --
 -- - the tree has duplicate leaves;
 --
@@ -232,8 +217,8 @@ getMidpoint ts = case t of
           Node
             br
             lb
-            [ applyStem (modLen (subtract dh)) l,
-              applyStem (modLen (+ dh)) r
+            [ modifyStem (modifyLength (subtract dh)) l,
+              modifyStem (modifyLength (+ dh)) r
             ]
   -- Explicitly use 'error' here, because roots is supposed to return trees with
   -- bifurcating root nodes.
@@ -352,9 +337,12 @@ rootAt' b t = do
 -- | Branch label for phylogenetic trees.
 --
 -- Branches may have a length and a support value.
+--
+-- Especially useful to export trees to Newick format; see
+-- 'ELynx.Tree.Export.Newick.toNewick'.
 data Phylo = Phylo
-  { brLen :: Maybe Length,
-    brSup :: Maybe Support
+  { pBranchLength :: Maybe Length,
+    pBranchSupport :: Maybe Support
   }
   deriving (Read, Show, Eq, Ord, Generic, NFData)
 
@@ -364,6 +352,14 @@ instance Semigroup Phylo where
       (getSum <$> (Sum <$> mBL) <> (Sum <$> mBR))
       (getMin <$> (Min <$> mSL) <> (Min <$> mSR))
 
+instance HasMaybeLength Phylo where
+  getMaybeLength = pBranchLength
+  setMaybeLength l x = x {pBranchLength = Just l}
+
+instance HasMaybeSupport Phylo where
+  getMaybeSupport = pBranchSupport
+  setMaybeSupport s x = x {pBranchSupport = Just s}
+
 instance ToJSON Phylo
 
 instance FromJSON Phylo
@@ -371,107 +367,107 @@ instance FromJSON Phylo
 -- | Set all branch lengths and support values to 'Just' the value.
 --
 -- Useful to export a tree with branch lengths in Newick format.
-toPhyloTree :: (HasLength e, HasSupport e) => Tree e a -> Tree Phylo a
+toPhyloTree :: (HasMaybeLength e, HasMaybeSupport e) => Tree e a -> Tree Phylo a
 toPhyloTree = first toPhyloLabel
 
-toPhyloLabel :: (HasLength e, HasSupport e) => e -> Phylo
-toPhyloLabel x = Phylo (Just $ getLen x) (Just $ getSup x)
+toPhyloLabel :: (HasMaybeLength e, HasMaybeSupport e) => e -> Phylo
+toPhyloLabel x = Phylo (getMaybeLength x) (getMaybeSupport x)
 
--- | Set all branch lengths to 'Just' the values, and all support values to
--- 'Nothing'.
+-- | Set branch lengths. Do not set support values.
 --
 -- Useful to export a tree with branch lengths but without branch support values
 -- to Newick format.
-measurableToPhyloTree :: HasLength e => Tree e a -> Tree Phylo a
-measurableToPhyloTree = first measurableToPhyloLabel
+lengthToPhyloTree :: HasMaybeLength e => Tree e a -> Tree Phylo a
+lengthToPhyloTree = first lengthToPhyloLabel
 
-measurableToPhyloLabel :: HasLength e => e -> Phylo
-measurableToPhyloLabel x = Phylo (Just $ getLen x) Nothing
+lengthToPhyloLabel :: HasMaybeLength e => e -> Phylo
+lengthToPhyloLabel x = Phylo (getMaybeLength x) Nothing
 
--- | Set all branch lengths to 'Nothing', and all support values to 'Just' the
--- values.
+-- | Set support values. Do not set branch lengths.
 --
 -- Useful to export a tree with branch support values but without branch lengths
 -- to Newick format.
-supportedToPhyloTree :: HasSupport e => Tree e a -> Tree Phylo a
-supportedToPhyloTree = first supportedToPhyloLabel
+supportToPhyloTree :: HasMaybeSupport e => Tree e a -> Tree Phylo a
+supportToPhyloTree = first supportToPhyloLabel
 
-supportedToPhyloLabel :: HasSupport e => e -> Phylo
-supportedToPhyloLabel x = Phylo Nothing (Just $ getSup x)
+supportToPhyloLabel :: HasMaybeSupport e => e -> Phylo
+supportToPhyloLabel x = Phylo Nothing (getMaybeSupport x)
 
 -- | If root branch length is not available, set it to 0.
 --
 -- Return 'Left' if any other branch length is unavailable.
-phyloToLengthTree :: Tree Phylo a -> Either String (Tree Length a)
-phyloToLengthTree =
-  maybe (Left "phyloToLengthTree: Length unavailable for some branches.") Right
-    . bitraverse brLen pure
+toLengthTree :: HasMaybeLength e => Tree e a -> Either String (Tree Length a)
+toLengthTree =
+  maybe (Left "toLengthTree: Length unavailable for some branches.") Right
+    . bitraverse getMaybeLength pure
     . cleanStemLength
 
-cleanStemLength :: Tree Phylo a -> Tree Phylo a
-cleanStemLength (Node (Phylo Nothing s) l f) = Node (Phylo (Just 0) s) l f
-cleanStemLength t = t
+cleanStemLength :: HasMaybeLength e => Tree e a -> Tree e a
+cleanStemLength = modifyStem f
+  where
+    f x = case getMaybeLength x of
+      Nothing -> setMaybeLength 0 x
+      Just _ -> x
 
 -- | Set branch support values of branches leading to the leaves and of the root
 -- branch to maximum support.
 --
 -- Return 'Left' if any other branch has no available support value.
-phyloToSupportTree :: Tree Phylo a -> Either String (Tree Support a)
-phyloToSupportTree t =
-  maybe
-    (Left "phyloToSupportTree: Support value unavailable for some branches.")
-    Right
-    $ bitraverse brSup pure $
+toSupportTree :: HasMaybeSupport e => Tree e a -> Either String (Tree Support a)
+toSupportTree t =
+  maybe (Left "toSupportTree: Support value unavailable for some branches.") Right $
+    bitraverse getMaybeSupport pure $
       cleanLeafSupport m $
-        cleanRootSupport m t
-  where
-    m = getMaxSupport t
-
--- | Set all unavailable branch support values to maximum support.
-phyloToSupportTreeUnsafe :: Tree Phylo a -> Tree Support a
-phyloToSupportTreeUnsafe t = cleanSupport m t
+        -- Clean root support value.
+        cleanSupport m t
   where
     m = getMaxSupport t
 
 -- If all branch support values are below 1.0, set the max support to 1.0.
-getMaxSupport :: Tree Phylo a -> Support
-getMaxSupport = fromJust . max (Just 1.0) . bimaximum . bimap brSup (const Nothing)
+getMaxSupport :: HasMaybeSupport e => Tree e a -> Support
+getMaxSupport = fromJust . max (Just 1.0) . bimaximum . bimap getMaybeSupport (const Nothing)
 
-cleanRootSupport :: Support -> Tree Phylo a -> Tree Phylo a
-cleanRootSupport maxSup (Node (Phylo b Nothing) l xs) = Node (Phylo b (Just maxSup)) l xs
-cleanRootSupport _ t = t
+cleanSupport :: HasMaybeSupport e => Support -> Tree e a -> Tree e a
+cleanSupport s = modifyStem f
+  where
+    f x = case getMaybeSupport x of
+      Nothing -> setMaybeSupport s x
+      Just _ -> x
 
-cleanLeafSupport :: Support -> Tree Phylo a -> Tree Phylo a
-cleanLeafSupport s (Node (Phylo b Nothing) l []) = Node (Phylo b (Just s)) l []
+cleanLeafSupport :: HasMaybeSupport e => Support -> Tree e a -> Tree e a
+cleanLeafSupport s l@(Node _ _ []) = cleanSupport s l
 cleanLeafSupport s (Node b l xs) = Node b l $ map (cleanLeafSupport s) xs
-
-cleanSupport :: Support -> Tree Phylo a -> Tree Support a
-cleanSupport maxSup (Node (Phylo _ s) l xs) = Node (fromMaybe maxSup s) l $ map (cleanSupport maxSup) xs
 
 -- | Explicit branch label with branch length and branch support value.
 data PhyloExplicit = PhyloExplicit
-  { sBrLen :: Length,
-    sBrSup :: Support
+  { eBranchLength :: Length,
+    eBranchSupport :: Support
   }
   deriving (Read, Show, Eq, Ord, Generic)
 
 instance Semigroup PhyloExplicit where
   PhyloExplicit bL sL <> PhyloExplicit bR sR = PhyloExplicit (bL + bR) (min sL sR)
 
+instance HasMaybeLength PhyloExplicit where
+  getMaybeLength = Just . eBranchLength
+  setMaybeLength b pl = pl {eBranchLength = b}
+
 instance HasLength PhyloExplicit where
-  getLen = sBrLen
-  setLen b pl = pl {sBrLen = b}
-  modLen f (PhyloExplicit l s) = PhyloExplicit (f l) s
+  getLength = eBranchLength
+  modifyLength f (PhyloExplicit l s) = PhyloExplicit (f l) s
 
 instance Splittable PhyloExplicit where
-  split l = l {sBrLen = b'}
+  split l = l {eBranchLength = b'}
     where
-      b' = sBrLen l / 2.0
+      b' = eBranchLength l / 2.0
+
+instance HasMaybeSupport PhyloExplicit where
+  getMaybeSupport = Just . eBranchSupport
+  setMaybeSupport s pl = pl {eBranchSupport = s}
 
 instance HasSupport PhyloExplicit where
-  getSup = sBrSup
-  setSup s pl = pl {sBrSup = s}
-  modSup f (PhyloExplicit l s) = PhyloExplicit l (f s)
+  getSupport = eBranchSupport
+  modifySupport f (PhyloExplicit l s) = PhyloExplicit l (f s)
 
 instance ToJSON PhyloExplicit
 
@@ -479,12 +475,15 @@ instance FromJSON PhyloExplicit
 
 -- | Conversion to a 'PhyloExplicit' tree.
 --
--- See 'phyloToLengthTree' and 'phyloToSupportTree'.
-toExplicitTree :: Tree Phylo a -> Either String (Tree PhyloExplicit a)
+-- See 'toLengthTree' and 'toSupportTree'.
+toExplicitTree ::
+  (HasMaybeLength e, HasMaybeSupport e) =>
+  Tree e a ->
+  Either String (Tree PhyloExplicit a)
 toExplicitTree t = do
-  lt <- phyloToLengthTree t
-  st <- phyloToSupportTree t
+  lt <- toLengthTree t
+  st <- toSupportTree t
   case zipTreesWith PhyloExplicit const lt st of
-    -- Explicit use of error, since this case should not happen.
-    Nothing -> error "toExplicitTree: Can not zip two trees with different topologies; please contact maintainer."
+    -- Explicit use of error, since this case should never happen.
+    Nothing -> error "toExplicitTree: Can not zip two trees with different topologies."
     Just zt -> return zt

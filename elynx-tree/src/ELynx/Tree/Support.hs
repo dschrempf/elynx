@@ -18,6 +18,7 @@ module ELynx.Tree.Support
     Support (fromSupport),
     toSupport,
     toSupportUnsafe,
+    HasMaybeSupport (..),
     HasSupport (..),
 
     -- * Functions on trees
@@ -54,10 +55,13 @@ instance ToJSON Support
 
 instance FromJSON Support
 
+instance HasMaybeSupport Support where
+  getMaybeSupport = Just
+  setMaybeSupport = const
+
 instance HasSupport Support where
-  getSup = id
-  setSup = const
-  modSup f = f
+  getSupport = id
+  modifySupport f = f
 
 -- | Return 'Left' if negative.
 toSupport :: Double -> Either String Support
@@ -68,20 +72,24 @@ toSupport x | x < 0 = Left $ "Support is negative: " ++ show x ++ "."
 toSupportUnsafe :: Double -> Support
 toSupportUnsafe = Support
 
--- | A data type with measurable and modifiable values.
-class HasSupport e where
-  getSup :: e -> Support
-  setSup :: Support -> e -> e
+-- | Class of data types that may have a support value.
+class HasMaybeSupport e where
+  getMaybeSupport :: e -> Maybe Support
+  setMaybeSupport :: Support -> e -> e
 
-  -- For computational efficiency.
-  modSup :: (Support -> Support) -> e -> e
+-- | Class of data types with measurable and modifiable support values.
+class HasMaybeSupport e => HasSupport e where
+  getSupport :: e -> Support
+  setSupport :: Support -> e -> e
+  setSupport = setMaybeSupport
+  modifySupport :: (Support -> Support) -> e -> e
 
 -- | Normalize branch support values. The maximum branch support value will be
 -- set to 1.0.
 normalizeBranchSupport :: HasSupport e => Tree e a -> Tree e a
-normalizeBranchSupport t = first (modSup (/ m)) t
+normalizeBranchSupport t = first (modifySupport (/ m)) t
   where
-    m = bimaximum $ bimap getSup (const 0) t
+    m = bimaximum $ bimap getSupport (const 0) t
 
 -- | Collapse branches with support lower than given value.
 --
@@ -94,7 +102,7 @@ collapse th tr =
 -- A leaf has full support.
 highP :: HasSupport e => Support -> Tree e a -> Bool
 highP _ (Node _ _ []) = True
-highP th (Node br _ _) = getSup br >= th
+highP th (Node br _ _) = getSupport br >= th
 
 -- See 'collapse'.
 collapse' :: HasSupport e => Support -> Tree e a -> Tree e a

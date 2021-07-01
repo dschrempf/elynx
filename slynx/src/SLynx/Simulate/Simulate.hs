@@ -85,7 +85,7 @@ simulateAlignment ::
   GenIO ->
   ELynx SimulateArguments ()
 simulateAlignment pm t' n g = do
-  let t = fromLength . getLen <$> toTreeBranchLabels t'
+  let t = fromLength . getLength <$> toTreeBranchLabels t'
   leafStates <- case pm of
     MP.SubstitutionModel sm -> liftIO $ simulateAndFlattenPar n d e t g
       where
@@ -225,7 +225,7 @@ simulateCmd = do
   $(logInfo) ""
   $(logInfo) $ T.pack $ "Read tree from file '" ++ treeFile ++ "'."
   tree <- liftIO $ parseFileWith (newick Standard) treeFile
-  let t' = either error id $ phyloToLengthTree tree
+  let t' = either error id $ toLengthTree tree
   $(logInfo) $ T.pack $ "Number of leaves: " ++ show (length $ leaves t')
   $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarizeLengths t'
   let edmFile = argsEDMFile l

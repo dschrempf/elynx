@@ -25,7 +25,6 @@ import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (intersperse)
 import ELynx.Tree.Length
 import ELynx.Tree.Name
-import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
 import ELynx.Tree.Support
 
@@ -36,7 +35,7 @@ buildBrSup :: Support -> BB.Builder
 buildBrSup bs = BB.char8 '[' <> BB.doubleDec (fromSupport bs) <> BB.char8 ']'
 
 -- | See 'toNewick'.
-toNewickBuilder :: HasName a => Tree Phylo a -> BB.Builder
+toNewickBuilder :: (HasMaybeLength e, HasMaybeSupport e, HasName a) => Tree e a -> BB.Builder
 toNewickBuilder t = go t <> BB.char8 ';'
   where
     go (Node b l []) = lbl b l
@@ -45,8 +44,8 @@ toNewickBuilder t = go t <> BB.char8 ';'
         <> mconcat (intersperse (BB.char8 ',') $ map go ts)
         <> BB.char8 ')'
         <> lbl b l
-    mBrSupBuilder x = maybe mempty buildBrSup (brSup x)
-    mBrLenBuilder x = maybe mempty buildBrLen (brLen x)
+    mBrSupBuilder x = maybe mempty buildBrSup (getMaybeSupport x)
+    mBrLenBuilder x = maybe mempty buildBrLen (getMaybeLength x)
     lbl x y =
       BB.lazyByteString (fromName $ getName y)
         <> mBrLenBuilder x
@@ -65,5 +64,5 @@ toNewickBuilder t = go t <> BB.char8 ';'
 -- @
 -- "ACTUALNAME[posterior=-2839.2,age_95%_HPD={4.80804,31.6041}]"
 -- @
-toNewick :: HasName a => Tree Phylo a -> BL.ByteString
+toNewick :: (HasMaybeLength e, HasMaybeSupport e, HasName a) => Tree e a -> BL.ByteString
 toNewick = BB.toLazyByteString . toNewickBuilder

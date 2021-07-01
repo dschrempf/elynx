@@ -53,7 +53,7 @@ spec = do
     it "leaves height constant for trees with branch lengths" $ do
       let t' =
             either error id $
-              phyloToLengthTree subSampleLargeTree
+              toLengthTree subSampleLargeTree
       height (prune t') `shouldBe` height t'
   describe "dropLeavesWith" $ do
     it "returns the same tree if no leaves satisfy predicate" $

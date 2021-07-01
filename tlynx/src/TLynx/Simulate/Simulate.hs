@@ -82,7 +82,7 @@ simulate = do
   let ls =
         if sumS
           then parMap rpar (formatNChildSumStat . toNChildSumStat) trs
-          else parMap rpar toNewick $ map measurableToPhyloTree trs
+          else parMap rpar toNewick $ map lengthToPhyloTree trs
   let res = BL.unlines ls
   out "simulated trees" res ".tree"
 
@@ -137,7 +137,7 @@ bdSimulateAndSubSampleNTreesConcurrently nLeaves l m r p timeSpec chunks gs = do
         <> " leaves."
   tr <- liftIO $ PP.simulateReconstructedTree nLeavesBigTree timeSpec l' m' (head gs)
   -- Log the base tree.
-  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ measurableToPhyloTree tr
+  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ lengthToPhyloTree tr
   logNewSection $
     T.pack $
       "Sub sample "
@@ -169,7 +169,7 @@ coalSimulateAndSubSampleNTreesConcurrently nL p chunks gs = do
         <> " leaves."
   tr <- liftIO $ CS.simulate nLeavesBigTree (head gs)
   -- Log the base tree.
-  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ measurableToPhyloTree tr
+  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ lengthToPhyloTree tr
   logNewSection $
     T.pack $
       "Sub sample "
@@ -232,8 +232,8 @@ formatNChildSumStatLine (l, n) =
 
 -- Compute NChilSumStat for a phylogenetic tree.
 toNChildSumStat :: HasLength e => Tree e a -> NChildSumStat
-toNChildSumStat (Node br _ []) = [(getLen br, 1)]
-toNChildSumStat (Node br _ ts) = (getLen br, sumCh) : concat nChSS
+toNChildSumStat (Node br _ []) = [(getLength br, 1)]
+toNChildSumStat (Node br _ ts) = (getLength br, sumCh) : concat nChSS
   where
     nChSS = map toNChildSumStat ts
     sumCh = sum $ map (snd . head) nChSS

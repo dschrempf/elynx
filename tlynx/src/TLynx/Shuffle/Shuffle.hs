@@ -49,7 +49,7 @@ shuffleCmd = do
   tPhylo <- liftIO $ parseTree nwF (inFile l)
   $(logInfo) "Input tree:"
   $(logInfo) $ fromBs $ toNewick tPhylo
-  let t = either error id $ phyloToLengthTree tPhylo
+  let t = either error id $ toLengthTree tPhylo
   -- Check if tree is ultrametric enough.
   let dh = sum $ map (height t -) (distancesOriginLeaves t)
   $(logDebug) $ "Distance in branch length to being ultrametric: " <> tShow dh
@@ -68,7 +68,7 @@ shuffleCmd = do
     Random -> error "Seed not available; please contact maintainer."
     Fixed s -> liftIO $ initialize s
   ts <- liftIO $ shuffleT (nReplicates l) (height t) cs ls gen
-  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . measurableToPhyloTree) ts
+  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts
   liftIO $ hClose h
 
 shuffleT ::

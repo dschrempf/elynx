@@ -111,14 +111,14 @@ parseTreeTuple l r = do
   $(logInfo) $ fromBs $ toNewick tl
   $(logInfo) "Tree 2:"
   $(logInfo) $ fromBs $ toNewick tr
-  return (either error id $ phyloToLengthTree tl, either error id $ phyloToLengthTree tr)
+  return (either error id $ toLengthTree tl, either error id $ toLengthTree tr)
 
 connectOnly :: Handle -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectOnly h l r = do
   (tl, tr) <- parseTreeTuple l r
   let ts = connectTrees tl tr
   $(logInfo) $ "Connected trees: " <> tShow (length ts)
-  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . measurableToPhyloTree) ts
+  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts
 
 connectAndFilter ::
   Handle -> FilePath -> FilePath -> FilePath -> ELynx ConnectArguments ()
@@ -134,4 +134,4 @@ connectAndFilter h c l r = do
       ts' = filter (compatibleWith getName cs) ts
   $(logInfo) $ "Connected  trees: " <> tShow (length ts)
   $(logInfo) $ "Compatible trees: " <> tShow (length ts')
-  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . measurableToPhyloTree) ts'
+  liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts'

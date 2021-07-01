@@ -243,5 +243,5 @@ sumStatOpt =
 simulateFooter :: [String]
 simulateFooter =
   [ "See, for example, 'tlynx simulate birthdeath --help'.",
-    "Sub-sample with probability p:\n  1. Simulate one big tree with n'=round(n/p), n'>=n, leaves;\n  2. Randomly sample sub-trees with n leaves.\n  (With p=1.0, the same tree is reported over and over again.)"
+    "Sub-sample with probability p:\n  1. Simulate one big tree with n'=round(n/p), n'>=n, leaves;\n  2. Randomly sample sub trees with n leaves.\n  (With p=1.0, the same tree is reported over and over again.)"
   ]

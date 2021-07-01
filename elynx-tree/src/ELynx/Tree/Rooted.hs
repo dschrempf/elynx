@@ -38,8 +38,9 @@
 --
 -- This means, that the word 'Node' is reserved for the constructor of a tree,
 -- and that a 'Node' has an attached 'branch', a 'label', and a sub-'forest'.
--- The value constructor /Node/ and the record function /label/ are not to be
--- confused. The elements of the sub-forest are often called /children/.
+-- The terms /Node/ and /label/ referring to the value constructor 'Node' and
+-- the record function 'label', respectively, are not to be confused. The
+-- elements of the sub-forest are often called /children/.
 --
 -- In mathematical terms: A 'Tree' is a directed acyclic graph without loops,
 -- with vertex labels, and with edge labels.
@@ -69,14 +70,13 @@ module ELynx.Tree.Rooted
     leaves,
     duplicateLeaves,
     setStem,
-    applyStem,
+    modifyStem,
     branches,
     setBranches,
     setLabel,
-    applyLabel,
+    modifyLabel,
     labels,
     setLabels,
-    applyRoot,
     identify,
 
     -- * Structure
@@ -115,8 +115,6 @@ import GHC.Generics
 -- Unary instances such as 'Functor' act on node labels, and not on branch
 -- labels. Binary instances such as 'Bifunctor' act on both labels (`first` acts
 -- on branches, `second` on node labels).
---
--- Lifted instances are not provided.
 data Tree e a = Node
   { branch :: e,
     label :: a,
@@ -161,6 +159,9 @@ instance Bitraversable Tree where
 --
 -- The 'Monoid' instance of the branch labels determines the default branch
 -- label when using 'pure'.
+--
+-- This instance is similar to the one provided by 'Data.Tree.Tree'. For an
+-- alternative, see 'ZipTree'.
 instance (Semigroup e, Monoid e) => Applicative (Tree e) where
   pure lb = Node mempty lb []
   ~(Node brF lbF tsF) <*> ~tx@(Node brX lbX tsX) =
@@ -182,8 +183,9 @@ instance (Semigroup e, Monoid e) => Monad (Tree e) where
   ~(Node br lb ts) >>= f = case f lb of
     Node br' lb' ts' -> Node (br <> br') lb' (ts' ++ map (>>= f) ts)
 
--- -- Cannot provide MonadZip instance because branch labels cannot be
--- -- recovered from combined label.
+-- -- NOTE: We cannot provide a MonadZip instance because branch labels cannot
+-- -- be recovered from the combined label.
+--
 -- instance Monoid e => MonadZip (Tree e) where
 --   mzipWith f (Node brL lbL tsL) (Node brR lbR tsR) =
 --     Node (brL <> brR) (f lbL lbR) (mzipWith (mzipWith f) tsL tsR)
@@ -227,12 +229,11 @@ toTreeBranchLabels (Node br _ ts) = T.Node br (map toTreeBranchLabels ts)
 toTreeNodeLabels :: Tree e a -> T.Tree a
 toTreeNodeLabels (Node _ lb ts) = T.Node lb (map toTreeNodeLabels ts)
 
--- TODO: Maybe use foldr similar to 'labels'.
-
 -- | Get leaves.
 leaves :: Tree e a -> [a]
-leaves (Node _ lb []) = [lb]
-leaves (Node _ _ ts) = concatMap leaves ts
+leaves t = squish t []
+  where squish (Node _ lb []) xs = lb : xs
+        squish (Node _ _ ts) xs = foldr squish xs ts
 
 duplicates :: Ord a => [a] -> Bool
 duplicates = go S.empty
@@ -248,9 +249,9 @@ duplicateLeaves = duplicates . leaves
 setStem :: e -> Tree e a -> Tree e a
 setStem br (Node _ lb ts) = Node br lb ts
 
--- | Change the root branch of a tree.
-applyStem :: (e -> e) -> Tree e a -> Tree e a
-applyStem f t = t {branch = f $ branch t}
+-- | Modify the stem of a tree.
+modifyStem :: (e -> e) -> Tree e a -> Tree e a
+modifyStem f t = t {branch = f $ branch t}
 
 -- | Get branch labels in pre-order.
 branches :: Tree e a -> [e]
@@ -268,13 +269,13 @@ setBranches xs = bisequenceA . snd . bimapAccumL setBranch noChange xs
     setBranch (y : ys) _ = (ys, Just y)
     noChange ys z = (ys, Just z)
 
--- | Set the label to a given value.
+-- | Set label.
 setLabel :: a -> Tree e a -> Tree e a
 setLabel lb (Node br _ ts) = Node br lb ts
 
--- | Change the root branch of a tree.
-applyLabel :: (a -> a) -> Tree e a -> Tree e a
-applyLabel f t = t {label = f $ label t}
+-- | Modify the root label of a tree.
+modifyLabel :: (a -> a) -> Tree e a -> Tree e a
+modifyLabel f t = t {label = f $ label t}
 
 -- | Return node labels in pre-order.
 labels :: Tree e a -> [a]
@@ -291,11 +292,7 @@ setLabels xs = sequenceA . snd . mapAccumL setLabelM xs
     setLabelM [] _ = ([], Nothing)
     setLabelM (y : ys) _ = (ys, Just y)
 
--- | Change the root label of a tree.
-applyRoot :: (a -> a) -> Tree e a -> Tree e a
-applyRoot f t = t {label = f $ label t}
-
--- | Label the nodes with unique integers starting at the root with 0.
+-- | Label the nodes in pre-order with unique indices starting at 0.
 identify :: Traversable t => t a -> t Int
 identify = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
 
@@ -320,9 +317,10 @@ depth = maximum . go 1
 
 -- | Prune degree two nodes.
 --
--- The information stored in a pruned node is lost. The branches are combined
--- according to their 'Semigroup' instance of the form @\daughterBranch
--- parentBranch -> combinedBranch@.
+-- The label of a pruned node is lost. The branches are combined according to
+-- their 'Semigroup' instance of the form
+--
+-- @\daughterBranch parentBranch -> combinedBranch@.
 prune :: Semigroup e => Tree e a -> Tree e a
 prune t@(Node _ _ []) = t
 prune (Node paBr _ [Node daBr daLb daTs]) = Node (daBr <> paBr) daLb daTs
@@ -332,9 +330,13 @@ prune (Node paBr paLb paTs) = Node paBr paLb $ map prune paTs
 --
 -- Degree two nodes may arise.
 --
--- Also drop parent nodes of which all daughter nodes are dropped.
+-- Also drop nodes of which all daughter nodes are dropped.
 --
--- Return 'Nothing' if the root node satisfies the predicate.
+-- Return 'Nothing' if
+--
+-- - The root node satisfies the predicate.
+--
+-- - All daughter nodes of the root are dropped.
 dropNodesWith :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
 dropNodesWith p (Node br lb ts)
   | p lb = Nothing
@@ -349,7 +351,7 @@ dropNodesWith p (Node br lb ts)
 --
 -- Degree two nodes may arise.
 --
--- Also drop parent nodes of which all leaves are dropped.
+-- Also drop nodes of which all daughter nodes are dropped.
 --
 -- Return 'Nothing' if all leaves satisfy the predicate.
 dropLeavesWith :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
@@ -389,8 +391,8 @@ zipTrees = zipTreesWith (,) (,)
 -- | The following newtype provides a zip-like applicative instance, similar to
 -- 'Control.Applicative.ZipList'.
 --
--- The default instance is not zip-like, because zip-like instances makes the
--- Monad instance meaningless (similar to lists).
+-- The default instance is not zip-like, because the zip-like instance makes the
+-- Monad instance meaningless (similar to the behavior observed with lists).
 newtype ZipTree e a = ZipTree {getZipTree :: Tree e a}
   deriving (Eq, Read, Show, Data, Generic, Generic1)
 
@@ -408,7 +410,6 @@ instance Traversable (ZipTree e) where
 instance Bitraversable ZipTree where
   bitraverse f g (ZipTree t) = ZipTree <$> bitraverse f g t
 
--- TODO: Test Comonad instance. UNTESTED!
 instance Comonad (ZipTree e) where
   duplicate (ZipTree t) = ZipTree $ second ZipTree $ duplicate t
   extract = label . getZipTree
