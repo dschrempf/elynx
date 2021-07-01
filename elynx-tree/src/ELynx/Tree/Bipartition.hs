@@ -26,9 +26,11 @@ module ELynx.Tree.Bipartition
     bipartition,
     bipartitions,
     getComplementaryLeaves,
-    bipartitionToBranch,
+    bipartitionToBranchLength,
   )
 where
+
+-- TODO: REFACTOR: CHECK THIS MODULE AGAIN.
 
 import Control.Comonad
 import Control.DeepSeq
@@ -37,6 +39,7 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
+import ELynx.Tree.Length
 import ELynx.Tree.Name
 import ELynx.Tree.Rooted
 
@@ -137,7 +140,7 @@ bipartition _ = Left "bipartition: Root node is not bifurcating."
 -- | Get all bipartitions of the tree.
 --
 -- Return 'Left' if the tree contains duplicate leaves.
-bipartitions :: (HasName a, Ord a) => Tree a -> Either String (Set (Bipartition a))
+bipartitions :: (Ord a) => Tree a -> Either String (Set (Bipartition a))
 bipartitions t
   | duplicateLeaves t = Left "bipartitions: Tree contains duplicate leaves."
   | otherwise = Right $ bipartitions' S.empty $ S.fromList <$> groups t
@@ -156,7 +159,7 @@ getComplementaryLeaves p (Node _ ts) =
   ]
   where
     n = length ts
-    lvsChildren = map rootLabel ts
+    lvsChildren = map label ts
 
 -- See 'bipartitions', but do not check if leaves are unique, nor if
 -- bipartitions are valid.
@@ -169,50 +172,48 @@ bipartitions' p t@(Node p' ts) =
   where
     cs = getComplementaryLeaves p t
 
--- | Convert a tree into a 'Map' from each 'Bipartition' to the node inducing
--- the respective 'Bipartition'.
+-- | Convert a tree into a 'Map' from each 'Bipartition' defined by the node
+-- names to the length of the branch inducing the respective 'Bipartition'.
 --
 -- Since the induced bipartitions of the daughter branches of a bifurcating root
--- node are equal, the branches leading to the root have to be combined in this
--- case. See http://evolution.genetics.washington.edu/phylip/doc/treedist.html
--- and how unrooted trees should be handled.
+-- node are equal, the branches leading to the root are combined. See
+-- http://evolution.genetics.washington.edu/phylip/doc/treedist.html and how
+-- unrooted trees are handled.
 --
 -- Further, branches connected to degree two nodes also induce the same
--- bipartitions and have to be combined.
---
--- For combining branches, a binary function is required. This requirement is
--- encoded in the 'Semigroup' type class constraint.
+-- bipartitions and are combined.
 --
 -- Return 'Left' if the tree contains duplicate leaves.
-bipartitionToBranch ::
-  (HasName a, Ord a, Semigroup a) =>
+bipartitionToBranchLength ::
+  (HasName a, HasLength a) =>
   Tree a ->
-  Either String (Map (Bipartition a) a)
-bipartitionToBranch tr
-  | duplicateLeaves tr = Left "bipartitionToBranch: Tree contains duplicate leaves."
-  | otherwise = Right $ bipartitionToBranch' S.empty tr pTr
+  Either String (Map (Bipartition Name) Length)
+bipartitionToBranchLength tr
+  | duplicateLeaves trN = Left "bipartitionToBranchLength: Tree contains duplicate leaf names."
+  | otherwise = Right $ bipartitionToBranchLength' S.empty trL pTr
   where
-    pTr = S.fromList <$> groups tr
+    trL = getLength <$> tr
+    trN = getName <$> tr
+    pTr = S.fromList <$> groups (getName <$> tr)
 
 -- When calculating the map, branches separated by various degree two nodes have
 -- to be combined. Hence, not only the complementary leaves, but also the branch
 -- label itself have to be passed along.
-bipartitionToBranch' ::
-  (Semigroup a, Ord a) =>
+bipartitionToBranchLength' ::
   -- Complementary leaves.
-  Set a ->
+  Set Name ->
   -- Original tree.
-  Tree a ->
+  Tree Length ->
   -- Partition tree.
-  Tree (Set a) ->
-  Map (Bipartition a) a
-bipartitionToBranch' p tr pTr =
+  Tree (Set Name) ->
+  Map (Bipartition Name) Length
+bipartitionToBranchLength' p tr pTr =
   M.unionsWith (<>) $
     either (const M.empty) (`M.singleton` lb) (bp p p') :
-      [bipartitionToBranch' c tr' pTr' | (c, tr', pTr') <- zip3 cs trs pTrs]
+      [bipartitionToBranchLength' c tr' pTr' | (c, tr', pTr') <- zip3 cs trs pTrs]
   where
-    lb = rootLabel tr
-    p' = rootLabel pTr
-    trs = subForest tr
-    pTrs = subForest pTr
+    lb = label tr
+    p' = label pTr
+    trs = forest tr
+    pTrs = forest pTr
     cs = getComplementaryLeaves p pTr

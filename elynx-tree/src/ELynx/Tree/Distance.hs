@@ -29,14 +29,15 @@ module ELynx.Tree.Distance
   )
 where
 
-import Data.Bifunctor
+-- TODO: REFACTOR: CHECK THIS MODULE AGAIN.
+
 import Data.List
 import qualified Data.Map as M
-import Data.Monoid
 import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Tree.Bipartition
 import ELynx.Tree.Length
+import ELynx.Tree.Name
 import ELynx.Tree.Partition
 import ELynx.Tree.Rooted
 
@@ -52,15 +53,16 @@ symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
 -- Return 'Nothing' if the trees contain different leaves.
 --
 -- XXX: Comparing a list of trees recomputes bipartitions.
-symmetric :: Ord a => Tree e1 a -> Tree e2 a -> Either String Int
+symmetric :: Ord a => Tree a -> Tree a -> Either String Int
 symmetric t1 t2
-  | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "symmetric: Trees contain different leaves."
+  | S.fromList (leaves t1) /= S.fromList (leaves t2) =
+    Left "symmetric: Trees contain different leaf sets."
   | otherwise = do
     bps1 <- bipartitions t1
     bps2 <- bipartitions t2
     return $ length $ symmetricDifference bps1 bps2
 
-countIncompatibilities :: (Show a, Ord a) => Set (Bipartition a) -> Set (Partition a) -> Int
+countIncompatibilities :: Ord a => Set (Bipartition a) -> Set (Partition a) -> Int
 countIncompatibilities bs ms =
   foldl' (\i b -> if any (compatible $ bpToPt b) ms then i else i + 1) 0 bs
 
@@ -98,10 +100,10 @@ countIncompatibilities bs ms =
 -- induced multifurcations of the tree.
 --
 -- XXX: Comparing a list of trees recomputes bipartitions.
-incompatibleSplits :: (Show a, Ord a) => Tree e1 a -> Tree e2 a -> Either String Int
+incompatibleSplits :: Ord a => Tree a -> Tree a -> Either String Int
 incompatibleSplits t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) =
-    Left "incompatibleSplits: Trees do not have equal leaf sets."
+    Left "incompatibleSplits: Trees contain different leaf sets."
   | otherwise = do
     -- Bipartitions.
     bs1 <- bipartitions t1
@@ -124,12 +126,17 @@ incompatibleSplits t1 t2
 -- trees is returned.
 --
 -- XXX: Comparing a list of trees recomputes bipartitions.
-branchScore :: (HasLength e1, HasLength e2, Ord a) => Tree e1 a -> Tree e2 a -> Either String Double
+branchScore ::
+  (HasLength a1, HasLength a2, HasName a1, HasName a2) =>
+  Tree a1 ->
+  Tree a2 ->
+  Either String Double
 branchScore t1 t2
-  | S.fromList (leaves t1) /= S.fromList (leaves t2) = Left "branchScoreWith: Trees do not have equal leaf sets."
+  | S.fromList (map getName $ leaves t1) /= S.fromList (map getName $ leaves t2) =
+    Left "branchScore: Trees contain different leaf name sets."
   | otherwise = do
-    bpToBr1 <- bipartitionToBranch $ first (Sum . getLen) t1
-    bpToBr2 <- bipartitionToBranch $ first (Sum . getLen) t2
+    bpToBr1 <- bipartitionToBranchLength t1
+    bpToBr2 <- bipartitionToBranchLength t2
     let dBs = M.unionWith (-) bpToBr1 bpToBr2
         dsSquared = foldl' (\acc e -> acc + e * e) 0 dBs
-    return $ sqrt $ fromLength $ getSum dsSquared
+    return $ sqrt $ fromLength dsSquared

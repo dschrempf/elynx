@@ -28,7 +28,6 @@ import Data.List hiding (partition)
 import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Tree.Bipartition
-import ELynx.Tree.Name
 import ELynx.Tree.Rooted
 
 -- | A partition of a tree is a grouping of the leaves of the tree into
@@ -89,7 +88,7 @@ setShow = intercalate "," . map show . S.toList
 -- Return 'Left' if:
 -- - the tree is a leaf;
 -- - the tree contains duplicate leaves.
-partition :: (HasName a, Ord a) => Tree a -> Either String (Partition a)
+partition :: (Ord a) => Tree a -> Either String (Partition a)
 partition (Node _ []) = Left "partition: Encountered a leaf."
 partition t@(Node _ ts)
   | duplicateLeaves t = Left "partition: Tree contains duplicate leaves."
@@ -98,7 +97,7 @@ partition t@(Node _ ts)
 -- | Get all 'Partition's of a tree.
 --
 -- Return 'Left' if tree contains duplicate leaves.
-partitions :: (HasName a, Ord a) => Tree a -> Either String (Set (Partition a))
+partitions :: (Ord a) => Tree a -> Either String (Set (Partition a))
 partitions t
   | duplicateLeaves t = Left "partitions: Tree contains duplicate leaves."
   | otherwise = Right $ partitions' S.empty $ S.fromList <$> groups t
@@ -108,7 +107,7 @@ partitions' :: Ord a => Set a -> Tree (Set a) -> Set (Partition a)
 partitions' _ (Node _ []) = S.empty
 partitions' p t@(Node _ ts) =
   S.unions $
-    either (const S.empty) S.singleton (pt (p : map rootLabel ts)) :
+    either (const S.empty) S.singleton (pt (p : map label ts)) :
     zipWith partitions' cs ts
   where
     cs = getComplementaryLeaves p t
@@ -127,7 +126,7 @@ partitions' p t@(Node _ ts) =
 --       remove set2 from mp2
 -- if either mp2 or mp2 is empty, they are compatible
 -- @
-compatible :: (Show a, Ord a) => Partition a -> Partition a -> Bool
+compatible :: Ord a => Partition a -> Partition a -> Bool
 compatible l r = S.null (S.filter (`remove` rs) ls) || S.null (S.filter (`remove` ls) rs)
   where
     ls = fromPartition l

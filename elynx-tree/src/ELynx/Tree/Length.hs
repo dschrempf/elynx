@@ -22,6 +22,7 @@ module ELynx.Tree.Length
     toLength,
     toLengthUnsafe,
     HasLength (..),
+    HasMaybeLength (..),
     height,
     rootHeight,
 
@@ -37,8 +38,7 @@ where
 
 import Control.DeepSeq
 import Data.Aeson
-import Data.Bifoldable
-import Data.Bifunctor
+import Data.Foldable
 import Data.Semigroup
 import ELynx.Tree.Rooted
 import ELynx.Tree.Splittable
@@ -82,10 +82,13 @@ instance ToJSON Length
 
 instance FromJSON Length
 
+instance HasMaybeLength Length where
+  getMaybeLength = Just
+  setMaybeLength = const
+
 instance HasLength Length where
-  getLen = id
-  setLen = const
-  modLen f = f
+  getLength = id
+  modifyLength f = f
 
 -- | Return 'Left' if negative.
 toLength :: Double -> Either String Length
@@ -97,46 +100,51 @@ toLength x
 toLengthUnsafe :: Double -> Length
 toLengthUnsafe = Length
 
--- | A data type with measurable and modifiable values.
-class HasLength e where
-  getLen :: e -> Length
+-- | Class of data types that may provide a length.
+class HasMaybeLength a where
+  getMaybeLength :: a -> Maybe Length
+  setMaybeLength :: Length -> a -> a
 
-  setLen :: Length -> e -> e
+-- | Class of data types with measurable and modifiable lengths.
+class HasMaybeLength a => HasLength a where
+  getLength :: a -> Length
 
-  -- For computational efficiency.
-  modLen :: (Length -> Length) -> e -> e
+  setLength :: Length -> a -> a
+  setLength = setMaybeLength
+
+  modifyLength :: (Length -> Length) -> a -> a
 
 -- | The maximum distance between origin and leaves.
 --
 -- The height includes the branch length of the stem.
-height :: HasLength e => Tree e a -> Length
+height :: HasLength a => Tree a -> Length
 height = maximum . distancesOriginLeaves
 
 -- | The maximum distance between root node and leaves.
-rootHeight :: HasLength e => Tree e a -> Length
-rootHeight (Node _ _ []) = 0
+rootHeight :: HasLength a => Tree a -> Length
+rootHeight (Node _ []) = 0
 rootHeight t = maximum $ concatMap distancesOriginLeaves (forest t)
 
 -- | Distances from the origin of a tree to the leaves.
 --
 -- The distances include the branch length of the stem.
-distancesOriginLeaves :: HasLength e => Tree e a -> [Length]
-distancesOriginLeaves (Node br _ []) = [getLen br]
-distancesOriginLeaves (Node br _ ts) = map (getLen br +) (concatMap distancesOriginLeaves ts)
+distancesOriginLeaves :: HasLength a => Tree a -> [Length]
+distancesOriginLeaves (Node lb []) = [getLength lb]
+distancesOriginLeaves (Node lb ts) = map (getLength lb +) (concatMap distancesOriginLeaves ts)
 
 -- | Total branch length of a tree.
-totalBranchLength :: HasLength e => Tree e a -> Length
-totalBranchLength = bifoldl' (+) const 0 . first getLen
+totalBranchLength :: HasLength a => Tree a -> Length
+totalBranchLength = foldl' (+) 0 . fmap getLength
 
 -- | Normalize branch lengths so that the sum is 1.0.
-normalizeBranchLengths :: HasLength e => Tree e a -> Tree e a
-normalizeBranchLengths t = first (modLen (/ s)) t
+normalizeBranchLengths :: HasLength a => Tree a -> Tree a
+normalizeBranchLengths t = modifyLength (/ s) <$> t
   where
     s = totalBranchLength t
 
 -- | Normalize height of tree to 1.0.
-normalizeHeight :: HasLength e => Tree e a -> Tree e a
-normalizeHeight t = first (modLen (/ h)) t
+normalizeHeight :: HasLength a => Tree a -> Tree a
+normalizeHeight t = modifyLength (/ h) <$> t
   where
     h = height t
 
@@ -150,14 +158,14 @@ allNearlyEqual xs = all (\y -> eps > abs (fromLength $ x - y)) (tail xs)
     x = head xs
 
 -- | Check if a tree is ultrametric.
-ultrametric :: HasLength e => Tree e a -> Bool
+ultrametric :: HasLength a => Tree a -> Bool
 ultrametric = allNearlyEqual . distancesOriginLeaves
 
 -- | Elongate terminal branches such that the tree becomes ultrametric.
-makeUltrametric :: HasLength e => Tree e a -> Tree e a
+makeUltrametric :: HasLength a => Tree a -> Tree a
 makeUltrametric t = go 0 t
   where
     h = height t
-    go :: HasLength e => Length -> Tree e a -> Tree e a
-    go h' (Node br lb []) = let dh = h - h' - getLen br in Node (modLen (+ dh) br) lb []
-    go h' (Node br lb ts) = let h'' = h' + getLen br in Node br lb $ map (go h'') ts
+    go :: HasLength a => Length -> Tree a -> Tree a
+    go h' (Node lb []) = let dh = h - h' - getLength lb in Node (modifyLength (+ dh) lb) []
+    go h' (Node lb ts) = let h'' = h' + getLength lb in Node lb $ map (go h'') ts

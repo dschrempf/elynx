@@ -42,6 +42,7 @@ import ELynx.Tree.Distribution.TimeOfOriginNearCritical
 import ELynx.Tree.Distribution.Types
 import ELynx.Tree.Length
 import ELynx.Tree.Rooted
+import Lens.Micro
 import qualified Statistics.Distribution as D
   ( genContVar,
   )
@@ -81,10 +82,9 @@ randomInsertList e v g = do
 -- \(0 < s_i < t_{or}\). There is a bijection between (ranked) oriented trees
 -- and the point process. Usually, a will be 'String' (or 'Int') and b will be
 -- 'Double'.
-data PointProcess a b = PointProcess
-  { points :: ![a],
-    values :: ![b],
-    origin :: !b
+data PointProcess a = PointProcess
+  { values :: ![a],
+    origin :: !a
   }
   deriving (Read, Show, Eq)
 
@@ -111,7 +111,7 @@ simulate ::
   Rate ->
   -- | Generator.
   Gen (PrimState m) ->
-  m (PointProcess Int Double)
+  m (PointProcess Double)
 simulate n ts l m g
   | n < 1 = error "Number of samples needs to be one or larger."
   | l < 0.0 = error "Birth rate needs to be positive."
@@ -128,7 +128,7 @@ simulateRandom ::
   Double ->
   Double ->
   Gen (PrimState m) ->
-  m (PointProcess Int Double)
+  m (PointProcess Double)
 simulateRandom n l m g
   | -- XXX. There is no formula for the over-critical process.
     m > l =
@@ -141,7 +141,7 @@ simulateRandom n l m g
       !vs <- replicateM (n - 1) (D.genContVar (BDCNTD l) g)
       -- XXX: The length of the root branch will be 0.
       let t = maximum vs
-      return $ PointProcess [0 .. (n - 1)] vs t
+      return $ PointProcess vs t
   | -- For the near critical process, we use a special distribution.
     abs (m - l) <= epsNearCriticalTimeOfOrigin =
     do
@@ -161,7 +161,7 @@ simulateOrigin ::
   Double ->
   Double ->
   Gen (PrimState m) ->
-  m (PointProcess Int Double)
+  m (PointProcess Double)
 simulateOrigin n t l m g
   | t < 0.0 = error "simulateOrigin: Time of origin needs to be positive."
   | -- See Stadler, T., & Steel, M. (2019). Swapping birth and death: symmetries
@@ -174,13 +174,13 @@ simulateOrigin n t l m g
     -- 3. Normal values :).
     m =~= l = do
     !vs <- replicateM (n - 1) (D.genContVar (BDCD t l) g)
-    return $ PointProcess [0 .. (n - 1)] vs t
+    return $ PointProcess vs t
   | abs (m - l) <= epsNearCriticalPointProcess = do
     !vs <- replicateM (n - 1) (D.genContVar (BDNCD t l m) g)
-    return $ PointProcess [0 .. (n - 1)] vs t
+    return $ PointProcess vs t
   | otherwise = do
     !vs <- replicateM (n - 1) (D.genContVar (BDD t l m) g)
-    return $ PointProcess [0 .. (n - 1)] vs t
+    return $ PointProcess vs t
 
 -- Time of Mrca is given.
 simulateMrca ::
@@ -190,26 +190,26 @@ simulateMrca ::
   Double ->
   Double ->
   Gen (PrimState m) ->
-  m (PointProcess Int Double)
+  m (PointProcess Double)
 simulateMrca n t l m g
   | t < 0.0 = error "simulateMrca: Time of MRCA needs to be positive."
   | m =~= l = do
     !vs <- replicateM (n - 2) (D.genContVar (BDCD t l) g)
     vs' <- randomInsertList t vs g
-    return $ PointProcess [0 .. (n - 1)] vs' t
+    return $ PointProcess vs' t
   | abs (m - l) <= epsNearCriticalPointProcess = do
     !vs <- replicateM (n - 2) (D.genContVar (BDNCD t l m) g)
     vs' <- randomInsertList t vs g
-    return $ PointProcess [0 .. (n - 1)] vs' t
+    return $ PointProcess vs' t
   | otherwise = do
     !vs <- replicateM (n - 2) (D.genContVar (BDD t l m) g)
     vs' <- randomInsertList t vs g
-    return $ PointProcess [0 .. (n - 1)] vs' t
+    return $ PointProcess vs' t
 
 -- Sort the values of a point process and their indices to be (the indices
 -- that they will have while creating the tree).
-sortPP :: (Ord b) => PointProcess a b -> ([b], [Int])
-sortPP (PointProcess _ vs _) = (vsSorted, isSorted)
+sortPP :: (Ord a) => PointProcess a -> ([a], [Int])
+sortPP (PointProcess vs _) = (vsSorted, isSorted)
   where
     vsIsSorted = sortListWithIndices vs
     vsSorted = map fst vsIsSorted
@@ -241,7 +241,7 @@ simulateNReconstructedTrees ::
   Rate ->
   -- | Generator (see 'System.Random.MWC')
   Gen (PrimState m) ->
-  m (Forest Length Int)
+  m (Forest Length)
 simulateNReconstructedTrees nT nP t l m g
   | nT <= 0 = return []
   | otherwise = replicateM nT $ simulateReconstructedTree nP t l m g
@@ -261,10 +261,10 @@ simulateReconstructedTree ::
   Rate ->
   -- | Generator (see 'System.Random.MWC')
   Gen (PrimState m) ->
-  m (Tree Length Int)
+  m (Tree Length)
 simulateReconstructedTree n t l m g = do
-  PointProcess ns vs o <- simulate n t l m g
-  return $ toReconstructedTree 0 $ PointProcess ns (map toLengthUnsafe vs) (toLengthUnsafe o)
+  PointProcess vs o <- simulate n t l m g
+  return $ toReconstructedTree $ PointProcess (map toLengthUnsafe vs) (toLengthUnsafe o)
 
 -- | Convert a point process to a reconstructed tree. See Lemma 2.2.
 
@@ -277,34 +277,29 @@ simulateReconstructedTree n t l m g = do
 -- element, but this fails for classical 'Int's. So, I rather have another
 -- (useless) argument.
 toReconstructedTree ::
-  a -> -- Default node label.
-  PointProcess a Length ->
-  Tree Length a
-toReconstructedTree l pp@(PointProcess ps vs o)
-  | length ps /= length vs + 1 = error "Too few or too many points."
-  | length vs <= 1 = error "Too few values."
-  | -- -- Test is deactivated.
-    -- -- | otherwise = if isReconstructed treeOrigin then treeOrigin else error "Error in algorithm."
-    otherwise =
-    treeOrigin
+  PointProcess Length ->
+  Tree Length
+toReconstructedTree pp@(PointProcess vs o)
+  | n <= 1 = error "Too few values."
+  | otherwise = treeOrigin
   where
+    !n = length vs
     (vsSorted, isSorted) = sortPP pp
-    !lvs = S.fromList [Node 0 p [] | p <- ps]
-    !heights = S.replicate (length ps) 0
-    !treeRoot = toReconstructedTree' isSorted vsSorted l lvs heights
+    !lvs = S.replicate (n + 1) (Node 0 [])
+    !heights = S.replicate (n + 1) 0
+    !treeRoot = toReconstructedTree' isSorted vsSorted lvs heights
     !h = last vsSorted
-    !treeOrigin = applyStem (+ (o - h)) treeRoot
+    !treeOrigin = treeRoot & labelL +~ (o - h)
 
 -- Move up the tree, connect nodes when they join according to the point process.
 toReconstructedTree' ::
   [Int] -> -- Sorted indices, see 'sort'.
   [Length] -> -- Sorted merge values.
-  a -> -- Default node label.
-  Seq (Tree Length a) -> -- Leaves with accumulated root branch lengths.
+  Seq (Tree Length) -> -- Leaves with accumulated root branch lengths.
   Seq Length -> -- Accumulated heights of the leaves.
-  Tree Length a
-toReconstructedTree' [] [] _ trs _ = trs `S.index` 0
-toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
+  Tree Length
+toReconstructedTree' [] [] trs _ = trs `S.index` 0
+toReconstructedTree' is vs trs hs = toReconstructedTree' is' vs' trs'' hs'
   where
     -- For the algorithm, see 'simulate' but index starts at zero.
 
@@ -317,9 +312,9 @@ toReconstructedTree' is vs l trs hs = toReconstructedTree' is' vs' l trs'' hs'
     !hr = hs `S.index` (i + 1)
     !dvl = v - hl
     !dvr = v - hr
-    !tl = applyStem (+ dvl) $ trs `S.index` i
-    !tr = applyStem (+ dvr) $ trs `S.index` (i + 1)
+    !tl = trs `S.index` i & labelL +~ dvl
+    !tr = trs `S.index` (i+1) & labelL +~ dvr
     !h' = hl + dvl -- Should be the same as 'hr + dvr'.
-    !tm = Node 0 l [tl, tr]
+    !tm = Node 0 [tl, tr]
     !trs'' = (S.take i trs S.|> tm) S.>< S.drop (i + 2) trs
     !hs' = (S.take i hs S.|> h') S.>< S.drop (i + 2) hs

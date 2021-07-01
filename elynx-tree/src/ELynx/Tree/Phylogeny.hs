@@ -23,8 +23,8 @@
 -- 1. All trees are rooted. Unrooted trees can be treated with a rooted data
 -- structure, as it is used here. However, some functions may be meaningless.
 --
--- 2. Changing branch labels, node labels, or the topology of the tree are slow
--- operations, especially, when the changes are close to the leaves of the tree.
+-- 2. Changing node labels, or the topology of the tree are slow operations,
+-- especially, when the changes are close to the leaves of the tree.
 --
 -- 3. Internally, the underlying 'Tree' data structure stores the sub-forest as
 -- an ordered list. Hence, we have to do some tricks when comparing phylogenies
@@ -35,9 +35,9 @@
 -- perform this check, and return 'Left' with a message, if the tree has
 -- duplicate leaves.
 --
--- Note: 'Tree's are rooted.
+-- NOTE: 'Tree's are rooted.
 --
--- Note: 'Tree's encoded in Newick format correspond to rooted trees. By
+-- NOTE: 'Tree's encoded in Newick format correspond to rooted trees. By
 -- convention only, a tree parsed from Newick format is usually thought to be
 -- unrooted, when the root node is multifurcating and has three or more
 -- children. This convention is not used here. Newick trees are just parsed as
@@ -64,48 +64,41 @@ module ELynx.Tree.Phylogeny
     Phylo (..),
     toPhyloTree,
     measurableToPhyloTree,
-    supportedToPhyloTree,
-    phyloToLengthTree,
-    phyloToSupportTree,
-    phyloToSupportTreeUnsafe,
-    PhyloExplicit (..),
-    toExplicitTree,
+    toLengthTree,
+    toSupportTree,
   )
 where
 
 import Control.DeepSeq
 import Data.Aeson
-import Data.Bifoldable
-import Data.Bifunctor
-import Data.Bitraversable
 import Data.List hiding (intersect)
 import Data.Maybe
-import Data.Monoid
 import Data.Semigroup
 import Data.Set (Set)
 import qualified Data.Set as S
 import ELynx.Tree.Bipartition
 import ELynx.Tree.Length
+import ELynx.Tree.Name
 import ELynx.Tree.Rooted
 import ELynx.Tree.Splittable
 import ELynx.Tree.Support
 import GHC.Generics
+import Lens.Micro
 
 -- | The equality check is slow because the order of children is considered to
 -- be arbitrary.
 --
 -- Return 'Left' if a tree does not have unique leaves.
-equal :: (Eq e, Eq a, Ord a) => Tree e a -> Tree e a -> Either String Bool
+equal :: (Eq a, Ord a) => Tree a -> Tree a -> Either String Bool
 equal tL tR
   | duplicateLeaves tL = Left "equal: Left tree has duplicate leaves."
   | duplicateLeaves tR = Left "equal: Right tree has duplicate leaves."
   | otherwise = Right $ equal' tL tR
 
 -- | Same as 'equal', but assume that leaves are unique.
-equal' :: (Eq e, Eq a) => Tree e a -> Tree e a -> Bool
-equal' ~(Node brL lbL tsL) ~(Node brR lbR tsR) =
-  (brL == brR)
-    && (lbL == lbR)
+equal' :: Eq a => Tree a -> Tree a -> Bool
+equal' ~(Node lbL tsL) ~(Node lbR tsR) =
+  (lbL == lbR)
     && (length tsL == length tsR)
     && all (elem' tsR) tsL
   where
@@ -115,13 +108,13 @@ equal' ~(Node brL lbL tsL) ~(Node brR lbR tsR) =
 --
 -- The intersections are the largest subtrees sharing the same leaf set.
 --
--- Degree two nodes are pruned with 'prune'.
+-- NOTE: Degree two nodes may arise. They can be pruned using 'pruneWith'.
 --
 -- Return 'Left' if:
 --
 -- - the intersection of leaves is empty.
 intersect ::
-  (Semigroup e, Eq e, Ord a) => Forest e a -> Either String (Forest e a)
+  (Eq a, Ord a) => Forest a -> Either String (Forest a)
 intersect ts
   | S.null lvsCommon = Left "intersect: Intersection of leaves is empty."
   | otherwise = case sequence [dropLeavesWith (predicate ls) t | (ls, t) <- zip leavesToDrop ts] of
@@ -141,34 +134,17 @@ intersect ts
 --
 -- A Bifurcating tree only contains degree one (leaves) and degree three nodes
 -- (internal bifurcating nodes).
-bifurcating :: Tree e a -> Bool
-bifurcating (Node _ _ []) = True
-bifurcating (Node _ _ [x, y]) = bifurcating x && bifurcating y
+bifurcating :: Tree a -> Bool
+bifurcating (Node _ []) = True
+bifurcating (Node _ [x, y]) = bifurcating x && bifurcating y
 bifurcating _ = False
-
--- I believe that manual treatment with 'outgroup' is preferable.
-
--- -- | Remove multifurcations.
--- --
--- -- A caterpillar like bifurcating structure is used to resolve all
--- -- multifurcations on a tree.
--- --
--- -- Multifurcating nodes are copied and branches are 'split'.
--- resolve :: Splittable e => Tree e a -> Tree e a
--- resolve t@(Node _ _ []) = t
--- resolve (Node br lb [x]) = Node br lb [resolve x]
--- resolve (Node br lb [x, y]) = Node br lb $ map resolve [x, y]
--- resolve (Node br lb (Node brL lbL xsL : xs)) = Node br lb [Node brL' lbL (map resolve xsL), Node brL' lb (map resolve xs)]
---   where brL' = split brL
 
 -- | Root the tree using an outgroup.
 --
--- If the current root node is multifurcating, a bifurcating root node with the
--- empty label is introduced by 'split'ting the leftmost branch. The 'Monoid'
--- instance of the node label and the 'Splittable' instance of the branch length
--- are used.
---
--- NOTE: In this case, the degree of the former root node is decreased by one!
+-- NOTE: If the current root node is multifurcating, a bifurcating root node is
+-- introduced by 'split'ting the leftmost branch. In this case, the 'Monoid' and
+-- 'Splittable' instances of the node label are used, and the degree of the
+-- former root node is decreased by one.
 --
 -- Given that the root note is bifurcating, the root node is moved to the
 -- required position specified by the outgroup.
@@ -180,22 +156,24 @@ bifurcating _ = False
 --
 -- Return 'Left' if
 --
--- - the root node is not multifurcating;
+-- - the root node has degree two;
+--
+-- - the root node is a leaf;
 --
 -- - the tree has duplicate leaves;
 --
 -- - the provided outgroup is not found on the tree or is polyphyletic.
-outgroup :: (Semigroup e, Splittable e, Monoid a, Ord a) => Set a -> Tree e a -> Either String (Tree e a)
-outgroup _ (Node _ _ []) = Left "outgroup: Root node is a leaf."
-outgroup _ (Node _ _ [_]) = Left "outgroup: Root node has degree two."
-outgroup o t@(Node _ _ [_, _]) = do
+outgroup :: (HasMaybeLength a, HasName a) => Set a -> Tree a -> Either String (Tree a)
+outgroup _ (Node _ []) = Left "outgroup: Root node is a leaf."
+outgroup _ (Node _ [_]) = Left "outgroup: Root node has degree two."
+outgroup o t@(Node _ [_, _]) = do
   bip <- bp o (S.fromList (leaves t) S.\\ o)
   rootAt bip t
-outgroup o (Node b l ts) = outgroup o t'
+outgroup o (Node lb ts) = outgroup o t'
   where
-    (Node brO lbO tsO) = head ts
+    (Node lbO tsO) = head ts
     -- Introduce a bifurcating root node.
-    t' = Node b mempty [Node (split brO) lbO tsO, Node (split brO) l (tail ts)]
+    t' = Node mempty [Node (split lbO) tsO, Node (split brO) lb (tail ts)]
 
 -- The 'midpoint' algorithm is pretty stupid because it calculates all rooted
 -- trees and then finds the one minimizing the difference between the heights of
@@ -208,10 +186,10 @@ outgroup o (Node b l ts) = outgroup o t'
 -- Return 'Left' if
 --
 -- - the root node is not bifurcating.
-midpoint :: (Semigroup e, Splittable e, HasLength e) => Tree e a -> Either String (Tree e a)
-midpoint (Node _ _ []) = Left "midpoint: Root node is a leaf."
-midpoint (Node _ _ [_]) = Left "midpoint: Root node has degree two."
-midpoint t@(Node _ _ [_, _]) = roots t >>= getMidpoint
+midpoint :: (Semigroup a, Splittable a, HasLength a) => Tree a -> Either String (Tree a)
+midpoint (Node _ []) = Left "midpoint: Root node is a leaf."
+midpoint (Node _ [_]) = Left "midpoint: Root node has degree two."
+midpoint t@(Node _ [_, _]) = roots t >>= getMidpoint
 midpoint _ = Left "midpoint: Root node is multifurcating."
 
 -- Find the index of the smallest element.
@@ -222,18 +200,17 @@ findMinIndex (x : xs) = go (0, x) 1 xs
     go (i, z) j (y : ys) = if z < y then go (i, z) (j + 1) ys else go (j, y) (j + 1) ys
 findMinIndex [] = Left "findMinIndex: Empty list."
 
-getMidpoint :: HasLength e => [Tree e a] -> Either String (Tree e a)
+getMidpoint :: HasLength a => [Tree a] -> Either String (Tree a)
 getMidpoint ts = case t of
-  Right (Node br lb [l, r]) ->
+  Right (Node lb [l, r]) ->
     let hl = height l
         hr = height r
         dh = (hl - hr) / 2
      in Right $
           Node
-            br
             lb
-            [ applyStem (modLen (subtract dh)) l,
-              applyStem (modLen (+ dh)) r
+            [ l & labelL %~ modifyLength (subtract dh),
+              r & labelL %~ modifyLength (+ dh)
             ]
   -- Explicitly use 'error' here, because roots is supposed to return trees with
   -- bifurcating root nodes.
@@ -246,8 +223,8 @@ getMidpoint ts = case t of
 -- find index of minimum; take this tree and move root to the midpoint of the branch
 
 -- Get delta height of left and right sub tree.
-getDeltaHeight :: HasLength e => Tree e a -> Length
-getDeltaHeight (Node _ _ [l, r]) = abs $ height l - height r
+getDeltaHeight :: HasLength a => Tree a -> Length
+getDeltaHeight (Node _ [l, r]) = abs $ height l - height r
 -- Explicitly use 'error' here, because roots is supposed to return trees with
 -- bifurcating root nodes.
 getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating; please contact maintainer."
@@ -272,33 +249,33 @@ getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating; please c
 -- provided 'Splittable' instance.
 --
 -- Return 'Left' if the root node is not 'bifurcating'.
-roots :: (Semigroup e, Splittable e) => Tree e a -> Either String (Forest e a)
-roots (Node _ _ []) = Left "roots: Root node is a leaf."
-roots (Node _ _ [_]) = Left "roots: Root node has degree two."
-roots t@(Node b c [tL, tR]) = Right $ t : descend b c tR tL ++ descend b c tL tR
+roots :: (Semigroup a, Splittable a) => Tree a -> Either String (Forest a)
+roots (Node _ []) = Left "roots: Root node is a leaf."
+roots (Node _ [_]) = Left "roots: Root node has degree two."
+roots t@(Node c [tL, tR]) = Right $ t : descend c tR tL ++ descend c tL tR
 roots _ = Left "roots: Root node is multifurcating."
 
-complementaryForests :: Tree e a -> Forest e a -> [Forest e a]
+complementaryForests :: Tree a -> Forest a -> [Forest a]
 complementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n -1)]]
   where
     n = length ts
 
 -- From the bifurcating root, descend into one of the two pits.
 --
--- descend splitFunction rootBranch rootLabel complementaryTree downwardsTree
-descend :: (Semigroup e, Splittable e) => e -> a -> Tree e a -> Tree e a -> Forest e a
-descend _ _ _ (Node _ _ []) = []
-descend brR lbR tC (Node brD lbD tsD) =
-  [ Node brR lbR [Node (split brDd) lbD f, Node (split brDd) lbDd tsDd]
-    | (Node brDd lbDd tsDd, f) <- zip tsD cfs
+-- descend rootLabel complementaryTree downwardsTree
+descend :: (Semigroup a, Splittable a) => a -> Tree a -> Tree a -> Forest a
+descend _ _ (Node _ []) = []
+descend lbR tC (Node lbD tsD) =
+  [ Node lbR [Node (split brDd) lbD f, Node (split brDd) lbDd tsDd]
+    | (Node lbDd tsDd, f) <- zip tsD cfs
   ]
     ++ concat
       [ descend brR lbR (Node (split brDd) lbD f) (Node (split brDd) lbDd tsDd)
-        | (Node brDd lbDd tsDd, f) <- zip tsD cfs
+        | (Node lbDd tsDd, f) <- zip tsD cfs
       ]
   where
-    brC' = branch tC <> brD
-    tC' = tC {branch = brC'}
+    lbC' = label tC <> label tD
+    tC' = tC & labelL %~ brC'
     cfs = complementaryForests tC' tsD
 
 -- Root a tree at a specific position.
@@ -308,11 +285,6 @@ descend brR lbR tC (Node brD lbD tsD) =
 --
 -- The root node must be bifurcating (see 'roots' and 'outgroup').
 --
--- Connect branches according to the provided 'Semigroup' instance.
---
--- Upon insertion of the root, split the affected branch according to the
--- provided 'Splittable' instance.
---
 -- Return 'Left', if:
 --
 -- - the root node is not bifurcating;
@@ -321,10 +293,10 @@ descend brR lbR tC (Node brD lbD tsD) =
 --
 -- - the bipartition does not match the leaves of the tree.
 rootAt ::
-  (Semigroup e, Splittable e, Eq a, Ord a) =>
+  (Semigroup a, Splittable a, Eq a, Ord a) =>
   Bipartition a ->
-  Tree e a ->
-  Either String (Tree e a)
+  Tree a ->
+  Either String (Tree a)
 rootAt b t
   -- Tree is checked for being bifurcating in 'roots'.
   --
@@ -339,152 +311,106 @@ rootAt b t
 
 -- Assume the leaves of the tree are unique.
 rootAt' ::
-  (Semigroup e, Splittable e, Ord a) =>
+  (Semigroup a, Splittable a, Ord a) =>
   Bipartition a ->
-  Tree e a ->
-  Either String (Tree e a)
+  Tree a ->
+  Either String (Tree a)
 rootAt' b t = do
   ts <- roots t
   case find (\x -> bipartition x == Right b) ts of
     Nothing -> Left "rootAt': Bipartition not found on tree."
     Just t' -> Right t'
 
--- | Branch label for phylogenetic trees.
+-- | Node label for phylogenetic trees.
 --
--- Branches may have a length and a support value.
+-- The attached branch may have a length and a support value.
+--
+-- Especially useful to export trees to Newick format; see
+-- 'ELynx.Tree.Export.Newick.toNewick'.
 data Phylo = Phylo
-  { brLen :: Maybe Length,
-    brSup :: Maybe Support
+  { pLength :: Maybe Length,
+    pSupport :: Maybe Support,
+    pName :: Name
   }
   deriving (Read, Show, Eq, Ord, Generic, NFData)
 
+-- | NOTE: The combining function is not commutative. The left name is favored
+-- when combining two 'Phylo' labels.
 instance Semigroup Phylo where
-  Phylo mBL mSL <> Phylo mBR mSR =
+  Phylo mBL mSL lbN <> Phylo mBR mSR _ =
     Phylo
-      (getSum <$> (Sum <$> mBL) <> (Sum <$> mBR))
+      (mBL <> mBR)
       (getMin <$> (Min <$> mSL) <> (Min <$> mSR))
+      lbN
 
 instance ToJSON Phylo
 
 instance FromJSON Phylo
 
--- | Set all branch lengths and support values to 'Just' the value.
---
--- Useful to export a tree with branch lengths in Newick format.
-toPhyloTree :: (HasLength e, HasSupport e) => Tree e a -> Tree Phylo a
-toPhyloTree = first toPhyloLabel
+instance HasName Phylo where
+  getName = getName . pName
 
-toPhyloLabel :: (HasLength e, HasSupport e) => e -> Phylo
-toPhyloLabel x = Phylo (Just $ getLen x) (Just $ getSup x)
+-- | Set all branch lengths and support values to 'Just' the value.
+toPhyloTree :: (HasMaybeLength a, HasMaybeSupport a, HasName a) => Tree a -> Tree Phylo
+toPhyloTree = fmap toPhyloLabel
+
+toPhyloLabel :: (HasMaybeLength a, HasMaybeSupport a, HasName a) => a -> Phylo
+toPhyloLabel x = Phylo (getMaybeLength x) (getMaybeSupport x) (getName x)
 
 -- | Set all branch lengths to 'Just' the values, and all support values to
 -- 'Nothing'.
 --
 -- Useful to export a tree with branch lengths but without branch support values
 -- to Newick format.
-measurableToPhyloTree :: HasLength e => Tree e a -> Tree Phylo a
-measurableToPhyloTree = first measurableToPhyloLabel
+measurableToPhyloTree :: (HasMaybeLength a, HasName a) => Tree a -> Tree Phylo
+measurableToPhyloTree = fmap measurableToPhyloLabel
 
-measurableToPhyloLabel :: HasLength e => e -> Phylo
-measurableToPhyloLabel x = Phylo (Just $ getLen x) Nothing
+measurableToPhyloLabel :: (HasMaybeLength a, HasName a) => a -> Phylo
+measurableToPhyloLabel x = Phylo (getMaybeLength x) Nothing (getName x)
 
--- | Set all branch lengths to 'Nothing', and all support values to 'Just' the
--- values.
---
--- Useful to export a tree with branch support values but without branch lengths
--- to Newick format.
-supportedToPhyloTree :: HasSupport e => Tree e a -> Tree Phylo a
-supportedToPhyloTree = first supportedToPhyloLabel
-
-supportedToPhyloLabel :: HasSupport e => e -> Phylo
-supportedToPhyloLabel x = Phylo Nothing (Just $ getSup x)
+-- TODO: I need functions cleanLength, and cleanSupport.
 
 -- | If root branch length is not available, set it to 0.
 --
 -- Return 'Left' if any other branch length is unavailable.
-phyloToLengthTree :: Tree Phylo a -> Either String (Tree Length a)
-phyloToLengthTree =
-  maybe (Left "phyloToLengthTree: Length unavailable for some branches.") Right
-    . bitraverse brLen pure
+toLengthTree :: HasMaybeLength a => Tree a -> Either String (Tree Length)
+toLengthTree =
+  maybe (Left "toLengthTree: Length unavailable for some branches.") Right
+    . traverse getMaybeLength
     . cleanStemLength
 
-cleanStemLength :: Tree Phylo a -> Tree Phylo a
-cleanStemLength (Node (Phylo Nothing s) l f) = Node (Phylo (Just 0) s) l f
-cleanStemLength t = t
+cleanStemLength :: HasMaybeSupport a => Tree a -> Tree a
+cleanStemLength t = t & labelL %~ f
+  where
+    f x = case getMaybeLength x of
+      Nothing -> setMaybeLength 0 x
+      Just _ -> x
 
 -- | Set branch support values of branches leading to the leaves and of the root
 -- branch to maximum support.
 --
 -- Return 'Left' if any other branch has no available support value.
-phyloToSupportTree :: Tree Phylo a -> Either String (Tree Support a)
-phyloToSupportTree t =
-  maybe
-    (Left "phyloToSupportTree: Support value unavailable for some branches.")
-    Right
-    $ bitraverse brSup pure $
+toSupportTree :: HasMaybeSupport a => Tree a -> Either String (Tree Support)
+toSupportTree t =
+  maybe (Left "phyloToSupportTree: Support value unavailable for some branches.") Right $
+    traverse getMaybeSupport $
       cleanLeafSupport m $
-        cleanRootSupport m t
-  where
-    m = getMaxSupport t
-
--- | Set all unavailable branch support values to maximum support.
-phyloToSupportTreeUnsafe :: Tree Phylo a -> Tree Support a
-phyloToSupportTreeUnsafe t = cleanSupport m t
+        -- Clean root support value.
+        cleanSupport m t
   where
     m = getMaxSupport t
 
 -- If all branch support values are below 1.0, set the max support to 1.0.
-getMaxSupport :: Tree Phylo a -> Support
-getMaxSupport = fromJust . max (Just 1.0) . bimaximum . bimap brSup (const Nothing)
+getMaxSupport :: HasMaybeSupport a => Tree a -> Support
+getMaxSupport = fromJust . max (Just 1.0) . maximum . fmap getMaybeSupport
 
-cleanRootSupport :: Support -> Tree Phylo a -> Tree Phylo a
-cleanRootSupport maxSup (Node (Phylo b Nothing) l xs) = Node (Phylo b (Just maxSup)) l xs
-cleanRootSupport _ t = t
+cleanSupport :: HasMaybeSupport a => Support -> Tree a -> Tree a
+cleanSupport maxSup t = t & labelL %~ f
+  where
+    f x = case getMaybeSupport x of
+      Nothing -> setMaybeSupport maxSup x
+      Just _ -> x
 
-cleanLeafSupport :: Support -> Tree Phylo a -> Tree Phylo a
-cleanLeafSupport s (Node (Phylo b Nothing) l []) = Node (Phylo b (Just s)) l []
-cleanLeafSupport s (Node b l xs) = Node b l $ map (cleanLeafSupport s) xs
-
-cleanSupport :: Support -> Tree Phylo a -> Tree Support a
-cleanSupport maxSup (Node (Phylo _ s) l xs) = Node (fromMaybe maxSup s) l $ map (cleanSupport maxSup) xs
-
--- | Explicit branch label with branch length and branch support value.
-data PhyloExplicit = PhyloExplicit
-  { sBrLen :: Length,
-    sBrSup :: Support
-  }
-  deriving (Read, Show, Eq, Ord, Generic)
-
-instance Semigroup PhyloExplicit where
-  PhyloExplicit bL sL <> PhyloExplicit bR sR = PhyloExplicit (bL + bR) (min sL sR)
-
-instance HasLength PhyloExplicit where
-  getLen = sBrLen
-  setLen b pl = pl {sBrLen = b}
-  modLen f (PhyloExplicit l s) = PhyloExplicit (f l) s
-
-instance Splittable PhyloExplicit where
-  split l = l {sBrLen = b'}
-    where
-      b' = sBrLen l / 2.0
-
-instance HasSupport PhyloExplicit where
-  getSup = sBrSup
-  setSup s pl = pl {sBrSup = s}
-  modSup f (PhyloExplicit l s) = PhyloExplicit l (f s)
-
-instance ToJSON PhyloExplicit
-
-instance FromJSON PhyloExplicit
-
--- | Conversion to a 'PhyloExplicit' tree.
---
--- See 'phyloToLengthTree' and 'phyloToSupportTree'.
-toExplicitTree :: Tree Phylo a -> Either String (Tree PhyloExplicit a)
-toExplicitTree t = do
-  lt <- phyloToLengthTree t
-  st <- phyloToSupportTree t
-  case zipTreesWith PhyloExplicit const lt st of
-    -- Explicit use of error, since this case should not happen.
-    Nothing -> error "toExplicitTree: Can not zip two trees with different topologies; please contact maintainer."
-    Just zt -> return zt
+cleanLeafSupport :: HasMaybeSupport a => Support -> Tree a -> Tree a
+cleanLeafSupport s l@(Node _ []) = cleanSupport s l
+cleanLeafSupport s (Node lb xs) = Node lb $ map (cleanLeafSupport s) xs

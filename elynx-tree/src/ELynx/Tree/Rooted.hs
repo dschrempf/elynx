@@ -15,8 +15,6 @@
 --
 -- Creation date: Thu Jan 17 09:57:29 2019.
 --
--- TODO: Documentation.
---
 -- Rooted 'Tree's are classical rose trees.
 --
 -- For rooted topologies, please see 'ELynx.Topology.Rooted'.
@@ -36,10 +34,12 @@
 -- type Forest a = [Tree a]
 -- @
 --
--- This means, that the word 'Node' is reserved for the constructor of a tree,
--- and that a 'Node' has an attached 'rootLabel', and a 'subForest'. The value
--- constructor /Node/ and the record function /rootLabel/ are not to be
--- confused. The elements of the sub-forest are often called /children/.
+-- Here, aliases 'label' and 'forest' for 'rootLabel', and 'subForest' are
+-- provided, respectively. This means, that the word 'Node' is reserved for the
+-- constructor of a tree, and that a 'Node' has an attached 'label', and a
+-- 'forest'. The terms /Node/ and /label/ referring to the value constructor
+-- 'Node' and the record function 'label', respectively, are not to be confused.
+-- The elements of the sub-forest are often called /children/.
 --
 -- In mathematical terms: A 'Tree' is a directed acyclic graph without loops,
 -- with vertex labels.
@@ -60,9 +60,11 @@
 module ELynx.Tree.Rooted
   ( -- * Data type
     Tree (..),
+    label,
+    forest,
     Forest,
-    rootLabelL,
-    subForestL,
+    labelL,
+    forestL,
 
     -- * Access leaves, branches and labels
     leaves,
@@ -96,21 +98,28 @@ import Data.List
 import Data.Maybe
 import qualified Data.Set as S
 import Data.Tree
-import ELynx.Tree.Name
 import GHC.Generics
 import Lens.Micro
+
+-- | Alias for 'rootLabel'.
+label :: Tree a -> a
+label = rootLabel
+
+-- | Alias for 'subForest'.
+forest :: Tree a -> [Tree a]
+forest = subForest
 
 -- forall f . Functor f => (a -> f b) -> Tree a -> f (Tree b)
 
 -- | Access and modify the root label.
-rootLabelL :: Lens' (Tree a) a
-rootLabelL f (Node lb ts) = flip Node ts <$> f lb
+labelL :: Lens' (Tree a) a
+labelL f (Node lb ts) = flip Node ts <$> f lb
 
 -- forall f . Functor f => ([Tree a] -> f [Tree b]) -> Tree a -> f (Tree b)
 
 -- | Access and modify the sub forest.
-subForestL :: Lens' (Tree a) [Tree a]
-subForestL f (Node lb ts) = Node lb <$> f ts
+forestL :: Lens' (Tree a) [Tree a]
+forestL f (Node lb ts) = Node lb <$> f ts
 
 -- | Get the leaves of a tree.
 leaves :: Tree a -> [a]
@@ -124,8 +133,8 @@ duplicates = go S.empty
     go seen (x : xs) = x `S.member` seen || go (S.insert x seen) xs
 
 -- | Check if a tree has duplicate leaves.
-duplicateLeaves :: HasName a => Tree a -> Bool
-duplicateLeaves = duplicates . leaves . fmap getName
+duplicateLeaves :: Ord a => Tree a -> Bool
+duplicateLeaves = duplicates . leaves
 
 -- | Get node labels in pre-order.
 labels :: Foldable t => t a -> [a]
@@ -148,7 +157,7 @@ identify = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
 --
 -- The degree of a node is the number of branches attached to the node.
 degree :: Tree a -> Int
-degree = (+ 1) . length . subForest
+degree = (+ 1) . length . forest
 
 -- | Depth of a tree.
 --
@@ -249,7 +258,7 @@ instance Traversable ZipTree where
 
 instance Comonad ZipTree where
   duplicate (ZipTree t) = ZipTree $ ZipTree <$> duplicate t
-  extract = rootLabel . getZipTree
+  extract = label . getZipTree
 
 deriving instance NFData a => NFData (ZipTree a)
 

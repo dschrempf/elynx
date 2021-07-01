@@ -23,7 +23,6 @@ module ELynx.Tree
 
     -- * Branch label classes
     module ELynx.Tree.Length,
-    module ELynx.Tree.Splittable,
     module ELynx.Tree.Support,
 
     -- * Node label classes
@@ -57,7 +56,6 @@ import ELynx.Tree.Parallel
 import ELynx.Tree.Partition
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
-import ELynx.Tree.Splittable
 import ELynx.Tree.Support
 import ELynx.Tree.Zipper
 

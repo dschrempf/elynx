@@ -34,4 +34,4 @@ sumWithAccessorFunction :: HasLength a => [a] -> Length
 sumWithAccessorFunction = foldl' (\x y -> getLen x + getLen y) 0
 
 sumWithModifyFunction :: HasLength a => [a] -> Length
-sumWithModifyFunction = sumWithAccessorFunction . map (modLen (+ 10))
+sumWithModifyFunction = sumWithAccessorFunction . map (modifyLength (+ 10))

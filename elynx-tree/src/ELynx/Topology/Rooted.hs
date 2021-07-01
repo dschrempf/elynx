@@ -27,8 +27,7 @@ module ELynx.Topology.Rooted
     Topology (..),
     Forest,
     fromTree,
-    fromLabeledTree,
-    toLabeledTreeWith,
+    toTreeWith,
 
     -- * Access leaves, branches and labels
     leaves,
@@ -55,7 +54,6 @@ import qualified Data.List.NonEmpty as N
 import Data.Maybe
 import qualified Data.Set as S
 import Data.Traversable
-import qualified Data.Tree as T
 import qualified ELynx.Tree.Rooted as R
 import GHC.Generics
 
@@ -125,21 +123,15 @@ instance FromJSON a => FromJSON (Topology a)
 -- TODO: Provide and fix tests, provide arbitrary instances.
 
 -- | Convert a rooted rose tree to a rooted topology. Internal node labels are lost.
-fromTree :: T.Tree a -> Topology a
-fromTree (T.Node lb []) = Leaf lb
-fromTree (T.Node _ xs) = Node $ fromTree <$> N.fromList xs
-
--- | Convert a rooted, branch-labeled rose tree to a rooted topology. Branch
--- labels and internal node labels are lost.
-fromLabeledTree :: R.Tree e a -> Topology a
-fromLabeledTree (R.Node _ lb []) = Leaf lb
-fromLabeledTree (R.Node _ _ xs) = Node $ fromLabeledTree <$> N.fromList xs
+fromTree :: R.Tree a -> Topology a
+fromTree (R.Node lb []) = Leaf lb
+fromTree (R.Node _ xs) = Node $ fromTree <$> N.fromList xs
 
 -- | Convert a rooted topology to a rooted, branch-labeled rose tree. Use the
 -- given node label at internal nodes.
-toLabeledTreeWith :: a -> Topology a -> R.Tree () a
-toLabeledTreeWith _ (Leaf lb) = R.Node () lb []
-toLabeledTreeWith x (Node ts) = R.Node () x $ map (toLabeledTreeWith x) $ N.toList ts
+toTreeWith :: a -> Topology a -> R.Tree a
+toTreeWith _ (Leaf lb) = R.Node lb []
+toTreeWith x (Node ts) = R.Node x $ map (toTreeWith x) $ N.toList ts
 
 -- TODO: Maybe use foldr similar to 'flatten'.
 -- | Set of leaves.

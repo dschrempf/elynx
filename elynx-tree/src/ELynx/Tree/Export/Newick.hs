@@ -36,7 +36,7 @@ buildBrSup :: Support -> BB.Builder
 buildBrSup bs = BB.char8 '[' <> BB.doubleDec (fromSupport bs) <> BB.char8 ']'
 
 -- | See 'toNewick'.
-toNewickBuilder :: HasName a => Tree Phylo a -> BB.Builder
+toNewickBuilder :: (HasMaybeLength a, HasMaybeSupport a, HasName a) => Tree a -> BB.Builder
 toNewickBuilder t = go t <> BB.char8 ';'
   where
     go (Node b l []) = lbl b l
@@ -65,5 +65,5 @@ toNewickBuilder t = go t <> BB.char8 ';'
 -- @
 -- "ACTUALNAME[posterior=-2839.2,age_95%_HPD={4.80804,31.6041}]"
 -- @
-toNewick :: HasName a => Tree Phylo a -> BL.ByteString
+toNewick :: (HasMaybeLength a, HasMaybeSupport a, HasName a) => Tree a -> BL.ByteString
 toNewick = BB.toLazyByteString . toNewickBuilder

@@ -179,7 +179,7 @@ isValidPath t p = case goPath p (fromTree t) of
 isLeafPath :: Tree a -> Path -> Bool
 isLeafPath t p = case goPath p (fromTree t) of
   Nothing -> False
-  Just pos -> null $ subForest (current pos)
+  Just pos -> null $ forest (current pos)
 
 -- | Got to node with given path.
 --

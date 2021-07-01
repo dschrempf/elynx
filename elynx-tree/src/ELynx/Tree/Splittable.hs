@@ -24,5 +24,9 @@ where
 class Splittable e where
   split :: e -> e
 
+instance Splittable () where
+  split = id
+
 instance Splittable Double where
   split = (/ 2)
+
