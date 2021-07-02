@@ -62,8 +62,11 @@ module ELynx.Tree.Phylogeny
 
     -- * Branch labels
     Phylo (..),
+    toPhyloLabel,
     toPhyloTree,
+    lengthToPhyloLabel,
     lengthToPhyloTree,
+    supportToPhyloLabel,
     supportToPhyloTree,
     toLengthTree,
     toSupportTree,
@@ -364,34 +367,29 @@ instance ToJSON Phylo
 
 instance FromJSON Phylo
 
--- | Set all branch lengths and support values to 'Just' the value.
---
--- Useful to export a tree with branch lengths in Newick format.
-toPhyloTree :: (HasMaybeLength e, HasMaybeSupport e) => Tree e a -> Tree Phylo a
-toPhyloTree = first toPhyloLabel
-
+-- | Set branch length and support value.
 toPhyloLabel :: (HasMaybeLength e, HasMaybeSupport e) => e -> Phylo
 toPhyloLabel x = Phylo (getMaybeLength x) (getMaybeSupport x)
 
--- | Set branch lengths. Do not set support values.
---
--- Useful to export a tree with branch lengths but without branch support values
--- to Newick format.
-lengthToPhyloTree :: HasMaybeLength e => Tree e a -> Tree Phylo a
-lengthToPhyloTree = first lengthToPhyloLabel
+-- | See 'toPhyloLabel'.
+toPhyloTree :: (HasMaybeLength e, HasMaybeSupport e) => Tree e a -> Tree Phylo a
+toPhyloTree = first toPhyloLabel
 
+-- | Set branch length. Do not set support value.
 lengthToPhyloLabel :: HasMaybeLength e => e -> Phylo
 lengthToPhyloLabel x = Phylo (getMaybeLength x) Nothing
 
--- | Set support values. Do not set branch lengths.
---
--- Useful to export a tree with branch support values but without branch lengths
--- to Newick format.
-supportToPhyloTree :: HasMaybeSupport e => Tree e a -> Tree Phylo a
-supportToPhyloTree = first supportToPhyloLabel
+-- | See 'lengthToPhyloLabel'.
+lengthToPhyloTree :: HasMaybeLength e => Tree e a -> Tree Phylo a
+lengthToPhyloTree = first lengthToPhyloLabel
 
+-- | Set support value. Do not set branch length.
 supportToPhyloLabel :: HasMaybeSupport e => e -> Phylo
 supportToPhyloLabel x = Phylo Nothing (getMaybeSupport x)
+
+-- | See 'supportToPhyloLabel'.
+supportToPhyloTree :: HasMaybeSupport e => Tree e a -> Tree Phylo a
+supportToPhyloTree = first supportToPhyloLabel
 
 -- | If root branch length is not available, set it to 0.
 --
