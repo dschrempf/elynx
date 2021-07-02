@@ -23,6 +23,7 @@ import ELynx.Tree.Simulate.PointProcess
 import Length
 import Lens
 import System.Random.MWC
+import Tree
 
 treeFileMany :: FilePath
 treeFileMany = "data/Many.trees"
@@ -46,8 +47,10 @@ main :: IO ()
 main = do
   !ts <- getManyTrees
   !ht <- first getLength <$> hugeTree
-  let mr1 = hugeTreeCalcPar 0 ht
-      mr2 = hugeTreeCalcPar 1 ht
+  let
+    !pht = lengthToPhyloTree ht
+    mr1 = hugeTreeCalcPar 0 ht
+    mr2 = hugeTreeCalcPar 1 ht
   if mr1 == mr2
     then putStrLn "Map OK."
     else do
@@ -55,7 +58,7 @@ main = do
       print mr2
       error "Map wrong."
   let fr1 = (foldl' (+) 0 . branches) ht
-      fr2 = parBranchFoldMap 1 id (+) ht
+      fr2 = parBranchFoldMap 3 id (+) ht
   if 1e-8 > abs (fr1 - fr2)
     then putStrLn "Fold OK."
     else do
@@ -90,6 +93,11 @@ main = do
           bench "sum with accessor function" $ nf sumWithAccessorFunction [0 .. 1000000 :: Length],
           bench "sum with setter and getter" $ nf sumWithSetter [0 .. 1000000 :: Length],
           bench "sum with modify and accessor functions" $ nf sumWithModifyFunction [0 .. 1000000 :: Length]
+        ],
+      bgroup
+        "traversable"
+        [ bench "traverse tree" $ nf toLengthTreeTraversable pht,
+          bench "traverse tree" $ nf toLengthTreeBitraversable pht
         ]
     ]
 
@@ -128,3 +136,17 @@ main = do
 -- mean                 368.3 ms   (345.6 ms .. 394.6 ms)
 -- std dev              25.80 ms   (7.999 ms .. 35.08 ms)
 -- variance introduced by outliers: 20% (moderately inflated)
+
+-- benchmarking traversable/traverse tree
+-- time                 119.3 ms   (116.5 ms .. 121.8 ms)
+--                      0.999 R²   (0.998 R² .. 1.000 R²)
+-- mean                 123.4 ms   (121.7 ms .. 128.1 ms)
+-- std dev              3.891 ms   (1.190 ms .. 6.197 ms)
+-- variance introduced by outliers: 11% (moderately inflated)
+
+-- benchmarking traversable/traverse tree
+-- time                 123.6 ms   (121.4 ms .. 125.0 ms)
+--                      1.000 R²   (0.999 R² .. 1.000 R²)
+-- mean                 122.4 ms   (120.1 ms .. 123.7 ms)
+-- std dev              2.432 ms   (1.358 ms .. 3.715 ms)
+-- variance introduced by outliers: 11% (moderately inflated)

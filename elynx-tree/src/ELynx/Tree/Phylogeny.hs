@@ -394,8 +394,6 @@ supportToPhyloTree = first supportToPhyloLabel
 fromMaybeWithError :: String -> Maybe a -> Either String a
 fromMaybeWithError s = maybe (Left s) Right
 
--- TODO: Compare speed of bitraversal and special traversal instances.
-
 -- | If root branch length is not available, set it to 0.
 --
 -- Return 'Left' if any other branch length is unavailable.
@@ -411,19 +409,15 @@ cleanStemLength = modifyStem f
       Nothing -> setMaybeLength 0 x
       Just _ -> x
 
--- TODO: Compare speed of bitraversal and special traversal instances.
-
 -- | Set branch support values of branches leading to the leaves and of the root
 -- branch to maximum support.
 --
 -- Return 'Left' if any other branch has no available support value.
 toSupportTree :: HasMaybeSupport e => Tree e a -> Either String (Tree Support a)
 toSupportTree t =
-  maybe (Left "toSupportTree: Support value unavailable for some branches.") Right $
-    bitraverse getMaybeSupport pure $
-      cleanLeafSupport m $
-        -- Clean root support value.
-        cleanSupport m t
+  fromMaybeWithError "toSupportTree: Support value unavailable for some branches." $
+    getZipBranchTree
+      <$> traverse getMaybeSupport (ZipBranchTree $ cleanLeafSupport m $ cleanSupport m t)
   where
     m = getMaxSupport t
 

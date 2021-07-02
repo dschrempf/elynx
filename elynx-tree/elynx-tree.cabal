@@ -127,6 +127,7 @@ benchmark tree-bench
   other-modules:
       Length
       Lens
+      Tree
       Paths_elynx_tree
   hs-source-dirs: bench
   ghc-options: -Wall -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
