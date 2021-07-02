@@ -45,7 +45,7 @@ hugeTreeCalcPar n t = first func t `using` parTree n
 main :: IO ()
 main = do
   !ts <- getManyTrees
-  !ht <- first getLen <$> hugeTree
+  !ht <- first getLength <$> hugeTree
   let mr1 = hugeTreeCalcPar 0 ht
       mr2 = hugeTreeCalcPar 1 ht
   if mr1 == mr2
