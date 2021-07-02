@@ -44,7 +44,7 @@ module ELynx.Topology.Rooted
   )
 where
 
-import Control.Applicative
+-- import Control.Applicative
 import Control.DeepSeq
 import Control.Monad
 import Data.Aeson
@@ -89,30 +89,30 @@ instance Traversable Topology where
   traverse g (Node ts) = Node <$> traverse (traverse g) ts
   traverse g (Leaf lb) = Leaf <$> g lb
 
--- TODO: This type checks, but I doubt the implementation is bug-free.
-instance Applicative Topology where
-  pure = Leaf
+-- -- TODO: This type checks, but I doubt the implementation is bug-free.
+-- instance Applicative Topology where
+--   pure = Leaf
 
-  (Node tsF) <*> tx = Node $ fmap (<*> tx) tsF
-  (Leaf lbF) <*> tx = lbF <$> tx
+--   (Node tsF) <*> tx = Node $ fmap (<*> tx) tsF
+--   (Leaf lbF) <*> tx = lbF <$> tx
 
-  liftA2 f (Node tsX) ty = Node $ fmap (\tx -> liftA2 f tx ty) tsX
-  liftA2 f (Leaf lbX) (Node tsY) = Node $ fmap (f lbX <$>) tsY
-  liftA2 f (Leaf lbX) (Leaf lbY) = Leaf $ f lbX lbY
+--   liftA2 f (Node tsX) ty = Node $ fmap (\tx -> liftA2 f tx ty) tsX
+--   liftA2 f (Leaf lbX) (Node tsY) = Node $ fmap (f lbX <$>) tsY
+--   liftA2 f (Leaf lbX) (Leaf lbY) = Leaf $ f lbX lbY
 
-  (Node tsX) *> ty@(Node tsY) = Node $ tsY <> fmap (*> ty) tsX
-  (Leaf _) *> (Node tsY) = Node tsY
-  _ *> (Leaf lbY) = Leaf lbY
+--   (Node tsX) *> ty@(Node tsY) = Node $ tsY <> fmap (*> ty) tsX
+--   (Leaf _) *> (Node tsY) = Node tsY
+--   _ *> (Leaf lbY) = Leaf lbY
 
-  (Node tsX) <* ty = Node $ fmap (<* ty) tsX
-  (Leaf lbX) <* _ = Leaf lbX
+--   (Node tsX) <* ty = Node $ fmap (<* ty) tsX
+--   (Leaf lbX) <* _ = Leaf lbX
 
--- TODO: This type checks, but I doubt the implementation is bug-free.
-instance Monad Topology where
-  (Node ts) >>= f = Node $ fmap (>>= f) ts
-  (Leaf lb) >>= f = case f lb of
-    Node ts' -> Node ts'
-    Leaf lb' -> Leaf lb'
+-- -- TODO: This type checks, but I doubt the implementation is bug-free.
+-- instance Monad Topology where
+--   (Node ts) >>= f = Node $ fmap (>>= f) ts
+--   (Leaf lb) >>= f = case f lb of
+--     Node ts' -> Node ts'
+--     Leaf lb' -> Leaf lb'
 
 instance NFData a => NFData (Topology a) where
   rnf (Node ts) = rnf ts
