@@ -60,7 +60,7 @@
 -- functions such as 'branches', or 'labels' which is the same as 'toList'.
 -- Please let me know, if post-order algorithms are required.
 module ELynx.Tree.Rooted
-  ( -- * Data type
+  ( -- * Tree with branch labels
     Tree (..),
     Forest,
     toTreeBranchLabels,
@@ -194,20 +194,23 @@ instance (Semigroup e, Monoid e) => Monad (Tree e) where
 --     where
 --       (tsL, tsR) = munzip (map munzip ts)
 
-instance Monoid e => MonadFix (Tree e) where
-  mfix = mfixTree
+-- -- NOTE: I don't really know much about 'MonadFix', and so do not provide the
+-- -- instance.
+--
+-- instance Monoid e => MonadFix (Tree e) where
+--   mfix = mfixTree
 
-mfixTree :: (a -> Tree e a) -> Tree e a
-mfixTree f
-  | Node br lb ts <- fix (f . label) =
-    Node
-      br
-      lb
-      ( zipWith
-          (\i _ -> mfixTree ((!! i) . forest . f))
-          [0 ..]
-          ts
-      )
+-- mfixTree :: (a -> Tree e a) -> Tree e a
+-- mfixTree f
+--   | Node br lb ts <- fix (f . label) =
+--     Node
+--       br
+--       lb
+--       ( zipWith
+--           (\i _ -> mfixTree ((!! i) . forest . f))
+--           [0 ..]
+--           ts
+--       )
 
 instance Comonad (Tree e) where
   duplicate t@(Node br _ ts) = Node br t (map duplicate ts)
@@ -419,12 +422,6 @@ deriving instance (NFData e, NFData a) => NFData (ZipTree e a)
 deriving instance (ToJSON e, ToJSON a) => ToJSON (ZipTree e a)
 
 deriving instance (FromJSON e, FromJSON a) => FromJSON (ZipTree e a)
-
--- TODO: ZipTree instances: MonadFix (?), Alternative (?, see below).
-
--- instance Alternative ZipList where
---   empty = ZipList []
---   ZipList xs <|> ZipList ys = ZipList (xs ++ drop (length xs) ys)
 
 -- | The 'Monoid' instance of the branch labels determines how the branches are
 -- combined. For example, distances can be summed using the 'Data.Monoid.Sum'
