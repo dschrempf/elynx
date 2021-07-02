@@ -89,9 +89,10 @@ module ELynx.Tree.Rooted
     zipTrees,
     flipLabels,
 
-    -- * ZipTrees
+    -- * Newtypes with specific instances
+    ZipTree (..),
+    BranchTree (..),
     ZipBranchTree (..),
-    ZipNodeTree (..),
   )
 where
 
@@ -166,13 +167,13 @@ instance Bitraversable Tree where
 instance (Semigroup e, Monoid e) => Applicative (Tree e) where
   pure lb = Node mempty lb []
   ~(Node brF lbF tsF) <*> ~tx@(Node brX lbX tsX) =
-    Node (brF <> brX) (lbF lbX) (map (lbF <$>) tsX ++ map (<*> tx) tsF)
+    Node (brF <> brX) (lbF lbX) (map (bimap (brF <>) lbF) tsX ++ map (<*> tx) tsF)
   liftA2 f ~(Node brX lbX tsX) ~ty@(Node brY lbY tsY) =
-    Node (brX <> brY) (f lbX lbY) (map (f lbX <$>) tsY ++ map (\tx -> liftA2 f tx ty) tsX)
+    Node (brX <> brY) (f lbX lbY) (map (bimap (brX <>) (f lbX)) tsY ++ map (\tx -> liftA2 f tx ty) tsX)
   ~(Node brX _ tsX) *> ~ty@(Node brY lbY tsY) =
-    Node (brX <> brY) lbY (tsY ++ map (*> ty) tsX)
+    Node (brX <> brY) lbY (map (first (brX <>)) tsY ++ map (*> ty) tsX)
   ~(Node brX lbX tsX) <* ~ty@(Node brY _ tsY) =
-    Node (brX <> brY) lbX (map (lbX <$) tsY ++ map (<* ty) tsX)
+    Node (brX <> brY) lbX (map (bimap (brX <>) (const lbX)) tsY ++ map (<* ty) tsX)
 
 -- | The 'Semigroup' instance of the branch labels determines how the branches
 -- are combined. For example, distances can be summed using
@@ -372,9 +373,9 @@ dropLeavesWith p (Node br lb ts) =
 
 -- | Zip two trees with the same topology.
 --
--- This function differs from 'ZipTree' in that it fails when the topologies
--- don't match. Further, it allows specification of a zipping function for the
--- branches.
+-- This function differs from the 'Applicative' instance of 'ZipTree' in that it
+-- fails when the topologies don't match. Further, it allows specification of a
+-- zipping function for the branches.
 --
 -- Return 'Nothing' if the topologies are different.
 zipTreesWith ::
@@ -397,13 +398,122 @@ zipTrees = zipTreesWith (,) (,)
 flipLabels :: Tree e a -> Tree a e
 flipLabels (Node x y zs) = Node y x $ map flipLabels zs
 
--- | The following newtype provides a instances acting on the branch labels, and
--- not on the node labels. Further, it comes with a zip-like applicative
--- instance, similar to 'Control.Applicative.ZipList'.
+-- | This newtype provides a zip-like applicative instance, similar to
+-- 'Control.Applicative.ZipList'.
 --
 -- The default applicative instance of 'Tree' is not zip-like, because the
 -- zip-like instance makes the Monad instance meaningless (similar to the
 -- behavior observed with lists).
+newtype ZipTree e a = ZipTree {getZipTree :: Tree e a}
+  deriving (Eq, Read, Show, Data, Generic)
+
+deriving instance Functor (ZipTree e)
+
+deriving instance Foldable (ZipTree e)
+
+instance Traversable (ZipTree e) where
+  traverse f (ZipTree t) = ZipTree <$> traverse f t
+
+instance Comonad (ZipTree e) where
+  duplicate (ZipTree t) = ZipTree $ second ZipTree $ duplicate t
+  extract = label . getZipTree
+
+-- | The 'Monoid' instance of the branch labels determines the default branch
+-- label, and how the branches are combined. For example, distances can be
+-- summed using the 'Data.Monoid.Sum' monoid.
+--
+-- >>> let t = ZipTree $ Node "" 0 [Node "" 1 [], Node "" 2 []] :: ZipTree String Int
+-- >>> let f = ZipTree $ Node "+3" (+3) [Node "*5" (*5) [], Node "+10" (+10) []] :: ZipTree String (Int -> Int)
+-- >>> f <*> t
+--
+-- ZipTree {getZipTree = Node {branch = "+3", label = 3, forest = [Node {branch = "*5", label = 5, forest = []},Node {branch = "+10", label = 12, forest = []}]}}
+instance Monoid e => Applicative (ZipTree e) where
+  -- Infinite layers with infinite subtrees.
+  pure lb = ZipTree $ Node mempty lb $ repeat (pure lb)
+  (ZipTree ~(Node brF lbF tsF)) <*> (ZipTree ~(Node brX lbX tsX)) =
+    ZipTree $ Node (brF <> brX) (lbF lbX) (zipWith (<*>) tsF tsX)
+  liftA2 f (ZipTree ~(Node brX lbX tsX)) (ZipTree ~(Node brY lbY tsY)) =
+    ZipTree $ Node (brX <> brY) (f lbX lbY) (zipWith (liftA2 f) tsX tsY)
+  (ZipTree ~(Node brX _ tsX)) *> (ZipTree ~(Node brY lbY tsY)) =
+    ZipTree $ Node (brX <> brY) lbY (zipWith (*>) tsX tsY)
+  (ZipTree ~(Node brX lbX tsX)) <* (ZipTree ~(Node brY _ tsY)) =
+    ZipTree $ Node (brX <> brY) lbX (zipWith (<*) tsX tsY)
+
+-- | This newtype provides instances acting on the branch labels, and not on the
+-- node labels as it is the case in 'Tree'.
+newtype BranchTree a e = BranchTree {getBranchTree :: Tree e a}
+  deriving (Eq, Read, Show, Data, Generic)
+
+-- | Map over branch labels.
+instance Functor (BranchTree a) where
+  fmap f ~(BranchTree (Node br lb ts)) =
+    BranchTree $ Node (f br) lb $ map (getBranchTree . fmap f . BranchTree) ts
+  br <$ ~(BranchTree (Node _ lb ts)) =
+    BranchTree $ Node br lb (map (getBranchTree . (br <$) . BranchTree) ts)
+
+-- | Combine branch labels in pre-order.
+instance Foldable (BranchTree a) where
+  foldMap f ~(BranchTree (Node br _ ts)) =
+    f br <> foldMap (foldMap f . BranchTree) ts
+  null _ = False
+  {-# INLINE null #-}
+  toList = branches . getBranchTree
+  {-# INLINE toList #-}
+
+instance Traversable (BranchTree a) where
+  traverse g ~(BranchTree (Node br lb ts)) =
+    assemble lb <$> fbr' <*> fts'
+    where
+      assemble lb' br' ts' = BranchTree $ Node br' lb' ts'
+      fbr' = g br
+      fts' = map getBranchTree <$> traverse (traverse g . BranchTree) ts
+
+instance Comonad (BranchTree a) where
+  duplicate (BranchTree t@(Node _ lb ts)) =
+    BranchTree $
+      Node (BranchTree t) lb $
+        map (getBranchTree . duplicate . BranchTree) ts
+  extract = branch . getBranchTree
+
+instance Monoid a => Applicative (BranchTree a) where
+  -- Infinite layers with infinite subtrees.
+  pure br = BranchTree $ Node br mempty $ repeat (getBranchTree $ pure br)
+  (BranchTree ~(Node brF lbF tsF)) <*> tx@(BranchTree ~(Node brX lbX tsX)) =
+    BranchTree $
+      Node
+        (brF brX)
+        (lbF <> lbX)
+        ( map (bimap brF (lbF <>)) tsX
+            ++ map (getBranchTree . (<*> tx) . BranchTree) tsF
+        )
+  liftA2 f (BranchTree ~(Node brX lbX tsX)) ty@(BranchTree ~(Node brY lbY tsY)) =
+    BranchTree $
+      Node
+        (f brX brY)
+        (lbX <> lbY)
+        ( map (bimap (f brX) (lbX <>)) tsY
+            ++ map (\tx -> getBranchTree $ liftA2 f (BranchTree tx) ty) tsX
+        )
+  (BranchTree ~(Node _ lbX tsX)) *> ty@(BranchTree ~(Node brY lbY tsY)) =
+    BranchTree $
+      Node
+        brY
+        (lbX <> lbY)
+        ( getBranchTree
+            <$> ( map (BranchTree . second (lbX <>)) tsY
+                    ++ map ((*> ty) . BranchTree) tsX
+                )
+        )
+  (BranchTree ~(Node brX lbX tsX)) <* ty@(BranchTree ~(Node _ lbY tsY)) =
+    BranchTree $
+      Node
+        brX
+        (lbX <> lbY)
+        ( map (bimap (const brX) (lbX <>)) tsY
+            ++ map (getBranchTree . (<* ty) . BranchTree) tsX
+        )
+
+-- | Like 'ZipTree' but act on branch labels; see 'BranchTree'.
 newtype ZipBranchTree a e = ZipBranchTree {getZipBranchTree :: Tree e a}
   deriving (Eq, Read, Show, Data, Generic)
 
@@ -438,55 +548,23 @@ instance Comonad (ZipBranchTree a) where
         map (getZipBranchTree . duplicate . ZipBranchTree) ts
   extract = branch . getZipBranchTree
 
--- | See the 'Applicative' instance of 'ZipNodeTree'.
+-- | See the 'Applicative' instance of 'ZipTree'.
 instance Monoid a => Applicative (ZipBranchTree a) where
   -- Infinite layers with infinite subtrees.
   pure br = ZipBranchTree $ Node br mempty $ repeat (getZipBranchTree $ pure br)
   (ZipBranchTree ~(Node brF lbF tsF)) <*> (ZipBranchTree ~(Node brX lbX tsX)) =
     ZipBranchTree $ Node (brF brX) (lbF <> lbX) (getZipBranchTree <$> zipWith f tsF tsX)
-    where f x y = ZipBranchTree x <*> ZipBranchTree y
+    where
+      f x y = ZipBranchTree x <*> ZipBranchTree y
   liftA2 f (ZipBranchTree ~(Node brX lbX tsX)) (ZipBranchTree ~(Node brY lbY tsY)) =
     ZipBranchTree $ Node (f brX brY) (lbX <> lbY) (getZipBranchTree <$> zipWith f' tsX tsY)
-    where f' x y = liftA2 f (ZipBranchTree x) (ZipBranchTree y)
+    where
+      f' x y = liftA2 f (ZipBranchTree x) (ZipBranchTree y)
   (ZipBranchTree ~(Node _ lbX tsX)) *> (ZipBranchTree ~(Node brY lbY tsY)) =
     ZipBranchTree $ Node brY (lbX <> lbY) (getZipBranchTree <$> zipWith f tsX tsY)
-    where f x y = ZipBranchTree x *> ZipBranchTree y
+    where
+      f x y = ZipBranchTree x *> ZipBranchTree y
   (ZipBranchTree ~(Node brX lbX tsX)) <* (ZipBranchTree ~(Node _ lbY tsY)) =
     ZipBranchTree $ Node brX (lbX <> lbY) (getZipBranchTree <$> zipWith f tsX tsY)
-    where f x y = ZipBranchTree x <* ZipBranchTree y
-
--- | See 'ZipBranchTree' but act on node labels.
-newtype ZipNodeTree e a = ZipNodeTree {getZipNodeTree :: Tree e a}
-  deriving (Eq, Read, Show, Data, Generic)
-
-deriving instance Functor (ZipNodeTree e)
-
-deriving instance Foldable (ZipNodeTree e)
-
-instance Traversable (ZipNodeTree e) where
-  traverse f (ZipNodeTree t) = ZipNodeTree <$> traverse f t
-
-instance Comonad (ZipNodeTree e) where
-  duplicate (ZipNodeTree t) = ZipNodeTree $ second ZipNodeTree $ duplicate t
-  extract = label . getZipNodeTree
-
--- | The 'Monoid' instance of the branch labels determines the default branch
--- label, and how the branches are combined. For example, distances can be
--- summed using the 'Data.Monoid.Sum' monoid.
---
--- >>> let t = ZipNodeTree $ Node "" 0 [Node "" 1 [], Node "" 2 []] :: ZipNodeTree String Int
--- >>> let f = ZipNodeTree $ Node "+3" (+3) [Node "*5" (*5) [], Node "+10" (+10) []] :: ZipNodeTree String (Int -> Int)
--- >>> f <*> t
---
--- ZipNodeTree {getZipNodeTree = Node {branch = "+3", label = 3, forest = [Node {branch = "*5", label = 5, forest = []},Node {branch = "+10", label = 12, forest = []}]}}
-instance Monoid e => Applicative (ZipNodeTree e) where
-  -- Infinite layers with infinite subtrees.
-  pure lb = ZipNodeTree $ Node mempty lb $ repeat (pure lb)
-  (ZipNodeTree ~(Node brF lbF tsF)) <*> (ZipNodeTree ~(Node brX lbX tsX)) =
-    ZipNodeTree $ Node (brF <> brX) (lbF lbX) (zipWith (<*>) tsF tsX)
-  liftA2 f (ZipNodeTree ~(Node brX lbX tsX)) (ZipNodeTree ~(Node brY lbY tsY)) =
-    ZipNodeTree $ Node (brX <> brY) (f lbX lbY) (zipWith (liftA2 f) tsX tsY)
-  (ZipNodeTree ~(Node brX _ tsX)) *> (ZipNodeTree ~(Node brY lbY tsY)) =
-    ZipNodeTree $ Node (brX <> brY) lbY (zipWith (*>) tsX tsY)
-  (ZipNodeTree ~(Node brX lbX tsX)) <* (ZipNodeTree ~(Node brY _ tsY)) =
-    ZipNodeTree $ Node (brX <> brY) lbX (zipWith (<*) tsX tsY)
+    where
+      f x y = ZipBranchTree x <* ZipBranchTree y
