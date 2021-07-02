@@ -15,11 +15,19 @@ module Length
     lengthSumFoldl'NumInstance,
     doubleSumFoldl',
     doubleSum,
+    fmapNormalFunctor,
+    fmapFunctor,
+    fmapBifunctor,
+    totalBranchLengthFoldable,
+    totalBranchLengthBifoldable,
   )
 where
 
+import Data.Bifoldable
+import Data.Bifunctor
 import Data.Foldable
 import ELynx.Tree.Length
+import ELynx.Tree.Rooted
 
 lengthSumFoldl' :: [Length] -> Length
 lengthSumFoldl' =
@@ -42,3 +50,18 @@ doubleSumFoldl' = foldl' (+) 0
 
 doubleSum :: [Double] -> Double
 doubleSum = foldl' (+) 0
+
+fmapNormalFunctor :: HasLength a => Tree e a -> Tree e a
+fmapNormalFunctor = fmap (modifyLength cos)
+
+fmapFunctor :: HasLength e => Tree e a -> Tree e a
+fmapFunctor = getZipBranchTree . fmap (modifyLength cos) . ZipBranchTree
+
+fmapBifunctor :: HasLength e => Tree e a -> Tree e a
+fmapBifunctor = first (modifyLength cos)
+
+totalBranchLengthFoldable :: HasLength e => Tree e a -> Length
+totalBranchLengthFoldable = totalBranchLength
+
+totalBranchLengthBifoldable :: HasLength e => Tree e a -> Length
+totalBranchLengthBifoldable = bifoldl' (+) const 0 . first getLength

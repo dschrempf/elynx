@@ -49,6 +49,7 @@ main = do
   !ht <- first getLength <$> hugeTree
   let
     !pht = lengthToPhyloTree ht
+    !ht' = flipLabels ht
     mr1 = hugeTreeCalcPar 0 ht
     mr2 = hugeTreeCalcPar 1 ht
   if mr1 == mr2
@@ -95,9 +96,15 @@ main = do
           bench "sum with modify and accessor functions" $ nf sumWithModifyFunction [0 .. 1000000 :: Length]
         ],
       bgroup
-        "traversable"
-        [ bench "traverse tree" $ nf toLengthTreeTraversable pht,
-          bench "traverse tree" $ nf toLengthTreeBitraversable pht
+        "[mono|bi][functor|foldable|traversable]"
+        [
+          bench "normal fmap tree" $ nf fmapNormalFunctor ht',
+          bench "mono fmap tree" $ nf fmapFunctor ht,
+          bench "bi fmap tree" $ nf fmapBifunctor ht,
+          bench "mono fold tree" $ nf totalBranchLengthFoldable ht,
+          bench "bi fold tree" $ nf totalBranchLengthBifoldable ht,
+          bench "mono traverse tree" $ nf toLengthTreeTraversable pht,
+          bench "bi traverse tree" $ nf toLengthTreeBitraversable pht
         ]
     ]
 
@@ -137,16 +144,57 @@ main = do
 -- std dev              25.80 ms   (7.999 ms .. 35.08 ms)
 -- variance introduced by outliers: 20% (moderately inflated)
 
--- benchmarking traversable/traverse tree
--- time                 119.3 ms   (116.5 ms .. 121.8 ms)
+-- Mono vs bi.
+--
+-- The Bifoldable instance is much slower.
+--
+-- The Bifunctor instance is as fast as the normal Functor instance.
+--
+-- The Bitraversable instance is fine, although slightly slower.
+
+-- benchmarking [mono|bi][functor|foldable|traversable]/normal fmap tree
+-- time                 30.57 ms   (29.87 ms .. 31.16 ms)
 --                      0.999 R²   (0.998 R² .. 1.000 R²)
--- mean                 123.4 ms   (121.7 ms .. 128.1 ms)
--- std dev              3.891 ms   (1.190 ms .. 6.197 ms)
+-- mean                 29.84 ms   (29.66 ms .. 30.23 ms)
+-- std dev              528.5 μs   (358.8 μs .. 725.0 μs)
+
+-- benchmarking [mono|bi][functor|foldable|traversable]/mono fmap tree
+-- time                 28.98 ms   (28.54 ms .. 29.36 ms)
+--                      0.999 R²   (0.999 R² .. 1.000 R²)
+-- mean                 28.73 ms   (28.44 ms .. 29.40 ms)
+-- std dev              901.2 μs   (411.2 μs .. 1.583 ms)
+-- variance introduced by outliers: 10% (moderately inflated)
+
+-- benchmarking [mono|bi][functor|foldable|traversable]/bi fmap tree
+-- time                 29.53 ms   (28.27 ms .. 31.23 ms)
+--                      0.993 R²   (0.984 R² .. 1.000 R²)
+-- mean                 28.93 ms   (28.57 ms .. 29.55 ms)
+-- std dev              1.103 ms   (436.8 μs .. 1.577 ms)
+-- variance introduced by outliers: 10% (moderately inflated)
+
+-- benchmarking [mono|bi][functor|foldable|traversable]/mono fold tree
+-- time                 81.88 ms   (80.24 ms .. 83.03 ms)
+--                      0.999 R²   (0.996 R² .. 1.000 R²)
+-- mean                 83.68 ms   (82.70 ms .. 85.33 ms)
+-- std dev              2.207 ms   (581.3 μs .. 2.915 ms)
+
+-- benchmarking [mono|bi][functor|foldable|traversable]/bi fold tree
+-- time                 124.1 ms   (120.7 ms .. 129.4 ms)
+--                      0.999 R²   (0.996 R² .. 1.000 R²)
+-- mean                 123.9 ms   (121.8 ms .. 127.5 ms)
+-- std dev              4.128 ms   (2.139 ms .. 6.374 ms)
 -- variance introduced by outliers: 11% (moderately inflated)
 
--- benchmarking traversable/traverse tree
--- time                 123.6 ms   (121.4 ms .. 125.0 ms)
---                      1.000 R²   (0.999 R² .. 1.000 R²)
--- mean                 122.4 ms   (120.1 ms .. 123.7 ms)
--- std dev              2.432 ms   (1.358 ms .. 3.715 ms)
+-- benchmarking [mono|bi][functor|foldable|traversable]/mono traverse tree
+-- time                 118.5 ms   (115.2 ms .. 122.6 ms)
+--                      0.999 R²   (0.995 R² .. 1.000 R²)
+-- mean                 122.2 ms   (120.4 ms .. 126.8 ms)
+-- std dev              4.086 ms   (1.704 ms .. 5.961 ms)
+-- variance introduced by outliers: 11% (moderately inflated)
+
+-- benchmarking [mono|bi][functor|foldable|traversable]/bi traverse tree
+-- time                 122.6 ms   (116.8 ms .. 127.2 ms)
+--                      0.999 R²   (0.997 R² .. 1.000 R²)
+-- mean                 121.3 ms   (120.2 ms .. 123.0 ms)
+-- std dev              2.377 ms   (1.043 ms .. 3.289 ms)
 -- variance introduced by outliers: 11% (moderately inflated)

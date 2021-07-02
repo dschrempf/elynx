@@ -29,7 +29,6 @@ where
 
 import Control.DeepSeq
 import Data.Aeson
-import Data.Bifoldable
 import Data.Bifunctor
 import Data.List
 import Data.Semigroup
@@ -89,7 +88,7 @@ class HasMaybeSupport e => HasSupport e where
 normalizeBranchSupport :: HasSupport e => Tree e a -> Tree e a
 normalizeBranchSupport t = first (modifySupport (/ m)) t
   where
-    m = bimaximum $ bimap getSupport (const 0) t
+    m = maximum $ getSupport <$> ZipBranchTree t
 
 -- | Collapse branches with support lower than given value.
 --

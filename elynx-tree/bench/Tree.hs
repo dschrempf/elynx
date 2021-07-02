@@ -23,15 +23,15 @@ import ELynx.Tree.Rooted
 
 -- Compare speed of bitraversal and special traversal instances.
 
+toLengthTreeTraversable :: Tree Phylo a -> Tree Length a
+toLengthTreeTraversable = either error id . toLengthTree
+
 cleanStemLength :: HasMaybeLength e => Tree e a -> Tree e a
 cleanStemLength = modifyStem f
   where
     f x = case getMaybeLength x of
       Nothing -> setMaybeLength 0 x
       Just _ -> x
-
-toLengthTreeTraversable :: Tree Phylo a -> Tree Length a
-toLengthTreeTraversable = either error id . toLengthTree
 
 toLengthTreeBitraversable :: Tree Phylo a -> Tree Length a
 toLengthTreeBitraversable t =

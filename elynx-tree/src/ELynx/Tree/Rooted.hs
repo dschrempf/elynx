@@ -87,6 +87,7 @@ module ELynx.Tree.Rooted
     dropLeavesWith,
     zipTreesWith,
     zipTrees,
+    flipLabels,
 
     -- * ZipTrees
     ZipBranchTree (..),
@@ -391,6 +392,10 @@ zipTreesWith f g (Node brL lbL tsL) (Node brR lbR tsR) =
 -- | See 'zipTreesWith'.
 zipTrees :: Tree e1 a1 -> Tree e2 a2 -> Maybe (Tree (e1, e2) (a1, a2))
 zipTrees = zipTreesWith (,) (,)
+
+-- | Flip the branch and node lables.
+flipLabels :: Tree e a -> Tree a e
+flipLabels (Node x y zs) = Node y x $ map flipLabels zs
 
 -- | The following newtype provides a instances acting on the branch labels, and
 -- not on the node labels. Further, it comes with a zip-like applicative

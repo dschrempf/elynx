@@ -77,9 +77,7 @@ where
 
 import Control.DeepSeq
 import Data.Aeson
-import Data.Bifoldable
 import Data.Bifunctor
-import Data.Bitraversable
 import Data.List hiding (intersect)
 import Data.Maybe
 import Data.Monoid
@@ -423,7 +421,7 @@ toSupportTree t =
 
 -- If all branch support values are below 1.0, set the max support to 1.0.
 getMaxSupport :: HasMaybeSupport e => Tree e a -> Support
-getMaxSupport = fromJust . max (Just 1.0) . bimaximum . bimap getMaybeSupport (const Nothing)
+getMaxSupport = fromJust . max (Just 1.0) . maximum . fmap getMaybeSupport . ZipBranchTree
 
 cleanSupport :: HasMaybeSupport e => Support -> Tree e a -> Tree e a
 cleanSupport s = modifyStem f

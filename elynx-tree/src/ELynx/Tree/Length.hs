@@ -38,7 +38,7 @@ where
 
 import Control.DeepSeq
 import Data.Aeson
-import Data.Bifoldable
+import Data.Foldable
 import Data.Bifunctor
 import Data.Semigroup
 import ELynx.Tree.Rooted
@@ -133,7 +133,7 @@ distancesOriginLeaves (Node br _ ts) = map (getLength br +) (concatMap distances
 
 -- | Total branch length of a tree.
 totalBranchLength :: HasLength e => Tree e a -> Length
-totalBranchLength = bifoldl' (+) const 0 . first getLength
+totalBranchLength = foldl' (+) 0 . fmap getLength . ZipBranchTree
 
 -- | Normalize branch lengths so that the sum is 1.0.
 normalizeBranchLengths :: HasLength e => Tree e a -> Tree e a
