@@ -25,6 +25,7 @@ import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (intersperse)
 import ELynx.Tree.Length
 import ELynx.Tree.Name
+import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
 import ELynx.Tree.Support
 
@@ -52,6 +53,8 @@ toNewickBuilder t = go t <> BB.char8 ';'
         -- After reading several discussions, I go for the "more semantical
         -- form" with branch support values in square brackets.
         <> mBrSupBuilder x
+{-# SPECIALIZE toNewickBuilder :: Tree Phylo Name -> BB.Builder #-}
+{-# SPECIALIZE toNewickBuilder :: Tree Phylo Int -> BB.Builder #-}
 
 -- | General conversion of a tree into a Newick 'BL.Bytestring'. Use provided
 -- functions to extract node labels and branch lengths builder objects. See also
@@ -66,3 +69,5 @@ toNewickBuilder t = go t <> BB.char8 ';'
 -- @
 toNewick :: (HasMaybeLength e, HasMaybeSupport e, HasName a) => Tree e a -> BL.ByteString
 toNewick = BB.toLazyByteString . toNewickBuilder
+{-# SPECIALIZE toNewick :: Tree Phylo Name -> BL.ByteString #-}
+{-# SPECIALIZE toNewick :: Tree Phylo Int -> BL.ByteString #-}
