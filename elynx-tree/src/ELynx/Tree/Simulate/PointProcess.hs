@@ -130,7 +130,7 @@ simulateRandom ::
   Gen (PrimState m) ->
   m (PointProcess Int Double)
 simulateRandom n l m g
-  | -- XXX. There is no formula for the over-critical process.
+  | -- There is no formula for the over-critical process.
     m > l =
     error
       "simulateRandom: Please specify height if mu > lambda."
@@ -139,7 +139,7 @@ simulateRandom n l m g
     m =~= l =
     do
       !vs <- replicateM (n - 1) (D.genContVar (BDCNTD l) g)
-      -- XXX: The length of the root branch will be 0.
+      -- The length of the root branch will be 0.
       let t = maximum vs
       return $ PointProcess [0 .. (n - 1)] vs t
   | -- For the near critical process, we use a special distribution.
