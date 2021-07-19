@@ -37,6 +37,12 @@ import qualified ELynx.Data.Character.Character as C
 newtype Character = Character Word8
   deriving (Read, Show, Eq, Ord, Bounded)
 
+derivingUnbox
+  "Character"
+  [t|Character -> Word8|]
+  [|\(Character w) -> w|]
+  [|Character|]
+
 -- | Conversion of 'Character's.
 toWord :: Character -> Word8
 toWord (Character w) = w
@@ -68,9 +74,3 @@ toCVec = V.map (C.fromWord . toWord)
 -- | Conversion of 'Character's.
 fromCVec :: C.Character a => V.Vector a -> V.Vector Character
 fromCVec = V.map (fromWord . C.toWord)
-
-derivingUnbox
-  "Character"
-  [t|Character -> Word8|]
-  [|\(Character w) -> w|]
-  [|Character|]

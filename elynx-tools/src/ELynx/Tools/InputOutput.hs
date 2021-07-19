@@ -39,9 +39,6 @@ import Codec.Compression.GZip
   ( compress,
     decompress,
   )
-import Control.DeepSeq (force)
-import Control.Exception (evaluate)
-import Control.Monad ((<=<))
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
@@ -88,17 +85,17 @@ checkFile (Force False) fp =
 openFile' :: Force -> FilePath -> IOMode -> IO Handle
 openFile' frc fp md = checkFile frc fp >> openFile fp md
 
--- XXX: For now, all files are read strictly (see help of
--- Control.DeepSeq.force).
-readFile' :: FilePath -> IO BL.ByteString
-readFile' fn = withFile fn ReadMode $ (evaluate . force) <=< BL.hGetContents
+-- -- XXX: For now, all files are read strictly (see help of
+-- -- Control.DeepSeq.force).
+-- readFile' :: FilePath -> IO BL.ByteString
+-- readFile' fn = withFile fn ReadMode $ (evaluate . force) <=< BL.hGetContents
 
 -- | Read file. If file path ends with ".gz", assume gzipped file and decompress
 -- before read.
 readGZFile :: FilePath -> IO BL.ByteString
 readGZFile f
-  | ".gz" `isSuffixOf` f = decompress <$> readFile' f
-  | otherwise = readFile' f
+  | ".gz" `isSuffixOf` f = decompress <$> BL.readFile f
+  | otherwise = BL.readFile f
 
 -- | Write file. If file path ends with ".gz", assume gzipped file and compress
 -- before write.
