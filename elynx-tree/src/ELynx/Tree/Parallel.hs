@@ -50,6 +50,14 @@ parTree n t@(Node br lb ts)
 branchFoldMap :: (e -> f) -> (f -> f -> f) -> Tree e a -> f
 branchFoldMap f op (Node br _ ts) = foldl' op (f br) $ map (branchFoldMap f op) ts
 
+-- IDEA: Use and benchmark branch and node specific instances with parFoldMaps.
+--
+-- @
+-- parFoldMap' = blabla
+-- parBranchFoldMap' = parFoldMap' . ZipBranchTree
+-- parNodeFoldMap' = parFoldMap' . ZipNodeTree
+-- @
+
 -- | Map and fold over branches. Evaluate the sub trees up to given layer in parallel.
 parBranchFoldMap :: NFData f => Int -> (e -> f) -> (f -> f -> f) -> Tree e a -> f
 parBranchFoldMap n f op t@(Node br _ ts)
