@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 -- |
 -- Module      :  ELynx.Tree.Export.Newick
 -- Description :  Export tree objects to Newick format
@@ -28,6 +30,14 @@ import ELynx.Tree.Name
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
 import ELynx.Tree.Support
+
+-- Allow export of trees having branches with lengths only.
+instance HasMaybeSupport Length where
+  getMaybeSupport = const Nothing
+
+-- Allow export of trees having branches with support values only.
+instance HasMaybeLength Support where
+  getMaybeLength = const Nothing
 
 buildBrLen :: Length -> BB.Builder
 buildBrLen bl = BB.char8 ':' <> BB.doubleDec (fromLength bl)

@@ -355,11 +355,9 @@ instance Semigroup Phylo where
 
 instance HasMaybeLength Phylo where
   getMaybeLength = pBranchLength
-  setMaybeLength l x = x {pBranchLength = Just l}
 
 instance HasMaybeSupport Phylo where
   getMaybeSupport = pBranchSupport
-  setMaybeSupport s x = x {pBranchSupport = Just s}
 
 instance ToJSON Phylo
 
@@ -398,14 +396,11 @@ fromMaybeWithError s = maybe (Left s) Right
 toLengthTree :: HasMaybeLength e => Tree e a -> Either String (Tree Length a)
 toLengthTree t =
   fromMaybeWithError "toLengthTree: Length unavailable for some branches." $
-    getZipBranchTree <$> traverse getMaybeLength (ZipBranchTree $ cleanStemLength t)
-
-cleanStemLength :: HasMaybeLength e => Tree e a -> Tree e a
-cleanStemLength = modifyStem f
+    getBranchTree <$> sequenceA (BranchTree t')
   where
-    f x = case getMaybeLength x of
-      Nothing -> setMaybeLength 0 x
-      Just _ -> x
+    t' = modifyStem cleanLength $ first getMaybeLength t
+    cleanLength Nothing = pure 0
+    cleanLength x = x
 
 -- | Set branch support values of branches leading to the leaves and of the root
 -- branch to maximum support.
@@ -414,25 +409,22 @@ cleanStemLength = modifyStem f
 toSupportTree :: HasMaybeSupport e => Tree e a -> Either String (Tree Support a)
 toSupportTree t =
   fromMaybeWithError "toSupportTree: Support value unavailable for some branches." $
-    getZipBranchTree
-      <$> traverse getMaybeSupport (ZipBranchTree $ cleanLeafSupport m $ cleanSupport m t)
+    getBranchTree <$> sequenceA (BranchTree t')
   where
     m = getMaxSupport t
+    t' = cleanLeafSupport m $ modifyStem (cleanSupport m) $ first getMaybeSupport t
 
 -- If all branch support values are below 1.0, set the max support to 1.0.
 getMaxSupport :: HasMaybeSupport e => Tree e a -> Support
 getMaxSupport = fromJust . max (Just 1.0) . maximum . fmap getMaybeSupport . ZipBranchTree
 
-cleanSupport :: HasMaybeSupport e => Support -> Tree e a -> Tree e a
-cleanSupport s = modifyStem f
-  where
-    f x = case getMaybeSupport x of
-      Nothing -> setMaybeSupport s x
-      Just _ -> x
+cleanSupport :: Support -> Maybe Support -> Maybe Support
+cleanSupport m Nothing = pure m
+cleanSupport _ x = x
 
-cleanLeafSupport :: HasMaybeSupport e => Support -> Tree e a -> Tree e a
-cleanLeafSupport s l@(Node _ _ []) = cleanSupport s l
-cleanLeafSupport s (Node b l xs) = Node b l $ map (cleanLeafSupport s) xs
+cleanLeafSupport :: Support -> Tree (Maybe Support) a -> Tree (Maybe Support) a
+cleanLeafSupport m (Node b l []) = Node (cleanSupport m b) l []
+cleanLeafSupport m (Node b l xs) = Node b l $ map (cleanLeafSupport m) xs
 
 -- | Explicit branch label with branch length and branch support value.
 data PhyloExplicit = PhyloExplicit
@@ -446,10 +438,10 @@ instance Semigroup PhyloExplicit where
 
 instance HasMaybeLength PhyloExplicit where
   getMaybeLength = Just . eBranchLength
-  setMaybeLength b pl = pl {eBranchLength = b}
 
 instance HasLength PhyloExplicit where
   getLength = eBranchLength
+  setLength b pl = pl {eBranchLength = b}
   modifyLength f (PhyloExplicit l s) = PhyloExplicit (f l) s
 
 instance Splittable PhyloExplicit where
@@ -459,10 +451,10 @@ instance Splittable PhyloExplicit where
 
 instance HasMaybeSupport PhyloExplicit where
   getMaybeSupport = Just . eBranchSupport
-  setMaybeSupport s pl = pl {eBranchSupport = s}
 
 instance HasSupport PhyloExplicit where
   getSupport = eBranchSupport
+  setSupport s pl = pl {eBranchSupport = s}
   modifySupport f (PhyloExplicit l s) = PhyloExplicit l (f s)
 
 instance ToJSON PhyloExplicit

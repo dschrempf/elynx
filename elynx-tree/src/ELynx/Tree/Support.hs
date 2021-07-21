@@ -56,10 +56,13 @@ instance FromJSON Support
 
 instance HasMaybeSupport Support where
   getMaybeSupport = Just
-  setMaybeSupport = const
+
+instance HasMaybeSupport () where
+  getMaybeSupport = const Nothing
 
 instance HasSupport Support where
   getSupport = id
+  setSupport = const
   modifySupport f = f
 
 -- | Return 'Left' if negative.
@@ -75,13 +78,11 @@ toSupportUnsafe = Support
 -- | Class of data types that may have a support value.
 class HasMaybeSupport e where
   getMaybeSupport :: e -> Maybe Support
-  setMaybeSupport :: Support -> e -> e
 
 -- | Class of data types with measurable and modifiable support values.
 class HasMaybeSupport e => HasSupport e where
   getSupport :: e -> Support
   setSupport :: Support -> e -> e
-  setSupport = setMaybeSupport
   modifySupport :: (Support -> Support) -> e -> e
 
 -- | Normalize branch support values. The maximum branch support value will be

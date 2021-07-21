@@ -85,10 +85,10 @@ instance FromJSON Length
 
 instance HasMaybeLength Length where
   getMaybeLength = Just
-  setMaybeLength = const
 
 instance HasLength Length where
   getLength = id
+  setLength = const
   modifyLength f = f
 
 -- | Return 'Left' if negative.
@@ -104,13 +104,14 @@ toLengthUnsafe = Length
 -- | Class of data types that may have a length.
 class HasMaybeLength e where
   getMaybeLength :: e -> Maybe Length
-  setMaybeLength :: Length -> e -> e
+
+instance HasMaybeLength () where
+  getMaybeLength = const Nothing
 
 -- | Class of data types with measurable and modifiable length.
 class HasMaybeLength e => HasLength e where
   getLength :: e -> Length
   setLength :: Length -> e -> e
-  setLength = setMaybeLength
   modifyLength :: (Length -> Length) -> e -> e
 
 -- | The maximum distance between origin and leaves.
