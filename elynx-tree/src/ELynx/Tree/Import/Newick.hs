@@ -54,7 +54,7 @@ import Prelude hiding (takeWhile)
 --   bracket of forests.
 --
 -- - RevBayes: Key-value pairs are provided in square brackets after node names
---   as well as branch lengths. XXX: Key value pairs are ignored at the moment.
+--   as well as branch lengths. NOTE: Key value pairs are ignored.
 data NewickFormat = Standard | IqTree | RevBayes
   deriving (Eq, Show, Read, Bounded, Enum, Generic)
 
@@ -187,10 +187,14 @@ forestIqTree = (<?> "forestIqTree") $ do
 -- RevBayes.
 
 -- RevBayes uses square brackets and key-value pairs to define information
--- about nodes and branches. Parse a single Newick tree. Also succeeds when more
--- trees follow.
+-- about nodes and branches.
 --
--- TODO: Key value pairs are ignored at the moment.
+-- Parse a single Newick tree. Also succeeds when more trees follow.
+--
+-- NOTE: Key value pairs are ignored. In my opinion, it is just not a good
+-- option to import key values pairs in this form. Key value pairs can still be
+-- exported by first converting them to a ByteString, and then performing a
+-- normal export.
 newickRevBayes :: Parser (Tree Phylo Name)
 newickRevBayes =
   skipWhile isSpace
@@ -228,7 +232,7 @@ leafRevBayes = (<?> "leafRevBayes") $ do
   b <- optional branchLengthRevBayes
   return $ Node (Phylo b Nothing) n []
 
--- Drop anything between brackets.
+-- NOTE: Drop anything between brackets.
 brackets :: Parser ()
 brackets = (<?> "brackets") $ do
   _ <- char '['

@@ -63,21 +63,24 @@ toNewickBuilder t = go t <> BB.char8 ';'
         -- After reading several discussions, I go for the "more semantical
         -- form" with branch support values in square brackets.
         <> mBrSupBuilder x
+{-# SPECIALIZE toNewickBuilder :: Tree Length Name -> BB.Builder #-}
+{-# SPECIALIZE toNewickBuilder :: Tree Length Int -> BB.Builder #-}
 {-# SPECIALIZE toNewickBuilder :: Tree Phylo Name -> BB.Builder #-}
 {-# SPECIALIZE toNewickBuilder :: Tree Phylo Int -> BB.Builder #-}
 
--- | General conversion of a tree into a Newick 'BL.Bytestring'. Use provided
--- functions to extract node labels and branch lengths builder objects. See also
--- Biobase.Newick.Export.
+-- | General conversion of a tree into a Newick 'BL.ByteString'.
 --
 -- Functions to write key value pairs for nodes are not provided. Those can just
--- be set as node names. For example, the posterior density and the confidence
--- interval of a node can be encoded by setting the node name to:
+-- be set as node labels. For example, the posterior density and the confidence
+-- interval of a node can be encoded by setting the node label to a
+-- 'BL.ByteString':
 --
 -- @
 -- "ACTUALNAME[posterior=-2839.2,age_95%_HPD={4.80804,31.6041}]"
 -- @
 toNewick :: (HasMaybeLength e, HasMaybeSupport e, HasName a) => Tree e a -> BL.ByteString
 toNewick = BB.toLazyByteString . toNewickBuilder
+{-# SPECIALIZE toNewick :: Tree Length Name -> BL.ByteString #-}
+{-# SPECIALIZE toNewick :: Tree Length Int -> BL.ByteString #-}
 {-# SPECIALIZE toNewick :: Tree Phylo Name -> BL.ByteString #-}
 {-# SPECIALIZE toNewick :: Tree Phylo Int -> BL.ByteString #-}

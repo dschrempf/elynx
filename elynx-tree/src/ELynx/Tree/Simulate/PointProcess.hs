@@ -52,8 +52,6 @@ epsNearCriticalPointProcess :: Double
 epsNearCriticalPointProcess = 1e-5
 
 -- Also the distribution of origins needs a Tailor expansion for near critical values.
---
--- TODO: Check why the two epsilons are chosen differently.
 epsNearCriticalTimeOfOrigin :: Double
 epsNearCriticalTimeOfOrigin = 1e-8
 
@@ -219,7 +217,7 @@ sortPP (PointProcess _ vs _) = (vsSorted, isSorted)
 flattenIndices :: [Int] -> [Int]
 flattenIndices is = snd $ mapAccumL fAcc [] is
 
--- TODO: This is the bottleneck for simulating large trees.
+-- NOTE: fAcc is the speed bottleneck for simulating large trees.
 --
 -- The accumulating function. Count the number of indices which are before the
 -- current index and lower than the current index.
