@@ -16,11 +16,16 @@ module ELynx.Tree.RootedSpec
   )
 where
 
+import Data.Bifunctor
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Maybe
+import Data.Monoid
 import ELynx.Tools
 import ELynx.Tree
+import ELynx.Tree.Arbitrary ()
 import Test.Hspec
+import Test.Hspec.QuickCheck
+import Test.QuickCheck hiding (labels)
 
 node :: Int -> Tree () Int
 node n = Node () n []
@@ -43,6 +48,36 @@ largeTree = parseByteStringWith (newick Standard) sampleTreeBS
 subSampleLargeTree :: Tree Phylo Name
 subSampleLargeTree = fromJust $ dropLeavesWith ((/= 'P') . BL.head . fromName) largeTree
 
+prop_fmap :: (Eq e, Eq f) => (e -> f) -> Tree e e -> Bool
+prop_fmap f t = first f t == getBranchTree (f <$> BranchTree t)
+
+-- Check that zipping works the same for both instances ZipTree and
+-- ZipBranchTree. However, this check does not verify that either works
+-- correctly :).
+prop_zip :: (Monoid e, Eq e, Eq a) => Tree e a -> Bool
+prop_zip t = flipLabels (getZipBranchTree zbt') == getZipTree znt'
+  where
+    zbt = ZipBranchTree $ flipLabels t
+    zbt' = (,) <$> zbt <*> zbt
+    znt = ZipTree t
+    znt' = (,) <$> znt <*> znt
+
+-- Check that the Traversable instances of Tree and BranchTree work the same. I
+-- am pretty confident that the Traversable instance of Tree is correct, so this
+-- should be enough.
+prop_traversable :: Eq e => Tree e a -> Bool
+prop_traversable t = identify t == bt
+  where
+    bt = flipLabels $ getBranchTree $ identify $ BranchTree $ flipLabels t
+
+-- Same as above but for zip trees.
+prop_traversable_zip :: Eq e => Tree e a -> Bool
+prop_traversable_zip t = (t' == zbt) && (t' == znt)
+  where
+    t' = identify t
+    zbt = flipLabels $ getZipBranchTree $ identify $ ZipBranchTree $ flipLabels t
+    znt = getZipTree $ identify $ ZipTree t
+
 spec :: Spec
 spec = do
   describe "prune" $ do
@@ -62,3 +97,11 @@ spec = do
       dropLeavesWith (const True) smallTree `shouldBe` Nothing
     it "returns the correct subtree for a small example" $
       dropLeavesWith (== 2) smallTree `shouldBe` Just smallSubTree
+  describe "BranchTree" $
+    modifyMaxSize (* 100) $
+      it "treats branches and labels correctly" $
+        property (prop_fmap (* 2) :: Tree Double Double -> Bool)
+  describe "Zip trees" $
+    modifyMaxSize (* 100) $
+      it "treats branches and labels correctly" $
+        property (prop_zip :: Tree (Sum Int) Int -> Bool)
