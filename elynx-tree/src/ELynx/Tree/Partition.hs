@@ -55,12 +55,10 @@ newtype Partition a = Partition
   }
   deriving (Eq, Ord, Show, Read)
 
--- TODO: Check that list is not empty after filtering.
-
 -- | Create a partition.
 pt :: Ord a => [Set a] -> Either String (Partition a)
 pt xs = case filter (not . S.null) xs of
-  [] -> Left "mp: Empty list."
+  [] -> Left "pt: Empty list."
   xs' -> Right $ ptUnsafe xs'
 
 -- | Create a partition.
