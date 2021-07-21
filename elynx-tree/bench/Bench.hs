@@ -47,11 +47,10 @@ main :: IO ()
 main = do
   !ts <- getManyTrees
   !ht <- first getLength <$> hugeTree
-  let
-    !pht = lengthToPhyloTree ht
-    !ht' = flipLabels ht
-    mr1 = hugeTreeCalcPar 0 ht
-    mr2 = hugeTreeCalcPar 1 ht
+  let !pht = lengthToPhyloTree ht
+      !ht' = flipLabels ht
+      mr1 = hugeTreeCalcPar 0 ht
+      mr2 = hugeTreeCalcPar 1 ht
   if mr1 == mr2
     then putStrLn "Map OK."
     else do
@@ -97,8 +96,7 @@ main = do
         ],
       bgroup
         "[mono|bi][functor|foldable|traversable]"
-        [
-          bench "normal fmap tree" $ nf fmapNormalFunctor ht',
+        [ bench "normal fmap tree" $ nf fmapNormalFunctor ht',
           bench "mono fmap tree" $ nf fmapFunctor ht,
           bench "bi fmap tree" $ nf fmapBifunctor ht,
           bench "mono fold tree" $ nf totalBranchLengthFoldable ht,

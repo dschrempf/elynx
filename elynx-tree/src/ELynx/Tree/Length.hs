@@ -38,8 +38,8 @@ where
 
 import Control.DeepSeq
 import Data.Aeson
-import Data.Foldable
 import Data.Bifunctor
+import Data.Foldable
 import Data.Semigroup
 import ELynx.Tree.Rooted
 import ELynx.Tree.Splittable

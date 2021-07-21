@@ -34,8 +34,8 @@ import ELynx.Tree.Simulate.PointProcess
   )
 import System.IO (hClose)
 import System.Random.MWC (GenIO, initialize)
-import TLynx.Shuffle.Options
 import TLynx.Parsers
+import TLynx.Shuffle.Options
 
 -- | Shuffle a tree. Get all coalescent times, shuffle them. Get all leaves,
 -- shuffle them. Connect the shuffled leaves with the shuffled coalescent times.

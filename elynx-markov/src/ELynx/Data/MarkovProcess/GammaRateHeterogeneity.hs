@@ -20,8 +20,8 @@ module ELynx.Data.MarkovProcess.GammaRateHeterogeneity
   )
 where
 
-import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy.Char8 as BL
+import qualified Data.Vector as V
 import qualified ELynx.Data.MarkovProcess.MixtureModel as M
 import qualified ELynx.Data.MarkovProcess.PhyloModel as P
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
@@ -100,10 +100,11 @@ getMeans n alpha
     -- probability mass is 1/n.
     meanFunc x = fromIntegral n * x * density gamma x
     -- Only calculate the first (n-1) categories with normal integration.
-    means = V.fromList
-      [ integralAToB meanFunc (quantiles !! i) (quantiles !! (i + 1))
-        | i <- [0 .. n - 2]
-      ]
+    means =
+      V.fromList
+        [ integralAToB meanFunc (quantiles !! i) (quantiles !! (i + 1))
+          | i <- [0 .. n - 2]
+        ]
     -- The last category has to be calculated with an improper integration.
     lastMean = integralAToInf meanFunc (quantiles !! (n - 1))
 

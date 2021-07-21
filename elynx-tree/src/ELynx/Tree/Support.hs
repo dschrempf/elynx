@@ -64,8 +64,9 @@ instance HasSupport Support where
 
 -- | Return 'Left' if negative.
 toSupport :: Double -> Either String Support
-toSupport x | x < 0 = Left $ "Support is negative: " ++ show x ++ "."
-            | otherwise = Right $ Support x
+toSupport x
+  | x < 0 = Left $ "Support is negative: " ++ show x ++ "."
+  | otherwise = Right $ Support x
 
 -- | Do not check if value is negative.
 toSupportUnsafe :: Double -> Support

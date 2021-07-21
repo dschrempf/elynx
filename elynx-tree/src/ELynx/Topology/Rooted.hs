@@ -142,6 +142,7 @@ toBranchLabelTreeWith _ (Leaf lb) = R.Node () lb []
 toBranchLabelTreeWith x (Node ts) = R.Node () x $ map (toBranchLabelTreeWith x) $ N.toList ts
 
 -- TODO: Maybe use foldr similar to 'flatten'.
+
 -- | Set of leaves.
 leaves :: Topology a -> [a]
 leaves (Leaf lb) = [lb]
@@ -166,6 +167,7 @@ duplicateLeaves :: Ord a => Topology a -> Bool
 duplicateLeaves = duplicates . leaves
 
 -- TODO: This is the same as in ELynx.Tree.Rooted.
+
 -- | Label the leaves with unique integers starting at 0.
 identify :: Traversable t => t a -> t Int
 identify = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)

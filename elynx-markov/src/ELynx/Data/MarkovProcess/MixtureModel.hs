@@ -74,8 +74,9 @@ fromSubstitutionModels n ws sms
   where
     comps = V.zipWith Component ws sms
     alphs = V.map S.alphabet sms
-    allEqual xs | V.null xs = True
-                | otherwise = V.all (== V.head xs) xs
+    allEqual xs
+      | V.null xs = True
+      | otherwise = V.all (== V.head xs) xs
 
 -- | Concatenate mixture models.
 concatenate :: S.Name -> V.Vector MixtureModel -> MixtureModel
