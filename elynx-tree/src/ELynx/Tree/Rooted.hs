@@ -106,6 +106,7 @@ import Data.Bifunctor
 import Data.Bitraversable
 import Data.Data
 import Data.Foldable
+import Data.Functor
 import Data.List
 import Data.Maybe
 import qualified Data.Set as S
@@ -171,9 +172,9 @@ instance (Semigroup e, Monoid e) => Applicative (Tree e) where
   liftA2 f ~(Node brX lbX tsX) ~ty@(Node brY lbY tsY) =
     Node (brX <> brY) (f lbX lbY) (map (bimap (brX <>) (f lbX)) tsY ++ map (\tx -> liftA2 f tx ty) tsX)
   ~(Node brX _ tsX) *> ~ty@(Node brY lbY tsY) =
-    Node (brX <> brY) lbY (map (first (brX <>)) tsY ++ map (*> ty) tsX)
+    Node (brX <> brY) lbY (map (first (brX <>)) tsY ++ (tsX <&> (*> ty)))
   ~(Node brX lbX tsX) <* ~ty@(Node brY _ tsY) =
-    Node (brX <> brY) lbX (map (bimap (brX <>) (const lbX)) tsY ++ map (<* ty) tsX)
+    Node (brX <> brY) lbX (map (bimap (brX <>) (const lbX)) tsY ++ (tsX <&> (<* ty)))
 
 -- | The 'Semigroup' instance of the branch labels determines how the branches
 -- are combined. For example, distances can be summed using
