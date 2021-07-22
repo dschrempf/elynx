@@ -95,6 +95,8 @@ test-suite tree-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      ELynx.ClassLaws
+      ELynx.Topology.Arbitrary
       ELynx.Topology.RootedSpec
       ELynx.Tree.Arbitrary
       ELynx.Tree.BipartitionSpec
