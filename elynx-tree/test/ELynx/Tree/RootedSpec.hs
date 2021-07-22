@@ -98,10 +98,14 @@ spec = do
     it "returns the correct subtree for a small example" $
       dropLeavesWith (== 2) smallTree `shouldBe` Just smallSubTree
   describe "BranchTree" $
-    modifyMaxSize (* 100) $
+    modifyMaxSize (* 100) $ do
       it "treats branches and labels correctly" $
         property (prop_fmap (* 2) :: Tree Double Double -> Bool)
+      it "treats traversable instances equally" $
+        property (prop_traversable :: Tree Int Int -> Bool)
   describe "Zip trees" $
-    modifyMaxSize (* 100) $
-      it "treats branches and labels correctly" $
+    modifyMaxSize (* 100) $ do
+      it "treat branches and labels equally" $
         property (prop_zip :: Tree (Sum Int) Int -> Bool)
+      it "treat traversable instances equally" $
+        property (prop_traversable_zip :: Tree Int Int -> Bool)

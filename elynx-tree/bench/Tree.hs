@@ -15,8 +15,8 @@ module Tree
   )
 where
 
+import Data.Bifunctor
 import Data.Bitraversable
-import Data.Maybe
 import ELynx.Tree.Length
 import ELynx.Tree.Phylogeny
 import ELynx.Tree.Rooted
@@ -26,15 +26,13 @@ import ELynx.Tree.Rooted
 toLengthTreeTraversable :: Tree Phylo a -> Tree Length a
 toLengthTreeTraversable = either error id . toLengthTree
 
-cleanStemLength :: HasMaybeLength e => Tree e a -> Tree e a
-cleanStemLength = modifyStem f
-  where
-    f x = case getMaybeLength x of
-      Nothing -> setMaybeLength 0 x
-      Just _ -> x
+fromMaybeWithError :: String -> Maybe a -> Either String a
+fromMaybeWithError s = maybe (Left s) Right
 
-toLengthTreeBitraversable :: Tree Phylo a -> Tree Length a
+toLengthTreeBitraversable :: HasMaybeLength e => Tree e a -> Either String (Tree Length a)
 toLengthTreeBitraversable t =
-  fromMaybe
-    (error "toLengthTree: Length unavailable for some branches.")
-    (bitraverse getMaybeLength pure $ cleanStemLength t)
+  fromMaybeWithError "toLengthTree: Length unavailable for some branches." $ bisequenceA t'
+  where
+    t' = modifyStem cleanLength $ bimap getMaybeLength pure t
+    cleanLength Nothing = pure 0
+    cleanLength x = x

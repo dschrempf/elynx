@@ -142,6 +142,68 @@ main = do
 -- std dev              25.80 ms   (7.999 ms .. 35.08 ms)
 -- variance introduced by outliers: 20% (moderately inflated)
 
+-- benchmarking length/length sum foldl' safe
+-- time                 123.4 ms   (117.8 ms .. 136.4 ms)
+--                      0.993 R²   (0.986 R² .. 1.000 R²)
+-- mean                 120.3 ms   (118.1 ms .. 124.8 ms)
+-- std dev              4.572 ms   (2.556 ms .. 6.511 ms)
+-- variance introduced by outliers: 11% (moderately inflated)
+
+-- benchmarking length/length sum foldl' unsafe
+-- time                 82.04 ms   (77.92 ms .. 86.95 ms)
+--                      0.994 R²   (0.988 R² .. 0.999 R²)
+-- mean                 88.56 ms   (85.87 ms .. 92.70 ms)
+-- std dev              6.079 ms   (4.635 ms .. 7.548 ms)
+-- variance introduced by outliers: 19% (moderately inflated)
+
+-- benchmarking length/length sum foldl' num instance
+-- time                 102.4 ms   (89.16 ms .. 124.8 ms)
+--                      0.964 R²   (0.896 R² .. 0.994 R²)
+-- mean                 98.94 ms   (91.15 ms .. 106.4 ms)
+-- std dev              11.90 ms   (8.779 ms .. 15.29 ms)
+-- variance introduced by outliers: 32% (moderately inflated)
+
+-- benchmarking length/double sum foldl'
+-- time                 83.87 ms   (71.82 ms .. 104.0 ms)
+--                      0.954 R²   (0.878 R² .. 0.996 R²)
+-- mean                 103.1 ms   (95.66 ms .. 112.2 ms)
+-- std dev              14.21 ms   (10.77 ms .. 17.84 ms)
+-- variance introduced by outliers: 43% (moderately inflated)
+
+-- benchmarking length/double sum
+-- time                 102.6 ms   (88.13 ms .. 116.0 ms)
+--                      0.970 R²   (0.938 R² .. 0.997 R²)
+-- mean                 94.08 ms   (89.94 ms .. 100.9 ms)
+-- std dev              8.071 ms   (5.233 ms .. 10.58 ms)
+-- variance introduced by outliers: 21% (moderately inflated)
+
+-- benchmarking lens/sum with getter
+-- time                 4.320 ms   (4.303 ms .. 4.352 ms)
+--                      1.000 R²   (0.999 R² .. 1.000 R²)
+-- mean                 4.328 ms   (4.320 ms .. 4.346 ms)
+-- std dev              38.06 μs   (18.94 μs .. 58.05 μs)
+
+-- benchmarking lens/sum with accessor function
+-- time                 4.314 ms   (4.073 ms .. 4.509 ms)
+--                      0.912 R²   (0.795 R² .. 0.986 R²)
+-- mean                 4.795 ms   (4.546 ms .. 5.264 ms)
+-- std dev              1.056 ms   (562.7 μs .. 1.691 ms)
+-- variance introduced by outliers: 90% (severely inflated)
+
+-- benchmarking lens/sum with setter and getter
+-- time                 16.34 ms   (14.93 ms .. 18.00 ms)
+--                      0.955 R²   (0.913 R² .. 0.983 R²)
+-- mean                 17.06 ms   (16.30 ms .. 18.25 ms)
+-- std dev              2.137 ms   (1.656 ms .. 2.794 ms)
+-- variance introduced by outliers: 59% (severely inflated)
+
+-- benchmarking lens/sum with modify and accessor functions
+-- time                 14.87 ms   (14.11 ms .. 15.68 ms)
+--                      0.977 R²   (0.946 R² .. 0.993 R²)
+-- mean                 15.54 ms   (15.15 ms .. 16.23 ms)
+-- std dev              1.319 ms   (882.4 μs .. 2.030 ms)
+-- variance introduced by outliers: 40% (moderately inflated)
+
 -- Mono vs bi.
 --
 -- The Bifoldable instance is much slower.

@@ -394,37 +394,35 @@ fromMaybeWithError s = maybe (Left s) Right
 --
 -- Return 'Left' if any other branch length is unavailable.
 toLengthTree :: HasMaybeLength e => Tree e a -> Either String (Tree Length a)
-toLengthTree t =
-  fromMaybeWithError "toLengthTree: Length unavailable for some branches." $
-    getBranchTree <$> sequenceA (BranchTree t')
+toLengthTree (Node br lb ts) =
+  case traverse go ts of
+    Nothing -> Left "toLengthTree: Length unavailable for some branches."
+    Just ts' -> Right $ Node br' lb ts'
   where
-    t' = modifyStem cleanLength $ first getMaybeLength t
-    cleanLength Nothing = pure 0
-    cleanLength x = x
+    br' = fromMaybe 0 $ getMaybeLength br
+    go t = getBranchTree <$> traverse getMaybeLength (BranchTree t)
 
 -- | Set branch support values of branches leading to the leaves and of the root
 -- branch to maximum support.
 --
 -- Return 'Left' if any other branch has no available support value.
 toSupportTree :: HasMaybeSupport e => Tree e a -> Either String (Tree Support a)
-toSupportTree t =
-  fromMaybeWithError "toSupportTree: Support value unavailable for some branches." $
-    getBranchTree <$> sequenceA (BranchTree t')
+toSupportTree t@(Node br lb ts) = fromMaybeWithError "toSupportTree: Support value unavailable for some branches." $
+  getBranchTree <$> sequenceA (BranchTree (Node br' lb $ map go ts))
   where
-    m = getMaxSupport t
-    t' = cleanLeafSupport m $ modifyStem (cleanSupport m) $ first getMaybeSupport t
+        m = getMaxSupport t
+        br' = cleanSupportWith m br
+        go (Node b l []) = Node (cleanSupportWith m b) l []
+        go (Node b l xs) = Node (getMaybeSupport b) l (map go xs)
 
 -- If all branch support values are below 1.0, set the max support to 1.0.
 getMaxSupport :: HasMaybeSupport e => Tree e a -> Support
 getMaxSupport = fromJust . max (Just 1.0) . maximum . fmap getMaybeSupport . ZipBranchTree
 
-cleanSupport :: Support -> Maybe Support -> Maybe Support
-cleanSupport m Nothing = pure m
-cleanSupport _ x = x
-
-cleanLeafSupport :: Support -> Tree (Maybe Support) a -> Tree (Maybe Support) a
-cleanLeafSupport m (Node b l []) = Node (cleanSupport m b) l []
-cleanLeafSupport m (Node b l xs) = Node b l $ map (cleanLeafSupport m) xs
+cleanSupportWith :: HasMaybeSupport e => Support -> e -> Maybe Support
+cleanSupportWith m x = case getMaybeSupport x of
+  Nothing -> Just m
+  Just y -> Just y
 
 -- | Explicit branch label with branch length and branch support value.
 data PhyloExplicit = PhyloExplicit
