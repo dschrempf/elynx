@@ -2,7 +2,7 @@
 
 -- |
 -- Module      :  ELynx.Tree.Arbitrary
--- Description :  Arbitrary instance, needed for QuickCheck
+-- Description :  Arbitrary instances for trees
 -- Copyright   :  (c) Dominik Schrempf 2021
 -- License     :  GPL-3.0-or-later
 --
@@ -23,7 +23,7 @@ import Test.QuickCheck
 -- Of course, the boundaries for branch support and length have been chosen
 -- pretty arbitrarily :).
 --
--- XXX: This instance does not produce values without branch lengths nor branch
+-- NOTE: This instance does not produce values without branch lengths nor branch
 -- supports.
 instance Arbitrary Phylo where
   arbitrary =
@@ -50,14 +50,6 @@ instance Arbitrary2 Tree where
           rest <- arbPartition $ k - first
           return $ first : rest
 
-  liftShrink2 _ shrN = go
-    where
-      go (Node br val frst) =
-        frst
-          ++ [ Node br e fs
-               | (e, fs) <- liftShrink2 shrN (liftShrink go) (val, frst)
-             ]
-
 instance (Arbitrary e, Arbitrary a) => Arbitrary (Tree e a) where
   arbitrary = arbitrary2
 
@@ -67,3 +59,33 @@ instance (CoArbitrary e, CoArbitrary a) => CoArbitrary (Tree e a) where
 
 instance Arbitrary Length where
   arbitrary = toLengthUnsafe . getPositive <$> arbitrary
+
+instance Arbitrary2 BranchTree where
+  liftArbitrary2 ga gb = BranchTree <$> liftArbitrary2 gb ga
+
+instance (Arbitrary a, Arbitrary e) => Arbitrary (BranchTree a e) where
+  arbitrary = arbitrary2
+
+instance (CoArbitrary a, CoArbitrary e) => CoArbitrary (BranchTree a e) where
+  coarbitrary (BranchTree (Node br val frst)) =
+    coarbitrary br . coarbitrary val . coarbitrary frst
+
+instance Arbitrary2 ZipTree where
+  liftArbitrary2 ga gb = ZipTree <$> liftArbitrary2 ga gb
+
+instance (Arbitrary e, Arbitrary a) => Arbitrary (ZipTree e a) where
+  arbitrary = arbitrary2
+
+instance (CoArbitrary e, CoArbitrary a) => CoArbitrary (ZipTree e a) where
+  coarbitrary (ZipTree (Node br val frst)) =
+    coarbitrary br . coarbitrary val . coarbitrary frst
+
+instance Arbitrary2 ZipBranchTree where
+  liftArbitrary2 ga gb = ZipBranchTree <$> liftArbitrary2 gb ga
+
+instance (Arbitrary a, Arbitrary e) => Arbitrary (ZipBranchTree a e) where
+  arbitrary = arbitrary2
+
+instance (CoArbitrary a, CoArbitrary e) => CoArbitrary (ZipBranchTree a e) where
+  coarbitrary (ZipBranchTree (Node br val frst)) =
+    coarbitrary br . coarbitrary val . coarbitrary frst
