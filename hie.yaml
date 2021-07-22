@@ -1,49 +1,49 @@
 cradle:
   stack:
-    - path: "elynx/app"
+    - path: "./elynx/app"
       component: "elynx:exe:elynx"
 
-    - path: "elynx-markov/src"
+    - path: "./elynx-markov/src"
       component: "elynx-markov:lib"
 
-    - path: "elynx-markov/test"
+    - path: "./elynx-markov/test"
       component: "elynx-markov:test:markov-test"
 
-    - path: "elynx-markov/bench"
+    - path: "./elynx-markov/bench"
       component: "elynx-markov:bench:markov-bench"
 
-    - path: "elynx-nexus/src"
+    - path: "./elynx-nexus/src"
       component: "elynx-nexus:lib"
 
-    - path: "elynx-nexus/test"
+    - path: "./elynx-nexus/test"
       component: "elynx-nexus:test:seq-test"
 
-    - path: "elynx-seq/src"
+    - path: "./elynx-seq/src"
       component: "elynx-seq:lib"
 
-    - path: "elynx-seq/test"
+    - path: "./elynx-seq/test"
       component: "elynx-seq:test:seq-test"
 
-    - path: "elynx-tools/src"
+    - path: "./elynx-tools/src"
       component: "elynx-tools:lib"
 
-    - path: "elynx-tree/src"
+    - path: "./elynx-tree/src"
       component: "elynx-tree:lib"
 
-    - path: "elynx-tree/test"
+    - path: "./elynx-tree/test"
       component: "elynx-tree:test:tree-test"
 
-    - path: "elynx-tree/bench"
+    - path: "./elynx-tree/bench"
       component: "elynx-tree:bench:tree-bench"
 
-    - path: "slynx/src"
+    - path: "./slynx/src"
       component: "slynx:lib"
 
-    - path: "slynx/app"
+    - path: "./slynx/app"
       component: "slynx:exe:slynx"
 
-    - path: "tlynx/src"
+    - path: "./tlynx/src"
       component: "tlynx:lib"
 
-    - path: "tlynx/app"
+    - path: "./tlynx/app"
       component: "tlynx:exe:tlynx"
