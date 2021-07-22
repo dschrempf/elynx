@@ -45,6 +45,30 @@ import ELynx.Tree.Support
 import GHC.Generics
 import Prelude hiding (takeWhile)
 
+-- IDEA: Key-value pairs in Newick files.
+--
+-- After some thinking I believe the best way to go is RevBayes-like key-value
+-- pairs after branch lengths and node labels by default and the option to
+-- import IqTree-like trees.
+--
+-- I can not really provide a general parser for key-value pairs, but I can
+-- provide appropriate export functions for reasonably general key-value pairs
+-- such as branch support values. This could look like so:
+--
+-- @
+-- fromNewickG :: Parser (Tree (Maybe Length, BL.ByteString) (Name, BL.ByteString))
+--
+-- fromNewick :: Parser (Tree (Maybe Length) Name)
+--
+-- toNewickG :: Tree BL.ByteString BL.ByteString -> BL.ByteString
+--
+-- toNewick :: (HasMaybeLength e, HasMaybeSupport e, HasName a) => Tree e a -> BL.ByteString
+-- @
+--
+-- In this case, I would also rename RevBayes to KeyVal (or provide a separate
+-- function for IqTree-like trees). I would not ignore the key values but just
+-- provide the whole string to be parsed by the user.
+
 -- | Newick tree format.
 --
 -- - Standard: Branch support values are stored in square brackets after branch
