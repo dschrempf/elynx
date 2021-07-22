@@ -25,7 +25,7 @@ instance Arbitrary1 Topology where
   liftArbitrary arbL = go
     where
       go = sized $ \n -> do
-        pars <- frequency [(1, pure [1, 1]), (3, arbPartition (n - 1))] -- can go negative!
+        pars <- frequency [(1, pure [1, 1]), (3, arbPartition (n - 1))]
         case pars of
           [] -> Leaf <$> arbL
           xs -> do
@@ -41,7 +41,7 @@ instance Arbitrary1 Topology where
           return $ first : rest
 
 instance Arbitrary a => Arbitrary (Topology a) where
-  arbitrary = arbitrary
+  arbitrary = arbitrary1
 
 instance (CoArbitrary a) => CoArbitrary (Topology a) where
   coarbitrary (Node frst) = coarbitrary $ N.toList frst

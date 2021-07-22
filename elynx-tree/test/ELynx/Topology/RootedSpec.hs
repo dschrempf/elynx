@@ -14,10 +14,22 @@ module ELynx.Topology.RootedSpec
   )
 where
 
+import ELynx.ClassLaws
+import ELynx.Topology
+import ELynx.Topology.Arbitrary ()
 import Test.Hspec
+import Test.QuickCheck
+
+type T = Topology Double
 
 spec :: Spec
-spec =
-  describe "TODO" $
-    it "returns the original number when given a positive input" $
-      (1 :: Int) `shouldBe` 1
+spec = do
+  describe "Topology" $ do
+    it "has reasonable applicative take right instance" $
+      property (prop_appl_right :: T -> T -> Bool)
+    it "has reasonable applicative take left instance" $
+      property (prop_appl_left :: T -> T -> Bool)
+    it "has reasonable applicative liftA2 instance" $
+      property (prop_appl (*) :: T -> Bool)
+    it "has reasonable applicative and functor instances" $
+      property (prop_appl_func (+ 3) :: T -> Bool)

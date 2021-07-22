@@ -13,15 +13,11 @@
 --
 -- Creation date: Sat Jul 11 10:28:28 2020.
 --
--- THIS MODULE IS INCOMPLETE.
---
 -- A rooted 'Topology' differs from a classical rooted rose 'Data.Tree.Tree' in
 -- that it does not have internal node labels. The leaves have labels.
 --
 -- For rooted trees with branch labels, see "ELynx.Tree.Rooted". Please also see
 -- the note about tree traversals therein.
---
--- THIS MODULE IS INCOMPLETE.
 module ELynx.Topology.Rooted
   ( -- * Data type
     Topology (..),
@@ -44,12 +40,13 @@ module ELynx.Topology.Rooted
   )
 where
 
--- import Control.Applicative
+import Control.Applicative
 import Control.DeepSeq
 import Control.Monad
 import Data.Aeson
 import Data.Data
 import Data.Foldable
+import Data.Functor
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as N
 import Data.Maybe
@@ -89,23 +86,22 @@ instance Traversable Topology where
   traverse g (Node ts) = Node <$> traverse (traverse g) ts
   traverse g (Leaf lb) = Leaf <$> g lb
 
--- -- TODO: This type checks, but I doubt the implementation is bug-free.
--- instance Applicative Topology where
---   pure = Leaf
+instance Applicative Topology where
+  pure = Leaf
 
---   (Node tsF) <*> tx = Node $ fmap (<*> tx) tsF
---   (Leaf lbF) <*> tx = lbF <$> tx
+  (Node tsF) <*> tx = Node $ tsF <&> (<*> tx)
+  (Leaf lbF) <*> tx = lbF <$> tx
 
---   liftA2 f (Node tsX) ty = Node $ fmap (\tx -> liftA2 f tx ty) tsX
---   liftA2 f (Leaf lbX) (Node tsY) = Node $ fmap (f lbX <$>) tsY
---   liftA2 f (Leaf lbX) (Leaf lbY) = Leaf $ f lbX lbY
+  liftA2 f (Node tsX) ty = Node $ fmap (\tx -> liftA2 f tx ty) tsX
+  liftA2 f (Leaf lbX) (Node tsY) = Node $ fmap (f lbX <$>) tsY
+  liftA2 f (Leaf lbX) (Leaf lbY) = Leaf $ f lbX lbY
 
---   (Node tsX) *> ty@(Node tsY) = Node $ tsY <> fmap (*> ty) tsX
---   (Leaf _) *> (Node tsY) = Node tsY
---   _ *> (Leaf lbY) = Leaf lbY
+  (Node tsX) *> ty = Node $ tsX <&> (*> ty)
+  (Leaf _) *> (Node tsY) = Node tsY
+  (Leaf _) *> (Leaf y) = Leaf y
 
---   (Node tsX) <* ty = Node $ fmap (<* ty) tsX
---   (Leaf lbX) <* _ = Leaf lbX
+  (Node tsX) <* ty = Node $ tsX <&> (<* ty)
+  (Leaf x) <* ty = x <$ ty
 
 -- -- TODO: This type checks, but I doubt the implementation is bug-free.
 -- instance Monad Topology where

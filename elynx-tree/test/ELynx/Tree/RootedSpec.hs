@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuantifiedConstraints #-}
 
 -- |
 -- Module      :  ELynx.Tree.RootedSpec
@@ -20,6 +21,7 @@ import Data.Bifunctor
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Maybe
 import Data.Monoid
+import Data.Proxy
 import ELynx.ClassLaws
 import ELynx.Tools
 import ELynx.Tree
@@ -27,6 +29,7 @@ import ELynx.Tree.Arbitrary ()
 import Test.Hspec
 -- import Test.Hspec.QuickCheck
 import Test.QuickCheck hiding (labels)
+import Test.QuickCheck.Classes
 
 node :: Int -> Tree () Int
 node n = Node () n []
@@ -107,38 +110,50 @@ spec = do
     it "returns the correct subtree for a small example" $
       dropLeavesWith (== 2) smallTree `shouldBe` Just smallSubTree
   describe "Tree" $ do
-      it "has reasonable applicative take right instance" $
-        property (prop_appl_right :: T -> T -> Bool)
-      it "has reasonable applicative take left instance" $
-        property (prop_appl_left :: T -> T -> Bool)
-      it "has reasonable applicative liftA2 instance" $
-        property (prop_appl (*) :: T -> Bool)
+    it "has reasonable applicative take right instance" $
+      property (prop_appl_right :: T -> T -> Bool)
+    it "has reasonable applicative take left instance" $
+      property (prop_appl_left :: T -> T -> Bool)
+    it "has reasonable applicative liftA2 instance" $
+      property (prop_appl (*) :: T -> Bool)
+    it "has reasonable applicative and functor instances" $
+      property (prop_appl_func (+ 3) :: T -> Bool)
   describe "BranchTree" $ do
-      it "treats branches and labels correctly" $
-        property (prop_BranchTree_fmap (* 2) :: Tree Double Double -> Bool)
-      it "treats traversable instances equally" $
-        property (prop_BranchTree_traversable :: Tree Int Int -> Bool)
-      it "has reasonable applicative take right instance" $
-        property (prop_appl_right :: BT -> BT -> Bool)
-      it "has reasonable applicative take left instance" $
-        property (prop_appl_left :: BT -> BT -> Bool)
-      it "has reasonable applicative liftA2 instance" $
-        property (prop_appl (*) :: BT -> Bool)
+    it "treats branches and labels correctly" $
+      property (prop_BranchTree_fmap (* 2) :: Tree Double Double -> Bool)
+    it "treats traversable instances equally" $
+      property (prop_BranchTree_traversable :: Tree Int Int -> Bool)
+    it "has reasonable applicative take right instance" $
+      property (prop_appl_right :: BT -> BT -> Bool)
+    it "has reasonable applicative take left instance" $
+      property (prop_appl_left :: BT -> BT -> Bool)
+    it "has reasonable applicative liftA2 instance" $
+      property (prop_appl (*) :: BT -> Bool)
+    it "has reasonable applicative and functor instances" $
+      property (prop_appl_func (+ 3) :: BT -> Bool)
   describe "Zip trees" $ do
-      it "treat branches and labels equally" $
-        property (prop_zip :: Tree (Sum Int) Int -> Bool)
-      it "treat traversable instances equally" $
-        property (prop_traversable_zip :: Tree Int Int -> Bool)
-      it "has reasonable applicative take right instance" $
-        property (prop_appl_right :: ZT -> ZT -> Bool)
-      it "has reasonable applicative take left instance" $
-        property (prop_appl_left :: ZT -> ZT -> Bool)
-      it "has reasonable applicative liftA2 instance" $
-        property (prop_appl (*) :: ZT -> Bool)
+    it "treat branches and labels equally" $
+      property (prop_zip :: Tree (Sum Int) Int -> Bool)
+    it "treat traversable instances equally" $
+      property (prop_traversable_zip :: Tree Int Int -> Bool)
+    it "has reasonable applicative take right instance" $
+      property (prop_appl_right :: ZT -> ZT -> Bool)
+    it "has reasonable applicative take left instance" $
+      property (prop_appl_left :: ZT -> ZT -> Bool)
+    it "has reasonable applicative liftA2 instance" $
+      property (prop_appl (*) :: ZT -> Bool)
+    it "has reasonable applicative and functor instances" $
+      property (prop_appl_func (+ 3) :: ZT -> Bool)
   describe "ZipBranch trees" $ do
-      it "has reasonable applicative take right instance" $
-        property (prop_appl_right :: ZBT -> ZBT -> Bool)
-      it "has reasonable applicative take left instance" $
-        property (prop_appl_left :: ZBT -> ZBT -> Bool)
-      it "has reasonable applicative liftA2 instance" $
-        property (prop_appl (*) :: ZBT -> Bool)
+    it "has reasonable applicative take right instance" $
+      property (prop_appl_right :: ZBT -> ZBT -> Bool)
+    it "has reasonable applicative take left instance" $
+      property (prop_appl_left :: ZBT -> ZBT -> Bool)
+    it "has reasonable applicative liftA2 instance" $
+      property (prop_appl (*) :: ZBT -> Bool)
+    it "has reasonable applicative and functor instances" $
+      property (prop_appl_func (+ 3) :: ZBT -> Bool)
+  -- TODO.
+  describe "ZipTree" $
+    it "follows common applicative laws" $
+      lawsCheck (applicativeLaws (Proxy :: Proxy (ZipTree String)))
