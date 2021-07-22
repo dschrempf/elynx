@@ -70,6 +70,8 @@ module ELynx.Tree.Phylogeny
     supportToPhyloTree,
     toLengthTree,
     toSupportTree,
+
+    -- * Explicit branch labels
     PhyloExplicit (..),
     toExplicitTree,
   )
