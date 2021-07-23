@@ -504,7 +504,7 @@ instance Comonad (ZipTree e) where
 -- ZipTree {getZipTree = Node {branch = "+3", label = 3, forest = [Node {branch = "*5", label = 5, forest = []},Node {branch = "+10", label = 12, forest = []}]}}
 instance Monoid e => Applicative (ZipTree e) where
   -- Infinite layers with infinite subtrees.
-  pure lb = ZipTree $ Node mempty lb $ repeat (pure lb)
+  pure lb = ZipTree $ Node mempty lb $ repeat (getZipTree $ pure lb)
   (ZipTree ~(Node brF lbF tsF)) <*> (ZipTree ~(Node brX lbX tsX)) =
     ZipTree $ Node (brF <> brX) (lbF lbX) (zipWith f tsF tsX)
     where
