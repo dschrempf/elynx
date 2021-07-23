@@ -140,7 +140,8 @@ spec = do
       property (prop_appl (*) :: ZBT -> Bool)
     it "[Functor/Applicative] Reasonable fmap/pure functions" $
       property (prop_appl_func (+ 3) :: ZBT -> Bool)
-    -- TODO: Laws.
+    it "[Applicative] Laws" $
+      lawsCheck (filterLaws ["Homomorphism"] $ applicativeLaws (Proxy :: Proxy (ZipBranchTree String)))
   describe "ZipTree and ZipBranchTree" $ do
     it "[Applicative] Somewhat corresponding instances of <*>" $
       property (prop_zip :: Tree (Sum Int) Int -> Bool)
