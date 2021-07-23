@@ -38,7 +38,7 @@ instance Arbitrary2 Tree where
         -- Sized is the size of the trees.
         br <- arbB
         val <- arbN
-        pars <- frequency [(1, pure [1, 1]), (3, arbPartition (n - 1))]
+        pars <- frequency [(1, pure [1, 1]), (4, arbPartition (n - 1))]
         frst <- for pars $ \i -> resize i go
         return $ Node br val frst
       arbPartition :: Int -> Gen [Int]

@@ -25,7 +25,7 @@ instance Arbitrary1 Topology where
   liftArbitrary arbL = go
     where
       go = sized $ \n -> do
-        pars <- frequency [(1, pure [1, 1]), (3, arbPartition (n - 1))]
+        pars <- frequency [(1, pure [1, 1]), (4, arbPartition (n - 1))]
         case pars of
           [] -> Leaf <$> arbL
           xs -> do
