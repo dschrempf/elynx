@@ -52,8 +52,17 @@ largeTree = parseByteStringWith (newick Standard) sampleTreeBS
 subSampleLargeTree :: Tree Phylo Name
 subSampleLargeTree = fromJust $ dropLeavesWith ((/= 'P') . BL.head . fromName) largeTree
 
+-- Branch trees treat branches.
 prop_BranchTree_fmap :: (Eq e, Eq f) => (e -> f) -> Tree e e -> Bool
 prop_BranchTree_fmap f t = first f t == getBranchTree (f <$> BranchTree t)
+
+-- Check that the Traversable instances of Tree and BranchTree work the same. I
+-- am pretty confident that the Traversable instance of Tree is correct, so this
+-- should be enough.
+prop_BranchTree_traversable :: Eq e => Tree e a -> Bool
+prop_BranchTree_traversable t = identify t == bt
+  where
+    bt = flipLabels $ getBranchTree $ identify $ BranchTree $ flipLabels t
 
 -- Check that zipping works the same for both instances ZipTree and
 -- ZipBranchTree. However, this check does not verify that either works
@@ -66,17 +75,9 @@ prop_zip t = flipLabels (getZipBranchTree zbt') == getZipTree znt'
     znt = ZipTree t
     znt' = (,) <$> znt <*> znt
 
--- Check that the Traversable instances of Tree and BranchTree work the same. I
--- am pretty confident that the Traversable instance of Tree is correct, so this
--- should be enough.
-prop_BranchTree_traversable :: Eq e => Tree e a -> Bool
-prop_BranchTree_traversable t = identify t == bt
-  where
-    bt = flipLabels $ getBranchTree $ identify $ BranchTree $ flipLabels t
-
 -- Same as above but for zip trees.
-prop_traversable_zip :: Eq e => Tree e a -> Bool
-prop_traversable_zip t = (t' == zbt) && (t' == znt)
+prop_ZipTrees_traversable :: Eq e => Tree e a -> Bool
+prop_ZipTrees_traversable t = (t' == zbt) && (t' == znt)
   where
     t' = identify t
     zbt = flipLabels $ getZipBranchTree $ identify $ ZipBranchTree $ flipLabels t
@@ -92,6 +93,60 @@ type ZBT = ZipBranchTree String Double
 
 spec :: Spec
 spec = do
+  -- Data types.
+  describe "Tree" $ do
+    it "[Applicative] Reasonable take right instance" $
+      property (prop_appl_right :: T -> T -> Bool)
+    it "[Applicative] Reasonable take left instance" $
+      property (prop_appl_left :: T -> T -> Bool)
+    it "[Applicative] Reasonable liftA2 instance" $
+      property (prop_appl (*) :: T -> Bool)
+    it "[Functor/Applicative] Reasonable fmap/pure functions" $
+      property (prop_appl_func (+ 3) :: T -> Bool)
+    it "[Applicative] Laws" $
+      lawsCheck (applicativeLaws (Proxy :: Proxy (Tree String)))
+  describe "BranchTree" $ do
+    it "[Functor] Treats branches correctly with fmap" $
+      property (prop_BranchTree_fmap (* 2) :: Tree Double Double -> Bool)
+    it "[Traversable] Equal traversable instance as Tree" $
+      property (prop_BranchTree_traversable :: Tree Int Int -> Bool)
+    it "[Applicative] Reasonable take right instance" $
+      property (prop_appl_right :: BT -> BT -> Bool)
+    it "[Applicative] Reasonable take left instance" $
+      property (prop_appl_left :: BT -> BT -> Bool)
+    it "[Applicative] Reasonable liftA2 instance" $
+      property (prop_appl (*) :: BT -> Bool)
+    it "[Functor/Applicative] Reasonable fmap/pure functions" $
+      property (prop_appl_func (+ 3) :: BT -> Bool)
+    it "[Applicative] Laws" $
+      lawsCheck (applicativeLaws (Proxy :: Proxy (BranchTree String)))
+  describe "ZipTree" $ do
+    it "[Applicative] Reasonable take right instance" $
+      property (prop_appl_right :: ZT -> ZT -> Bool)
+    it "[Applicative] Reasonable take left instance" $
+      property (prop_appl_left :: ZT -> ZT -> Bool)
+    it "[Applicative] Reasonable liftA2 instance" $
+      property (prop_appl (*) :: ZT -> Bool)
+    it "[Functor/Applicative] Reasonable fmap/pure functions" $
+      property (prop_appl_func (+ 3) :: ZT -> Bool)
+    it "[Applicative] Laws" $
+      lawsCheck (filterLaws ["Homomorphism"] $ applicativeLaws (Proxy :: Proxy (ZipTree String)))
+  describe "ZipBranchTree" $ do
+    it "[Applicative] Reasonable take right instance" $
+      property (prop_appl_right :: ZBT -> ZBT -> Bool)
+    it "[Applicative] Reasonable take left instance" $
+      property (prop_appl_left :: ZBT -> ZBT -> Bool)
+    it "[Applicative] Reasonable liftA2 instance" $
+      property (prop_appl (*) :: ZBT -> Bool)
+    it "[Functor/Applicative] Reasonable fmap/pure functions" $
+      property (prop_appl_func (+ 3) :: ZBT -> Bool)
+    -- TODO: Laws.
+  describe "ZipTree and ZipBranchTree" $ do
+    it "[Applicative] Somewhat corresponding instances of <*>" $
+      property (prop_zip :: Tree (Sum Int) Int -> Bool)
+    it "[Traversable] Somewhat correspnding instances of traverse" $
+      property (prop_ZipTrees_traversable :: Tree Int Int -> Bool)
+  -- Functions.
   describe "prune" $ do
     it "leaves a normal tree untouched" $
       prune largeTree `shouldBe` largeTree
@@ -109,51 +164,3 @@ spec = do
       dropLeavesWith (const True) smallTree `shouldBe` Nothing
     it "returns the correct subtree for a small example" $
       dropLeavesWith (== 2) smallTree `shouldBe` Just smallSubTree
-  describe "Tree" $ do
-    it "has reasonable applicative take right instance" $
-      property (prop_appl_right :: T -> T -> Bool)
-    it "has reasonable applicative take left instance" $
-      property (prop_appl_left :: T -> T -> Bool)
-    it "has reasonable applicative liftA2 instance" $
-      property (prop_appl (*) :: T -> Bool)
-    it "has reasonable applicative and functor instances" $
-      property (prop_appl_func (+ 3) :: T -> Bool)
-  describe "BranchTree" $ do
-    it "treats branches and labels correctly" $
-      property (prop_BranchTree_fmap (* 2) :: Tree Double Double -> Bool)
-    it "treats traversable instances equally" $
-      property (prop_BranchTree_traversable :: Tree Int Int -> Bool)
-    it "has reasonable applicative take right instance" $
-      property (prop_appl_right :: BT -> BT -> Bool)
-    it "has reasonable applicative take left instance" $
-      property (prop_appl_left :: BT -> BT -> Bool)
-    it "has reasonable applicative liftA2 instance" $
-      property (prop_appl (*) :: BT -> Bool)
-    it "has reasonable applicative and functor instances" $
-      property (prop_appl_func (+ 3) :: BT -> Bool)
-  describe "Zip trees" $ do
-    it "treat branches and labels equally" $
-      property (prop_zip :: Tree (Sum Int) Int -> Bool)
-    it "treat traversable instances equally" $
-      property (prop_traversable_zip :: Tree Int Int -> Bool)
-    it "has reasonable applicative take right instance" $
-      property (prop_appl_right :: ZT -> ZT -> Bool)
-    it "has reasonable applicative take left instance" $
-      property (prop_appl_left :: ZT -> ZT -> Bool)
-    it "has reasonable applicative liftA2 instance" $
-      property (prop_appl (*) :: ZT -> Bool)
-    it "has reasonable applicative and functor instances" $
-      property (prop_appl_func (+ 3) :: ZT -> Bool)
-  describe "ZipBranch trees" $ do
-    it "has reasonable applicative take right instance" $
-      property (prop_appl_right :: ZBT -> ZBT -> Bool)
-    it "has reasonable applicative take left instance" $
-      property (prop_appl_left :: ZBT -> ZBT -> Bool)
-    it "has reasonable applicative liftA2 instance" $
-      property (prop_appl (*) :: ZBT -> Bool)
-    it "has reasonable applicative and functor instances" $
-      property (prop_appl_func (+ 3) :: ZBT -> Bool)
-  -- TODO.
-  describe "ZipTree" $
-    it "follows common applicative laws" $
-      lawsCheck (applicativeLaws (Proxy :: Proxy (ZipTree String)))

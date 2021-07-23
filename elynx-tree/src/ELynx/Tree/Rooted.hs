@@ -399,6 +399,80 @@ zipTrees = zipTreesWith (,) (,)
 flipLabels :: Tree e a -> Tree a e
 flipLabels (Node x y zs) = Node y x $ map flipLabels zs
 
+-- | This newtype provides instances acting on the branch labels, and not on the
+-- node labels as it is the case in 'Tree'.
+newtype BranchTree a e = BranchTree {getBranchTree :: Tree e a}
+  deriving (Eq, Read, Show, Data, Generic)
+
+-- | Map over branch labels.
+instance Functor (BranchTree a) where
+  fmap f ~(BranchTree (Node br lb ts)) =
+    BranchTree $ Node (f br) lb $ map (getBranchTree . fmap f . BranchTree) ts
+  br <$ ~(BranchTree (Node _ lb ts)) =
+    BranchTree $ Node br lb (map (getBranchTree . (br <$) . BranchTree) ts)
+
+-- | Combine branch labels in pre-order.
+instance Foldable (BranchTree a) where
+  foldMap f ~(BranchTree (Node br _ ts)) =
+    f br <> foldMap (foldMap f . BranchTree) ts
+  null _ = False
+  {-# INLINE null #-}
+  toList = branches . getBranchTree
+  {-# INLINE toList #-}
+
+instance Traversable (BranchTree a) where
+  traverse g ~(BranchTree (Node br lb ts)) =
+    assemble lb <$> fbr' <*> fts'
+    where
+      assemble lb' br' ts' = BranchTree $ Node br' lb' ts'
+      fbr' = g br
+      fts' = map getBranchTree <$> traverse (traverse g . BranchTree) ts
+
+instance Comonad (BranchTree a) where
+  duplicate (BranchTree t@(Node _ lb ts)) =
+    BranchTree $
+      Node (BranchTree t) lb $
+        map (getBranchTree . duplicate . BranchTree) ts
+  extract = branch . getBranchTree
+
+instance Monoid a => Applicative (BranchTree a) where
+  -- Infinite layers with infinite subtrees.
+  pure br = BranchTree $ Node br mempty []
+  (BranchTree ~(Node brF lbF tsF)) <*> tx@(BranchTree ~(Node brX lbX tsX)) =
+    BranchTree $
+      Node
+        (brF brX)
+        (lbF <> lbX)
+        ( map (bimap brF (lbF <>)) tsX
+            ++ map (getBranchTree . (<*> tx) . BranchTree) tsF
+        )
+  liftA2 f (BranchTree ~(Node brX lbX tsX)) ty@(BranchTree ~(Node brY lbY tsY)) =
+    BranchTree $
+      Node
+        (f brX brY)
+        (lbX <> lbY)
+        ( map (bimap (f brX) (lbX <>)) tsY
+            ++ map (\tx -> getBranchTree $ liftA2 f (BranchTree tx) ty) tsX
+        )
+  (BranchTree ~(Node _ lbX tsX)) *> ty@(BranchTree ~(Node brY lbY tsY)) =
+    BranchTree $
+      Node
+        brY
+        (lbX <> lbY)
+        ( getBranchTree
+            <$> ( map (BranchTree . second (lbX <>)) tsY
+                    ++ map ((*> ty) . BranchTree) tsX
+                )
+        )
+  (BranchTree ~(Node brX lbX tsX)) <* ty@(BranchTree ~(Node _ lbY tsY)) =
+    BranchTree $
+      Node
+        brX
+        (lbX <> lbY)
+        ( map (bimap (const brX) (lbX <>)) tsY
+            ++ map (getBranchTree . (<* ty) . BranchTree) tsX
+        )
+
 -- | This newtype provides a zip-like applicative instance, similar to
 -- 'Control.Applicative.ZipList'.
 --
@@ -447,80 +521,6 @@ instance Monoid e => Applicative (ZipTree e) where
     ZipTree $ Node (brX <> brY) lbX (zipWith f tsX tsY)
     where
       f x y = getZipTree $ ZipTree x <* ZipTree y
-
--- | This newtype provides instances acting on the branch labels, and not on the
--- node labels as it is the case in 'Tree'.
-newtype BranchTree a e = BranchTree {getBranchTree :: Tree e a}
-  deriving (Eq, Read, Show, Data, Generic)
-
--- | Map over branch labels.
-instance Functor (BranchTree a) where
-  fmap f ~(BranchTree (Node br lb ts)) =
-    BranchTree $ Node (f br) lb $ map (getBranchTree . fmap f . BranchTree) ts
-  br <$ ~(BranchTree (Node _ lb ts)) =
-    BranchTree $ Node br lb (map (getBranchTree . (br <$) . BranchTree) ts)
-
--- | Combine branch labels in pre-order.
-instance Foldable (BranchTree a) where
-  foldMap f ~(BranchTree (Node br _ ts)) =
-    f br <> foldMap (foldMap f . BranchTree) ts
-  null _ = False
-  {-# INLINE null #-}
-  toList = branches . getBranchTree
-  {-# INLINE toList #-}
-
-instance Traversable (BranchTree a) where
-  traverse g ~(BranchTree (Node br lb ts)) =
-    assemble lb <$> fbr' <*> fts'
-    where
-      assemble lb' br' ts' = BranchTree $ Node br' lb' ts'
-      fbr' = g br
-      fts' = map getBranchTree <$> traverse (traverse g . BranchTree) ts
-
-instance Comonad (BranchTree a) where
-  duplicate (BranchTree t@(Node _ lb ts)) =
-    BranchTree $
-      Node (BranchTree t) lb $
-        map (getBranchTree . duplicate . BranchTree) ts
-  extract = branch . getBranchTree
-
-instance Monoid a => Applicative (BranchTree a) where
-  -- Infinite layers with infinite subtrees.
-  pure br = BranchTree $ Node br mempty $ repeat (getBranchTree $ pure br)
-  (BranchTree ~(Node brF lbF tsF)) <*> tx@(BranchTree ~(Node brX lbX tsX)) =
-    BranchTree $
-      Node
-        (brF brX)
-        (lbF <> lbX)
-        ( map (bimap brF (lbF <>)) tsX
-            ++ map (getBranchTree . (<*> tx) . BranchTree) tsF
-        )
-  liftA2 f (BranchTree ~(Node brX lbX tsX)) ty@(BranchTree ~(Node brY lbY tsY)) =
-    BranchTree $
-      Node
-        (f brX brY)
-        (lbX <> lbY)
-        ( map (bimap (f brX) (lbX <>)) tsY
-            ++ map (\tx -> getBranchTree $ liftA2 f (BranchTree tx) ty) tsX
-        )
-  (BranchTree ~(Node _ lbX tsX)) *> ty@(BranchTree ~(Node brY lbY tsY)) =
-    BranchTree $
-      Node
-        brY
-        (lbX <> lbY)
-        ( getBranchTree
-            <$> ( map (BranchTree . second (lbX <>)) tsY
-                    ++ map ((*> ty) . BranchTree) tsX
-                )
-        )
-  (BranchTree ~(Node brX lbX tsX)) <* ty@(BranchTree ~(Node _ lbY tsY)) =
-    BranchTree $
-      Node
-        brX
-        (lbX <> lbY)
-        ( map (bimap (const brX) (lbX <>)) tsY
-            ++ map (getBranchTree . (<* ty) . BranchTree) tsX
-        )
 
 -- | Like 'ZipTree' but act on branch labels; see 'BranchTree'.
 newtype ZipBranchTree a e = ZipBranchTree {getZipBranchTree :: Tree e a}
