@@ -103,12 +103,9 @@ instance Applicative Topology where
   (Node tsX) <* ty = Node $ tsX <&> (<* ty)
   (Leaf x) <* ty = x <$ ty
 
--- -- TODO: This type checks, but I doubt the implementation is bug-free.
--- instance Monad Topology where
---   (Node ts) >>= f = Node $ fmap (>>= f) ts
---   (Leaf lb) >>= f = case f lb of
---     Node ts' -> Node ts'
---     Leaf lb' -> Leaf lb'
+instance Monad Topology where
+  (Node ts) >>= f = Node $ fmap (>>= f) ts
+  (Leaf lb) >>= f = f lb
 
 instance NFData a => NFData (Topology a) where
   rnf (Node ts) = rnf ts
@@ -117,8 +114,6 @@ instance NFData a => NFData (Topology a) where
 instance ToJSON a => ToJSON (Topology a)
 
 instance FromJSON a => FromJSON (Topology a)
-
--- TODO: Provide and fix tests, provide arbitrary instances.
 
 -- | Convert a rooted rose tree to a rooted topology. Internal node labels are lost.
 fromRoseTree :: T.Tree a -> Topology a

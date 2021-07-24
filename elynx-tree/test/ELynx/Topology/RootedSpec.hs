@@ -39,4 +39,4 @@ spec = do
     lawsCheckSpec (foldableLaws (Proxy :: Proxy Topology))
     lawsCheckSpec (traversableLaws (Proxy :: Proxy Topology))
     lawsCheckSpec (applicativeLaws (Proxy :: Proxy Topology))
-    -- lawsCheckSpec (monadLaws (Proxy :: Proxy Topology)
+    lawsCheckSpec (monadLaws (Proxy :: Proxy Topology))
