@@ -14,11 +14,13 @@ module ELynx.Topology.RootedSpec
   )
 where
 
+import Data.Proxy
 import ELynx.ClassLaws
 import ELynx.Topology
 import ELynx.Topology.Arbitrary ()
 import Test.Hspec
 import Test.QuickCheck
+import Test.QuickCheck.Classes
 
 type T = Topology Double
 
@@ -33,3 +35,8 @@ spec = do
       property (prop_appl (*) :: T -> Bool)
     it "has reasonable applicative and functor instances" $
       property (prop_appl_func (+ 3) :: T -> Bool)
+    lawsCheckSpec (functorLaws (Proxy :: Proxy Topology))
+    lawsCheckSpec (foldableLaws (Proxy :: Proxy Topology))
+    lawsCheckSpec (traversableLaws (Proxy :: Proxy Topology))
+    lawsCheckSpec (applicativeLaws (Proxy :: Proxy Topology))
+    -- lawsCheckSpec (monadLaws (Proxy :: Proxy Topology)

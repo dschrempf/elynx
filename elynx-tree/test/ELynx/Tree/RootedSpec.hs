@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuantifiedConstraints #-}
 
 -- |
 -- Module      :  ELynx.Tree.RootedSpec
@@ -103,8 +102,14 @@ spec = do
       property (prop_appl (*) :: T -> Bool)
     it "[Functor/Applicative] Reasonable fmap/pure functions" $
       property (prop_appl_func (+ 3) :: T -> Bool)
-    it "[Applicative] Laws" $
-      lawsCheck (applicativeLaws (Proxy :: Proxy (Tree String)))
+    lawsCheckSpec (functorLaws (Proxy :: Proxy (Tree Int)))
+    lawsCheckSpec (bifunctorLaws (Proxy :: Proxy Tree))
+    lawsCheckSpec (foldableLaws (Proxy :: Proxy (Tree Int)))
+    lawsCheckSpec (bifoldableLaws (Proxy :: Proxy Tree))
+    lawsCheckSpec (traversableLaws (Proxy :: Proxy (Tree Int)))
+    lawsCheckSpec (bitraversableLaws (Proxy :: Proxy Tree))
+    lawsCheckSpec (applicativeLaws (Proxy :: Proxy (Tree String)))
+    lawsCheckSpec (monadLaws (Proxy :: Proxy (Tree String)))
   describe "BranchTree" $ do
     it "[Functor] Treats branches correctly with fmap" $
       property (prop_BranchTree_fmap (* 2) :: Tree Double Double -> Bool)
@@ -118,8 +123,10 @@ spec = do
       property (prop_appl (*) :: BT -> Bool)
     it "[Functor/Applicative] Reasonable fmap/pure functions" $
       property (prop_appl_func (+ 3) :: BT -> Bool)
-    it "[Applicative] Laws" $
-      lawsCheck (applicativeLaws (Proxy :: Proxy (BranchTree String)))
+    lawsCheckSpec (functorLaws (Proxy :: Proxy (BranchTree Int)))
+    lawsCheckSpec (foldableLaws (Proxy :: Proxy (BranchTree Int)))
+    lawsCheckSpec (traversableLaws (Proxy :: Proxy (BranchTree Int)))
+    lawsCheckSpec (applicativeLaws (Proxy :: Proxy (BranchTree String)))
   describe "ZipTree" $ do
     it "[Applicative] Reasonable take right instance" $
       property (prop_appl_right :: ZT -> ZT -> Bool)
@@ -129,8 +136,13 @@ spec = do
       property (prop_appl (*) :: ZT -> Bool)
     it "[Functor/Applicative] Reasonable fmap/pure functions" $
       property (prop_appl_func (+ 3) :: ZT -> Bool)
-    it "[Applicative] Laws" $
-      lawsCheck (filterLaws ["Homomorphism"] $ applicativeLaws (Proxy :: Proxy (ZipTree String)))
+    lawsCheckSpec (functorLaws (Proxy :: Proxy (ZipTree Int)))
+    lawsCheckSpec (foldableLaws (Proxy :: Proxy (ZipTree Int)))
+    lawsCheckSpec (traversableLaws (Proxy :: Proxy (ZipTree Int)))
+    lawsCheckSpec
+      ( filterLaws ["Homomorphism"] $
+          applicativeLaws (Proxy :: Proxy (ZipTree String))
+      )
   describe "ZipBranchTree" $ do
     it "[Applicative] Reasonable take right instance" $
       property (prop_appl_right :: ZBT -> ZBT -> Bool)
@@ -140,8 +152,13 @@ spec = do
       property (prop_appl (*) :: ZBT -> Bool)
     it "[Functor/Applicative] Reasonable fmap/pure functions" $
       property (prop_appl_func (+ 3) :: ZBT -> Bool)
-    it "[Applicative] Laws" $
-      lawsCheck (filterLaws ["Homomorphism"] $ applicativeLaws (Proxy :: Proxy (ZipBranchTree String)))
+    lawsCheckSpec (functorLaws (Proxy :: Proxy (ZipBranchTree Int)))
+    lawsCheckSpec (foldableLaws (Proxy :: Proxy (ZipBranchTree Int)))
+    lawsCheckSpec (traversableLaws (Proxy :: Proxy (ZipBranchTree Int)))
+    lawsCheckSpec
+      ( filterLaws ["Homomorphism"] $
+          applicativeLaws (Proxy :: Proxy (ZipBranchTree String))
+      )
   describe "ZipTree and ZipBranchTree" $ do
     it "[Applicative] Somewhat corresponding instances of <*>" $
       property (prop_zip :: Tree (Sum Int) Int -> Bool)

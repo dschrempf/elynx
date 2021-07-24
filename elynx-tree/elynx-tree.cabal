@@ -111,7 +111,7 @@ test-suite tree-test
       ELynx.Tree.Import.NexusSpec
       Paths_elynx_tree
   hs-source-dirs: test
-  ghc-options: -Wall -Wunused-packages
+  ghc-options: -Wall -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       attoparsec
     , base

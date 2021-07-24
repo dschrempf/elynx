@@ -1,3 +1,4 @@
+
 -- |
 -- Module      :  ELynx.ClassLaws
 -- Description :  Unit tests for ELynx.ClassLaws
@@ -15,11 +16,17 @@ module ELynx.ClassLaws
     prop_appl,
     prop_appl_func,
     filterLaws,
+    lawsCheckResult,
+    lawsCheckSpec,
   )
 where
 
+-- import Control.Comonad
 import Control.Applicative
+import Data.Traversable
 import ELynx.Tree.Arbitrary ()
+import Test.Hspec
+import Test.QuickCheck
 import Test.QuickCheck.Classes
 
 prop_appl_right :: (Applicative f, Eq (f a)) => f a -> f a -> Bool
@@ -35,4 +42,32 @@ prop_appl_func :: (Applicative f, Eq (f b)) => (a -> b) -> f a -> Bool
 prop_appl_func f x = fmap f x == (pure f <*> x)
 
 filterLaws :: [String] -> Laws -> Laws
-filterLaws xs (Laws tn ps) = Laws tn [ (n, p) | (n, p) <- ps, n `notElem` xs ]
+filterLaws xs (Laws tn ps) = Laws tn [(n, p) | (n, p) <- ps, n `notElem` xs]
+
+lawsCheckResult :: Laws -> IO Bool
+lawsCheckResult (Laws className properties) =
+  and <$> do
+    for properties $ \(name, p) -> do
+      putStr (className ++ ": " ++ name ++ " ")
+      isSuccess <$> quickCheckResult p
+
+lawsCheckSpec :: Laws -> Spec
+lawsCheckSpec (Laws className properties) =
+  parallel $
+    describe className $
+      mapM_ (\(name, p) -> it name (property p)) properties
+
+-- -- TODO: Comonad laws.
+-- --
+-- -- See https://hackage.haskell.org/package/comonad/docs/Control-Comonad.html.
+--
+-- -- Requires: {-# LANGUAGE QuantifiedConstraints #-}
+-- comonadLaw ::
+--   forall proxy f.
+--   ( Comonad f,
+--     Functor f,
+--     forall a. Eq a => Eq (f a),
+--     forall a. Show a => Show (f a),
+--     forall a. Arbitrary a => Arbitrary (f a)
+--   )
+-- comonadLaw = undefined
