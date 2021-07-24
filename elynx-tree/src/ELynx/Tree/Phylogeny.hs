@@ -109,11 +109,11 @@ equal' ~(Node brL lbL tsL) ~(Node brR lbR tsR) =
   (brL == brR)
     && (lbL == lbR)
     && (length tsL == length tsR)
-    && all (elem' tsR) tsL
+    && all (`elem'` tsR) tsL
   where
-    elem' ts t = isJust $ find (equal' t) ts
+    elem' t ts = isJust $ find (equal' t) ts
 
--- | Compute the intersection of trees.
+-- | Intersection of trees.
 --
 -- The intersections are the largest subtrees sharing the same leaf set.
 --
@@ -139,7 +139,7 @@ intersect ts
     -- Predicate.
     predicate lvsToDr l = l `S.member` lvsToDr
 
--- | Check if a tree is bifurcating.
+-- | Check if tree is bifurcating.
 --
 -- A Bifurcating tree only contains degree one (leaves) and degree three nodes
 -- (internal bifurcating nodes).
@@ -148,7 +148,7 @@ bifurcating (Node _ _ []) = True
 bifurcating (Node _ _ [x, y]) = bifurcating x && bifurcating y
 bifurcating _ = False
 
--- | Root the tree using an outgroup.
+-- | Root tree using an outgroup.
 --
 -- NOTE: If the current root node is multifurcating, a bifurcating root node
 -- with the empty label is introduced by 'split'ting the leftmost branch. In
@@ -197,7 +197,7 @@ outgroup o (Node b l ts) = outgroup o t'
 --
 -- - the root node is not bifurcating.
 midpoint :: (Semigroup e, Splittable e, HasLength e) => Tree e a -> Either String (Tree e a)
-midpoint (Node _ _ []) = Left "midpoint: Root node is a leaf."
+midpoint (Node b l []) = Right $ Node b l []
 midpoint (Node _ _ [_]) = Left "midpoint: Root node has degree two."
 midpoint t@(Node _ _ [_, _]) = roots t >>= getMidpoint
 midpoint _ = Left "midpoint: Root node is multifurcating."
@@ -223,9 +223,7 @@ getMidpoint ts = case t of
             [ modifyStem (modifyLength (subtract dh)) l,
               modifyStem (modifyLength (+ dh)) r
             ]
-  -- Explicitly use 'error' here, because roots is supposed to return trees with
-  -- bifurcating root nodes.
-  Right _ -> error "getMidpoint: Root node is not bifurcating; please contact maintainer."
+  Right _ -> error "getMidpoint: Root node is not bifurcating?"
   Left e -> Left e
   where
     dhs = map getDeltaHeight ts
