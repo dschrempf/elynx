@@ -35,8 +35,8 @@ module ELynx.Topology.Rooted
     degree,
     prune,
     dropLeavesWith,
-    zipTreesWith,
-    zipTrees,
+    zipTopologiesWith,
+    zipTopologies,
   )
 where
 
@@ -65,7 +65,7 @@ data Topology a
   | Leaf {label :: a}
   deriving (Eq, Read, Show, Data, Generic)
 
--- | A shortcut.
+-- | Shorthand.
 type Forest a = NonEmpty (Topology a)
 
 instance Functor Topology where
@@ -132,7 +132,7 @@ toBranchLabelTreeWith :: a -> Topology a -> R.Tree () a
 toBranchLabelTreeWith _ (Leaf lb) = R.Node () lb []
 toBranchLabelTreeWith x (Node ts) = R.Node () x $ map (toBranchLabelTreeWith x) $ N.toList ts
 
--- | Set of leaves.
+-- | List of leaves.
 leaves :: Topology a -> [a]
 leaves (Leaf lb) = [lb]
 leaves (Node ts) = concatMap leaves ts
@@ -155,9 +155,16 @@ duplicates = go S.empty
 duplicateLeaves :: Ord a => Topology a -> Bool
 duplicateLeaves = duplicates . leaves
 
--- TODO: This is the same as in ELynx.Tree.Rooted.
+-- | Set leaf labels in pre-order.
+--
+-- Return 'Nothing' if the provided list of leaf labels is too short.
+setLeaves :: Traversable t => [b] -> t a -> Maybe (t b)
+setLeaves xs = sequenceA . snd . mapAccumL setLeafM xs
+  where
+    setLeafM [] _ = ([], Nothing)
+    setLeafM (y : ys) _ = (ys, Just y)
 
--- | Label the leaves with unique integers starting at 0.
+-- | Label the leaves in pre-order with unique indices starting at 0.
 identify :: Traversable t => t a -> t Int
 identify = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
 
@@ -166,7 +173,18 @@ degree :: Topology a -> Int
 degree (Node ts) = (+ 1) $ length ts
 degree (Leaf _) = 1
 
+-- | Depth of a topology.
+--
+-- See 'ELynx.Tree.Rooted.depth'.
+depth :: Topology a -> Int
+depth = maximum . go 1
+  where
+    go n (Leaf _) = [n]
+    go n (Node xs) = concatMap (go (n + 1)) xs
+
 -- | Prune degree two nodes.
+--
+-- See 'ELynx.Tree.Rooted.prune'.
 prune :: Topology a -> Topology a
 prune (Node ts)
   | singleton ts = Node $ fmap prune $ forest $ N.head ts
@@ -175,9 +193,7 @@ prune (Leaf lb) = Leaf lb
 
 -- | Drop leaves satisfying predicate.
 --
--- Degree two nodes may arise.
---
--- Return 'Nothing' if all leaves satisfy the predicate.
+-- See 'ELynx.Tree.Rooted.dropNodesWith'.
 dropLeavesWith :: (a -> Bool) -> Topology a -> Maybe (Topology a)
 dropLeavesWith p (Leaf lb)
   | p lb = Nothing
@@ -185,25 +201,23 @@ dropLeavesWith p (Leaf lb)
 dropLeavesWith p (Node ts) =
   if null ts'
     then Nothing
-    else -- XXX: May be slow, unnecessary conversion to and from list.
-      Just $ Node $ N.fromList ts'
+    else -- NOTE: Unnecessary conversion to and from list?
+    Just $ Node $ N.fromList ts'
   where
     ts' = catMaybes $ N.toList $ fmap (dropLeavesWith p) ts
 
 -- | Zip leaves of two equal topologies.
 --
--- Return 'Nothing' if the topologies are different.
-zipTreesWith :: (a1 -> a2 -> a) -> Topology a1 -> Topology a2 -> Maybe (Topology a)
-zipTreesWith f (Node tsL) (Node tsR) =
+-- See 'ELynx.Tree.Rooted.zipTreesWith'.
+zipTopologiesWith :: (a1 -> a2 -> a) -> Topology a1 -> Topology a2 -> Maybe (Topology a)
+zipTopologiesWith f (Node tsL) (Node tsR) =
   if N.length tsL == N.length tsR
-    then -- XXX: May be slow, unnecessary conversion to and from list.
-      zipWithM (zipTreesWith f) (N.toList tsL) (N.toList tsR) >>= Just . Node . N.fromList
+    then -- NOTE: Unnecessary conversion to and from list?
+      zipWithM (zipTopologiesWith f) (N.toList tsL) (N.toList tsR) >>= Just . Node . N.fromList
     else Nothing
-zipTreesWith f (Leaf lbL) (Leaf lbR) = Just $ Leaf $ f lbL lbR
-zipTreesWith _ _ _ = Nothing
+zipTopologiesWith f (Leaf lbL) (Leaf lbR) = Just $ Leaf $ f lbL lbR
+zipTopologiesWith _ _ _ = Nothing
 
--- | Zip leaves of two equal topologies.
---
--- Return 'Nothing' if the topologies are different.
-zipTrees :: Topology a1 -> Topology a2 -> Maybe (Topology (a1, a2))
-zipTrees = zipTreesWith (,)
+-- | See 'zipTopologiesWith'.
+zipTopologies :: Topology a1 -> Topology a2 -> Maybe (Topology (a1, a2))
+zipTopologies = zipTopologiesWith (,)

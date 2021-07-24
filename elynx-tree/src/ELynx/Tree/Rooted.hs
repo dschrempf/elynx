@@ -126,7 +126,7 @@ data Tree e a = Node
   }
   deriving (Eq, Read, Show, Data, Generic)
 
--- | A shorthand.
+-- | Shorthand.
 type Forest e a = [Tree e a]
 
 -- | Map over node labels.
@@ -240,7 +240,7 @@ toTreeBranchLabels (Node br _ ts) = T.Node br (map toTreeBranchLabels ts)
 toTreeNodeLabels :: Tree e a -> T.Tree a
 toTreeNodeLabels (Node _ lb ts) = T.Node lb (map toTreeNodeLabels ts)
 
--- | Get leaves.
+-- | List of leaves.
 leaves :: Tree e a -> [a]
 leaves t = squish t []
   where
