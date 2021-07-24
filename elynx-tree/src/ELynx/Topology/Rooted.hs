@@ -132,14 +132,12 @@ toBranchLabelTreeWith :: a -> Topology a -> R.Tree () a
 toBranchLabelTreeWith _ (Leaf lb) = R.Node () lb []
 toBranchLabelTreeWith x (Node ts) = R.Node () x $ map (toBranchLabelTreeWith x) $ N.toList ts
 
--- TODO: Maybe use foldr similar to 'flatten'.
-
 -- | Set of leaves.
 leaves :: Topology a -> [a]
 leaves (Leaf lb) = [lb]
 leaves (Node ts) = concatMap leaves ts
 
--- -- TODO: Check if this implementation of 'leaves' is faster.
+-- -- NOTE: This implementation of 'leaves' may be faster.
 -- -- | Return leaf labels in pre-order.
 -- flatten :: Topology a -> [a]
 -- flatten t = squish t []
