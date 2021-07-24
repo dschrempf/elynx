@@ -184,7 +184,7 @@ instance (Semigroup e, Monoid e) => Applicative (Tree e) where
 -- label when using 'return'.
 instance (Semigroup e, Monoid e) => Monad (Tree e) where
   ~(Node br lb ts) >>= f = case f lb of
-    Node br' lb' ts' -> Node (br <> br') lb' (ts' ++ map (>>= f) ts)
+    Node br' lb' ts' -> Node (br <> br') lb' (map (first (br <>)) ts' ++ map (>>= f) ts)
 
 -- -- NOTE: We cannot provide a MonadZip instance because branch labels cannot
 -- -- be recovered from the combined label.
