@@ -63,6 +63,7 @@ module ELynx.Tree.Rooted
   ( -- * Tree with branch labels
     Tree (..),
     Forest,
+    fromRoseTree,
     toTreeBranchLabels,
     toTreeNodeLabels,
 
@@ -226,6 +227,10 @@ instance (NFData e, NFData a) => NFData (Tree e a) where
 instance (ToJSON e, ToJSON a) => ToJSON (Tree e a)
 
 instance (FromJSON e, FromJSON a) => FromJSON (Tree e a)
+
+-- | Conversion from 'T.Tree'.
+fromRoseTree :: T.Tree a -> Tree () a
+fromRoseTree (T.Node l ts) = Node () l $ map fromRoseTree ts
 
 -- | Conversion to 'T.Tree' using branch labels.
 toTreeBranchLabels :: Tree e a -> T.Tree e
