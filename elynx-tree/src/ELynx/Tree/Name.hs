@@ -1,5 +1,6 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- |
 -- Module      :  ELynx.Tree.Name
@@ -23,6 +24,7 @@ import Data.Aeson
 import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
+import Data.Default
 import Data.Double.Conversion.ByteString as BC
 import Data.String
 
@@ -32,6 +34,9 @@ import Data.String
 newtype Name = Name {fromName :: BL.ByteString}
   deriving (Show, Read, Eq)
   deriving (Ord, Monoid, Semigroup, IsString, NFData) via BL.ByteString
+
+instance Default Name where
+  def = Name ""
 
 -- XXX: This is pretty lame, but I need those instances. At the moment, I just
 -- go via 'String', but this is certainly not the best solution.

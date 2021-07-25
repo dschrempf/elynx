@@ -39,6 +39,7 @@ where
 import Control.DeepSeq
 import Data.Aeson
 import Data.Bifunctor
+import Data.Default
 import Data.Foldable
 import Data.Semigroup
 import ELynx.Tree.Rooted
@@ -73,7 +74,19 @@ import GHC.Generics
 -- @
 newtype Length = Length {fromLength :: Double}
   deriving (Read, Show, Generic, NFData)
-  deriving (Enum, Eq, Floating, Fractional, Num, Ord, Real, RealFloat, RealFrac) via Double
+  deriving
+    ( Default,
+      Enum,
+      Eq,
+      Floating,
+      Fractional,
+      Num,
+      Ord,
+      Real,
+      RealFloat,
+      RealFrac
+    )
+    via Double
   deriving (Semigroup, Monoid) via Sum Double
 
 instance Splittable Length where
