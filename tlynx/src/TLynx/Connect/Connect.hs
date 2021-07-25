@@ -21,6 +21,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
+import Data.Default
 import qualified Data.Set as S
 import ELynx.Tools
   ( Arguments (..),
@@ -43,7 +44,13 @@ import TLynx.Parsers
 -- introduced.
 --
 -- Return 'Left' if one tree has a non-bifurcating root node.
-connect :: (Semigroup e, Splittable e) => e -> a -> Tree e a -> Tree e a -> Either String (Forest e a)
+connect ::
+  (Semigroup e, Splittable e, Default a) =>
+  e ->
+  a ->
+  Tree e a ->
+  Tree e a ->
+  Either String (Forest e a)
 connect br lb l r = do
   ls <- roots l
   rs <- roots r
