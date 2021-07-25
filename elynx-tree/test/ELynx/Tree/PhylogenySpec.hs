@@ -54,12 +54,8 @@ simpleSol =
 prop_roots :: Default a => Tree () a -> Bool
 prop_roots t@(Node _ _ []) = isLeft $ roots t
 prop_roots t@(Node _ _ [_]) = isLeft $ roots t
-prop_roots t@(Node _ _ [_, _])
-  | length (leaves t) == 2 = (length <$> roots t) == Right 1
-  | otherwise = (length <$> roots t) == Right (length (labels t) - 2)
-prop_roots t
-  | length (leaves t) == 2 = error "prop_roots: Multifurcating tree with two leaves?"
-  | otherwise = (length <$> roots t) == Right (length (labels t) - 1)
+prop_roots t@(Node _ _ [_, _]) = (length <$> roots t) == Right (length (labels t) - 2)
+prop_roots t = (length <$> roots t) == Right (length (labels t) - 1)
 
 prop_roots_total_length :: Default a => Tree Length a -> Bool
 prop_roots_total_length t@(Node _ _ [_, _]) =
