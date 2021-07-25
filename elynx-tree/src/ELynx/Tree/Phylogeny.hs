@@ -269,20 +269,14 @@ getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating?"
 -- degree of the original root node is reduced by one. The original,
 -- multifurcating tree is not part of the result.
 --
--- Branches are connect and split according to the provided 'Semigroup' and
+-- Branches are connected and split according to the provided 'Semigroup' and
 -- 'Splittable' instances.
 --
--- Number of rooted trees with two or more leaves:
+-- For a tree with @n@ nodes we have:
 --
--- - For a bifurcating tree with @l=2@ leaves, there is one rooted tree.
+-- - @n-2@ rooted trees if the root node is bifurcating;
 --
--- - For a bifurcating tree with @l>2@ leaves, there are @(2l-3)@ rooted trees.
---
--- - For a general tree with a bifurcating root node, and a total number of
---   @n>2@ nodes, there are (n-2) rooted trees.
---
--- - For a general tree with a multifurcating root node, and a total number of
---   @n>2@ nodes, there are (n-1) rooted trees.
+-- - (n-1) rooted trees if the root node is multifurcating.
 roots :: (Semigroup e, Splittable e, Default a) => Tree e a -> Either String (Forest e a)
 roots (Node _ _ []) = Left "roots: Root node is a leaf."
 roots (Node _ _ [_]) = Left "roots: Root node has degree two."
