@@ -118,6 +118,7 @@ test-suite tree-test
     , base
     , bytestring
     , containers
+    , data-default
     , elynx-tools
     , elynx-tree
     , hspec

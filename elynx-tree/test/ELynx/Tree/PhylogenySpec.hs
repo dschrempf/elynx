@@ -17,6 +17,7 @@ module ELynx.Tree.PhylogenySpec
   )
 where
 
+import Data.Default
 import Data.Either
 import qualified Data.Set as S
 import ELynx.Tree
@@ -50,14 +51,17 @@ simpleSol =
     Node () "i" [Node () "j" [Node () "z" [], Node () "x" []], Node () "y" []]
   ]
 
--- Skip leaves and trees with multifurcating root nodes.
-prop_roots :: Tree () a -> Bool
+prop_roots :: Default a => Tree () a -> Bool
+prop_roots t@(Node _ _ []) = isLeft $ roots t
+prop_roots t@(Node _ _ [_]) = isLeft $ roots t
 prop_roots t@(Node _ _ [_, _])
   | length (leaves t) == 2 = (length <$> roots t) == Right 1
   | otherwise = (length <$> roots t) == Right (length (labels t) - 2)
-prop_roots _ = True
+prop_roots t
+  | length (leaves t) == 2 = error "prop_roots: Multifurcating tree with two leaves?"
+  | otherwise = (length <$> roots t) == Right (length (labels t) - 1)
 
-prop_roots_total_length :: Tree Length a -> Bool
+prop_roots_total_length :: Default a => Tree Length a -> Bool
 prop_roots_total_length t@(Node _ _ [_, _]) =
   all (\x -> abs (totalBranchLength x - l) < 1e-8) $
     either error id $
@@ -83,19 +87,15 @@ spec = do
       roots tcherry `shouldBe` Right [tcherry]
     it "correctly handles simple trees" $
       either error id (roots simpleTree1) `shouldBe` simpleSol
-    modifyMaxSize (* 100) $
+    modifyMaxSize (* 100) $ do
       it "returns the correct number of rooted trees for arbitrary trees" $
         property (prop_roots :: (Tree () Int -> Bool))
-  describe "outgroup" $
-    modifyMaxSize (* 100) $
-      it "correctly handles simple trees" $
-        do
-          let p = fst $ fromBipartition $ either error id $ bipartition simpleTree1
-          outgroup p simpleTree1 `shouldBe` Right simpleTree1
-          let l = S.singleton "x"
-          either error id (outgroup l simpleTree1) `equal` (simpleSol !! 1)
-            `shouldBe` Right True
-  describe "rootsWithBranch" $
-    modifyMaxSize (* 100) $
-      it "does not change the tree height" $
+      it "does not change the total tree length" $
         property (prop_roots_total_length :: Tree Length Int -> Bool)
+  describe "outgroup" $
+    it "correctly handles simple trees" $ do
+      let p = fst $ fromBipartition $ either error id $ bipartition simpleTree1
+      outgroup p simpleTree1 `shouldBe` Right simpleTree1
+      let l = S.singleton "x"
+      either error id (outgroup l simpleTree1) `equal` (simpleSol !! 1)
+        `shouldBe` Right True

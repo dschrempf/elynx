@@ -42,12 +42,6 @@
 -- unrooted, when the root node is multifurcating and has three or more
 -- children. This convention is not used here. Newick trees are just parsed as
 -- they are, and a rooted tree is returned.
---
--- A multifurcating root node can be resolved to a bifurcating root node with
--- 'outgroup' or 'midpoint'.
---
--- For a given tree with bifurcating root node, a list of all rooted trees is
--- returned by 'roots'.
 module ELynx.Tree.Phylogeny
   ( -- * Functions
     equal,
@@ -149,19 +143,15 @@ bifurcating _ = False
 
 -- | Root tree using an outgroup.
 --
--- NOTE: If the current root node is multifurcating, a bifurcating root node
--- with default label is introduced by 'split'ting the leftmost branch. In this
--- case, the 'Default' instance of the node label and the 'Splittable' instance
--- of the branch length are used, and the degree of the former root node is
--- decreased by one.
+-- If the root note is bifurcating, the root node is moved to the position
+-- specified by the outgroup.
 --
--- Given that the root note is bifurcating, the root node is moved to the
--- required position specified by the outgroup.
+-- If the root node is multifurcating, a new root node is introduced using the
+-- 'Default' instance of the node labels. Thereby, the degree of the original
+-- root node is reduced by one.
 --
--- Branches are connected according to the provided 'Semigroup' instance.
---
--- Upon insertion of the root node at the required position, the affected branch
--- is 'split' according to the provided 'Splittable' instance.
+-- Branches are connected and split according to the provided 'Semigroup' and
+-- 'Splittable' instances.
 --
 -- Return 'Left' if
 --
@@ -171,7 +161,7 @@ bifurcating _ = False
 --
 -- - the tree has duplicate leaves;
 --
--- - the provided outgroup is not found on the tree or is polyphyletic.
+-- - the provided outgroup is polyphyletic or not found on the tree.
 outgroup ::
   (Semigroup e, Splittable e, Default a, Ord a) =>
   Set a ->
@@ -204,16 +194,21 @@ rootAt b t
     lvLst = leaves t
     lvSet = S.fromList $ leaves t
 
--- | Root tree at the midpoint.
---
--- Return 'Left' if
---
--- - the root node is not bifurcating.
---
 -- NOTE: The 'midpoint' algorithm has not been optimized. All rooted trees are
 -- calculated and then the one minimizing the difference between the heights of
 -- the left and right sub tree is chosen. Better: Move left or right minimizing
 -- the height difference between the left and right sub tree.
+
+-- | Root tree at midpoint.
+--
+-- Branches are connected and split according to the provided 'Semigroup' and
+-- 'Splittable' instances.
+--
+-- Return 'Left' if
+--
+-- - the root node is a leaf;
+--
+-- - the root node has degree two.
 midpoint ::
   (Semigroup e, Splittable e, HasLength e, Default a) =>
   Tree e a ->
@@ -264,36 +259,39 @@ getDeltaHeight :: HasLength e => Tree e a -> Length
 getDeltaHeight (Node _ _ [l, r]) = abs $ height l - height r
 getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating?"
 
--- | Get all possible rooted trees with bifurcating root nodes.
+-- | Get all rooted trees with bifurcating root nodes.
 --
--- If the root node of the original tree is bifurcating, the root node (label and
--- branch) is moved.
+-- If the root node of the original tree is bifurcating, the root node (label
+-- and branch) is moved, and the original tree is part of the result.
 --
 -- If the root node of the original tree is multifurcating, a new root node is
 -- introduced using the 'Default' instance of the node labels. Thereby, the
 -- degree of the original root node is reduced by one. The original,
--- multifurcating tree is not returned.
+-- multifurcating tree is not part of the result.
 --
--- Connect branches according to the provided 'Semigroup' instance.
+-- Branches are connect and split according to the provided 'Semigroup' and
+-- 'Splittable' instances.
 --
--- Split the affected branch into one out of two equal entities according the
--- provided 'Splittable' instance.
+-- Number of rooted trees with two or more leaves:
 --
--- For a tree with @l=2@ leaves, there is one rooted tree. For a bifurcating
--- tree with @l>2@ leaves, there are @(2l-3)@ rooted trees. For a general tree
--- with a bifurcating root node, and a total number of @n>2@ nodes, there are
--- (n-2) rooted trees.
+-- - For a bifurcating tree with @l=2@ leaves, there is one rooted tree.
 --
--- TODO: For a multifurcating tree there are how many rooted trees?
+-- - For a bifurcating tree with @l>2@ leaves, there are @(2l-3)@ rooted trees.
+--
+-- - For a general tree with a bifurcating root node, and a total number of
+--   @n>2@ nodes, there are (n-2) rooted trees.
+--
+-- - For a general tree with a multifurcating root node, and a total number of
+--   @n>2@ nodes, there are (n-1) rooted trees.
 roots :: (Semigroup e, Splittable e, Default a) => Tree e a -> Either String (Forest e a)
 roots (Node _ _ []) = Left "roots: Root node is a leaf."
 roots (Node _ _ [_]) = Left "roots: Root node has degree two."
 roots t@(Node b c [tL, tR]) = Right $ t : descend b c tR tL ++ descend b c tL tR
--- TODO: CONTINUE HERE.
---
--- Prepare the N bifurcating rooted trees and call 'roots' again. (BUT DOESN'T
--- work because infinite loop).
-roots (Node b c ts) = undefined
+roots (Node b c ts) = roots $ Node b def [tL, tR]
+  where (Node bL lL tsL) = head ts
+        bL' = split bL
+        tL = Node bL' lL tsL
+        tR = Node bL' c $ tail ts
 
 complementaryForests :: Tree e a -> Forest e a -> [Forest e a]
 complementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n -1)]]

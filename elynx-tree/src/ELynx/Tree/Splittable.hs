@@ -26,6 +26,3 @@ class Splittable e where
 
 instance Splittable () where
   split = id
-
-instance Splittable Double where
-  split = (/ 2)
