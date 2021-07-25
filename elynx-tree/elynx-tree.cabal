@@ -81,6 +81,7 @@ library
     , bytestring
     , comonad
     , containers
+    , data-default
     , deepseq
     , double-conversion
     , elynx-nexus

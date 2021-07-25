@@ -129,9 +129,9 @@ fromBranchLabelTree (R.Node _ _ xs) = Node $ fromBranchLabelTree <$> N.fromList 
 
 -- | Convert a rooted topology to a rooted, branch-label tree. Use the given
 -- node label at internal nodes.
-toBranchLabelTreeWith :: a -> Topology a -> R.Tree () a
-toBranchLabelTreeWith _ (Leaf lb) = R.Node () lb []
-toBranchLabelTreeWith x (Node ts) = R.Node () x $ map (toBranchLabelTreeWith x) $ N.toList ts
+toBranchLabelTreeWith :: e -> a -> Topology a -> R.Tree e a
+toBranchLabelTreeWith b _ (Leaf lb) = R.Node b lb []
+toBranchLabelTreeWith b l (Node ts) = R.Node b l $ map (toBranchLabelTreeWith b l) $ N.toList ts
 
 -- | List of leaves.
 leaves :: Topology a -> [a]

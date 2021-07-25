@@ -14,7 +14,9 @@
 -- labels, and the order of the topologies in the sub-forest is considered to be
 -- meaningless.
 --
--- NOTE: See the documentation of "ELynx.Tree.Phylogeny".
+-- NOTE: The functions in this module are defined using the functions in
+-- "ELynx.Tree.Phylogeny". This induces a runtime overhead, but greatly reduces
+-- the probability of additional bugs.
 module ELynx.Topology.Phylogeny
   ( equal,
     equal',
@@ -26,12 +28,14 @@ module ELynx.Topology.Phylogeny
   )
 where
 
+import Data.Default
 import Data.List hiding (intersect)
-import qualified Data.List.NonEmpty as N
 import Data.Maybe
 import qualified Data.Set as S
 import ELynx.Topology.Rooted
-import ELynx.Tree.Bipartition
+import ELynx.Tree.Length
+import qualified ELynx.Tree.Phylogeny as T
+import qualified ELynx.Tree.Rooted as T
 
 -- | The equality check is slow because the order of children is considered to
 -- be arbitrary.
@@ -81,22 +85,22 @@ bifurcating :: Topology a -> Bool
 bifurcating (Leaf _) = True
 bifurcating (Node ts) = (length ts == 2) && all bifurcating ts
 
+-- Perform a computation over the 'Tree' data type.
+overTree ::
+  (Default a, Functor f) =>
+  (T.Tree Length a -> f (T.Tree Length a)) ->
+  Topology a ->
+  f (Topology a)
+overTree f = goBack . f . goThere
+  where
+    goThere = toBranchLabelTreeWith (toLengthUnsafe 1.0) def
+    goBack = fmap fromBranchLabelTree
+
 -- | Root topology using an outgroup.
 --
 --   See 'ELynx.Tree.Phylogeny.outgroup'.
-outgroup :: (Monoid a, Ord a) => S.Set a -> Topology a -> Either String (Topology a)
-outgroup _ (Leaf _) = Left "outgroup: Root node is a leaf."
-outgroup o t@(Node ts) = case N.toList ts of
-  [] -> error "outgroup: Empty non-empty list?"
-  [_] -> Left "outgroup: Root node has degree two."
-  [_, _] -> do
-    bip <- bp o (S.fromList (leaves t) S.\\ o)
-    rootAt bip t
-  xs -> outgroup o t'
-    where
-      tI = head xs
-      -- Introduce a bifurcating root node.
-      t' = Node $ N.fromList [tI, Node $ N.fromList (tail xs)]
+outgroup :: (Default a, Ord a) => S.Set a -> Topology a -> Either String (Topology a)
+outgroup xs = overTree (T.outgroup xs)
 
 -- | Root topology at the midpoint.
 --
@@ -107,23 +111,17 @@ outgroup o t@(Node ts) = case N.toList ts of
 -- If the midpoint is ambiguous because the sum of the left and right depths is
 -- odd, the depth of the left sub-topology will be set to be one node greater
 -- than the one of the right sub-topology.
-midpoint :: Topology a -> Either String (Topology a)
-midpoint (Leaf b) = Right $ Leaf b
-midpoint t@(Node ts) = case N.toList ts of
-  [] -> error "midpoint: Empty non-empty list?"
-  [_] -> Left "midpoint: Root node has degree two."
-  [_, _] -> roots t >>= getMidpoint
-  _ -> Left "midpoint: Root node is multifurcating."
+midpoint :: Default a => Topology a -> Either String (Topology a)
+midpoint = overTree T.midpoint
 
--- TODO.
-getMidpoint :: [Topology a] -> Either String (Topology a)
-getMidpoint = undefined
-
--- TODO.
-roots :: Topology a -> Either String [Topology a]
-roots = undefined
-
--- TODO.
-rootAt :: (Eq a, Ord a) => Bipartition a -> Topology a -> Either String (Topology a)
-rootAt = undefined
-
+-- | For a rooted tree with a bifurcating root node, get all possible rooted
+-- trees.
+--
+-- See 'ELynx.Tree.Phylogeny.roots'.
+roots :: Default a => Topology a -> Either String [Topology a]
+roots = goBack . T.roots . goThere
+  where
+    -- We have to use a special 'overTree' function here, since a list of
+    -- topologies is returned.
+    goThere = toBranchLabelTreeWith (toLengthUnsafe 1.0) def
+    goBack = (fmap . fmap) fromBranchLabelTree

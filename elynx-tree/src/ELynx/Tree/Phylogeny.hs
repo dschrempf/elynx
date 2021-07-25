@@ -44,9 +44,7 @@
 -- they are, and a rooted tree is returned.
 --
 -- A multifurcating root node can be resolved to a bifurcating root node with
--- 'outgroup'.
---
--- The bifurcating root node can be changed with 'outgroup' or 'midpoint'.
+-- 'outgroup' or 'midpoint'.
 --
 -- For a given tree with bifurcating root node, a list of all rooted trees is
 -- returned by 'roots'.
@@ -80,6 +78,7 @@ where
 import Control.DeepSeq
 import Data.Aeson
 import Data.Bifunctor
+import Data.Default
 import Data.List hiding (intersect)
 import Data.Maybe
 import Data.Monoid
@@ -151,10 +150,10 @@ bifurcating _ = False
 -- | Root tree using an outgroup.
 --
 -- NOTE: If the current root node is multifurcating, a bifurcating root node
--- with the empty label is introduced by 'split'ting the leftmost branch. In
--- this case, the 'Monoid' instance of the node label and the 'Splittable'
--- instance of the branch length are used, and the degree of the former root
--- node is decreased by one.
+-- with default label is introduced by 'split'ting the leftmost branch. In this
+-- case, the 'Default' instance of the node label and the 'Splittable' instance
+-- of the branch length are used, and the degree of the former root node is
+-- decreased by one.
 --
 -- Given that the root note is bifurcating, the root node is moved to the
 -- required position specified by the outgroup.
@@ -173,40 +172,62 @@ bifurcating _ = False
 -- - the tree has duplicate leaves;
 --
 -- - the provided outgroup is not found on the tree or is polyphyletic.
-outgroup :: (Semigroup e, Splittable e, Monoid a, Ord a) => Set a -> Tree e a -> Either String (Tree e a)
+outgroup ::
+  (Semigroup e, Splittable e, Default a, Ord a) =>
+  Set a ->
+  Tree e a ->
+  Either String (Tree e a)
 outgroup _ (Node _ _ []) = Left "outgroup: Root node is a leaf."
 outgroup _ (Node _ _ [_]) = Left "outgroup: Root node has degree two."
-outgroup o t@(Node _ _ [_, _]) = do
+outgroup o t = do
   bip <- bp o (S.fromList (leaves t) S.\\ o)
   rootAt bip t
-outgroup o (Node b l ts) = outgroup o t'
-  where
-    (Node brO lbO tsO) = head ts
-    -- Introduce a bifurcating root node.
-    t' = Node b mempty [Node (split brO) lbO tsO, Node (split brO) l (tail ts)]
 
--- The 'midpoint' algorithm is pretty stupid because it calculates all rooted
--- trees and then finds the one minimizing the difference between the heights of
--- the left and right sub tree. Actually, one just needs to move left or right,
--- with the aim to minimize the height difference between the left and right sub
--- tree.
+-- Root the tree at the branch defined by the given bipartition. The original
+-- root node is moved to the new position.
+rootAt ::
+  (Semigroup e, Splittable e, Eq a, Default a, Ord a) =>
+  Bipartition a ->
+  Tree e a ->
+  Either String (Tree e a)
+rootAt b t
+  -- Do not use 'duplicateLeaves' here, because we also need to compare the leaf
+  -- set with the bipartition.
+  | length lvLst /= S.size lvSet = Left "rootAt: Tree has duplicate leaves."
+  | toSet b /= lvSet = Left "rootAt: Bipartition does not match leaves of tree."
+  | otherwise = do
+    ts <- roots t
+    case find (\x -> bipartition x == Right b) ts of
+      Nothing -> Left "rootAt': Bipartition not found on tree."
+      Just t' -> Right t'
+  where
+    lvLst = leaves t
+    lvSet = S.fromList $ leaves t
 
 -- | Root tree at the midpoint.
 --
 -- Return 'Left' if
 --
 -- - the root node is not bifurcating.
-midpoint :: (Semigroup e, Splittable e, HasLength e) => Tree e a -> Either String (Tree e a)
-midpoint (Node b l []) = Right $ Node b l []
+--
+-- NOTE: The 'midpoint' algorithm has not been optimized. All rooted trees are
+-- calculated and then the one minimizing the difference between the heights of
+-- the left and right sub tree is chosen. Better: Move left or right minimizing
+-- the height difference between the left and right sub tree.
+midpoint ::
+  (Semigroup e, Splittable e, HasLength e, Default a) =>
+  Tree e a ->
+  Either String (Tree e a)
+midpoint (Node _ _ []) = Left "midpoint: Root node is a leaf."
 midpoint (Node _ _ [_]) = Left "midpoint: Root node has degree two."
-midpoint t@(Node _ _ [_, _]) = roots t >>= getMidpoint
-midpoint _ = Left "midpoint: Root node is multifurcating."
+midpoint t = roots t >>= getMidpoint
 
 -- Find the index of the smallest element.
 findMinIndex :: Ord a => [a] -> Either String Int
 findMinIndex (x : xs) = go (0, x) 1 xs
   where
     go (i, _) _ [] = Right i
+    -- Indices with respect to original list: i is index of z, j is index of y.
     go (i, z) j (y : ys) = if z < y then go (i, z) (j + 1) ys else go (j, y) (j + 1) ys
 findMinIndex [] = Left "findMinIndex: Empty list."
 
@@ -220,58 +241,70 @@ getMidpoint ts = case t of
           Node
             br
             lb
-            [ modifyStem (modifyLength (subtract dh)) l,
+            [ modifyStem (modifyLength (subtract' dh)) l,
               modifyStem (modifyLength (+ dh)) r
             ]
   Right _ -> error "getMidpoint: Root node is not bifurcating?"
   Left e -> Left e
   where
     dhs = map getDeltaHeight ts
+    -- Find index of minimum. Take this tree and move root to the midpoint of
+    -- the branch.
     t = (ts !!) <$> findMinIndex dhs
-
--- find index of minimum; take this tree and move root to the midpoint of the branch
+    -- Subtract, and check that larger equal 0 with a precision close to the
+    -- machine precision of roughly 1e-16.
+    subtract' dx x =
+      let x' = subtract dx x
+       in case compare x' 0 of
+            LT -> if x' < 1e-14 then error "getMidpoint: Length less than zero." else 0
+            _ -> x'
 
 -- Get delta height of left and right sub tree.
 getDeltaHeight :: HasLength e => Tree e a -> Length
 getDeltaHeight (Node _ _ [l, r]) = abs $ height l - height r
--- Explicitly use 'error' here, because roots is supposed to return trees with
--- bifurcating root nodes.
-getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating; please contact maintainer."
+getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating?"
 
--- | For a rooted tree with a bifurcating root node, get all possible rooted
--- trees.
+-- | Get all possible rooted trees with bifurcating root nodes.
 --
--- The root node (label and branch) is moved.
+-- If the root node of the original tree is bifurcating, the root node (label and
+-- branch) is moved.
 --
--- For a tree with @l=2@ leaves, there is one rooted tree. For a bifurcating
--- tree with @l>2@ leaves, there are @(2l-3)@ rooted trees. For a general tree
--- with a bifurcating root node, and a total number of @n>2@ nodes, there are
--- (n-2) rooted trees.
---
--- A bifurcating root is required because moving a multifurcating root node to
--- another branch would change the degree of the root node. To resolve a
--- multifurcating root, please use 'outgroup'.
+-- If the root node of the original tree is multifurcating, a new root node is
+-- introduced using the 'Default' instance of the node labels. Thereby, the
+-- degree of the original root node is reduced by one. The original,
+-- multifurcating tree is not returned.
 --
 -- Connect branches according to the provided 'Semigroup' instance.
 --
 -- Split the affected branch into one out of two equal entities according the
 -- provided 'Splittable' instance.
 --
--- Return 'Left' if the root node is not 'bifurcating'.
-roots :: (Semigroup e, Splittable e) => Tree e a -> Either String (Forest e a)
+-- For a tree with @l=2@ leaves, there is one rooted tree. For a bifurcating
+-- tree with @l>2@ leaves, there are @(2l-3)@ rooted trees. For a general tree
+-- with a bifurcating root node, and a total number of @n>2@ nodes, there are
+-- (n-2) rooted trees.
+--
+-- TODO: For a multifurcating tree there are how many rooted trees?
+roots :: (Semigroup e, Splittable e, Default a) => Tree e a -> Either String (Forest e a)
 roots (Node _ _ []) = Left "roots: Root node is a leaf."
 roots (Node _ _ [_]) = Left "roots: Root node has degree two."
 roots t@(Node b c [tL, tR]) = Right $ t : descend b c tR tL ++ descend b c tL tR
-roots _ = Left "roots: Root node is multifurcating."
+-- TODO: CONTINUE HERE.
+--
+-- Prepare the N bifurcating rooted trees and call 'roots' again. (BUT DOESN'T
+-- work because infinite loop).
+roots (Node b c ts) = undefined
 
 complementaryForests :: Tree e a -> Forest e a -> [Forest e a]
 complementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n -1)]]
   where
     n = length ts
 
--- From the bifurcating root, descend into one of the two pits.
+-- Descend into the downward tree.
 --
--- descend splitFunction rootBranch rootLabel complementaryTree downwardsTree
+-- @
+-- descend rootBranch rootLabel complementaryTree downwardsTree
+-- @
 descend :: (Semigroup e, Splittable e) => e -> a -> Tree e a -> Tree e a -> Forest e a
 descend _ _ _ (Node _ _ []) = []
 descend brR lbR tC (Node brD lbD tsD) =
@@ -286,54 +319,6 @@ descend brR lbR tC (Node brD lbD tsD) =
     brC' = branch tC <> brD
     tC' = tC {branch = brC'}
     cfs = complementaryForests tC' tsD
-
--- Root a tree at a specific position.
---
--- Root the tree at the branch defined by the given bipartition. The original
--- root node is moved to the new position.
---
--- The root node must be bifurcating (see 'roots' and 'outgroup').
---
--- Connect branches according to the provided 'Semigroup' instance.
---
--- Upon insertion of the root, split the affected branch according to the
--- provided 'Splittable' instance.
---
--- Return 'Left', if:
---
--- - the root node is not bifurcating;
---
--- - the tree has duplicate leaves;
---
--- - the bipartition does not match the leaves of the tree.
-rootAt ::
-  (Semigroup e, Splittable e, Eq a, Ord a) =>
-  Bipartition a ->
-  Tree e a ->
-  Either String (Tree e a)
-rootAt b t
-  -- Tree is checked for being bifurcating in 'roots'.
-  --
-  -- Do not use 'duplicateLeaves' here, because we also need to compare the leaf
-  -- set with the bipartition.
-  | length lvLst /= S.size lvSet = Left "rootAt: Tree has duplicate leaves."
-  | toSet b /= lvSet = Left "rootAt: Bipartition does not match leaves of tree."
-  | otherwise = rootAt' b t
-  where
-    lvLst = leaves t
-    lvSet = S.fromList $ leaves t
-
--- Assume the leaves of the tree are unique.
-rootAt' ::
-  (Semigroup e, Splittable e, Ord a) =>
-  Bipartition a ->
-  Tree e a ->
-  Either String (Tree e a)
-rootAt' b t = do
-  ts <- roots t
-  case find (\x -> bipartition x == Right b) ts of
-    Nothing -> Left "rootAt': Bipartition not found on tree."
-    Just t' -> Right t'
 
 -- | Branch label for phylogenetic trees.
 --
@@ -407,13 +392,14 @@ toLengthTree (Node br lb ts) =
 --
 -- Return 'Left' if any other branch has no available support value.
 toSupportTree :: HasMaybeSupport e => Tree e a -> Either String (Tree Support a)
-toSupportTree t@(Node br lb ts) = fromMaybeWithError "toSupportTree: Support value unavailable for some branches." $
-  getBranchTree <$> sequenceA (BranchTree (Node br' lb $ map go ts))
+toSupportTree t@(Node br lb ts) =
+  fromMaybeWithError "toSupportTree: Support value unavailable for some branches." $
+    getBranchTree <$> sequenceA (BranchTree (Node br' lb $ map go ts))
   where
-        m = getMaxSupport t
-        br' = cleanSupportWith m br
-        go (Node b l []) = Node (cleanSupportWith m b) l []
-        go (Node b l xs) = Node (getMaybeSupport b) l (map go xs)
+    m = getMaxSupport t
+    br' = cleanSupportWith m br
+    go (Node b l []) = Node (cleanSupportWith m b) l []
+    go (Node b l xs) = Node (getMaybeSupport b) l (map go xs)
 
 -- If all branch support values are below 1.0, set the max support to 1.0.
 getMaxSupport :: HasMaybeSupport e => Tree e a -> Support
