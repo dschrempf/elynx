@@ -1,0 +1,9 @@
+packages:
+  elynx/*.cabal
+  elynx-markov/*.cabal
+  elynx-nexus/*.cabal
+  elynx-seq/*.cabal
+  elynx-tools/*.cabal
+  elynx-tree/*.cabal
+  slynx/*.cabal
+  tlynx/*.cabal
