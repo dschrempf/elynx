@@ -39,7 +39,7 @@ prop_appl :: (Applicative f, Eq (f a)) => (a -> a -> a) -> f a -> Bool
 prop_appl f x = liftA2 f x x == (f <$> x <*> x)
 
 prop_appl_func :: (Applicative f, Eq (f b)) => (a -> b) -> f a -> Bool
-prop_appl_func f x = fmap f x == (pure f <*> x)
+prop_appl_func f x = fmap f x == (f <$> x)
 
 filterLaws :: [String] -> Laws -> Laws
 filterLaws xs (Laws tn ps) = Laws tn [(n, p) | (n, p) <- ps, n `notElem` xs]

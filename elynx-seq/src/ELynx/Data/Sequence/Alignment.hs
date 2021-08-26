@@ -218,7 +218,7 @@ filterColsConstantSoft a = filterColsWith f a
     al = alphabet a
     f v = case V.find (A.isStd al) v of
       Nothing -> False
-      Just c -> V.all (\x -> x == c || (A.isGap al) x || (A.isUnknown al) x) v
+      Just c -> V.all (\x -> x == c || A.isGap al x || A.isUnknown al x) v
 
 -- | Only keep columns with standard characters. Alignment columns with IUPAC
 -- characters are removed.
