@@ -63,3 +63,4 @@
 /temp/
 /.rsync-project
 /.direnv/
+**/result

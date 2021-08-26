@@ -32,24 +32,21 @@
           );
           overlays = [ elynx-overlay ];
           pkgs = import nixpkgs { inherit system overlays; };
-          elynx = lib.genAttrs packageNames (
-            # This should be removed but it does not work (see below).
-            n: pkgs.haskell.lib.doBenchmark pkgs.haskellPackages.${n}
-          );
+          # Set with packages.
+          elynx = lib.genAttrs packageNames (n: pkgs.haskellPackages.${n});
+          # List with packages with benchmark dependencies for development
+          # environment.
+          elynx-dev = builtins.mapAttrs (_: x: pkgs.haskell.lib.doBenchmark x) elynx;
         in
           {
             packages = elynx;
 
-            defaultPackage = elynx.elynx;
-
             devShell = pkgs.haskellPackages.shellFor {
-              packages = p: map (n: p.${n}) packageNames;
+              packages = _: (builtins.attrValues elynx-dev);
               buildInputs = with pkgs.haskellPackages; [
                 haskell-language-server
                 cabal-install
               ];
-              # TODO.
-              # Somehow this flag does not work.
               doBenchmark = true;
             };
           }
