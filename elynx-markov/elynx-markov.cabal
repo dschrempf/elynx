@@ -73,6 +73,8 @@ test-suite markov-test
       ELynx.Import.MarkovProcess.SiteprofilesPhylobayesSpec
       ELynx.Simulate.MarkovProcessAlongTreeSpec
       Paths_elynx_markov
+  autogen-modules:
+      Paths_elynx_markov
   hs-source-dirs: test
   ghc-options: -Wall -Wunused-packages
   build-depends:

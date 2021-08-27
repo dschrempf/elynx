@@ -82,6 +82,8 @@ test-suite seq-test
       ELynx.Export.Sequence.FastaSpec
       ELynx.Import.Sequence.FastaSpec
       Paths_elynx_seq
+  autogen-modules:
+      Paths_elynx_seq
   hs-source-dirs: test
   ghc-options: -Wall -Wunused-packages
   build-depends:

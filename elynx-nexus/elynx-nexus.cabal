@@ -42,6 +42,8 @@ test-suite seq-test
   main-is: Spec.hs
   other-modules:
       Paths_elynx_nexus
+  autogen-modules:
+      Paths_elynx_nexus
   hs-source-dirs: test
   ghc-options: -Wall -Wunused-packages
   build-depends:
