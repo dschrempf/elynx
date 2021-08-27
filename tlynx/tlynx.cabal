@@ -70,6 +70,8 @@ executable tlynx
   main-is: Main.hs
   other-modules:
       Paths_tlynx
+  autogen-modules:
+      Paths_tlynx
   hs-source-dirs: app
   ghc-options: -Wall -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:

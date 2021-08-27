@@ -68,6 +68,8 @@ executable slynx
   main-is: Main.hs
   other-modules:
       Paths_slynx
+  autogen-modules:
+      Paths_slynx
   hs-source-dirs: app
   ghc-options: -Wall -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:

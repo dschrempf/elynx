@@ -134,6 +134,8 @@ benchmark tree-bench
       Lens
       Tree
       Paths_elynx_tree
+  autogen-modules:
+      Paths_elynx_tree
   hs-source-dirs: bench
   ghc-options: -Wall -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:
