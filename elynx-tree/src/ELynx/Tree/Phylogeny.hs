@@ -72,7 +72,7 @@ where
 import Control.DeepSeq
 import Data.Aeson
 import Data.Bifunctor
-import Data.Default
+import Data.Default.Class
 import Data.List hiding (intersect)
 import Data.Maybe
 import Data.Monoid

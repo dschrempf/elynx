@@ -26,7 +26,7 @@ module TLynx.Simulate.Simulate
 where
 
 import Control.Concurrent (getNumCapabilities)
-import Control.Concurrent.Async.Lifted.Safe
+import Control.Concurrent.Async
   ( mapConcurrently,
   )
 import Control.Monad

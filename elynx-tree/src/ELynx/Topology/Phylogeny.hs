@@ -28,7 +28,7 @@ module ELynx.Topology.Phylogeny
   )
 where
 
-import Data.Default
+import Data.Default.Class
 import Data.List hiding (intersect)
 import Data.Maybe
 import qualified Data.Set as S

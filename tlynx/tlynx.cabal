@@ -46,16 +46,16 @@ library
   ghc-options: -Wall -Wunused-packages
   build-depends:
       aeson
+    , async
     , attoparsec
     , base >=4.7 && <5
     , bytestring
     , comonad
     , containers
-    , data-default
+    , data-default-class
     , elynx-tools
     , elynx-tree
     , gnuplot
-    , lifted-async
     , monad-logger
     , mwc-random
     , optparse-applicative

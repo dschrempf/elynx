@@ -21,7 +21,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
-import Data.Default
+import Data.Default.Class
 import qualified Data.Set as S
 import ELynx.Tools
   ( Arguments (..),

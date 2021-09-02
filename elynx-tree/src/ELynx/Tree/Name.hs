@@ -24,7 +24,7 @@ import Data.Aeson
 import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
-import Data.Default
+import Data.Default.Class
 -- TODO: 2021-09-02: Native conversion is being implemented at the moment.
 -- Remove external library when this is available.
 import qualified Data.Double.Conversion.ByteString as BC

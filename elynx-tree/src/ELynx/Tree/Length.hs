@@ -39,7 +39,7 @@ where
 import Control.DeepSeq
 import Data.Aeson
 import Data.Bifunctor
-import Data.Default
+import Data.Default.Class
 import Data.Foldable
 import Data.Semigroup
 import ELynx.Tree.Rooted
