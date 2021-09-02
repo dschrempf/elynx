@@ -44,8 +44,9 @@
             devShell = pkgs.haskellPackages.shellFor {
               packages = _: (builtins.attrValues elynx-dev);
               buildInputs = with pkgs.haskellPackages; [
-                haskell-language-server
                 cabal-install
+                haskell-language-server
+                stack
               ];
               doBenchmark = true;
             };
