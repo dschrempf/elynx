@@ -64,3 +64,6 @@
 /.rsync-project
 /.direnv/
 **/result
+
+# Misc.
+*dependencies*.dot
