@@ -43,7 +43,7 @@
 
             devShell = pkgs.haskellPackages.shellFor {
               packages = _: (builtins.attrValues elynx-dev);
-              buildInputs = with pkgs [
+              buildInputs = with pkgs; [
                 haskellPackages.cabal-install
                 haskellPackages.haskell-language-server
                 haskellPackages.stack
