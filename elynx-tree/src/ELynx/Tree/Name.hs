@@ -25,7 +25,9 @@ import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Default
-import Data.Double.Conversion.ByteString as BC
+-- TODO: 2021-09-02: Native conversion is being implemented at the moment.
+-- Remove external library when this is available.
+import qualified Data.Double.Conversion.ByteString as BC
 import Data.String
 
 -- | Node name.
@@ -62,7 +64,7 @@ instance HasName Int where
   getName = Name . BB.toLazyByteString . BB.intDec
 
 instance HasName Double where
-  getName = Name . BL.fromStrict . toShortest
+  getName = Name . BL.fromStrict . BC.toShortest
 
 instance HasName Char where
   getName = Name . BB.toLazyByteString . BB.char8
