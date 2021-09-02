@@ -1,4 +1,4 @@
-resolver: lts-18.7
+resolver: lts-18.8
 
 packages:
   - elynx
@@ -17,8 +17,3 @@ packages:
 #   # "$locals": -eventlog
 #   # Weeder 2.0.
 #   "$locals": -fwrite-ide-info
-
-# Nix integration via shell because the unfree mkl library is used.
-nix:
-  add-gc-roots: true
-  shell-file: shell.nix
