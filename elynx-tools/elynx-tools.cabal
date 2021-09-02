@@ -28,13 +28,17 @@ library
       ELynx.Tools.ByteString
       ELynx.Tools.Concurrent
       ELynx.Tools.Definitions
+      ELynx.Tools.ELynx
+      ELynx.Tools.Environment
       ELynx.Tools.Equality
+      ELynx.Tools.ExecutionMode
       ELynx.Tools.InputOutput
       ELynx.Tools.LinearAlgebra
       ELynx.Tools.List
       ELynx.Tools.Logger
       ELynx.Tools.Misc
       ELynx.Tools.Numeric
+      ELynx.Tools.Options
       ELynx.Tools.Reproduction
       ELynx.Tools.Text
       Paths_elynx_tools
@@ -52,7 +56,7 @@ library
     , directory
     , hmatrix
     , monad-control
-    , monad-logger
+    -- , monad-logger
     , mwc-random
     , optparse-applicative
     , primitive

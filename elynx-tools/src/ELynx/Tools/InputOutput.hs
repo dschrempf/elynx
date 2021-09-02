@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -19,7 +18,6 @@
 module ELynx.Tools.InputOutput
   ( -- * Input, output
     getOutFilePath,
-    openFile',
     readGZFile,
     writeGZFile,
     out,
@@ -40,20 +38,12 @@ import Codec.Compression.GZip
     decompress,
   )
 import Control.Monad.IO.Class
-import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
 import Data.Attoparsec.ByteString.Lazy
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (isSuffixOf)
 import qualified Data.Text as T
-import ELynx.Tools.Reproduction
-  ( Arguments (..),
-    ELynx,
-    Force (..),
-    Reproducible (..),
-    forceReanalysis,
-    outFileBaseName,
-  )
+import ELynx.Tools.ELynx
 import System.Directory (doesFileExist)
 import System.IO
 
@@ -69,21 +59,6 @@ getOutFilePath ext = do
     else
       error
         "getOutFilePath: out file suffix not registered; please contact maintainer."
-
-checkFile :: Force -> FilePath -> IO ()
-checkFile (Force True) _ = return ()
-checkFile (Force False) fp =
-  doesFileExist fp >>= \case
-    True ->
-      error $
-        "File exists: "
-          <> fp
-          <> ". Please use the --force option to repeat an analysis."
-    False -> return ()
-
--- | Open existing files only if 'Force' is true.
-openFile' :: Force -> FilePath -> IOMode -> IO Handle
-openFile' frc fp md = checkFile frc fp >> openFile fp md
 
 -- -- XXX: For now, all files are read strictly (see help of
 -- -- Control.DeepSeq.force).

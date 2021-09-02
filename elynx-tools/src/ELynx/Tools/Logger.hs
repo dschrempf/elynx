@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -16,111 +17,192 @@
 --
 -- Creation date: Fri Sep  6 14:43:19 2019.
 module ELynx.Tools.Logger
-  ( -- * Logger
-    logNewSection,
-    eLynxWrapper,
+  ( Verbosity (..),
+    HasLock (..),
+    HasLogHandles (..),
+    HasStartingTime (..),
+    HasVerbosity (..),
+    Logger,
+    logOutB,
+    logDebugB,
+    logDebugS,
+    logWarnB,
+    logWarnS,
+    logInfoB,
+    logInfoS,
+    logHeader,
+    logInfoHeader,
+    logInfoFooter,
+    logInfoNewSection,
   )
 where
 
-import Control.Monad.Base (liftBase)
+-- TODO: Sort functions.
+
+import Control.Concurrent.MVar
+import Control.Monad
 import Control.Monad.IO.Class
-import Control.Monad.Logger
-import Control.Monad.Trans.Control (MonadBaseControl)
-import Control.Monad.Trans.Reader (ReaderT (runReaderT))
-import qualified Data.ByteString.Char8 as BS
-import Data.Text
-import ELynx.Tools.InputOutput (openFile')
-import ELynx.Tools.Reproduction
+import Control.Monad.Trans.Reader
+import Data.Aeson.TH
+import qualified Data.ByteString.Lazy.Char8 as BL
+import Data.List
+import Data.Time
+import Data.Version
+import GHC.Generics
+import Language.Haskell.TH
+import Paths_elynx_tools
+import System.Environment
 import System.IO
-import System.Random.MWC
+
+-- | Verbosity levels.
+data Verbosity = Quiet | Warn | Info | Debug
+  deriving (Bounded, Enum, Eq, Generic, Ord, Read, Show)
+
+-- TODO: Do I need '' or '?
+$(deriveJSON defaultOptions ''Verbosity)
+
+-- | Types with an output lock for concurrent output.
+class HasLock e where
+  getLock :: e -> MVar ()
+
+-- | Types with logging information.
+class HasLogHandles e where
+  getLogHandles :: e -> [Handle]
+
+-- | Types with starting time.
+class HasStartingTime s where
+  getStartingTime :: s -> UTCTime
+
+-- | Types with verbosity.
+class HasVerbosity s where
+  getVerbosity :: s -> Verbosity
+
+-- | Reader transformer used for logging to a file and to standard output.
+type Logger e a = ReaderT e IO a
+
+msgPrepare :: BL.ByteString -> BL.ByteString -> BL.ByteString
+msgPrepare pref msg = BL.intercalate "\n" $ map (BL.append pref) $ BL.lines msg
+
+-- Make sure that concurrent output is not scrambled.
+atomicAction :: HasLock e => IO () -> Logger e ()
+atomicAction a = do
+  l <- reader getLock
+  liftIO $ withMVar l (const a)
+
+-- | Write to standard output and maybe to log file.
+logOutB ::
+  (HasLogHandles e, HasLock e) =>
+  -- | Prefix.
+  BL.ByteString ->
+  -- | Message.
+  BL.ByteString ->
+  Logger e ()
+logOutB pref msg = do
+  hs <- reader getLogHandles
+  mapM_ (atomicAction . (`BL.hPutStrLn` msg')) hs
+  where
+    msg' = msgPrepare pref msg
+
+-- Perform debug action.
+logDebugA :: (HasLock e, HasLogHandles e, HasVerbosity e) => Logger e () -> Logger e ()
+logDebugA a = reader getVerbosity >>= \v -> when (v >= Debug) a
+
+-- | Log debug message.
+logDebugB :: (HasLock e, HasLogHandles e, HasVerbosity e) => BL.ByteString -> Logger e ()
+logDebugB = logDebugA . logOutB "D: "
+
+-- | Log debug message.
+logDebugS :: (HasLock e, HasLogHandles e, HasVerbosity e) => String -> Logger e ()
+logDebugS = logDebugB . BL.pack
+
+-- Perform warning action.
+logWarnA :: (HasLogHandles e, HasVerbosity e) => Logger e () -> Logger e ()
+logWarnA a = reader getVerbosity >>= \v -> when (v >= Warn) a
+
+-- | Log warning message.
+logWarnB :: (HasLock e, HasLogHandles e, HasVerbosity e) => BL.ByteString -> Logger e ()
+logWarnB = logWarnA . logOutB "W: "
+
+-- | Log warning message.
+logWarnS :: (HasLock e, HasLogHandles e, HasVerbosity e) => String -> Logger e ()
+logWarnS = logWarnB . BL.pack
+
+-- Perform info action.
+logInfoA :: (HasLogHandles e, HasVerbosity e) => Logger e () -> Logger e ()
+logInfoA a = reader getVerbosity >>= \v -> when (v >= Info) a
+
+-- | Log info message.
+logInfoB :: (HasLock e, HasLogHandles e, HasVerbosity e) => BL.ByteString -> Logger e ()
+logInfoB = logInfoA . logOutB "   "
+
+-- | Log info message.
+logInfoS :: (HasLock e, HasLogHandles e, HasVerbosity e) => String -> Logger e ()
+logInfoS = logInfoB . BL.pack
+
+-- Be careful; it is necessary to synchronize the version numbers across packages.
+versionString :: String
+versionString = "ELynx Suite version " ++ showVersion version ++ "."
+
+copyrightString :: String
+copyrightString = "Developed by Dominik Schrempf."
+
+compilationString :: String
+compilationString =
+  "Compiled on "
+    ++ $( stringE
+            =<< runIO
+              ( formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z."
+                  `fmap` Data.Time.getCurrentTime
+              )
+        )
+
+-- A short header to be used in executables. 'unlines' doesn't work here because
+-- it adds an additional newline at the end.
+logHeader :: [String]
+logHeader = [versionString, copyrightString, compilationString]
+
+time :: IO String
+time =
+  formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z."
+    `fmap` Data.Time.getCurrentTime
+
+-- | Log header.
+logInfoHeader :: (HasLock e, HasLogHandles e, HasVerbosity e) => String -> [String] -> Logger e ()
+logInfoHeader h dsc = do
+  logInfoS (replicate 70 '-')
+  logInfoS ("ELynx suite; version " ++ showVersion version <> ".")
+  logInfoS "Developed by: Dominik Schrempf."
+  logInfoS "License: GPL-3.0-or-later."
+  t <- liftIO time
+  p <- liftIO getProgName
+  as <- liftIO getArgs
+  let hdr' =
+        intercalate "\n" $
+          ("=== " <> h) :
+          dsc
+            ++ logHeader
+            ++ ["Start time: " ++ t, "Command line: " ++ p ++ " " ++ unwords as]
+  -- TODO: Check this header, remove redundant information.
+  logInfoS hdr'
+  logInfoS (replicate 70 '-')
+
+-- TODO: Either use starting time or remove constraint and class.
+
+-- | Log footer.
+logInfoFooter :: (HasLock e, HasLogHandles e, HasStartingTime e, HasVerbosity e) => Logger e ()
+logInfoFooter = do
+  -- TODO: Either:
+  t <- liftIO time
+  let timeStr = "=== End time: " ++ t
+  logInfoS timeStr
+
+-- -- TODO: Or:
+-- ti <- reader getStartingTime
+-- te <- liftIO getCurrentTime
+-- let dt = te `diffUTCTime` ti
+-- logInfoB $ "Wall clock run time: " <> renderDuration dt <> "."
+-- logInfoS $ "End time: " <> renderTime te
 
 -- | Unified way of creating a new section in the log.
-logNewSection :: MonadLogger m => Text -> m ()
-logNewSection s = $(logInfo) $ "== " <> s
-
--- | The 'ReaderT' and 'LoggingT' wrapper for ELynx. Prints a header and a
--- footer, logs to 'stderr' if no file is provided. Initializes the seed if none
--- is provided. If a log file is provided, log to the file and to 'stderr'.
-eLynxWrapper ::
-  forall a b.
-  (Eq a, Show a, Reproducible a, ToJSON a) =>
-  Arguments a ->
-  (Arguments a -> Arguments b) ->
-  ELynx b () ->
-  IO ()
-eLynxWrapper args f worker = do
-  -- Arguments.
-  let gArgs = global args
-      lArgs = local args
-  let lvl = toLogLevel $ verbosity gArgs
-      rd = forceReanalysis gArgs
-      outBn = outFileBaseName gArgs
-      logFile = (++ ".log") <$> outBn
-  runELynxLoggingT lvl rd logFile $ do
-    -- Header.
-    h <- liftIO $ logHeader (cmdName @a) (cmdDsc @a)
-    $(logInfo) $ pack $ h ++ "\n"
-    -- Fix seed.
-    lArgs' <- case getSeed lArgs of
-      Nothing -> return lArgs
-      Just Random -> do
-        -- XXX: Have to go via a generator here, since creation of seed is not
-        -- supported.
-        g <- liftIO createSystemRandom
-        s <- liftIO $ fromSeed <$> save g
-        $(logInfo) $ pack $ "Seed: random; set to " <> show s <> "."
-        return $ setSeed lArgs s
-      Just (Fixed s) -> do
-        $(logInfo) $ pack $ "Seed: " <> show s <> "."
-        return lArgs
-    let args' = Arguments gArgs lArgs'
-    -- Run the worker with the fixed seed.
-    runReaderT worker $ f args'
-    -- Reproduction file.
-    case (writeElynxFile gArgs, outBn) of
-      (False, _) ->
-        $(logInfo)
-          "No elynx file option --- skip writing ELynx file for reproducible runs."
-      (True, Nothing) ->
-        $(logInfo)
-          "No output file given --- skip writing ELynx file for reproducible runs."
-      (True, Just bn) -> do
-        $(logInfo) "Write ELynx reproduction file."
-        liftIO $ writeReproduction bn args'
-    -- Footer.
-    ftr <- liftIO logFooter
-    $(logInfo) $ pack ftr
-
-runELynxLoggingT ::
-  (MonadBaseControl IO m, MonadIO m) =>
-  LogLevel ->
-  Force ->
-  Maybe FilePath ->
-  LoggingT m a ->
-  m a
-runELynxLoggingT lvl _ Nothing =
-  runELynxStderrLoggingT . filterLogger (\_ l -> l >= lvl)
-runELynxLoggingT lvl frc (Just fn) =
-  runELynxFileLoggingT frc fn . filterLogger (\_ l -> l >= lvl)
-
-runELynxFileLoggingT ::
-  MonadBaseControl IO m => Force -> FilePath -> LoggingT m a -> m a
-runELynxFileLoggingT frc fp logger = do
-  h <- liftBase $ openFile' frc fp WriteMode
-  liftBase (hSetBuffering h LineBuffering)
-  r <- runLoggingT logger (output2H stderr h)
-  liftBase (hClose h)
-  return r
-
-runELynxStderrLoggingT :: MonadIO m => LoggingT m a -> m a
-runELynxStderrLoggingT = (`runLoggingT` output stderr)
-
-output :: Handle -> Loc -> LogSource -> LogLevel -> LogStr -> IO ()
-output h _ _ _ msg = BS.hPutStrLn h ls where ls = fromLogStr msg
-
-output2H :: Handle -> Handle -> Loc -> LogSource -> LogLevel -> LogStr -> IO ()
-output2H h1 h2 _ _ _ msg = do
-  BS.hPutStrLn h1 ls
-  BS.hPutStrLn h2 ls
-  where
-    ls = fromLogStr msg
+logInfoNewSection :: (HasLock e, HasLogHandles e, HasVerbosity e) => String -> Logger e ()
+logInfoNewSection s = logInfoS $ "== " <> s
