@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
-source include
-
 echo "NOTE: Inference model has to be amended manually."
 sleep 3
 
+project_root=$(stack path | grep "project-root" | tr -s " " | cut -d " " -f 2)
 tree_file="${project_root}/elynx-tree/data/Newick.tree"
 
 # edm_file="${project_root}/elynx-markov/data/EDMDistsIQTREE.nex"

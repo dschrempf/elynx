@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-source include
-
+project_root=$(stack path | grep "project-root" | tr -s " " | cut -d " " -f 2)
 file_benchmark="${project_root}/slynx/data/BenchmarkEnsemblMouse.fa.gz"
 
 msg "Seq-Ana benchmark."
-stack --work-dir "$prod_dir" exec slynx -- examine -a DNAI "$file_benchmark"  +RTS -s || exit 1
+cabal exec -- slynx examine -a DNAI "$file_benchmark"  +RTS -s || exit 1

@@ -2,17 +2,15 @@
 
 set -e
 
-source include
-
 programs=("slynx" "tlynx")
 
 for p in "${programs[@]}"
 do
     msg "$p help text."
-    stack exec "$p" -- --help || exit 1
+    cabal exec -- "$p" --help || exit 1
     echo
 
     msg "$p version text."
-    stack exec "$p" -- --version || exit 1
+    cabal exec -- "$p" --version || exit 1
     echo
 done

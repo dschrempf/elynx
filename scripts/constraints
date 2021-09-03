@@ -9,6 +9,9 @@
   --package rosezipper
 -}
 
+# TODO: This file is outdated and may not work.
+EXIT
+
 import           Control.Comonad                ( extend
                                                 , extract
                                                 )
