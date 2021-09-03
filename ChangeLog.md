@@ -11,8 +11,8 @@
     too special and slow).
 -   **elynx-tree:** fix various tree instances; add zip trees with appropriate
     instances.
-
-Significant changes to the tool chain.
+-   Remove `monad-logger` dependency and implement lighter alternative.
+-   Significant changes to the tool chain.
 
 
 ## Version 0.5.1.0
