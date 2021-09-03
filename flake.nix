@@ -36,14 +36,21 @@
             );
             overlays = [ elynx-overlay ];
             pkgs = import nixpkgs { inherit system overlays; };
-            # Set with packages.
             elynx = lib.genAttrs packageNames (n: pkgs.haskellPackages.${n});
-            # List with packages with benchmark dependencies for development
-            # environment.
-            elynx-dev = builtins.mapAttrs (_: x: pkgs.haskell.lib.doBenchmark x) elynx;
+            elynx-dev = builtins.mapAttrs (
+              _: x: pkgs.haskell.lib.overrideCabal x (
+                _: { doBenchmark = true; }
+              )
+            ) elynx;
+            elynx-suite = pkgs.buildEnv {
+              name = "ELynx suite";
+              paths = builtins.attrValues elynx;
+            };
           in
             {
-              packages = elynx;
+              packages = elynx // { inherit elynx-suite; };
+
+              defaultPackage = elynx-suite;
 
               devShell = pkgs.haskellPackages.shellFor {
                 packages = _: (builtins.attrValues elynx-dev);
@@ -54,6 +61,7 @@
                   haskellPackages.stack
                 ];
                 doBenchmark = true;
+                withHoogle = true;
               };
             }
       );
