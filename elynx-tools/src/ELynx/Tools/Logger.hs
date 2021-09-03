@@ -37,13 +37,12 @@ module ELynx.Tools.Logger
   )
 where
 
--- TODO: Sort functions.
-
 import Control.Concurrent.MVar
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader
 import Data.Aeson.TH
+import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List
 import Data.Time
@@ -58,7 +57,6 @@ import System.IO
 data Verbosity = Quiet | Warn | Info | Debug
   deriving (Bounded, Enum, Eq, Generic, Ord, Read, Show)
 
--- TODO: Do I need '' or '?
 $(deriveJSON defaultOptions ''Verbosity)
 
 -- | Types with an output lock for concurrent output.
@@ -152,7 +150,7 @@ compilationString =
     ++ $( stringE
             =<< runIO
               ( formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z."
-                  `fmap` Data.Time.getCurrentTime
+                  `fmap` getCurrentTime
               )
         )
 
@@ -161,19 +159,39 @@ compilationString =
 logHeader :: [String]
 logHeader = [versionString, copyrightString, compilationString]
 
-time :: IO String
-time =
-  formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z."
-    `fmap` Data.Time.getCurrentTime
+-- For a given width, align string to the right; use given fill character.
+alignRightWithNoTrim :: Char -> Int -> BL.ByteString -> BL.ByteString
+alignRightWithNoTrim c n s = BL.replicate (fromIntegral n - l) c <> s
+  where
+    l = BL.length s
+
+-- Adapted from System.ProgressBar.renderDuration of package
+-- [terminal-progressbar-0.4.1](https://hackage.haskell.org/package/terminal-progress-bar-0.4.1).
+renderDuration :: NominalDiffTime -> BL.ByteString
+renderDuration dt = hTxt <> mTxt <> sTxt
+  where
+    hTxt = renderDecimal h <> ":"
+    mTxt = renderDecimal m <> ":"
+    sTxt = renderDecimal s
+    (h, hRem) = ts `quotRem` 3600
+    (m, s) = hRem `quotRem` 60
+    -- Total amount of seconds
+    ts :: Int
+    ts = round dt
+    renderDecimal n = alignRightWithNoTrim '0' 2 $ BB.toLazyByteString $ BB.intDec n
+
+-- Render a time stamp.
+renderTime :: FormatTime t => t -> String
+renderTime = formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z."
 
 -- | Log header.
-logInfoHeader :: (HasLock e, HasLogHandles e, HasVerbosity e) => String -> [String] -> Logger e ()
+logInfoHeader :: (HasLock e, HasLogHandles e, HasStartingTime e, HasVerbosity e) => String -> [String] -> Logger e ()
 logInfoHeader h dsc = do
   logInfoS (replicate 70 '-')
   logInfoS ("ELynx suite; version " ++ showVersion version <> ".")
   logInfoS "Developed by: Dominik Schrempf."
   logInfoS "License: GPL-3.0-or-later."
-  t <- liftIO time
+  t <- renderTime <$> reader getStartingTime
   p <- liftIO getProgName
   as <- liftIO getArgs
   let hdr' =
@@ -181,27 +199,19 @@ logInfoHeader h dsc = do
           ("=== " <> h) :
           dsc
             ++ logHeader
-            ++ ["Start time: " ++ t, "Command line: " ++ p ++ " " ++ unwords as]
-  -- TODO: Check this header, remove redundant information.
+            ++ ["Starting time: " ++ t, "Command line: " ++ p ++ " " ++ unwords as]
   logInfoS hdr'
   logInfoS (replicate 70 '-')
-
--- TODO: Either use starting time or remove constraint and class.
 
 -- | Log footer.
 logInfoFooter :: (HasLock e, HasLogHandles e, HasStartingTime e, HasVerbosity e) => Logger e ()
 logInfoFooter = do
-  -- TODO: Either:
-  t <- liftIO time
-  let timeStr = "=== End time: " ++ t
-  logInfoS timeStr
-
--- -- TODO: Or:
--- ti <- reader getStartingTime
--- te <- liftIO getCurrentTime
--- let dt = te `diffUTCTime` ti
--- logInfoB $ "Wall clock run time: " <> renderDuration dt <> "."
--- logInfoS $ "End time: " <> renderTime te
+  ti <- reader getStartingTime
+  te <- liftIO getCurrentTime
+  let dt = te `diffUTCTime` ti
+  logInfoB $ "Wall clock run time: " <> renderDuration dt <> "."
+  logInfoS $ "End time: " <> renderTime te
+  logInfoS "==="
 
 -- | Unified way of creating a new section in the log.
 logInfoNewSection :: (HasLock e, HasLogHandles e, HasVerbosity e) => String -> Logger e ()

@@ -16,13 +16,22 @@
 --
 -- Creation date: Thu Sep  2 19:17:07 2021.
 module ELynx.Tools.Options
-  ( versionOpt,
-    elynxFooter,
+  ( -- * Command options
+    Seed (..),
     seedOpt,
+
+    -- * Arguments
+    HasMaybeOutFileBaseName (..),
+    GlobalArguments (..),
+    globalArguments,
+    Arguments (..),
+
+    -- * Misc
     parseArguments,
     elynxParserInfo,
     createCommandReproducible,
     createCommand,
+    elynxFooter,
   )
 where
 
@@ -36,106 +45,6 @@ import ELynx.Tools.Misc
 import ELynx.Tools.Reproduction
 import Options.Applicative hiding (empty)
 import Options.Applicative.Help.Pretty
-
--- TODO: Sort?
-
--- TODO: I don't understand why
-versionOpt :: Parser (a -> a)
-versionOpt =
-  infoOption
-    (intercalate "\n" logHeader)
-    ( long "version"
-        -- Lower case 'v' clashes with verbosity.
-        <> short 'V'
-        <> help "Show version"
-        <> hidden
-    )
-
-elynxFooter :: [Doc]
-elynxFooter =
-  [ text "ELynx",
-    text "-----",
-    fillParagraph
-      "A Haskell library and tool set for computational biology. The goal of ELynx is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated. The command line with all arguments is logged consistently, and automatically. Data integrity is verified using SHA256 sums so that validation of past analyses is possible without the need to recompute the result.",
-    empty,
-    fill 9 (text "slynx")
-      <+> text "Analyze, modify, and simulate evolutionary sequences.",
-    fill 9 (text "tlynx")
-      <+> text "Analyze, modify, and simulate phylogenetic trees.",
-    fill 9 (text "elynx") <+> text "Validate and redo past analyses.",
-    empty,
-    text "Get help for sub commands:",
-    text "  slynx examine --help"
-  ]
-
--- TODO. TODO. Does this belong here?
--- | Types possibly having an output file base name.
-class HasMaybeOutFileBaseName a where
-  getMaybeOutFileBaseName :: a -> Maybe FilePath
-
--- | A set of global arguments used by all programs. The idea is to provide a
--- common framework for shared arguments.
-data GlobalArguments = GlobalArguments
-  { verbosity :: Verbosity,
-    outFileBaseName :: Maybe FilePath,
-    executionMode :: ExecutionMode,
-    writeElynxFile :: Bool
-  }
-  deriving (Eq, Show, Generic)
-
-instance FromJSON GlobalArguments
-
-instance ToJSON GlobalArguments
-
--- | See 'GlobalArguments', parser function.
-globalArguments :: Parser GlobalArguments
-globalArguments =
-  GlobalArguments <$> verbosityOpt <*> optional outFileBaseNameOpt <*> forceOpt <*> writeELynxOpt
-
--- | Boolean option; be verbose; default NO.
-verbosityOpt :: Parser Verbosity
-verbosityOpt =
-  option
-    auto
-    ( long "verbosity"
-        <> short 'v'
-        <> metavar "VALUE"
-        <> value Info
-        <> showDefault
-        <> help ("Be verbose; one of: " ++ unwords (map show vs))
-    )
-  where
-    vs = allValues :: [Verbosity]
-
--- | Output filename.
-outFileBaseNameOpt :: Parser FilePath
-outFileBaseNameOpt =
-  strOption
-    ( long "output-file-basename" <> short 'o' <> metavar "NAME"
-        <> help
-          "Specify base name of output file"
-    )
-
--- | Force option parser.
-forceOpt :: Parser ExecutionMode
-forceOpt =
-  flag
-    Fail
-    Overwrite
-    -- DO NOT CHANGE. This option is used by 'elynx redo'.
-    ( long "force" <> short 'f'
-        <> help
-          "Ignore previous analysis and overwrite existing output files."
-    )
-
-writeELynxOpt :: Parser Bool
-writeELynxOpt =
-  flag
-    True
-    False
-    ( long "no-elynx-file"
-        <> help "Do not write data required to reproduce an analysis."
-    )
 
 -- | Random or fixed seed.
 data Seed = Random | Fixed (VU.Vector Word32)
@@ -171,6 +80,76 @@ seedPar =
             )
       )
 
+-- | Types possibly having an output file base name.
+class HasMaybeOutFileBaseName a where
+  getMaybeOutFileBaseName :: a -> Maybe FilePath
+
+-- | A set of global arguments used by all programs. The idea is to provide a
+-- common framework for shared arguments.
+data GlobalArguments = GlobalArguments
+  { verbosity :: Verbosity,
+    outFileBaseName :: Maybe FilePath,
+    executionMode :: ExecutionMode,
+    writeElynxFile :: Bool
+  }
+  deriving (Eq, Show, Generic)
+
+instance FromJSON GlobalArguments
+
+instance ToJSON GlobalArguments
+
+-- | See 'GlobalArguments', parser function.
+globalArguments :: Parser GlobalArguments
+globalArguments =
+  GlobalArguments
+    <$> verbosityOpt <*> optional outFileBaseNameOpt <*> executionModeOpt <*> writeELynxOpt
+
+-- Boolean option; be verbose; default NO.
+verbosityOpt :: Parser Verbosity
+verbosityOpt =
+  option
+    auto
+    ( long "verbosity"
+        <> short 'v'
+        <> metavar "VALUE"
+        <> value Info
+        <> showDefault
+        <> help ("Be verbose; one of: " ++ unwords (map show vs))
+    )
+  where
+    vs = allValues :: [Verbosity]
+
+-- Output filename.
+outFileBaseNameOpt :: Parser FilePath
+outFileBaseNameOpt =
+  strOption
+    ( long "output-file-basename" <> short 'o' <> metavar "NAME"
+        <> help
+          "Specify base name of output file"
+    )
+
+-- Force option parser.
+executionModeOpt :: Parser ExecutionMode
+executionModeOpt =
+  flag
+    Fail
+    Overwrite
+    -- DO NOT CHANGE. This option is used by 'elynx redo'.
+    ( long "force" <> short 'f'
+        <> help
+          "Ignore previous analysis and overwrite existing output files."
+    )
+
+-- Write ELynx file at the end.
+writeELynxOpt :: Parser Bool
+writeELynxOpt =
+  flag
+    True
+    False
+    ( long "no-elynx-file"
+        <> help "Do not write data required to reproduce an analysis."
+    )
+
 -- | Argument skeleton to be used with all commands.
 data Arguments a = Arguments
   { global :: GlobalArguments,
@@ -194,6 +173,17 @@ instance Reproducible a => Reproducible (Arguments a) where
 
 argumentsParser :: Parser a -> Parser (Arguments a)
 argumentsParser p = Arguments <$> globalArguments <*> p
+
+versionOpt :: Parser (a -> a)
+versionOpt =
+  infoOption
+    (intercalate "\n" logHeader)
+    ( long "version"
+        -- Lower case 'v' clashes with verbosity.
+        <> short 'V'
+        <> help "Show version"
+        <> hidden
+    )
 
 elynxParser :: Parser a -> Parser a
 elynxParser p = helper <*> versionOpt <*> p
@@ -255,3 +245,20 @@ createCommand nm dsc ftr p f = command nm $ f <$> parserInfo dsc' ftr' p
 -- descriptions, headers and footers.
 fillParagraph :: String -> Doc
 fillParagraph = fillSep . map text . words
+
+elynxFooter :: [Doc]
+elynxFooter =
+  [ text "ELynx",
+    text "-----",
+    fillParagraph
+      "A Haskell library and tool set for computational biology. The goal of ELynx is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated. The command line with all arguments is logged consistently, and automatically. Data integrity is verified using SHA256 sums so that validation of past analyses is possible without the need to recompute the result.",
+    empty,
+    fill 9 (text "slynx")
+      <+> text "Analyze, modify, and simulate evolutionary sequences.",
+    fill 9 (text "tlynx")
+      <+> text "Analyze, modify, and simulate phylogenetic trees.",
+    fill 9 (text "elynx") <+> text "Validate and redo past analyses.",
+    empty,
+    text "Get help for sub commands:",
+    text "  slynx examine --help"
+  ]
