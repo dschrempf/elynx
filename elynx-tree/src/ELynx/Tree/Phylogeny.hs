@@ -282,10 +282,11 @@ roots (Node _ _ []) = Left "roots: Root node is a leaf."
 roots (Node _ _ [_]) = Left "roots: Root node has degree two."
 roots t@(Node b c [tL, tR]) = Right $ t : descend b c tR tL ++ descend b c tL tR
 roots (Node b c ts) = roots $ Node b def [tL, tR]
-  where (Node bL lL tsL) = head ts
-        bL' = split bL
-        tL = Node bL' lL tsL
-        tR = Node bL' c $ tail ts
+  where
+    (Node bL lL tsL) = head ts
+    bL' = split bL
+    tL = Node bL' lL tsL
+    tR = Node bL' c $ tail ts
 
 complementaryForests :: Tree e a -> Forest e a -> [Forest e a]
 complementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n -1)]]

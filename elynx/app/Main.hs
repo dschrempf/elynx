@@ -192,7 +192,8 @@ runRedo a = do
 
 setExecutionMode :: Arguments a -> Arguments a
 setExecutionMode (Arguments g l) = Arguments g' l
-  where g' = g {executionMode = Overwrite}
+  where
+    g' = g {executionMode = Overwrite}
 
 redo :: AllReproductions -> IO ()
 redo (S x) = slynx $ setExecutionMode $ reproducible x

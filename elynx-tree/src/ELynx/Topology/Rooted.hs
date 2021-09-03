@@ -203,7 +203,7 @@ dropLeavesWith p (Node ts) =
   if null ts'
     then Nothing
     else -- NOTE: Unnecessary conversion to and from list?
-    Just $ Node $ N.fromList ts'
+      Just $ Node $ N.fromList ts'
   where
     ts' = catMaybes $ N.toList $ fmap (dropLeavesWith p) ts
 

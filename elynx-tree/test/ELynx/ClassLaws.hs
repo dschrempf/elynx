@@ -1,4 +1,3 @@
-
 -- |
 -- Module      :  ELynx.ClassLaws
 -- Description :  Unit tests for ELynx.ClassLaws

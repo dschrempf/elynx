@@ -75,7 +75,6 @@ executionModeOpt =
           "Ignore previous analysis and overwrite existing output files."
     )
 
-
 -- | A set of global arguments used by all programs. The idea is to provide a
 -- common framework for shared arguments.
 data GlobalArguments = GlobalArguments

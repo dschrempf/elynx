@@ -1,6 +1,6 @@
 {-# LANGUAGE DerivingVia #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 -- |
 -- Module      :  ELynx.Tree.Name

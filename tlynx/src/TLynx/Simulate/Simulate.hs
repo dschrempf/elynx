@@ -127,18 +127,18 @@ bdSimulateAndSubSampleNTreesConcurrently nLeaves l m r p timeSpec chunks gs = do
       l' = l * r
       m' = m - l * (1.0 - r)
   logInfoNewSection $
-      "Simulate one big tree with "
-        <> show nLeavesBigTree
-        <> " leaves."
+    "Simulate one big tree with "
+      <> show nLeavesBigTree
+      <> " leaves."
   tr <- liftIO $ PP.simulateReconstructedTree nLeavesBigTree timeSpec l' m' (head gs)
   -- Log the base tree.
   logInfoB $ toNewick $ lengthToPhyloTree tr
   logInfoNewSection $
-      "Sub sample "
-        <> show (sum chunks)
-        <> " trees with "
-        <> show nLeaves
-        <> " leaves."
+    "Sub sample "
+      <> show (sum chunks)
+      <> " trees with "
+      <> show nLeaves
+      <> " leaves."
   let lvs = Seq.fromList $ leaves tr
   trss <-
     liftIO $
@@ -157,18 +157,18 @@ coalSimulateAndSubSampleNTreesConcurrently ::
 coalSimulateAndSubSampleNTreesConcurrently nL p chunks gs = do
   let nLeavesBigTree = (round $ fromIntegral nL / p) :: Int
   logInfoNewSection $
-      "Simulate one big tree with "
-        <> show nLeavesBigTree
-        <> " leaves."
+    "Simulate one big tree with "
+      <> show nLeavesBigTree
+      <> " leaves."
   tr <- liftIO $ CS.simulate nLeavesBigTree (head gs)
   -- Log the base tree.
   logInfoB $ toNewick $ lengthToPhyloTree tr
   logInfoNewSection $
-      "Sub sample "
-        <> show (sum chunks)
-        <> " trees with "
-        <> show nL
-        <> " leaves."
+    "Sub sample "
+      <> show (sum chunks)
+      <> " trees with "
+      <> show nL
+      <> " leaves."
   let lvs = Seq.fromList $ leaves tr
   trss <-
     liftIO $
