@@ -17,9 +17,7 @@ module SLynx.Translate.Translate
   )
 where
 
-import Control.Monad.Logger
-import Control.Monad.Trans.Reader (ask)
-import qualified Data.Text as T
+import Control.Monad.Trans.Reader
 import ELynx.Data.Character.Codon
 import ELynx.Data.Sequence.Sequence
 import ELynx.Data.Sequence.Translate
@@ -34,11 +32,10 @@ translateSeqs rf uc = map (translateSeq uc rf)
 -- | Translate sequences.
 translateCmd :: ELynx TranslateArguments ()
 translateCmd = do
-  (TranslateArguments al inFile rf uc) <- local <$> ask
-  $(logInfo) "Command: Translate sequences to amino acids."
-  $(logInfo) $ T.pack $ "  Universal code: " <> show uc <> "."
-  $(logInfo) $ T.pack $ "  Reading frame: " <> show rf <> "."
-  $(logInfo) ""
+  (TranslateArguments al inFile rf uc) <- localArguments <$> ask
+  logInfoS $ "  Universal code: " <> show uc <> "."
+  logInfoS $ "  Reading frame: " <> show rf <> "."
+  logInfoS ""
   ss <- readSeqs al inFile
   let result = sequencesToFasta $ translateSeqs rf uc ss
   out "translated sequences" result "fasta"

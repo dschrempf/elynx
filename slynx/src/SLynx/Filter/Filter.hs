@@ -19,11 +19,9 @@ module SLynx.Filter.Filter
 where
 
 import Control.Monad (when)
-import Control.Monad.Logger
-import Control.Monad.Trans.Reader (ask)
+import Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Maybe (fromMaybe)
-import qualified Data.Text as T
 import qualified ELynx.Data.Sequence.Alignment as M
 import qualified ELynx.Data.Sequence.Sequence as S
 import ELynx.Export.Sequence.Fasta
@@ -41,22 +39,21 @@ filterRows ml ms std ss = sequencesToFasta $ compose filters ss
 -- | Filter sequences.
 filterRowsCmd :: ELynx FilterRowsArguments ()
 filterRowsCmd = do
-  (FilterRowsArguments al inFile long short std) <- local <$> ask
-  $(logInfo) "Command: Filter sequences of a list of sequences."
+  (FilterRowsArguments al inFile long short std) <- localArguments <$> ask
   maybe
     (return ())
     ( \val ->
-        $(logInfo) $ T.pack $ "  Keep sequences longer than " <> show val <> "."
+        logInfoS $ "  Keep sequences longer than " <> show val <> "."
     )
     long
   maybe
     (return ())
     ( \val ->
-        $(logInfo) $ T.pack $ "  Keep sequences shorter than " <> show val <> "."
+        logInfoS $ "  Keep sequences shorter than " <> show val <> "."
     )
     short
   when std $
-    $(logInfo)
+    logInfoS
       "  Keep sequences containing at least one standard (i.e., non-IUPAC) character."
   ss <- readSeqs al inFile
   let result = filterRows long short std ss
@@ -71,16 +68,14 @@ filterCols ms ss = sequencesToFasta . M.toSequences $ compose filters a
 -- | Filter columns.
 filterColsCmd :: ELynx FilterColsArguments ()
 filterColsCmd = do
-  (FilterColsArguments al inFile standard) <- local <$> ask
-  $(logInfo) "Command: Filter columns of a multi sequence alignment."
+  (FilterColsArguments al inFile standard) <- localArguments <$> ask
   case standard of
     Nothing -> return ()
     Just p ->
-      $(logInfo) $
-        T.pack $
-          "  Keep columns with a proportion of standard (non-IUPAC) characters larger than "
-            ++ show p
-            ++ "."
+      logInfoS $
+        "  Keep columns with a proportion of standard (non-IUPAC) characters larger than "
+          ++ show p
+          ++ "."
   ss <- readSeqs al inFile
   let result = filterCols standard ss
   out "filtered sequences" result ".fasta"

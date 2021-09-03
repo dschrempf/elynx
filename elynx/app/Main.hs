@@ -174,8 +174,8 @@ runValidate a = do
 runRedo :: RedoArguments -> IO ()
 runRedo a = do
   let fp = rElynxFile a
-  let f = rForce a
-  when (f == Force False) $ do
+  let f = rExecutionMode a
+  when (f == Fail) $ do
     putStrLn "Validate ELynx reproduction file before reanalysis."
     putStrLn "Use the --force (-f) option to skip this test."
     runValidate (ValidateArguments fp)
@@ -190,12 +190,13 @@ runRedo a = do
       else return as
   withProgName (getELynxProgName repr) $ withArgs as' $ redo repr
 
-setForce :: Arguments a -> Arguments a
-setForce (Arguments g l) = Arguments g {forceReanalysis = Force True} l
+setExecutionMode :: Arguments a -> Arguments a
+setExecutionMode (Arguments g l) = Arguments g' l
+  where g' = g {executionMode = Overwrite}
 
 redo :: AllReproductions -> IO ()
-redo (S x) = slynx $ setForce $ reproducible x
-redo (T x) = tlynx $ setForce $ reproducible x
+redo (S x) = slynx $ setExecutionMode $ reproducible x
+redo (T x) = tlynx $ setExecutionMode $ reproducible x
 
 main :: IO ()
 main = do

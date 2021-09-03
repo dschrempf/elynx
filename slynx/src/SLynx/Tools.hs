@@ -22,45 +22,25 @@ module SLynx.Tools
 where
 
 import Control.Monad.IO.Class
-import Control.Monad.Logger
-import qualified Data.Text as T
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.Sequence.Sequence
 import ELynx.Import.Sequence.Fasta
 import ELynx.Tools
 import Options.Applicative
 
--- -- | Read sequences of given alphabet from file or standard input.
--- readSeqs
---   :: (MonadIO m, MonadLogger m) => Alphabet -> Maybe FilePath -> m [Sequence]
--- readSeqs a mfp = do
---   case mfp of
---     Nothing ->
---       $(logInfo)
---         $  T.pack
---         $  "Read sequences from standard input; alphabet "
---         <> show a
---         <> "."
---     Just fp ->
---       $(logInfo)
---         $  T.pack
---         $  "Read sequences from file "
---         <> fp
---         <> "; alphabet "
---         <> show a
---         <> "."
---   liftIO $ parseFileOrIOWith (fasta a) mfp
-
 -- | Read sequences of given alphabet from file or standard input.
-readSeqs :: (MonadIO m, MonadLogger m) => Alphabet -> FilePath -> m [Sequence]
+readSeqs ::
+  (HasLock e, HasLogHandles e, HasVerbosity e) =>
+  Alphabet ->
+  FilePath ->
+  Logger e [Sequence]
 readSeqs a fp = do
-  $(logInfo) $
-    T.pack $
-      "Read sequences from file "
-        <> fp
-        <> "; alphabet "
-        <> show a
-        <> "."
+  logInfoS $
+    "Read sequences from file "
+      <> fp
+      <> "; alphabet "
+      <> show a
+      <> "."
   liftIO $ parseFileWith (fasta a) fp
 
 -- | Command line option to specify the alphabet. Used by various commands.

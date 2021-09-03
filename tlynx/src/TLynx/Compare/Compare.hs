@@ -19,21 +19,14 @@ where
 
 import Control.Monad
 import Control.Monad.IO.Class
-import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (intercalate)
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as E
 import qualified Data.Text.IO as T
 import ELynx.Tools
-  ( Arguments (..),
-    ELynx,
-    GlobalArguments (..),
-    outHandle,
-  )
 import ELynx.Tree
 import Graphics.Gnuplot.Simple
 import System.IO
@@ -47,8 +40,8 @@ treesOneFile ::
     CompareArguments
     (Tree Phylo Name, Tree Phylo Name)
 treesOneFile tf = do
-  nwF <- argsNewickFormat . local <$> ask
-  $(logInfo) $ T.pack $ "Parse file '" ++ tf ++ "'."
+  nwF <- argsNewickFormat . localArguments <$> ask
+  logInfoS $ "Parse file '" ++ tf ++ "'."
   ts <- liftIO $ parseTrees nwF tf
   let n = length ts
   case compare n 2 of
@@ -64,25 +57,25 @@ treesTwoFiles ::
     CompareArguments
     (Tree Phylo Name, Tree Phylo Name)
 treesTwoFiles tf1 tf2 = do
-  nwF <- argsNewickFormat . local <$> ask
-  $(logInfo) $ T.pack $ "Parse first tree file '" ++ tf1 ++ "'."
+  nwF <- argsNewickFormat . localArguments <$> ask
+  logInfoS $ "Parse first tree file '" ++ tf1 ++ "'."
   t1 <- liftIO $ parseTree nwF tf1
-  $(logInfo) $ T.pack $ "Parse second tree file '" ++ tf2 ++ "'."
+  logInfoS $ "Parse second tree file '" ++ tf2 ++ "'."
   t2 <- liftIO $ parseTree nwF tf2
   return (t1, t2)
 
 -- | More detailed comparison of two trees.
 compareCmd :: ELynx CompareArguments ()
 compareCmd = do
-  l <- local <$> ask
+  l <- localArguments <$> ask
   -- Determine output handle (stdout or file).
   outH <- outHandle "results" ".out"
   -- Read input.
-  let inFiles = argsInFiles l
-      nFiles = length inFiles
-  (tr1, tr2) <- case nFiles of
-    1 -> treesOneFile (head inFiles)
-    2 -> treesTwoFiles (head inFiles) (head . tail $ inFiles)
+  let inFs = argsInFiles l
+      nFs = length inFs
+  (tr1, tr2) <- case nFs of
+    1 -> treesOneFile (head inFs)
+    2 -> treesTwoFiles (head inFs) (head . tail $ inFs)
     _ ->
       error
         "Need two input files with one tree each or one input file with two trees."
@@ -130,15 +123,15 @@ analyzeDistance outH t1 t2 = do
             "Branch score"
             (T.pack $ show $ branchScore t1' t2')
     _ -> do
-      $(logInfo) "Some branches do not have length values."
-      $(logInfo) "Distances involving length cannot be calculated."
+      logInfoS "Some branches do not have length values."
+      logInfoS "Distances involving length cannot be calculated."
   case (toExplicitTree t1, toExplicitTree t2) of
     (Right t1', Right t2') -> do
       let t1n = normalizeBranchSupport t1'
           t2n = normalizeBranchSupport t2'
-      $(logDebug) "Trees with normalized branch support values:"
-      $(logDebug) $ E.decodeUtf8 $ BL.toStrict $ toNewick $ toPhyloTree t1n
-      $(logDebug) $ E.decodeUtf8 $ BL.toStrict $ toNewick $ toPhyloTree t2n
+      logDebugS "Trees with normalized branch support values:"
+      logDebugB $ toNewick $ toPhyloTree t1n
+      logDebugB $ toNewick $ toPhyloTree t2n
       liftIO $
         T.hPutStrLn outH $
           formatD
@@ -172,8 +165,8 @@ analyzeDistance outH t1 t2 = do
     --   (T.pack $ show $ incompatibleSplits (collapse 1.01 t1n) (collapse 1.01 t2n))
     -- liftIO $ BL.hPutStrLn outH $ toNewick (collapse 1.01 t1n)
     _ -> do
-      $(logInfo) "Some branches do not have support values."
-      $(logInfo) "Distances involving branch support cannot be calculated."
+      logInfoS "Some branches do not have support values."
+      logInfoS "Distances involving branch support cannot be calculated."
 
 analyzeBipartitions ::
   Handle ->
@@ -230,19 +223,19 @@ analyzeBipartitions outH t1 t2 =
             )
           -- XXX: This circumvents the extension checking, and hash creation for
           -- elynx files.
-          bn <- outFileBaseName . global <$> ask
+          bn <- outFileBaseName . globalArguments <$> ask
           case bn of
             Nothing ->
-              $(logInfo) "No output file name provided. Do not generate plots."
+              logInfoS "No output file name provided. Do not generate plots."
             Just fn -> do
               let compareCommonBps =
                     [ (bpToBrLen1 M.! b, bpToBrLen2 M.! b)
                       | b <- S.toList bpCommon
                     ]
               liftIO $ epspdfPlot fn (plotBps compareCommonBps)
-              $(logInfo)
+              logInfoS
                 "Comparison of branch lengths plot generated (EPS and PDF)"
-    _ -> $(logWarn) "Not all branches have a length! Can not analyze bipartitions."
+    _ -> logWarnS "Not all branches have a length! Can not analyze bipartitions."
 
 header :: String
 header = intercalate "  " $ cols ++ ["Bipartition"]

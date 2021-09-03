@@ -33,7 +33,7 @@ data SubSampleArguments = SubSampleArguments
     ssInFile :: FilePath,
     ssNSites :: Int,
     ssNAlignments :: Int,
-    ssMbSeed :: Seed
+    ssMbSeed :: SeedOpt
   }
   deriving (Eq, Show, Generic)
 
@@ -55,7 +55,7 @@ instance Reproducible SubSampleArguments where
   inFiles = pure . ssInFile
   outSuffixes a = getOutSuffixes (ssNAlignments a) "fasta"
   getSeed = Just . ssMbSeed
-  setSeed a s = a {ssMbSeed = Fixed s}
+  setSeed a s = a {ssMbSeed = s}
   parser = subSampleArguments
   cmdName = "sub-sample"
   cmdDsc = ["Sub-sample columns from multi sequence alignments."]

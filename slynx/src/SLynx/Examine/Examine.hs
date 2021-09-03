@@ -18,8 +18,7 @@ module SLynx.Examine.Examine
   )
 where
 
-import Control.Monad.Logger
-import Control.Monad.Trans.Reader (ask)
+import Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Set as S
 import qualified Data.Vector.Unboxed as V
@@ -157,8 +156,7 @@ examine perSiteFlag ss =
 -- | Examine sequences.
 examineCmd :: ELynx ExamineArguments ()
 examineCmd = do
-  (ExamineArguments al inFile perSiteFlag) <- local <$> ask
-  $(logInfo) "Command: Examine sequences."
+  (ExamineArguments al inFile perSiteFlag) <- localArguments <$> ask
   ss <- readSeqs al inFile
   let result = examine perSiteFlag ss
   out "result of examination" result ".out"

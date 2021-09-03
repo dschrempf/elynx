@@ -15,8 +15,9 @@
 -- Creation date: Thu Sep  2 19:17:07 2021.
 module ELynx.Tools.Options
   ( -- * Command options
-    SeedOption (..),
-    seedOptionParser,
+    SeedOpt (..),
+    seedOpt,
+    executionModeOpt,
 
     -- * Arguments
     GlobalArguments (..),
@@ -43,8 +44,8 @@ import Options.Applicative hiding (empty)
 import Options.Applicative.Help.Pretty
 
 -- | Seed option for MWC. Defaults to Random.
-seedOptionParser :: Parser SeedOption
-seedOptionParser = toSeedOption <$> seedParser
+seedOpt :: Parser SeedOpt
+seedOpt = toSeedOpt <$> seedParser
 
 seedParser :: Parser (Maybe (VU.Vector Word32))
 seedParser =
@@ -58,9 +59,22 @@ seedParser =
             )
       )
 
-toSeedOption :: Maybe (VU.Vector Word32) -> SeedOption
-toSeedOption Nothing = RandomUnset
-toSeedOption (Just w) = Fixed w
+toSeedOpt :: Maybe (VU.Vector Word32) -> SeedOpt
+toSeedOpt Nothing = RandomUnset
+toSeedOpt (Just w) = Fixed w
+
+-- Execution mode option parser.
+executionModeOpt :: Parser ExecutionMode
+executionModeOpt =
+  flag
+    Fail
+    Overwrite
+    -- DO NOT CHANGE. This option is used by 'elynx redo'.
+    ( long "force" <> short 'f'
+        <> help
+          "Ignore previous analysis and overwrite existing output files."
+    )
+
 
 -- | A set of global arguments used by all programs. The idea is to provide a
 -- common framework for shared arguments.
@@ -104,18 +118,6 @@ outFileBaseNameOpt =
     ( long "output-file-basename" <> short 'o' <> metavar "NAME"
         <> help
           "Specify base name of output file"
-    )
-
--- Force option parser.
-executionModeOpt :: Parser ExecutionMode
-executionModeOpt =
-  flag
-    Fail
-    Overwrite
-    -- DO NOT CHANGE. This option is used by 'elynx redo'.
-    ( long "force" <> short 'f'
-        <> help
-          "Ignore previous analysis and overwrite existing output files."
     )
 
 -- Write ELynx file at the end.

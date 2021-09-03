@@ -31,7 +31,6 @@ import Control.Concurrent.Async
   )
 import Control.Monad
 import Control.Monad.IO.Class
-import Control.Monad.Logger
 import Control.Monad.Trans.Reader hiding (local)
 import Control.Parallel.Strategies
 import qualified Data.ByteString.Builder as BB
@@ -40,9 +39,6 @@ import Data.Foldable
 import Data.Maybe
 import qualified Data.Sequence as Seq
 import qualified Data.Set as Set
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as LT
-import qualified Data.Text.Lazy.Encoding as LT
 import ELynx.Tools
 import ELynx.Tree
 import qualified ELynx.Tree.Simulate.Coalescent as CS
@@ -53,12 +49,12 @@ import TLynx.Simulate.Options
 -- | Simulate phylogenetic trees using birth and death process.
 simulate :: ELynx SimulateArguments ()
 simulate = do
-  l@(SimulateArguments nTrees nLeaves pr subS sumS (Fixed s)) <- local <$> ask
+  l@(SimulateArguments nTrees nLeaves pr subS sumS (Fixed s)) <- localArguments <$> ask
   c <- liftIO getNumCapabilities
-  logNewSection "Arguments"
-  $(logInfo) $ T.pack $ reportSimulateArguments l
-  logNewSection "Simulation"
-  $(logInfo) $ T.pack $ "Number of used cores: " <> show c
+  logInfoNewSection "Arguments"
+  logInfoS $ reportSimulateArguments l
+  logInfoNewSection "Simulation"
+  logInfoS $ "Number of used cores: " <> show c
   gs <- liftIO $ initialize s >>= \gen -> splitGen c gen
   let chunks = getChunks c nTrees
   trs <- case pr of
@@ -130,16 +126,14 @@ bdSimulateAndSubSampleNTreesConcurrently nLeaves l m r p timeSpec chunks gs = do
   let nLeavesBigTree = (round $ fromIntegral nLeaves / p) :: Int
       l' = l * r
       m' = m - l * (1.0 - r)
-  logNewSection $
-    T.pack $
+  logInfoNewSection $
       "Simulate one big tree with "
         <> show nLeavesBigTree
         <> " leaves."
   tr <- liftIO $ PP.simulateReconstructedTree nLeavesBigTree timeSpec l' m' (head gs)
   -- Log the base tree.
-  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ lengthToPhyloTree tr
-  logNewSection $
-    T.pack $
+  logInfoB $ toNewick $ lengthToPhyloTree tr
+  logInfoNewSection $
       "Sub sample "
         <> show (sum chunks)
         <> " trees with "
@@ -162,16 +156,14 @@ coalSimulateAndSubSampleNTreesConcurrently ::
   ELynx SimulateArguments (Forest Length Int)
 coalSimulateAndSubSampleNTreesConcurrently nL p chunks gs = do
   let nLeavesBigTree = (round $ fromIntegral nL / p) :: Int
-  logNewSection $
-    T.pack $
+  logInfoNewSection $
       "Simulate one big tree with "
         <> show nLeavesBigTree
         <> " leaves."
   tr <- liftIO $ CS.simulate nLeavesBigTree (head gs)
   -- Log the base tree.
-  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ toNewick $ lengthToPhyloTree tr
-  logNewSection $
-    T.pack $
+  logInfoB $ toNewick $ lengthToPhyloTree tr
+  logInfoNewSection $
       "Sub sample "
         <> show (sum chunks)
         <> " trees with "

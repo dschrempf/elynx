@@ -186,22 +186,21 @@ renderTime = formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z."
 
 -- | Log header.
 logInfoHeader :: (HasLock e, HasLogHandles e, HasStartingTime e, HasVerbosity e) => String -> [String] -> Logger e ()
-logInfoHeader h dsc = do
-  logInfoS (replicate 70 '-')
-  logInfoS ("ELynx suite; version " ++ showVersion version <> ".")
-  logInfoS "Developed by: Dominik Schrempf."
-  logInfoS "License: GPL-3.0-or-later."
+logInfoHeader cmdName cmdDsc = do
+  logInfoS hline
+  logInfoS $ intercalate "\n" logHeader
   t <- renderTime <$> reader getStartingTime
   p <- liftIO getProgName
   as <- liftIO getArgs
-  let hdr' =
-        intercalate "\n" $
-          ("=== " <> h) :
-          dsc
-            ++ logHeader
-            ++ ["Starting time: " ++ t, "Command line: " ++ p ++ " " ++ unwords as]
-  logInfoS hdr'
-  logInfoS (replicate 70 '-')
+  logInfoS $
+    intercalate "\n" $
+      hline :
+      ("Command name: " ++ cmdName) :
+      cmdDsc
+        ++ ["Starting time: " ++ t, "Command line: " ++ p ++ " " ++ unwords as]
+  logInfoS hline
+  where
+    hline = replicate 78 '-'
 
 -- | Log footer.
 logInfoFooter :: (HasLock e, HasLogHandles e, HasStartingTime e, HasVerbosity e) => Logger e ()
@@ -211,7 +210,6 @@ logInfoFooter = do
   let dt = te `diffUTCTime` ti
   logInfoB $ "Wall clock run time: " <> renderDuration dt <> "."
   logInfoS $ "End time: " <> renderTime te
-  logInfoS "==="
 
 -- | Unified way of creating a new section in the log.
 logInfoNewSection :: (HasLock e, HasLogHandles e, HasVerbosity e) => String -> Logger e ()

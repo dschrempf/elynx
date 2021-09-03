@@ -20,7 +20,6 @@ where
 import Control.Applicative ((<|>))
 import Control.Monad
 import Control.Monad.IO.Class
-import Control.Monad.Logger
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Builder as BB
@@ -28,9 +27,6 @@ import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List
 import Data.Maybe
 import qualified Data.Set as Set
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as LT
-import qualified Data.Text.Lazy.Encoding as LT
 import qualified Data.Vector as V
 import qualified Data.Vector.Storable as VS
 import qualified Data.Vector.Unboxed as U
@@ -66,7 +62,7 @@ getDistLine i d =
 writeSiteDists :: [Int] -> V.Vector MR.StationaryDistribution -> ELynx SimulateArguments ()
 -- writeSiteDists is ds = out "site distributions of distribution mixture model" output ".sitedists"
 writeSiteDists componentIs ds = do
-  mbn <- outFileBaseName . global <$> ask
+  mbn <- outFileBaseName . globalArguments <$> ask
   case mbn of
     Nothing -> return ()
     Just bn -> liftIO $ BL.writeFile (bn <> ".sitedists") output
@@ -110,7 +106,7 @@ simulateAlignment pm t' n g = do
           | (sName, ss) <- zip leafNames leafStates
         ]
       output = sequencesToFasta sequences
-  $(logInfo) ""
+  logInfoS ""
   out "simulated multi sequence alignment" output ".fasta"
 
 -- Summarize EDM components; line to be printed to screen or log.
@@ -123,19 +119,19 @@ summarizeEDMComponents cs =
 
 reportModel :: MP.PhyloModel -> ELynx SimulateArguments ()
 reportModel m = do
-  as <- global <$> ask
+  as <- globalArguments <$> ask
   if writeElynxFile as
     then
       ( do
           let bn = outFileBaseName as
           case bn of
             Nothing ->
-              $(logInfo)
+              logInfoS
                 "No output file provided; omit writing machine-readable phylogenetic model."
             Just _ ->
               out "model definition (machine readable)" (BL.pack (show m) <> "\n") ".model.gz"
       )
-    else $(logInfo) "No elynx file required; omit writing machine-readable phylogenetic model."
+    else logInfoS "No elynx file required; omit writing machine-readable phylogenetic model."
 
 pretty :: Length -> String
 pretty = printf "%.5f" . fromLength
@@ -220,46 +216,45 @@ summarizePM (MP.SubstitutionModel sm) = summarizeSM sm
 -- | Simulate sequences.
 simulateCmd :: ELynx SimulateArguments ()
 simulateCmd = do
-  l <- local <$> ask
+  l <- localArguments <$> ask
   let treeFile = argsTreeFile l
-  $(logInfo) ""
-  $(logInfo) $ T.pack $ "Read tree from file '" ++ treeFile ++ "'."
+  logInfoS ""
+  logInfoS $ "Read tree from file '" ++ treeFile ++ "'."
   tree <- liftIO $ parseFileWith (newick Standard) treeFile
   let t' = either error id $ toLengthTree tree
-  $(logInfo) $ T.pack $ "Number of leaves: " ++ show (length $ leaves t')
-  $(logInfo) $ LT.toStrict $ LT.decodeUtf8 $ summarizeLengths t'
+  logInfoS $ "Number of leaves: " ++ show (length $ leaves t')
+  logInfoB $ summarizeLengths t'
   let edmFile = argsEDMFile l
   let sProfileFiles = argsSiteprofilesFiles l
-  $(logInfo) ""
-  $(logDebug) "Read EDM file or siteprofile files."
+  logInfoS ""
+  logDebugS "Read EDM file or siteprofile files."
   when (isJust edmFile && isJust sProfileFiles) $
     error "Got both: --edm-file and --siteprofile-files."
   edmCs <- case edmFile of
     Nothing -> return Nothing
     Just edmF -> do
-      $(logInfo) "Read EDM file."
+      logInfoS "Read EDM file."
       liftIO $ Just <$> parseFileWith phylobayes edmF
   maybe
     (return ())
-    ($(logInfo) . LT.toStrict . LT.decodeUtf8 . summarizeEDMComponents)
+    (logInfoB . summarizeEDMComponents)
     edmCs
   sProfiles <- case sProfileFiles of
     Nothing -> return Nothing
     Just fns -> do
-      $(logInfo) $
-        T.pack $
-          "Read siteprofiles from "
-            ++ show (length fns)
-            ++ " file(s)."
-      $(logDebug) $ T.pack $ "The file names are:" ++ show fns
+      logInfoS $
+        "Read siteprofiles from "
+          ++ show (length fns)
+          ++ " file(s)."
+      logDebugS $ "The file names are:" ++ show fns
       xs <- liftIO $ mapM (parseFileWith siteprofiles) fns
       return $ Just $ concat xs
   maybe
     (return ())
-    ($(logInfo) . LT.toStrict . LT.decodeUtf8 . summarizeEDMComponents)
+    (logInfoB . summarizeEDMComponents)
     sProfiles
   let edmCsOrSiteprofiles = edmCs <|> sProfiles
-  $(logInfo) "Read model string."
+  logInfoS "Read model string."
   let ms = argsSubstitutionModelString l
       mm = argsMixtureModelString l
       mws = argsMixtureWeights l
@@ -270,31 +265,19 @@ simulateCmd = do
   let maybeGammaParams = argsGammaParams l
   phyloModel <- case maybeGammaParams of
     Nothing -> do
-      $(logInfo) $
-        LT.toStrict $
-          LT.decodeUtf8 $
-            BL.unlines $
-              summarizePM
-                phyloModel'
+      logInfoB $ BL.unlines $ summarizePM phyloModel'
       return phyloModel'
     Just (n, alpha) -> do
-      $(logInfo) $
-        LT.toStrict $
-          LT.decodeUtf8 $
-            BL.intercalate "\n" $
-              summarizePM phyloModel'
-      $(logInfo) ""
-      $(logInfo) $
-        LT.toStrict $
-          LT.decodeUtf8 $
-            BL.intercalate "\n" $
-              summarizeGammaRateHeterogeneity n alpha
+      logInfoB $ BL.intercalate "\n" $ summarizePM phyloModel'
+      logInfoS ""
+      logInfoB $ BL.intercalate "\n" $ summarizeGammaRateHeterogeneity n alpha
       return $ expand n alpha phyloModel'
   reportModel phyloModel
-  $(logInfo) "Simulate alignment."
+  logInfoS "Simulate alignment."
   let alignmentLength = argsLength l
-  $(logInfo) $ T.pack $ "Length: " <> show alignmentLength <> "."
-  gen <- case argsSeed l of
-    Random -> error "simulateCmd: seed not available; please contact maintainer."
-    Fixed s -> liftIO $ initialize s
+  logInfoS $ "Length: " <> show alignmentLength <> "."
+  gen <- liftIO <$> initialize $ case argsSeed l of
+    RandomUnset -> error "simulateCmd: seed not available; please contact maintainer."
+    RandomSet s -> s
+    Fixed s -> s
   simulateAlignment phyloModel t' alignmentLength gen

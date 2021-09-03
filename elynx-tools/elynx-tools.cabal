@@ -39,7 +39,6 @@ library
       ELynx.Tools.Numeric
       ELynx.Tools.Options
       ELynx.Tools.Reproduction
-      ELynx.Tools.Text
       Paths_elynx_tools
   autogen-modules:
       Paths_elynx_tools
@@ -54,8 +53,6 @@ library
     , cryptohash-sha256
     , directory
     , hmatrix
-    , monad-control
-    -- , monad-logger
     , mwc-random
     , optparse-applicative
     , primitive
@@ -63,7 +60,6 @@ library
     , text
     , time
     , transformers
-    , transformers-base
     , vector
     , zlib
   default-language: Haskell2010

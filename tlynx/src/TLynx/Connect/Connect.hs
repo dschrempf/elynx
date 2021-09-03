@@ -18,18 +18,11 @@ module TLynx.Connect.Connect
 where
 
 import Control.Monad.IO.Class
-import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Default.Class
 import qualified Data.Set as S
 import ELynx.Tools
-  ( Arguments (..),
-    ELynx,
-    fromBs,
-    outHandle,
-    tShow,
-  )
 import ELynx.Tree
 import System.IO
 import TLynx.Connect.Options
@@ -62,7 +55,7 @@ connect br lb l r = do
 -- nodes, respectively, there are (n-2)*(m-2) ways to connect them.
 connectCmd :: ELynx ConnectArguments ()
 connectCmd = do
-  lArgs <- local <$> ask
+  lArgs <- localArguments <$> ask
   outH <- outHandle "results" ".out"
   -- Do we have constraints or not?
   let cs = constraints lArgs
@@ -111,34 +104,34 @@ parseTreeTuple ::
     ConnectArguments
     (Tree Length Name, Tree Length Name)
 parseTreeTuple l r = do
-  nwF <- nwFormat . local <$> ask
+  nwF <- nwFormat . localArguments <$> ask
   tl <- liftIO $ parseTree nwF l
   tr <- liftIO $ parseTree nwF r
-  $(logInfo) "Tree 1:"
-  $(logInfo) $ fromBs $ toNewick tl
-  $(logInfo) "Tree 2:"
-  $(logInfo) $ fromBs $ toNewick tr
+  logInfoS "Tree 1:"
+  logInfoB $ toNewick tl
+  logInfoS "Tree 2:"
+  logInfoB $ toNewick tr
   return (either error id $ toLengthTree tl, either error id $ toLengthTree tr)
 
 connectOnly :: Handle -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectOnly h l r = do
   (tl, tr) <- parseTreeTuple l r
   let ts = connectTrees tl tr
-  $(logInfo) $ "Connected trees: " <> tShow (length ts)
+  logInfoS $ "Connected trees: " <> show (length ts)
   liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts
 
 connectAndFilter ::
   Handle -> FilePath -> FilePath -> FilePath -> ELynx ConnectArguments ()
 connectAndFilter h c l r = do
-  nwF <- nwFormat . local <$> ask
+  nwF <- nwFormat . localArguments <$> ask
   cts <- liftIO $ parseTrees nwF c
-  $(logInfo) "Constraints:"
-  $(logInfo) $ fromBs $ BL.intercalate "\n" $ map toNewick cts
+  logInfoS "Constraints:"
+  logInfoB $ BL.intercalate "\n" $ map toNewick cts
   (tl, tr) <- parseTreeTuple l r
   let ts = connectTrees tl tr
       cs = map S.fromList $ concatMap multifurcatingGroups cts :: [Constraint Name]
       -- Only collect trees that are compatible with the constraints.
       ts' = filter (compatibleWith getName cs) ts
-  $(logInfo) $ "Connected  trees: " <> tShow (length ts)
-  $(logInfo) $ "Compatible trees: " <> tShow (length ts')
+  logInfoS $ "Connected  trees: " <> show (length ts)
+  logInfoS $ "Compatible trees: " <> show (length ts')
   liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts'

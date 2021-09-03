@@ -24,10 +24,6 @@ import Control.Monad
     when,
   )
 import Control.Monad.IO.Class
-import Control.Monad.Logger
-  ( logDebug,
-    logInfo,
-  )
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader hiding (local)
 import Data.Bifunctor
@@ -36,8 +32,6 @@ import Data.List hiding (intersect)
 import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import qualified Data.Text.Lazy as LT
-import qualified Data.Text.Lazy.Encoding as LT
 import qualified Data.Vector.Unboxed as V
 import ELynx.Tools
 import ELynx.Tree
@@ -87,7 +81,7 @@ pairwise dist trs =
 -- | Compute distance functions between phylogenetic trees.
 distance :: ELynx DistanceArguments ()
 distance = do
-  l <- local <$> ask
+  l <- localArguments <$> ask
   let nwFormat = argsNewickFormat l
   -- Determine output handle (stdout or file).
   outH <- outHandle "results" ".out"
@@ -96,44 +90,43 @@ distance = do
   mtree <- case mname of
     Nothing -> return Nothing
     Just f -> do
-      $(logInfo) $ T.pack $ "Read master tree from file: " <> f <> "."
+      logInfoS $ "Read master tree from file: " <> f <> "."
       t <- liftIO $ parseTree nwFormat f
-      $(logInfo) "Compute distances between all trees and master tree."
+      logInfoS "Compute distances between all trees and master tree."
       return $ Just t
   let tfps = argsInFiles l
   (trees, names) <- case tfps of
     [] -> error "No tree input files given."
     [tf] -> do
-      $(logInfo) "Read trees from single file."
+      logInfoS "Read trees from single file."
       ts <- liftIO $ parseTrees nwFormat tf
-      $(logInfo) $ tShow (length ts) <> " trees found in file."
-      $(logInfo) "Trees are indexed with integers."
+      logInfoS $ show (length ts) <> " trees found in file."
+      logInfoS "Trees are indexed with integers."
       return (ts, map show [0 .. length ts - 1])
     _ -> do
-      $(logInfo) "Read trees from files."
+      logInfoS "Read trees from files."
       ts <- liftIO $ mapM (parseTree nwFormat) tfps
-      $(logInfo) "Trees are named according to their file names."
+      logInfoS "Trees are named according to their file names."
       return (ts, tfps)
   when (null trees) (error "Not enough trees found in files.")
   when
     (isNothing mtree && length trees == 1)
     (error "Not enough trees found in files.")
-  -- when (isNothing mtree) $ $(logInfo)
+  -- when (isNothing mtree) $ logInfoS
   --   "Compute pairwise distances between trees from different files."
-  $(logDebug) "The trees are:"
-  $(logDebug) $ LT.toStrict $ LT.decodeUtf8 $ BL.unlines $ map toNewick trees
+  logDebugS "The trees are:"
+  logDebugB $ BL.unlines $ map toNewick trees
   -- Set the distance measure.
   let dist = argsDistance l
   case argsDistance l of
-    Symmetric -> $(logInfo) "Use symmetric (Robinson-Foulds) distance."
+    Symmetric -> logInfoS "Use symmetric (Robinson-Foulds) distance."
     IncompatibleSplit val -> do
-      $(logInfo) "Use incompatible split distance."
-      $(logInfo) $
-        T.pack $
-          "Collapse nodes with support less than "
-            ++ show val
-            ++ "."
-    BranchScore -> $(logInfo) "Use branch score distance."
+      logInfoS "Use incompatible split distance."
+      logInfoS $
+        "Collapse nodes with support less than "
+          ++ show val
+          ++ "."
+    BranchScore -> logInfoS "Use branch score distance."
   let distanceMeasure' ::
         Tree Phylo Name ->
         Tree Phylo Name ->
@@ -153,7 +146,7 @@ distance = do
           normalizeF = if argsNormalize l then normalizeBranchLengths else id
   -- Possibly intersect trees before distance calculation.
   when (argsIntersect l) $
-    $(logInfo) "Intersect trees before calculation of distances."
+    logInfoS "Intersect trees before calculation of distances."
   let distanceMeasure =
         if argsIntersect l
           then
@@ -164,12 +157,13 @@ distance = do
           else distanceMeasure'
   -- Possibly normalize trees.
   when (argsNormalize l) $
-    $(logInfo) "Normalize trees before calculation of distances."
+    logInfoS "Normalize trees before calculation of distances."
   let dsTriplets = case mtree of
         Nothing -> pairwise distanceMeasure trees
         Just masterTree -> [(0, i, distanceMeasure masterTree t') | (i, t') <- zip [1 ..] trees]
       ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds
+  -- TODO: This should never happen (hPutStrLn??).
   liftIO $
     hPutStrLn outH $
       "Summary statistics of "
@@ -194,24 +188,23 @@ distance = do
   -- BS.putStrLn $ BS.unlines $ map toNewick tsN
   -- BS.putStrLn $ BS.unlines $ map toNewick tsC
 
-  lift $
-    unless
-      (argsSummaryStatistics l)
-      ( do
-          let n = maximum $ 6 : map length names
-              m = length $ show dist
-          lift $ hPutStrLn outH ""
-          lift $ BL.hPutStrLn outH $ header n m dist
-          case mname of
-            Nothing ->
-              lift $
-                BL.hPutStr outH $
-                  BL.unlines
-                    (map (showTriplet n m names) dsTriplets)
-            Just mn ->
-              lift $
-                BL.hPutStr outH $
-                  BL.unlines
-                    (map (showTriplet n m (mn : names)) dsTriplets)
-      )
+  unless
+    (argsSummaryStatistics l)
+    ( do
+        let n = maximum $ 6 : map length names
+            m = length $ show dist
+        lift $ hPutStrLn outH ""
+        lift $ BL.hPutStrLn outH $ header n m dist
+        case mname of
+          Nothing ->
+            lift $
+              BL.hPutStr outH $
+                BL.unlines
+                  (map (showTriplet n m names) dsTriplets)
+          Just mn ->
+            lift $
+              BL.hPutStr outH $
+                BL.unlines
+                  (map (showTriplet n m (mn : names)) dsTriplets)
+    )
   liftIO $ hClose outH

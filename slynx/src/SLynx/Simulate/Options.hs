@@ -60,7 +60,7 @@ data SimulateArguments = SimulateArguments
     argsMixtureWeights :: Maybe [Double],
     argsGammaParams :: Maybe GammaRateHeterogeneityParams,
     argsLength :: Int,
-    argsSeed :: Seed
+    argsSeed :: SeedOpt
   }
   deriving (Eq, Show, Generic)
 
@@ -70,7 +70,7 @@ instance Reproducible SimulateArguments where
     (maybeToList (argsEDMFile a) ++ fromMaybe [] (argsSiteprofilesFiles a))
   outSuffixes _ = [".model.gz", ".fasta"]
   getSeed = Just . argsSeed
-  setSeed a s = a {argsSeed = Fixed s}
+  setSeed a s = a {argsSeed = s}
   parser = simulateArguments
   cmdName = "simulate"
   cmdDsc = ["Simulate multi sequence alignments."]

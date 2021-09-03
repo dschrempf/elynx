@@ -55,7 +55,6 @@ library
     , elynx-tools
     , elynx-tree
     , hmatrix
-    , monad-logger
     , mwc-random
     , optparse-applicative
     , statistics

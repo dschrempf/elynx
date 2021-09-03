@@ -18,12 +18,10 @@ where
 
 import Control.Monad (unless)
 import Control.Monad.IO.Class
-import Control.Monad.Logger
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Containers.ListUtils (nubOrd)
 import Data.List ((\\))
-import qualified Data.Text as T
 import ELynx.Tools
 import ELynx.Tree
 import System.IO
@@ -60,8 +58,8 @@ summarizeLengths t =
 
 readTrees :: FilePath -> ELynx ExamineArguments (Forest Phylo Name)
 readTrees fp = do
-  $(logInfo) $ T.pack $ "Read tree(s) from file " <> fp <> "."
-  nf <- argsNewickFormat . local <$> ask
+  logInfoS $ "Read tree(s) from file " <> fp <> "."
+  nf <- argsNewickFormat . localArguments <$> ask
   liftIO $ parseTrees nf fp
 
 examineTree :: HasName a => Handle -> Tree Phylo a -> IO ()
@@ -82,7 +80,7 @@ examineTree h t = do
 -- | Examine phylogenetic trees.
 examine :: ELynx ExamineArguments ()
 examine = do
-  l <- local <$> ask
+  l <- localArguments <$> ask
   let inFn = argsInFile l
   trs <- readTrees inFn
   outH <- outHandle "results" ".out"

@@ -23,7 +23,6 @@ where
 import qualified Control.Comonad as C
 import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Logger (logDebug, logInfo)
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Tools
@@ -43,30 +42,32 @@ import TLynx.Shuffle.Options
 -- times and leaves.
 shuffleCmd :: ELynx ShuffleArguments ()
 shuffleCmd = do
-  l <- local <$> ask
+  l <- localArguments <$> ask
   h <- outHandle "results" ".tree"
   let nwF = nwFormat l
   tPhylo <- liftIO $ parseTree nwF (inFile l)
-  $(logInfo) "Input tree:"
-  $(logInfo) $ fromBs $ toNewick tPhylo
+  logInfoS "Input tree:"
+  logInfoB $ toNewick tPhylo
   let t = either error id $ toLengthTree tPhylo
   -- Check if tree is ultrametric enough.
   let dh = sum $ map (height t -) (distancesOriginLeaves t)
-  $(logDebug) $ "Distance in branch length to being ultrametric: " <> tShow dh
+  logDebugS $ "Distance in branch length to being ultrametric: " <> show dh
   when (dh > 2e-4) (error "Tree is not ultrametric.")
   when (dh > toLengthUnsafe eps && dh < 2e-4) $
-    $(logInfo)
+    logInfoS
       "Tree is nearly ultrametric, ignore branch length differences smaller than 2e-4."
-  when (dh < toLengthUnsafe eps) $ $(logInfo) "Tree is ultrametric."
+  when (dh < toLengthUnsafe eps) $ logInfoS "Tree is ultrametric."
   let cs = filter (> 0) $ labels $ C.extend rootHeight t
       ls = map getName $ leaves t
-  $(logDebug) $ "Number of coalescent times: " <> tShow (length cs)
-  $(logDebug) $ "Number of leaves: " <> tShow (length ls)
-  $(logDebug) "The coalescent times are: "
-  $(logDebug) $ tShow cs
-  gen <- case argsSeed l of
-    Random -> error "Seed not available; please contact maintainer."
-    Fixed s -> liftIO $ initialize s
+  logDebugS $ "Number of coalescent times: " <> show (length cs)
+  logDebugS $ "Number of leaves: " <> show (length ls)
+  logDebugS "The coalescent times are: "
+  logDebugS $ show cs
+  gen <- liftIO $
+    initialize $ case argsSeed l of
+      RandomUnset -> error "Seed not available; please contact maintainer."
+      RandomSet s -> s
+      Fixed s -> s
   ts <- liftIO $ shuffleT (nReplicates l) (height t) cs ls gen
   liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts
   liftIO $ hClose h

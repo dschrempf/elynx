@@ -20,7 +20,7 @@
 -- Use of standard input is not supported.
 module ELynx.Tools.Reproduction
   ( -- * Reproduction
-    SeedOption (..),
+    SeedOpt (..),
     Reproducible (..),
     getReproductionHash,
     Reproduction (..),
@@ -48,12 +48,12 @@ import Paths_elynx_tools
 import System.Environment
 
 -- | Random or fixed seed.
-data SeedOption = RandomUnset | RandomSet (VU.Vector Word32) | Fixed (VU.Vector Word32)
+data SeedOpt = RandomUnset | RandomSet (VU.Vector Word32) | Fixed (VU.Vector Word32)
   deriving (Eq, Generic, Show)
 
-instance FromJSON SeedOption
+instance FromJSON SeedOpt
 
-instance ToJSON SeedOption
+instance ToJSON SeedOpt
 
 -- | Reproducible commands have
 --   - a set of input files to be checked for consistency,
@@ -65,8 +65,8 @@ instance ToJSON SeedOption
 class Reproducible a where
   inFiles :: a -> [FilePath]
   outSuffixes :: a -> [String]
-  getSeed :: a -> Maybe SeedOption
-  setSeed :: a -> SeedOption -> a
+  getSeed :: a -> Maybe SeedOpt
+  setSeed :: a -> SeedOpt -> a
   parser :: Parser a
   cmdName :: String
   cmdDsc :: [String]

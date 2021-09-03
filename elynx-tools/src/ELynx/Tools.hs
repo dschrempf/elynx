@@ -15,6 +15,8 @@ module ELynx.Tools
   ( module ELynx.Tools.ByteString,
     module ELynx.Tools.Concurrent,
     module ELynx.Tools.Definitions,
+    module ELynx.Tools.ELynx,
+    module ELynx.Tools.Environment,
     module ELynx.Tools.Equality,
     module ELynx.Tools.InputOutput,
     module ELynx.Tools.LinearAlgebra,
@@ -22,14 +24,16 @@ module ELynx.Tools
     module ELynx.Tools.Logger,
     module ELynx.Tools.Misc,
     module ELynx.Tools.Numeric,
+    module ELynx.Tools.Options,
     module ELynx.Tools.Reproduction,
-    module ELynx.Tools.Text,
   )
 where
 
 import ELynx.Tools.ByteString
 import ELynx.Tools.Concurrent
 import ELynx.Tools.Definitions
+import ELynx.Tools.ELynx
+import ELynx.Tools.Environment
 import ELynx.Tools.Equality
 import ELynx.Tools.InputOutput
 import ELynx.Tools.LinearAlgebra
@@ -37,5 +41,5 @@ import ELynx.Tools.List
 import ELynx.Tools.Logger
 import ELynx.Tools.Misc
 import ELynx.Tools.Numeric
+import ELynx.Tools.Options
 import ELynx.Tools.Reproduction
-import ELynx.Tools.Text

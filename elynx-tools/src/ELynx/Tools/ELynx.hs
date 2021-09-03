@@ -44,13 +44,14 @@ fixSeed x = case getSeed x of
   _ -> return x
 
 eLynxRun ::
-  forall a.
-  (Eq a, Reproducible a, Show a, ToJSON a) =>
-  ELynx a () ->
-  ELynx a ()
-eLynxRun worker = do
+  forall a b.
+  (Eq a, Reproducible a, Reproducible b, Show a, ToJSON a) =>
+  (b -> a) ->
+  ELynx b () ->
+  ELynx b ()
+eLynxRun f worker = do
   -- Header.
-  logInfoHeader (cmdName @a) (cmdDsc @a)
+  logInfoHeader (cmdName @b) (cmdDsc @b)
   mso <- reader (getSeed . localArguments)
   case mso of
     Nothing -> return ()
@@ -70,7 +71,7 @@ eLynxRun worker = do
       logInfoS "No output file given --- skip writing ELynx file for reproducible runs."
     (True, Just bn) -> do
       logInfoS "Write ELynx reproduction file."
-      liftIO $ writeReproduction bn (Arguments g l)
+      liftIO $ writeReproduction bn (Arguments g (f l))
   -- Footer.
   logInfoFooter
 
@@ -78,15 +79,15 @@ eLynxRun worker = do
 -- footer, logs to 'stderr' if no file is provided. Initializes the seed if none
 -- is provided. If a log file is provided, log to the file and to 'stderr'.
 eLynxWrapper ::
-  (Eq a, Show a, Reproducible a, ToJSON a) =>
-  Arguments a ->
-  ELynx a () ->
+  (Eq a, Show a, Reproducible a, Reproducible b, ToJSON a) =>
+  GlobalArguments ->
+  -- Local arguments.
+  b ->
+  -- Local arguments across all commands.
+  (b -> a) ->
+  ELynx b () ->
   IO ()
-eLynxWrapper args worker = do
-  -- Arguments.
-  let gArgs = global args
-      lArgs = local args
-
+eLynxWrapper gArgs lArgs f worker = do
   -- 1. Fix seed.
   lArgs' <- fixSeed lArgs
 
@@ -94,7 +95,7 @@ eLynxWrapper args worker = do
   e <- initializeEnvironment gArgs lArgs'
 
   -- 3. Run.
-  runReaderT (eLynxRun worker) e
+  runReaderT (eLynxRun f worker) e
 
   -- 4. Close environment.
   closeEnvironment e

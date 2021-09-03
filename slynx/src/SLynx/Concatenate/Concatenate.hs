@@ -17,8 +17,7 @@ module SLynx.Concatenate.Concatenate
   )
 where
 
-import Control.Monad.Logger
-import Control.Monad.Trans.Reader (ask)
+import Control.Monad.Trans.Reader
 import qualified ELynx.Data.Sequence.Sequence as S
 import ELynx.Export.Sequence.Fasta
 import ELynx.Tools
@@ -28,8 +27,7 @@ import SLynx.Tools
 -- | Concatenate sequences.
 concatenateCmd :: ELynx ConcatenateArguments ()
 concatenateCmd = do
-  (ConcatenateArguments al fps) <- local <$> ask
-  $(logInfo) "Command: Concatenate sequences."
+  (ConcatenateArguments al fps) <- reader localArguments
   sss <- mapM (readSeqs al) fps
   let result = sequencesToFasta $ S.concatSequences sss
   out "concatenated multi sequence alignment " result ".fasta"

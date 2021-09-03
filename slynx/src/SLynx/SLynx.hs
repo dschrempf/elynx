@@ -27,35 +27,15 @@ import SLynx.Translate.Translate
 -- | Run SLynx with given arguments.
 slynx :: Arguments CommandArguments -> IO ()
 slynx c = case local c of
-  Concatenate _ ->
-    eLynxWrapper
-      c
-      (\(Arguments g (Concatenate l)) -> Arguments g l)
-      concatenateCmd
-  Examine _ ->
-    eLynxWrapper c (\(Arguments g (Examine l)) -> Arguments g l) examineCmd
-  FilterCols _ ->
-    eLynxWrapper
-      c
-      (\(Arguments g (FilterCols l)) -> Arguments g l)
-      filterColsCmd
-  FilterRows _ ->
-    eLynxWrapper
-      c
-      (\(Arguments g (FilterRows l)) -> Arguments g l)
-      filterRowsCmd
-  Simulate _ ->
-    eLynxWrapper c (\(Arguments g (Simulate l)) -> Arguments g l) simulateCmd
-  SubSample _ ->
-    eLynxWrapper
-      c
-      (\(Arguments g (SubSample l)) -> Arguments g l)
-      subSampleCmd
-  Translate _ ->
-    eLynxWrapper
-      c
-      (\(Arguments g (Translate l)) -> Arguments g l)
-      translateCmd
+  Concatenate l -> eLynxWrapper g l Concatenate concatenateCmd
+  Examine l -> eLynxWrapper g l Examine examineCmd
+  FilterCols l -> eLynxWrapper g l FilterCols filterColsCmd
+  FilterRows l -> eLynxWrapper g l FilterRows filterRowsCmd
+  Simulate l -> eLynxWrapper g l Simulate simulateCmd
+  SubSample l -> eLynxWrapper g l SubSample subSampleCmd
+  Translate l -> eLynxWrapper g l Translate translateCmd
+  where
+    g = global c
 
 -- | Run SLynx, parse arguments from command line.
 rSLynx :: IO ()

@@ -26,7 +26,7 @@ data ShuffleArguments = ShuffleArguments
   { nwFormat :: NewickFormat,
     nReplicates :: Int,
     inFile :: FilePath,
-    argsSeed :: Seed
+    argsSeed :: SeedOpt
   }
   deriving (Eq, Show, Generic)
 
@@ -34,7 +34,7 @@ instance Reproducible ShuffleArguments where
   inFiles = pure . inFile
   outSuffixes _ = [".tree"]
   getSeed = Just . argsSeed
-  setSeed a s = a {argsSeed = Fixed s}
+  setSeed a s = a {argsSeed = s}
   parser = shuffleArguments
   cmdName = "shuffle"
   cmdDsc =

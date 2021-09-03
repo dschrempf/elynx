@@ -24,7 +24,7 @@ where
 
 import Data.List
 import Data.Maybe
-import ELynx.Tools hiding (Random)
+import ELynx.Tools
 import ELynx.Tree.Simulate.PointProcess (TimeSpec (..))
 import Options.Applicative
 
@@ -85,7 +85,7 @@ data SimulateArguments = SimulateArguments
     -- | Only print summary statistics?
     argsSumStat :: Bool,
     -- | Seed of NRG, random if 'Nothing'.
-    argsSeed :: Seed
+    argsSeed :: SeedOpt
   }
   deriving (Eq, Show, Generic)
 
@@ -93,7 +93,7 @@ instance Reproducible SimulateArguments where
   inFiles _ = []
   outSuffixes _ = [".tree"]
   getSeed = Just . argsSeed
-  setSeed a s = a {argsSeed = Fixed s}
+  setSeed a s = a {argsSeed = s}
   parser = simulateArguments
   cmdName = "simulate"
   cmdDsc = ["Simulate phylogenetic trees using a birth and death or coalescent process."]

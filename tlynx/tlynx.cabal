@@ -56,7 +56,6 @@ library
     , elynx-tools
     , elynx-tree
     , gnuplot
-    , monad-logger
     , mwc-random
     , optparse-applicative
     , parallel

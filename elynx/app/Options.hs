@@ -54,12 +54,12 @@ validateDsc = ["Validate an ELynx analysis"]
 
 data RedoArguments = RedoArguments
   { rElynxFile :: FilePath,
-    rForce :: Force
+    rExecutionMode :: ExecutionMode
   }
   deriving (Eq, Show, Generic)
 
 redoArguments :: Parser RedoArguments
-redoArguments = RedoArguments <$> inFileArg <*> forceOpt
+redoArguments = RedoArguments <$> inFileArg <*> executionModeOpt
 
 redoDsc :: [String]
 redoDsc = ["Redo an ELynx analysis"]
