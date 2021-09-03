@@ -1,15 +1,14 @@
-#!/usr/bin/env stack
-{- stack
-  --resolver lts-14.20
-  runghc
-  --package comonad
-  --package containers
-  --package elynx-tree
-  --package elynx-tools
-  --package rosezipper
+#!/usr/bin/env cabal
+{- cabal:
+   build-depends:
+       base
+     , comonad
+     , containers
+     , elynx-tree
+     , elynx-tools
 -}
 
-# TODO: This file is outdated and may not work.
+-- XXX: THIS SCRIPT IS COMPLETELY OUTDATED.
 EXIT
 
 import           Control.Comonad                ( extend
@@ -21,17 +20,13 @@ import           Data.List                      ( sortOn
                                                 , tails
                                                 )
 import           Data.Ord                       ( Down(Down) )
-import           Data.Tree                      ( Tree(Node)
-                                                , flatten
-                                                , subForest
-                                                )
 import           System.Environment             ( getArgs )
 
-import           ELynx.Data.Tree
+import           ELynx.Tree
 
 import           ELynx.Tools                    ( parseFileWith )
 
-import           ELynx.Import.Tree.Newick       ( oneNewick )
+import           ELynx.Tree.Import.Newick       ( oneNewick )
 
 
 -- Algorithm; get the maximum number of optimal constraints K:
@@ -55,14 +50,14 @@ getNNodes []  = 0
 getNNodes [_] = 0
 getNNodes xs  = length xs - 1
 
-getNNodesTree :: Tree a -> Tree Int
+getNNodesTree :: Tree e a -> Tree e Int
 getNNodesTree = extend (getNNodes . leaves)
 
-isInternal :: Tree a -> Bool
-isInternal (Node _ []) = False
-isInternal _           = True
+isInternal :: Tree e a -> Bool
+isInternal (Node _ _ []) = False
+isInternal _             = True
 
-getOrderedNodeZippers :: HasLength a => Tree a -> Forest a
+getOrderedNodeZippers :: HasLength a => Tree e a -> Forest e a
 getOrderedNodeZippers t = filter isInternal $ map snd $ sortOn (Down . fst)
                                                                labels
  where

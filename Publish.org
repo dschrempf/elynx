@@ -3,7 +3,7 @@ Bump version.
 
 #+NAME: BumpVersion
 #+BEGIN_SRC sh :exports both :results output verbatim
-./scripts/bump-version minor
+haskell-version-bump minor
 #+END_SRC
 
 * Module dependencies
@@ -15,7 +15,7 @@ Check module dependencies.
 
 #+NAME: CheckModuleDependencies
 #+BEGIN_SRC sh :exports both :results output verbatim
-stack-module-dependencies
+haskell-stack-package-dependency-graphs
 #+END_SRC
 
 #+RESULTS: CheckModuleDependencies
@@ -26,18 +26,16 @@ stack-module-dependencies
 Format all source files.
 
 #+NAME: CleanFilesStylishHaskell
-#+BEGIN_SRC sh :exports both :results output verbatim
-stack-format-all
+#+BEGIN_SRC sh :exports code
+haskell-format-all
 #+END_SRC
-
-#+RESULTS: CleanFilesStylishHaskell
 
 * Build
 Build project, perform tests, build documentation.
 
 #+NAME: Build
 #+BEGIN_SRC sh :exports both :results output verbatim
-stack build --test --haddock --bench
+nix build
 #+END_SRC
 
 #+RESULTS: Build
@@ -51,16 +49,6 @@ Commit all changes.
 
 Tag new commit with version number created above and push the tag
 
-* Distribution tarballs
-Create source distribution tarballs.
-
-#+NAME: HackageCreateTarballs
-#+BEGIN_SRC sh :exports both :results output verbatim
-stack sdist
-#+END_SRC
-
-#+RESULTS: HackageCreateTarballs
-
 * Hackage
 Upload the source distribution tarballs to Hackage.
 
@@ -72,30 +60,7 @@ each package.
 for p in elynx-markov elynx-nexus elynx-seq elynx-tools elynx-tree slynx tlynx elynx
 do
     (cd "$p" || exit 1
-    stack upload . --pvp-bounds lower)
-done
-#+END_SRC
-
-#+RESULTS: HackageUploadTarballs
-: Uploading elynx-markov-0.5.0.2.tar.gz... done!
-: Uploading elynx-nexus-0.5.0.2.tar.gz... done!
-: Uploading elynx-seq-0.5.0.2.tar.gz... done!
-: Uploading elynx-tools-0.5.0.2.tar.gz... done!
-: Uploading elynx-tree-0.5.0.2.tar.gz... done!
-: Uploading slynx-0.5.0.2.tar.gz... done!
-: Uploading tlynx-0.5.0.2.tar.gz... done!
-: Uploading elynx-0.5.0.2.tar.gz... done!
-
-* Documentation
-Documentation can be built manually.
-
-#+NAME: HackageUploadDocumentation
-#+BEGIN_SRC sh :exports both :results output verbatim
-for p in elynx-markov elynx-nexus elynx-seq elynx-tools elynx-tree slynx tlynx elynx
-do
-    (cd "$p" || exit 1
-    SOMETHING LIKE
-    cabal haddock --haddock-for-hackage --haddock-hyperlink-source
-    cabal upload --documentation --publish dist/pkg-0.1-docs.tar.gz )
+     tarball=$(cabal sdist | tail -n 1)
+     cabal upload -u $HACKAGE_USERNAME -p $HACKAGE_PASSWORD $tarball)
 done
 #+END_SRC

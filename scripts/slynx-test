@@ -4,12 +4,11 @@ set -e
 
 source include
 
-project_root=$(stack path | grep "project-root" | tr -s " " | cut -d " " -f 2)
-file_DNA="${project_root}/elynx-seq/data/Nucleotide.fasta"
-file_AA="${project_root}/elynx-seq/data/AminoAcid.fasta"
-file_tree="${project_root}/elynx-tree/data/Newick.tree"
-file_edm="${project_root}/elynx-markov/data/EDMDistsPhylobayes.txt"
-file_siteprofiles="${project_root}/elynx-markov/data/HSSPMany.siteprofiles"
+file_DNA="../elynx-seq/data/Nucleotide.fasta"
+file_AA="../elynx-seq/data/AminoAcid.fasta"
+file_tree="../elynx-tree/data/Newick.tree"
+file_edm="../elynx-markov/data/EDMDistsPhylobayes.txt"
+file_siteprofiles="../elynx-markov/data/HSSPMany.siteprofiles"
 
 msg "SLynx; examine DNA."
 cabal exec slynx -- examine -a DNA "$file_DNA"

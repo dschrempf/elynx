@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-project_root=$(stack path | grep "project-root" | tr -s " " | cut -d " " -f 2)
-file_benchmark="${project_root}/slynx/data/BenchmarkEnsemblMouse.fa.gz"
+file_benchmark="../slynx/data/BenchmarkEnsemblMouse.fa.gz"
 
 msg "Seq-Ana benchmark."
 cabal exec -- slynx examine -a DNAI "$file_benchmark"  +RTS -s || exit 1
