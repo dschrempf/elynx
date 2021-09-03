@@ -13,124 +13,129 @@
 --
 -- Creation date: Thu Sep  2 18:55:11 2021.
 module ELynx.Tools.ELynx
-  ( forceOpt,
-    GlobalArguments (..),
-    globalArguments,
-    Seed (..),
-    seedOpt,
-    ELynx,
-    Arguments (..),
-    parseArguments,
+  ( ELynx,
+    eLynxWrapper,
+    out,
+    outHandle,
   )
 where
 
-import Control.Monad.Trans.Reader
+import Control.Monad.IO.Class
+import Control.Monad.Trans.Reader hiding (local)
 import Data.Aeson
+import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Tools.Environment
+import ELynx.Tools.InputOutput
 import ELynx.Tools.Logger
-import GHC.Generics
-import Options.Applicative hiding (empty)
-import Options.Applicative.Help.Pretty
-
--- TODO: Sort?
-
--- TODO: Define environment. Similar to mcmc
+import ELynx.Tools.Options
+import ELynx.Tools.Reproduction
+import System.IO
+import System.Random.MWC
 
 -- | ELynx transformer to be used with all executables.
 type ELynx a = ReaderT (Environment a) IO
 
--- | The 'ReaderT' and 'LoggingT' wrapper for ELynx. Prints a header and a
--- footer, logs to 'stderr' if no file is provided. Initializes the seed if none
--- is provided. If a log file is provided, log to the file and to 'stderr'.
-eLynxWrapper ::
-  forall a b.
-  (Eq a, Show a, Reproducible a, ToJSON a) =>
-  Arguments a ->
-  -- TODO: How can I remove this "extraction of the current command"?
-  (Arguments a -> Arguments b) ->
-  ELynx b () ->
-  IO ()
-eLynxWrapper args f worker = do
-  -- Arguments.
-  let gArgs = global args
-      lArgs = local args
-  let lvl = toLogLevel $ verbosity gArgs
-      rd = forceReanalysis gArgs
-      outBn = outFileBaseName gArgs
-      logFile = (++ ".log") <$> outBn
+fixSeed :: Reproducible a => a -> IO a
+fixSeed x = case getSeed x of
+  (Just RandomUnset) -> do
+    g <- createSystemRandom
+    s <- fromSeed <$> save g
+    return $ setSeed x (RandomSet s)
+  _ -> return x
 
-  -- TODO! TODO!
-
-  -- 1. Initialize environment (open log files; fix seed?).
-
-  -- TODO: Remove.
-  -- runELynxLoggingT lvl rd logFile $ do
-
-  initializeEnvironment
+eLynxRun ::
+  forall a.
+  (Eq a, Reproducible a, Show a, ToJSON a) =>
+  ELynx a () ->
+  ELynx a ()
+eLynxRun worker = do
   -- Header.
   logInfoHeader (cmdName @a) (cmdDsc @a)
-  -- Fix seed.
-  lArgs' <- case getSeed lArgs of
-    Nothing -> return lArgs
-    Just Random -> do
-      g <- liftIO createSystemRandom
-      s <- liftIO $ fromSeed <$> save g
-      $(logInfo) $ pack $ "Seed: random; set to " <> show s <> "."
-      return $ setSeed lArgs s
-    Just (Fixed s) -> do
-      $(logInfo) $ pack $ "Seed: " <> show s <> "."
-      return lArgs
-  let args' = Arguments gArgs lArgs'
-
-  -- 2. Run worker.
-  runReaderT worker $ f args'
-
-  -- 3. Close environment.
-  -- Write reproduction file.
-  case (writeElynxFile gArgs, outBn) of
+  mso <- reader (getSeed . localArguments)
+  case mso of
+    Nothing -> return ()
+    Just (RandomSet s) -> logInfoS $ "Seed: random; set to " <> show s <> "."
+    Just (Fixed s) -> logInfoS $ "Seed: fixed to " <> show s <> "."
+    Just RandomUnset -> error "eLynxRun: Seed unset."
+  -- Worker.
+  worker
+  -- Footer.
+  e <- ask
+  let g = globalArguments e
+      l = localArguments e
+  case (writeElynxFile g, outFileBaseName g) of
     (False, _) ->
       logInfoS "No elynx file option --- skip writing ELynx file for reproducible runs."
     (True, Nothing) ->
       logInfoS "No output file given --- skip writing ELynx file for reproducible runs."
     (True, Just bn) -> do
       logInfoS "Write ELynx reproduction file."
-      liftIO $ writeReproduction bn args'
+      liftIO $ writeReproduction bn (Arguments g l)
   -- Footer.
   logInfoFooter
 
-initializeEnvironment :: a
-initializeEnvironment = undefined
+-- | The 'ReaderT' and 'LoggingT' wrapper for ELynx. Prints a header and a
+-- footer, logs to 'stderr' if no file is provided. Initializes the seed if none
+-- is provided. If a log file is provided, log to the file and to 'stderr'.
+eLynxWrapper ::
+  (Eq a, Show a, Reproducible a, ToJSON a) =>
+  Arguments a ->
+  ELynx a () ->
+  IO ()
+eLynxWrapper args worker = do
+  -- Arguments.
+  let gArgs = global args
+      lArgs = local args
 
--- runELynxLoggingT ::
---   (MonadBaseControl IO m, MonadIO m) =>
---   LogLevel ->
---   Force ->
---   Maybe FilePath ->
---   LoggingT m a ->
---   m a
--- runELynxLoggingT lvl _ Nothing =
---   runELynxStderrLoggingT . filterLogger (\_ l -> l >= lvl)
--- runELynxLoggingT lvl frc (Just fn) =
---   runELynxFileLoggingT frc fn . filterLogger (\_ l -> l >= lvl)
+  -- 1. Fix seed.
+  lArgs' <- fixSeed lArgs
 
--- runELynxFileLoggingT ::
---   MonadBaseControl IO m => Force -> FilePath -> LoggingT m a -> m a
--- runELynxFileLoggingT frc fp logger = do
---   h <- liftBase $ openFile' frc fp WriteMode
---   liftBase (hSetBuffering h LineBuffering)
---   r <- runLoggingT logger (output2H stderr h)
---   liftBase (hClose h)
---   return r
+  -- 2. Initialize environment.
+  e <- initializeEnvironment gArgs lArgs'
 
--- runELynxStderrLoggingT :: MonadIO m => LoggingT m a -> m a
--- runELynxStderrLoggingT = (`runLoggingT` output stderr)
+  -- 3. Run.
+  runReaderT (eLynxRun worker) e
 
--- output :: Handle -> Loc -> LogSource -> LogLevel -> LogStr -> IO ()
--- output h _ _ _ msg = BS.hPutStrLn h ls where ls = fromLogStr msg
+  -- 4. Close environment.
+  closeEnvironment e
 
--- output2H :: Handle -> Handle -> Loc -> LogSource -> LogLevel -> LogStr -> IO ()
--- output2H h1 h2 _ _ _ msg = do
---   BS.hPutStrLn h1 ls
---   BS.hPutStrLn h2 ls
---   where
---     ls = fromLogStr msg
+-- Get out file path with extension.
+getOutFilePath ::
+  forall a. Reproducible a => String -> ELynx a (Maybe FilePath)
+getOutFilePath ext = do
+  a <- ask
+  let bn = outFileBaseName . globalArguments $ a
+      sfxs = outSuffixes . localArguments $ a
+  if ext `elem` sfxs
+    then return $ (++ ext) <$> bn
+    else
+      error
+        "getOutFilePath: out file suffix not registered; please contact maintainer."
+
+-- | Write a result with a given name to file with given extension or standard
+-- output. Supports compression.
+out :: Reproducible a => String -> BL.ByteString -> String -> ELynx a ()
+out name res ext = do
+  mfp <- getOutFilePath ext
+  case mfp of
+    Nothing -> do
+      logInfoS $ "Write " <> name <> " to standard output."
+      liftIO $ BL.putStr res
+    Just fp -> do
+      logInfoS $ "Write " <> name <> " to file '" <> fp <> "'."
+      em <- executionMode . globalArguments <$> ask
+      liftIO $ writeGZFile em fp res
+
+-- | Get an output handle, does not support compression. The handle has to be
+-- closed after use!
+outHandle :: Reproducible a => String -> String -> ELynx a Handle
+outHandle name ext = do
+  mfp <- getOutFilePath ext
+  case mfp of
+    Nothing -> do
+      logInfoS $ "Write " <> name <> " to standard output."
+      return stdout
+    Just fp -> do
+      logInfoS $ "Write " <> name <> " to file '" <> fp <> "'."
+      em <- executionMode . globalArguments <$> ask
+      liftIO $ openFileWithExecutionMode em fp

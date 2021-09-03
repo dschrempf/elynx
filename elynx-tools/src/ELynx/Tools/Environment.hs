@@ -11,18 +11,25 @@
 -- Creation date: Thu Sep  2 22:46:02 2021.
 module ELynx.Tools.Environment
   ( Environment (..),
+    initializeEnvironment,
+    closeEnvironment,
   )
 where
 
 import Control.Concurrent.MVar
+import Control.Monad
 import Data.Time
-import ELynx.Tools.ExecutionMode
+import ELynx.Tools.InputOutput
 import ELynx.Tools.Logger
+import ELynx.Tools.Options
 import System.IO
 
 -- | The environment of an ELynx run.
-data Environment s = Environment
-  { settings :: s,
+data Environment a = Environment
+  { -- | Global arguments.
+    globalArguments :: GlobalArguments,
+    -- | Local arguments of command.
+    localArguments :: a,
     -- | List will be empty if using 'Quiet'. If 'LogStdOutAndFile' is used
     -- 'logHandles' contains two handles to the standard output and the log
     -- file.
@@ -34,44 +41,35 @@ data Environment s = Environment
   }
   deriving (Eq)
 
-instance HasExecutionMode s => HasExecutionMode (Environment s) where
-  getExecutionMode = getExecutionMode . settings
-
-instance HasLock (Environment s) where
+instance HasLock (Environment a) where
   getLock = outLock
 
-instance HasLogHandles (Environment s) where
+instance HasLogHandles (Environment a) where
   getLogHandles = logHandles
 
-instance HasStartingTime (Environment s) where
+instance HasStartingTime (Environment a) where
   getStartingTime = startingTime
 
-instance HasVerbosity s => HasVerbosity (Environment s) where
-  getVerbosity = getVerbosity . settings
+instance HasVerbosity (Environment a) where
+  getVerbosity = verbosity . globalArguments
 
 -- | Initialize the environment.
 --
 -- Open log file, get current time.
-initializeEnvironment ::
-  (HasMaybeOutFileBaseName s, HasExecutionMode s, HasVerbosity s) =>
-  s ->
-  IO (Environment s)
-initializeEnvironment s = do
+initializeEnvironment :: GlobalArguments -> a -> IO (Environment a)
+initializeEnvironment g l = do
   t <- getCurrentTime
-  mh <- case (getLogMode s, getVerbosity s) of
+  mh <- case (outFileBaseName g, verbosity g) of
     (_, Quiet) -> return []
-    (LogStdOutAndFile, _) -> do
-      h <- openWithExecutionMode em fn
+    (Just bn, _) -> do
+      let fn = bn ++ ".log"
+      h <- openFileWithExecutionMode em fn
       return [stdout, h]
-    (LogFileOnly, _) -> do
-      h <- openWithExecutionMode em fn
-      return [h]
-    (LogStdOutOnly, _) -> return [stdout]
+    (Nothing, _) -> return [stdout]
   lock <- newMVar ()
-  return $ Environment s mh lock t
+  return $ Environment g l mh lock t
   where
-    fn = fromAnalysisName (getAnalysisName s) ++ ".mcmc.log"
-    em = getExecutionMode s
+    em = executionMode g
 
 -- | Close file handles.
 closeEnvironment :: Environment s -> IO ()

@@ -20,6 +20,7 @@
 -- Use of standard input is not supported.
 module ELynx.Tools.Reproduction
   ( -- * Reproduction
+    SeedOption (..),
     Reproducible (..),
     getReproductionHash,
     Reproduction (..),
@@ -38,14 +39,21 @@ import Crypto.Hash.SHA256
 import Data.Aeson hiding (encode)
 import Data.ByteString.Base16
 import qualified Data.ByteString.Char8 as BS
-import Data.Vector.Unboxed (Vector)
+import qualified Data.Vector.Unboxed as VU
 import Data.Version
 import Data.Word
 import GHC.Generics
 import Options.Applicative
 import Paths_elynx_tools
 import System.Environment
-import System.Random.MWC
+
+-- | Random or fixed seed.
+data SeedOption = RandomUnset | RandomSet (VU.Vector Word32) | Fixed (VU.Vector Word32)
+  deriving (Eq, Generic, Show)
+
+instance FromJSON SeedOption
+
+instance ToJSON SeedOption
 
 -- | Reproducible commands have
 --   - a set of input files to be checked for consistency,
@@ -57,8 +65,8 @@ import System.Random.MWC
 class Reproducible a where
   inFiles :: a -> [FilePath]
   outSuffixes :: a -> [String]
-  getSeed :: a -> Maybe Seed
-  setSeed :: a -> Vector Word32 -> a
+  getSeed :: a -> Maybe SeedOption
+  setSeed :: a -> SeedOption -> a
   parser :: Parser a
   cmdName :: String
   cmdDsc :: [String]

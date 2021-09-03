@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -16,12 +18,13 @@
 --
 -- Tools involving input, output, and parsing.
 module ELynx.Tools.InputOutput
-  ( -- * Input, output
-    getOutFilePath,
+  ( -- * Execution Mode
+    ExecutionMode (..),
+    openFileWithExecutionMode,
+
+    -- * Input, output
     readGZFile,
     writeGZFile,
-    out,
-    outHandle,
 
     -- * Parsing
     runParserOnFile,
@@ -34,36 +37,38 @@ module ELynx.Tools.InputOutput
 where
 
 import Codec.Compression.GZip
-  ( compress,
-    decompress,
-  )
-import Control.Monad.IO.Class
-import Control.Monad.Trans.Reader (ask)
-import Data.Attoparsec.ByteString.Lazy
+import Data.Aeson
+import Data.Attoparsec.ByteString.Lazy hiding (Fail)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (isSuffixOf)
-import qualified Data.Text as T
-import ELynx.Tools.ELynx
-import System.Directory (doesFileExist)
+import GHC.Generics
+import System.Directory
 import System.IO
 
--- | Get out file path with extension.
-getOutFilePath ::
-  forall a. Reproducible a => String -> ELynx a (Maybe FilePath)
-getOutFilePath ext = do
-  a <- ask
-  let bn = outFileBaseName . global $ a
-      sfxs = outSuffixes a
-  if ext `elem` sfxs
-    then return $ (++ ext) <$> bn
-    else
-      error
-        "getOutFilePath: out file suffix not registered; please contact maintainer."
+-- | Overwrite existing output files or fail if output files exist.
+data ExecutionMode = Overwrite | Fail
+  deriving (Eq, Show, Generic)
 
--- -- XXX: For now, all files are read strictly (see help of
--- -- Control.DeepSeq.force).
--- readFile' :: FilePath -> IO BL.ByteString
--- readFile' fn = withFile fn ReadMode $ (evaluate . force) <=< BL.hGetContents
+instance FromJSON ExecutionMode
+
+instance ToJSON ExecutionMode
+
+checkFile :: ExecutionMode -> FilePath -> IO ()
+checkFile Overwrite _ = return ()
+checkFile Fail fp =
+  doesFileExist fp >>= \case
+    True ->
+      error $
+        "File exists: "
+          <> fp
+          <> "."
+          <> "\n"
+          <> "Please use --force to overwrite results of a previous analysis."
+    False -> return ()
+
+-- | Open existing files only if 'Force' is true.
+openFileWithExecutionMode :: ExecutionMode -> FilePath -> IO Handle
+openFileWithExecutionMode em fp = checkFile em fp >> openFile fp WriteMode
 
 -- | Read file. If file path ends with ".gz", assume gzipped file and decompress
 -- before read.
@@ -74,7 +79,7 @@ readGZFile f
 
 -- | Write file. If file path ends with ".gz", assume gzipped file and compress
 -- before write.
-writeGZFile :: Force -> FilePath -> BL.ByteString -> IO ()
+writeGZFile :: ExecutionMode -> FilePath -> BL.ByteString -> IO ()
 writeGZFile frc f r
   | ".gz" `isSuffixOf` f = checkFile frc f >> BL.writeFile f (compress r)
   | otherwise = checkFile frc f >> BL.writeFile f r
@@ -106,31 +111,3 @@ parseByteStringWith :: Parser a -> BL.ByteString -> a
 parseByteStringWith p x = case eitherResult $ parse p x of
   Left err -> error err
   Right val -> val
-
--- | Write a result with a given name to file with given extension or standard
--- output. Supports compression.
-out :: Reproducible a => String -> BL.ByteString -> String -> ELynx a ()
-out name res ext = do
-  mfp <- getOutFilePath ext
-  case mfp of
-    Nothing -> do
-      $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
-      liftIO $ BL.putStr res
-    Just fp -> do
-      $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
-      frc <- forceReanalysis . global <$> ask
-      liftIO $ writeGZFile frc fp res
-
--- | Get an output handle, does not support compression. The handle has to be
--- closed after use!
-outHandle :: Reproducible a => String -> String -> ELynx a Handle
-outHandle name ext = do
-  mfp <- getOutFilePath ext
-  case mfp of
-    Nothing -> do
-      $(logInfo) $ T.pack $ "Write " <> name <> " to standard output."
-      return stdout
-    Just fp -> do
-      $(logInfo) $ T.pack $ "Write " <> name <> " to file '" <> fp <> "'."
-      frc <- forceReanalysis . global <$> ask
-      liftIO $ openFile' frc fp WriteMode

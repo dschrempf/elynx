@@ -31,7 +31,6 @@ library
       ELynx.Tools.ELynx
       ELynx.Tools.Environment
       ELynx.Tools.Equality
-      ELynx.Tools.ExecutionMode
       ELynx.Tools.InputOutput
       ELynx.Tools.LinearAlgebra
       ELynx.Tools.List

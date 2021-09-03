@@ -2,8 +2,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
--- TODO: Check exports.
-
 -- |
 -- Module      :  ELynx.Tools.Options
 -- Description :  General ELynx options
@@ -17,13 +15,11 @@
 -- Creation date: Thu Sep  2 19:17:07 2021.
 module ELynx.Tools.Options
   ( -- * Command options
-    Seed (..),
-    seedOpt,
+    SeedOption (..),
+    seedOptionParser,
 
     -- * Arguments
-    HasMaybeOutFileBaseName (..),
     GlobalArguments (..),
-    globalArguments,
     Arguments (..),
 
     -- * Misc
@@ -39,37 +35,19 @@ import Data.Aeson
 import Data.List
 import qualified Data.Vector.Unboxed as VU
 import Data.Word
-import ELynx.Tools.ExecutionMode
+import ELynx.Tools.InputOutput
 import ELynx.Tools.Logger
 import ELynx.Tools.Misc
 import ELynx.Tools.Reproduction
 import Options.Applicative hiding (empty)
 import Options.Applicative.Help.Pretty
 
--- | Random or fixed seed.
-data Seed = Random | Fixed (VU.Vector Word32)
-  deriving (Show, Generic)
-
--- | Upon equality check, a random seed is not different from a fixed one.
-instance Eq Seed where
-  Random == _ = True
-  _ == Random = True
-  Fixed s == Fixed t = s == t
-
-instance FromJSON Seed
-
-instance ToJSON Seed
-
 -- | Seed option for MWC. Defaults to Random.
-seedOpt :: Parser Seed
-seedOpt = toSeed <$> seedPar
+seedOptionParser :: Parser SeedOption
+seedOptionParser = toSeedOption <$> seedParser
 
-toSeed :: Maybe (VU.Vector Word32) -> Seed
-toSeed Nothing = Random
-toSeed (Just w) = Fixed w
-
-seedPar :: Parser (Maybe (VU.Vector Word32))
-seedPar =
+seedParser :: Parser (Maybe (VU.Vector Word32))
+seedParser =
   optional $
     option
       auto
@@ -80,9 +58,9 @@ seedPar =
             )
       )
 
--- | Types possibly having an output file base name.
-class HasMaybeOutFileBaseName a where
-  getMaybeOutFileBaseName :: a -> Maybe FilePath
+toSeedOption :: Maybe (VU.Vector Word32) -> SeedOption
+toSeedOption Nothing = RandomUnset
+toSeedOption (Just w) = Fixed w
 
 -- | A set of global arguments used by all programs. The idea is to provide a
 -- common framework for shared arguments.
