@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+if [[ -n $INCLUDE_SOURCED ]]; then return; fi
+export INCLUDE_SOURCED=TRUE
+
+msg() {
+    (( QUIET )) && return
+    local mesg
+    mesg="$1"; shift
+    # printf "${GREEN}==>${ALL_OFF} ${mesg}${ALL_OFF}\n" "$@" >&1
+    printf "%s==>%s %s%s\\n" "$GREEN" "$ALL_OFF" "$mesg" "$ALL_OFF" >&1
+}
+export -f msg
+
+# Check if messages are to be printed using color.
+unset ALL_OFF GREEN
+if [[ -t 2 ]]; then
+    # Prefer terminal safe colored and bold text when tput is supported.
+    if tput setaf 0 &>/dev/null; then
+        ALL_OFF="$(tput sgr0)"
+        GREEN="$(tput setaf 2)"
+    else
+        ALL_OFF="\\e[1;0m"
+        GREEN="\\e[1;32m"
+    fi
+fi
+readonly ALL_OFF GREEN

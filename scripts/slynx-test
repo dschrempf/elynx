@@ -2,6 +2,8 @@
 
 set -e
 
+source include
+
 project_root=$(stack path | grep "project-root" | tr -s " " | cut -d " " -f 2)
 file_DNA="${project_root}/elynx-seq/data/Nucleotide.fasta"
 file_AA="${project_root}/elynx-seq/data/AminoAcid.fasta"
