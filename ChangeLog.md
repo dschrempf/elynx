@@ -4,8 +4,15 @@
 
 ## Unreleased changes
 
+
+## Version 0.6.0.0
+
 -   **elynx-tree:** remove parallel folds with layers (`parBranchFoldMapWithLayer`
     too special and slow).
+-   **elynx-tree:** fix various tree instances; add zip trees with appropriate
+    instances.
+
+Significant changes to the tool chain.
 
 
 ## Version 0.5.1.0
