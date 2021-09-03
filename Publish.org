@@ -55,7 +55,7 @@ Upload the source distribution tarballs to Hackage.
 Somehow this doesn't work on a project basis, so we have to do it separately for
 each package.
 
-#+NAME: HackageUploadTarballs
+#+NAME: HackageUploadTarballCandidates
 #+BEGIN_SRC sh :exports both :results output verbatim
 for p in elynx-markov elynx-nexus elynx-seq elynx-tools elynx-tree slynx tlynx elynx
 do
@@ -64,3 +64,93 @@ do
      cabal upload -u $HACKAGE_USERNAME -p $HACKAGE_PASSWORD $tarball)
 done
 #+END_SRC
+
+#+RESULTS: HackageUploadTarballCandidates
+#+begin_example
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/elynx-markov-0.6.0.0.tar.gz...
+Package successfully uploaded as candidate. You can now preview the result at
+'https://hackage.haskell.org/package/elynx-markov-0.6.0.0/candidate'. To
+publish the candidate, use 'cabal upload --publish'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/elynx-nexus-0.6.0.0.tar.gz...
+Package successfully uploaded as candidate. You can now preview the result at
+'https://hackage.haskell.org/package/elynx-nexus-0.6.0.0/candidate'. To
+publish the candidate, use 'cabal upload --publish'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/elynx-seq-0.6.0.0.tar.gz...
+Package successfully uploaded as candidate. You can now preview the result at
+'https://hackage.haskell.org/package/elynx-seq-0.6.0.0/candidate'. To publish
+the candidate, use 'cabal upload --publish'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/elynx-tools-0.6.0.0.tar.gz...
+Package successfully uploaded as candidate. You can now preview the result at
+'https://hackage.haskell.org/package/elynx-tools-0.6.0.0/candidate'. To
+publish the candidate, use 'cabal upload --publish'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/elynx-tree-0.6.0.0.tar.gz...
+Package successfully uploaded as candidate. You can now preview the result at
+'https://hackage.haskell.org/package/elynx-tree-0.6.0.0/candidate'. To publish
+the candidate, use 'cabal upload --publish'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/slynx-0.6.0.0.tar.gz...
+Package successfully uploaded as candidate. You can now preview the result at
+'https://hackage.haskell.org/package/slynx-0.6.0.0/candidate'. To publish the
+candidate, use 'cabal upload --publish'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/tlynx-0.6.0.0.tar.gz...
+Package successfully uploaded as candidate. You can now preview the result at
+'https://hackage.haskell.org/package/tlynx-0.6.0.0/candidate'. To publish the
+candidate, use 'cabal upload --publish'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/elynx-0.6.0.0.tar.gz...
+Package successfully uploaded as candidate. You can now preview the result at
+'https://hackage.haskell.org/package/elynx-0.6.0.0/candidate'. To publish the
+candidate, use 'cabal upload --publish'.
+#+end_example
+
+#+NAME: HackagePublishTarballs
+#+BEGIN_SRC sh :exports both :results output verbatim
+for p in elynx-markov elynx-nexus elynx-seq elynx-tools elynx-tree slynx tlynx elynx
+do
+    (cd "$p" || exit 1
+     tarball=$(cabal sdist | tail -n 1)
+     cabal upload --publish -u $HACKAGE_USERNAME -p $HACKAGE_PASSWORD $tarball)
+done
+#+END_SRC
+
+#+RESULTS: HackagePublishTarballs
+#+begin_example
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/elynx-markov-0.6.0.0.tar.gz...
+Package successfully published. You can now view it at
+'https://hackage.haskell.org/package/elynx-markov-0.6.0.0'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/elynx-nexus-0.6.0.0.tar.gz...
+Package successfully published. You can now view it at
+'https://hackage.haskell.org/package/elynx-nexus-0.6.0.0'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/elynx-seq-0.6.0.0.tar.gz...
+Package successfully published. You can now view it at
+'https://hackage.haskell.org/package/elynx-seq-0.6.0.0'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/elynx-tools-0.6.0.0.tar.gz...
+Package successfully published. You can now view it at
+'https://hackage.haskell.org/package/elynx-tools-0.6.0.0'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/elynx-tree-0.6.0.0.tar.gz...
+Package successfully published. You can now view it at
+'https://hackage.haskell.org/package/elynx-tree-0.6.0.0'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/slynx-0.6.0.0.tar.gz...
+Package successfully published. You can now view it at
+'https://hackage.haskell.org/package/slynx-0.6.0.0'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/tlynx-0.6.0.0.tar.gz...
+Package successfully published. You can now view it at
+'https://hackage.haskell.org/package/tlynx-0.6.0.0'.
+Uploading
+/home/dominik/Shared/haskell/elynx/dist-newstyle/sdist/elynx-0.6.0.0.tar.gz...
+Package successfully published. You can now view it at
+'https://hackage.haskell.org/package/elynx-0.6.0.0'.
+#+end_example
