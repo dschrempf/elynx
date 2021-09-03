@@ -86,7 +86,7 @@ ELynx is written in [[https://www.haskell.org/][Haskell]] and can be installed w
    [[https://en.wikipedia.org/wiki/PATH_(variable)][PATH]] environment variable. Then, they can be used directly.
 
 * Get help
-** Command
+For example:
 #+BEGIN_SRC sh :exports code
 slynx --help
 #+end_src
@@ -155,6 +155,7 @@ Get help for sub commands:
 #+end_example
 
 ** Sub command
+The documentation of sub commands can be accessed separately:
 #+BEGIN_SRC sh :exports code
 slynx simulate --help
 #+end_src

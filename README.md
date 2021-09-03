@@ -69,8 +69,7 @@ ELynx is written in [Haskell](https://www.haskell.org/) and can be installed wit
 
 # Get help
 
-
-## Command
+For example:
 
     slynx --help
 
@@ -132,6 +131,8 @@ ELynx is written in [Haskell](https://www.haskell.org/) and can be installed wit
 
 
 ## Sub command
+
+The documentation of sub commands can be accessed separately:
 
     slynx simulate --help
 
