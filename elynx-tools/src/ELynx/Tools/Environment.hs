@@ -30,9 +30,9 @@ data Environment a = Environment
     globalArguments :: GlobalArguments,
     -- | Local arguments of command.
     localArguments :: a,
-    -- | List will be empty if using 'Quiet'. If 'LogStdOutAndFile' is used
-    -- 'logHandles' contains two handles to the standard output and the log
-    -- file.
+    -- | List will be empty if using 'Quiet'. If an output base name is
+    -- available, 'logHandles' will contain two handles: (1) the standard output
+    -- and (2) the log file.
     logHandles :: [Handle],
     -- | MVar blocking output.
     outLock :: MVar (),

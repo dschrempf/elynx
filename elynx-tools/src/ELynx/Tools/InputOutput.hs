@@ -37,7 +37,7 @@ module ELynx.Tools.InputOutput
 where
 
 import Codec.Compression.GZip
-import Data.Aeson
+import Data.Aeson hiding (String)
 import Data.Attoparsec.ByteString.Lazy hiding (Fail)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List (isSuffixOf)
@@ -66,7 +66,7 @@ checkFile Fail fp =
           <> "Please use --force to overwrite results of a previous analysis."
     False -> return ()
 
--- | Open existing files only if 'Force' is true.
+-- | Open existing files only if 'ExecutionMode' is 'Overwrite'.
 openFileWithExecutionMode :: ExecutionMode -> FilePath -> IO Handle
 openFileWithExecutionMode em fp = checkFile em fp >> openFile fp WriteMode
 

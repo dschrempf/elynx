@@ -17,7 +17,7 @@ import Control.Parallel.Strategies
 import Criterion.Main
 import Data.Bifunctor
 import Data.Foldable
-import ELynx.Tools hiding (Random)
+import ELynx.Tools
 import ELynx.Tree
 import ELynx.Tree.Simulate.PointProcess
 import Length

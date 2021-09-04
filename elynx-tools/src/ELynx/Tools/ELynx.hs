@@ -75,9 +75,9 @@ eLynxRun f worker = do
   -- Footer.
   logInfoFooter
 
--- | The 'ReaderT' and 'LoggingT' wrapper for ELynx. Prints a header and a
--- footer, logs to 'stderr' if no file is provided. Initializes the seed if none
--- is provided. If a log file is provided, log to the file and to 'stderr'.
+-- | The 'ReaderT' wrapper for ELynx. Prints a header and a footer, logs to
+-- 'stdout' and possibly a log file, if provided. Initializes the seed if none
+-- is provided.
 eLynxWrapper ::
   (Eq a, Show a, Reproducible a, Reproducible b, ToJSON a) =>
   GlobalArguments ->

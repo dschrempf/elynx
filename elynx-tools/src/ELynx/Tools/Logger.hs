@@ -154,8 +154,8 @@ compilationString =
               )
         )
 
--- A short header to be used in executables. 'unlines' doesn't work here because
--- it adds an additional newline at the end.
+-- | A short header to be used in executables. 'unlines' doesn't work here
+-- because it adds an additional newline at the end.
 logHeader :: [String]
 logHeader = [versionString, copyrightString, compilationString]
 

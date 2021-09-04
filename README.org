@@ -238,4 +238,3 @@ Special mixture models:
      -m "EDM(LG-Custom)" -p FILES
 For special mixture models, mixture weights are optional.
 #+end_example
-

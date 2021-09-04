@@ -63,7 +63,7 @@ toSeedOpt :: Maybe (VU.Vector Word32) -> SeedOpt
 toSeedOpt Nothing = RandomUnset
 toSeedOpt (Just w) = Fixed w
 
--- Execution mode option parser.
+-- | Execution mode option parser.
 executionModeOpt :: Parser ExecutionMode
 executionModeOpt =
   flag
@@ -225,6 +225,7 @@ createCommand nm dsc ftr p f = command nm $ f <$> parserInfo dsc' ftr' p
 fillParagraph :: String -> Doc
 fillParagraph = fillSep . map text . words
 
+-- | Global ELynx footer.
 elynxFooter :: [Doc]
 elynxFooter =
   [ text "ELynx",
