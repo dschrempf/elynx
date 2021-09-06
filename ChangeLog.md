@@ -4,6 +4,8 @@
 
 ## Unreleased changes
 
+-   Split `ELynx.Tools` into separate modules because the package will be reduced.
+
 
 ## Version 0.6.0.0
 
