@@ -24,17 +24,12 @@ source-repository head
 library
   exposed-modules:
       ELynx.Tools.ByteString
-      ELynx.Tools.Concurrent
       ELynx.Tools.Definitions
       ELynx.Tools.ELynx
       ELynx.Tools.Environment
       ELynx.Tools.Equality
       ELynx.Tools.InputOutput
-      ELynx.Tools.LinearAlgebra
-      ELynx.Tools.List
       ELynx.Tools.Logger
-      ELynx.Tools.Misc
-      ELynx.Tools.Numeric
       ELynx.Tools.Options
       ELynx.Tools.Reproduction
   other-modules:
@@ -54,7 +49,6 @@ library
     , hmatrix
     , mwc-random
     , optparse-applicative
-    , primitive
     , template-haskell
     , text
     , time

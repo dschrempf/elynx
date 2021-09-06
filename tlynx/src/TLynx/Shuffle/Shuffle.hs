@@ -28,7 +28,6 @@ import qualified Data.ByteString.Lazy.Char8 as BL
 import ELynx.Tools.Definitions
 import ELynx.Tools.ELynx
 import ELynx.Tools.Environment
-import ELynx.Tools.List
 import ELynx.Tools.Logger
 import ELynx.Tools.Reproduction
 import ELynx.Tree
@@ -38,6 +37,7 @@ import ELynx.Tree.Simulate.PointProcess
   )
 import System.IO (hClose)
 import System.Random.MWC (GenIO, initialize)
+import TLynx.Grabble
 import TLynx.Parsers
 import TLynx.Shuffle.Options
 

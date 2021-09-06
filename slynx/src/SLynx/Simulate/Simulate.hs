@@ -49,16 +49,24 @@ import ELynx.Tools.Definitions
 import ELynx.Tools.ELynx
 import ELynx.Tools.Environment
 import ELynx.Tools.InputOutput
-import ELynx.Tools.LinearAlgebra
 import ELynx.Tools.Logger
-import ELynx.Tools.Numeric
 import ELynx.Tools.Options
 import ELynx.Tools.Reproduction
 import ELynx.Tree
+import qualified Numeric.LinearAlgebra as L
 import SLynx.Simulate.Options
 import SLynx.Simulate.PhyloModel
 import System.Random.MWC
 import Text.Printf
+
+-- Display a vector with given precision.
+dispv :: Int -> VS.Vector L.R -> String
+dispv p v = head $ tail $ lines $ L.dispf p (L.asRow v)
+
+-- Display a matrix with given precision and indent.
+dispmi :: Int -> Int -> L.Matrix L.R -> String
+dispmi p i m =
+  intercalate "\n" $ map (replicate i ' ' ++) $ tail $ lines $ L.dispf p m
 
 getDistLine :: Int -> MR.StationaryDistribution -> BB.Builder
 getDistLine i d =
@@ -165,6 +173,10 @@ summarizeLengths t =
     h = height t
     h' = sum (distancesOriginLeaves t) / fromIntegral n
     b = totalBranchLength t
+
+-- Round double to a given precision.
+roundN :: Int -> Double -> Double
+roundN n v = fromInteger (round $ v * (10 ^ n)) / (10.0 ^^ n)
 
 -- Summarize a substitution model; lines to be printed to screen or log.
 summarizeSM :: MS.SubstitutionModel -> [BL.ByteString]

@@ -37,7 +37,6 @@ import qualified Data.Vector.Unboxed as VU
 import Data.Word
 import ELynx.Tools.InputOutput
 import ELynx.Tools.Logger
-import ELynx.Tools.Misc
 import ELynx.Tools.Reproduction
 import GHC.Generics
 import Options.Applicative hiding (empty)
@@ -108,7 +107,7 @@ verbosityOpt =
         <> help ("Be verbose; one of: " ++ unwords (map show vs))
     )
   where
-    vs = allValues :: [Verbosity]
+    vs = [minBound ..] :: [Verbosity]
 
 -- Output filename.
 outFileBaseNameOpt :: Parser FilePath

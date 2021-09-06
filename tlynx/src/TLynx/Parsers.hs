@@ -20,7 +20,6 @@ where
 
 import Data.List
 import ELynx.Tools.InputOutput
-import ELynx.Tools.Misc
 import ELynx.Tree
 import Options.Applicative
 
@@ -75,7 +74,7 @@ newickFormat =
             ++ "; default: Standard; for detailed help, see 'tlynx --help'"
         )
   where
-    nwfs = map show (allValues :: [NewickFormat])
+    nwfs = map show ([minBound ..] :: [NewickFormat])
     nwlist = intercalate ", " (init nwfs) <> ", or " <> last nwfs
 
 -- | Help for different 'NewickFormat's.
@@ -83,7 +82,7 @@ newickHelp :: [String]
 newickHelp =
   map
     (toListItem . describeNewickFormat)
-    (allValues :: [NewickFormat])
+    ([minBound ..] :: [NewickFormat])
     ++ ["- Nexus file including Newick trees"]
   where
     toListItem = ("- Newick " ++)

@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 
@@ -31,6 +32,7 @@ import Control.Concurrent.Async
   )
 import Control.Monad
 import Control.Monad.IO.Class
+import Control.Monad.Primitive
 import Control.Monad.Trans.Reader hiding (local)
 import Control.Parallel.Strategies
 import qualified Data.ByteString.Builder as BB
@@ -39,17 +41,36 @@ import Data.Foldable
 import Data.Maybe
 import qualified Data.Sequence as Seq
 import qualified Data.Set as Set
-import ELynx.Tools.Concurrent
+import qualified Data.Vector.Unboxed as VU
+import Data.Word
 import ELynx.Tools.ELynx
 import ELynx.Tools.Environment
-import ELynx.Tools.List
 import ELynx.Tools.Logger
 import ELynx.Tools.Reproduction
 import ELynx.Tree
 import qualified ELynx.Tree.Simulate.Coalescent as CS
 import qualified ELynx.Tree.Simulate.PointProcess as PP
 import System.Random.MWC
+import TLynx.Grabble
 import TLynx.Simulate.Options
+
+-- Split a generator.
+splitGen :: PrimMonad m => Int -> Gen (PrimState m) -> m [Gen (PrimState m)]
+splitGen n gen
+  | n <= 0 = return []
+  | otherwise = do
+    seeds :: [VU.Vector Word32] <- replicateM (n -1) $ uniformVector gen 256
+    fmap (gen :) (mapM initialize seeds)
+
+-- For a given number of capabilities and number of calculations, get chunk
+-- sizes. The chunk sizes will be as evenly distributed as possible and sum up
+-- to the number of calculations.
+getChunks :: Int -> Int -> [Int]
+getChunks c n = ns
+  where
+    n' = n `div` c
+    r = n `mod` c
+    ns = replicate r (n' + 1) ++ replicate (c - r) n'
 
 -- | Simulate phylogenetic trees using birth and death process.
 simulate :: ELynx SimulateArguments ()

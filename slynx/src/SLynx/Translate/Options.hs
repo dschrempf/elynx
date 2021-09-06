@@ -21,7 +21,6 @@ import Data.Aeson
 import Data.List
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.Character.Codon
-import ELynx.Tools.Misc
 import ELynx.Tools.Reproduction
 import GHC.Generics
 import Options.Applicative
@@ -72,7 +71,7 @@ universalCodeOpt =
       <> help
         ("universal code; one of: " ++ codeStr ++ ".")
   where
-    codes = allValues :: [UniversalCode]
+    codes = [minBound ..] :: [UniversalCode]
     codeWords = map show codes
     codeStr = intercalate ", " codeWords
 

@@ -15,7 +15,6 @@ module SLynx.Options (CommandArguments (..)) where
 
 import Data.Aeson
 import ELynx.Data.Alphabet.Alphabet
-import ELynx.Tools.Misc
 import ELynx.Tools.Options
 import ELynx.Tools.Reproduction
 import GHC.Generics
@@ -87,7 +86,7 @@ instance Reproducible CommandArguments where
     where
       toListItem = ("  - " ++)
       fs = map toListItem ["FASTA"]
-      as = map (toListItem . alphabetDescription) (allValues :: [Alphabet])
+      as = map (toListItem . alphabetDescription) ([minBound ..] :: [Alphabet])
 
 instance FromJSON CommandArguments
 
