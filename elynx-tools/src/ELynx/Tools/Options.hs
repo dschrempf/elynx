@@ -227,7 +227,8 @@ fillParagraph = fillSep . map text . words
 -- | Global ELynx footer.
 elynxFooter :: [Doc]
 elynxFooter =
-  [ text "ELynx",
+  [ empty,
+    text "ELynx",
     text "-----",
     fillParagraph
       "A Haskell library and tool set for computational biology. The goal of ELynx is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated. The command line with all arguments is logged consistently, and automatically. Data integrity is verified using SHA256 sums so that validation of past analyses is possible without the need to recompute the result.",
