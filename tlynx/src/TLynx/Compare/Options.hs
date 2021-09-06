@@ -18,8 +18,8 @@ module TLynx.Compare.Options
 where
 
 import Data.Aeson
-import GHC.Generics
 import ELynx.Tools.Reproduction
+import GHC.Generics
 import Options.Applicative
 import TLynx.Parsers
 

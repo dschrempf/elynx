@@ -17,7 +17,7 @@ import Data.Vector.Generic
 import ELynx.Data.MarkovProcess.Nucleotide
 import ELynx.Data.MarkovProcess.RateMatrix
 import ELynx.Data.MarkovProcess.SubstitutionModel
-import ELynx.Tools
+import ELynx.Tools.Equality
 import Test.Hspec
 
 stationaryDist :: StationaryDistribution

@@ -22,11 +22,12 @@ import Data.Maybe
 import Data.Monoid
 import Data.Proxy
 import ELynx.ClassLaws
-import ELynx.Tools
+-- import Test.Hspec.QuickCheck
+
+import ELynx.Tools.InputOutput
 import ELynx.Tree
 import ELynx.Tree.Arbitrary ()
 import Test.Hspec
--- import Test.Hspec.QuickCheck
 import Test.QuickCheck hiding (labels)
 import Test.QuickCheck.Classes
 

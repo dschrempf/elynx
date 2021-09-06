@@ -17,7 +17,7 @@ import qualified Data.Vector.Storable as V
 import ELynx.Data.MarkovProcess.AminoAcid
 import qualified ELynx.Data.MarkovProcess.RateMatrix as R
 import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
-import ELynx.Tools
+import ELynx.Tools.Equality
 import Numeric.LinearAlgebra
 import Test.Hspec
 

@@ -19,7 +19,7 @@ import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.Alphabet.Character
 import ELynx.Data.Sequence.Alignment
 import ELynx.Import.Sequence.Fasta
-import ELynx.Tools
+import ELynx.Tools.InputOutput
 import Test.Hspec
 
 fastaNucleotideIUPACFN :: FilePath

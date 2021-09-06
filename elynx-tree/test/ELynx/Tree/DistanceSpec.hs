@@ -16,7 +16,8 @@ module ELynx.Tree.DistanceSpec
   )
 where
 
-import ELynx.Tools
+import ELynx.Tools.Equality
+import ELynx.Tools.InputOutput
 import ELynx.Tree
 import ELynx.Tree.Arbitrary ()
 import Test.Hspec

@@ -18,7 +18,7 @@ where
 import Data.Attoparsec.ByteString.Char8
 import qualified Data.ByteString.Char8 as BS
 import Data.Either
-import ELynx.Tools
+import ELynx.Tools.InputOutput
 import ELynx.Tree
 import Test.Hspec
 

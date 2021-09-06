@@ -15,10 +15,9 @@ where
 
 import qualified Data.Vector.Storable as V
 import ELynx.Import.MarkovProcess.EDMModelPhylobayes
-  ( EDMComponent,
-  )
 import ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
-import ELynx.Tools
+import ELynx.Tools.Equality
+import ELynx.Tools.InputOutput
 import Test.Hspec
 
 fn :: FilePath

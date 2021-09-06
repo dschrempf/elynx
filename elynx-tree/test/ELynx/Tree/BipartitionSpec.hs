@@ -19,7 +19,7 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
-import ELynx.Tools
+import ELynx.Tools.InputOutput
 import ELynx.Tree
 import Test.Hspec
 

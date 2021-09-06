@@ -16,7 +16,7 @@ module ELynx.Tree.SupportSpec
   )
 where
 
-import ELynx.Tools
+import ELynx.Tools.InputOutput
 import ELynx.Tree
 import Test.Hspec
 

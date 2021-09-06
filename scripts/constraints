@@ -24,7 +24,7 @@ import           System.Environment             ( getArgs )
 
 import           ELynx.Tree
 
-import           ELynx.Tools                    ( parseFileWith )
+import           ELynx.Tools.InputOutput        ( parseFileWith )
 
 import           ELynx.Tree.Import.Newick       ( oneNewick )
 

@@ -16,7 +16,7 @@ where
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Export.Sequence.Fasta
 import ELynx.Import.Sequence.Fasta
-import ELynx.Tools
+import ELynx.Tools.InputOutput
 import Test.Hspec
 
 fastaNucleotideIUPACFN :: FilePath

@@ -17,7 +17,7 @@ where
 
 import Data.Bifunctor
 import qualified Data.ByteString.Lazy.Char8 as BL
-import ELynx.Tools
+import ELynx.Tools.InputOutput
 import ELynx.Tree
 import ELynx.Tree.Arbitrary ()
 import Test.Hspec
