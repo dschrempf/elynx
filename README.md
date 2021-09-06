@@ -69,13 +69,13 @@ ELynx is written in [Haskell](https://www.haskell.org/) and can be installed wit
 
 # Get help
 
-For example:
-
-    slynx --help
+    cabal exec slynx -- --help
+    # OR: stack exec slynx -- --help
+    # OR: slynx --help
 
     ELynx Suite version 0.6.0.0.
     Developed by Dominik Schrempf.
-    Compiled on September 3, 2021, at 20:56 pm, UTC.
+    Compiled on September 4, 2021, at 12:58 pm, UTC.
     
     Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
                  [-f|--force] [--no-elynx-file] COMMAND
@@ -113,6 +113,7 @@ For example:
       - ProteinX (amino acids; including gaps)
       - ProteinS (amino acids; including gaps, and translation stops)
       - ProteinI (amino acids; including gaps, translation stops, and IUPAC codes)
+    
     ELynx
     -----
     A Haskell library and tool set for computational biology. The goal of ELynx is
@@ -126,6 +127,9 @@ For example:
     tlynx     Analyze, modify, and simulate phylogenetic trees.
     elynx     Validate and redo past analyses.
     
+    Get help for commands:
+      slynx --help
+    
     Get help for sub commands:
       slynx examine --help
 
@@ -134,11 +138,13 @@ For example:
 
 The documentation of sub commands can be accessed separately:
 
-    slynx simulate --help
+    cabal exec slynx -- simulate --help
+    # OR: stack exec slynx -- simulate --help
+    # OR: slynx simulate --help
 
     ELynx Suite version 0.6.0.0.
     Developed by Dominik Schrempf.
-    Compiled on September 3, 2021, at 20:56 pm, UTC.
+    Compiled on September 4, 2021, at 12:58 pm, UTC.
     
     Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL] 
                           [-m|--mixture-model MODEL] [-e|--edm-file NAME] 
