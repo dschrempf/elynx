@@ -40,7 +40,8 @@ import TLynx.TLynx
 parseProgName :: Value -> J.Parser String
 parseProgName = withObject "progName" $ \o -> o .: "progName"
 
--- TODO: Declaring program names here should not be necessary.
+-- TODO: Create a data type collecting program names.
+
 parseAllR :: String -> Value -> J.Parser AllReproductions
 parseAllR "slynx" v =
   S <$> (parseJSON v :: J.Parser (Reproduction (Arguments S.CommandArguments)))
