@@ -239,6 +239,9 @@ elynxFooter =
       <+> text "Analyze, modify, and simulate phylogenetic trees.",
     fill 9 (text "elynx") <+> text "Validate and redo past analyses.",
     empty,
+    text "Get help for commands:",
+    text "  slynx --help",
+    empty,
     text "Get help for sub commands:",
     text "  slynx examine --help"
   ]
