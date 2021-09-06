@@ -1,9 +1,5 @@
 # Stack
 .stack-work/
-.stack-work-doc/
-.stack-work-test/
-.stack-work-prof/
-.stack-work-prod/
 
 # HIE files.
 *.dump-hi
