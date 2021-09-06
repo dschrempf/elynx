@@ -59,7 +59,6 @@
 /**/dist/
 /**/dist-newstyle/
 /.dir-locals.el
-/stack.yaml.lock
 /temp/
 /.rsync-project
 /.direnv/
