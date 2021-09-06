@@ -20,10 +20,12 @@ module TLynx.Distance.Options
   )
 where
 
+import Data.Aeson
 import qualified Data.Attoparsec.ByteString.Char8 as AC
 import qualified Data.ByteString.Char8 as BS
-import ELynx.Tools
+import ELynx.Tools.Reproduction
 import ELynx.Tree (Support (..), toSupportUnsafe)
+import GHC.Generics
 import Options.Applicative
 import TLynx.Parsers
 import Text.Printf

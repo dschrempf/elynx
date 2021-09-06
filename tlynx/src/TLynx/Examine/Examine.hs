@@ -22,7 +22,10 @@ import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Containers.ListUtils (nubOrd)
 import Data.List ((\\))
-import ELynx.Tools
+import ELynx.Tools.ByteString
+import ELynx.Tools.ELynx
+import ELynx.Tools.Environment
+import ELynx.Tools.Logger
 import ELynx.Tree
 import System.IO
   ( Handle,

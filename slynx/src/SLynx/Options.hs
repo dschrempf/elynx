@@ -11,15 +11,14 @@
 -- Portability :  portable
 --
 -- Creation date: Sat Sep  7 18:55:03 2019.
-module SLynx.Options
-  ( Arguments (..),
-    CommandArguments (..),
-    parseArguments,
-  )
-where
+module SLynx.Options (CommandArguments (..)) where
 
+import Data.Aeson
 import ELynx.Data.Alphabet.Alphabet
-import ELynx.Tools
+import ELynx.Tools.Misc
+import ELynx.Tools.Options
+import ELynx.Tools.Reproduction
+import GHC.Generics
 import Options.Applicative
 import SLynx.Concatenate.Options
 import SLynx.Examine.Options

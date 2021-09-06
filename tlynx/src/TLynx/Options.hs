@@ -11,14 +11,12 @@
 -- Portability :  portable
 --
 -- Creation date: Sat Sep  7 18:55:03 2019.
-module TLynx.Options
-  ( Arguments (..),
-    CommandArguments (..),
-    parseArguments,
-  )
-where
+module TLynx.Options (CommandArguments (..)) where
 
-import ELynx.Tools
+import Data.Aeson
+import ELynx.Tools.Options
+import ELynx.Tools.Reproduction
+import GHC.Generics
 import Options.Applicative
 import TLynx.Compare.Options
 import TLynx.Connect.Options

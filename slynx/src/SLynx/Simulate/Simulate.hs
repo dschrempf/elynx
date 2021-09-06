@@ -44,7 +44,16 @@ import ELynx.Export.Sequence.Fasta
 import ELynx.Import.MarkovProcess.EDMModelPhylobayes
 import ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
 import ELynx.Simulate.MarkovProcessAlongTree
-import ELynx.Tools
+import ELynx.Tools.ByteString
+import ELynx.Tools.Definitions
+import ELynx.Tools.ELynx
+import ELynx.Tools.Environment
+import ELynx.Tools.InputOutput
+import ELynx.Tools.LinearAlgebra
+import ELynx.Tools.Logger
+import ELynx.Tools.Numeric
+import ELynx.Tools.Options
+import ELynx.Tools.Reproduction
 import ELynx.Tree
 import SLynx.Simulate.Options
 import SLynx.Simulate.PhyloModel

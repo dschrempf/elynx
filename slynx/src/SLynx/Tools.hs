@@ -25,7 +25,8 @@ import Control.Monad.IO.Class
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.Sequence.Sequence
 import ELynx.Import.Sequence.Fasta
-import ELynx.Tools
+import ELynx.Tools.InputOutput
+import ELynx.Tools.Logger
 import Options.Applicative
 
 -- | Read sequences of given alphabet from file or standard input.

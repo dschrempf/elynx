@@ -17,7 +17,9 @@ module TLynx.Connect.Options
   )
 where
 
-import ELynx.Tools
+import Data.Aeson
+import ELynx.Tools.Reproduction
+import GHC.Generics
 import Options.Applicative
 import TLynx.Parsers
 

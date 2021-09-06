@@ -26,7 +26,10 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import ELynx.Tools
+import ELynx.Tools.ELynx
+import ELynx.Tools.Environment
+import ELynx.Tools.Logger
+import ELynx.Tools.Options
 import ELynx.Tree
 import Graphics.Gnuplot.Simple
 import System.IO

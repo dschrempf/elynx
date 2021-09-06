@@ -18,12 +18,15 @@ module SLynx.SubSample.Options
   )
 where
 
+import Data.Aeson
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LT
 import qualified Data.Text.Lazy.Builder.Int as LT
 import ELynx.Data.Alphabet.Alphabet
-import ELynx.Tools
+import ELynx.Tools.Options
+import ELynx.Tools.Reproduction
+import GHC.Generics
 import Options.Applicative
 import SLynx.Tools
 

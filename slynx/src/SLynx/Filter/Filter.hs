@@ -25,9 +25,15 @@ import Data.Maybe (fromMaybe)
 import qualified ELynx.Data.Sequence.Alignment as M
 import qualified ELynx.Data.Sequence.Sequence as S
 import ELynx.Export.Sequence.Fasta
-import ELynx.Tools
+import ELynx.Tools.ELynx
+import ELynx.Tools.Environment
+import ELynx.Tools.Logger
 import SLynx.Filter.Options
 import SLynx.Tools
+
+-- Chain a list of functions together. See https://wiki.haskell.org/Compose.
+compose :: [a -> a] -> a -> a
+compose = foldl (flip (.)) id
 
 filterRows :: Maybe Int -> Maybe Int -> Bool -> [S.Sequence] -> BL.ByteString
 filterRows ml ms std ss = sequencesToFasta $ compose filters ss

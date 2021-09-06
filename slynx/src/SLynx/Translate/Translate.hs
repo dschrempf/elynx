@@ -22,7 +22,9 @@ import ELynx.Data.Character.Codon
 import ELynx.Data.Sequence.Sequence
 import ELynx.Data.Sequence.Translate
 import ELynx.Export.Sequence.Fasta
-import ELynx.Tools
+import ELynx.Tools.ELynx
+import ELynx.Tools.Environment
+import ELynx.Tools.Logger
 import SLynx.Tools
 import SLynx.Translate.Options
 

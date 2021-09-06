@@ -22,7 +22,10 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader (ask)
 import qualified ELynx.Data.Sequence.Alignment as M
 import ELynx.Export.Sequence.Fasta
-import ELynx.Tools
+import ELynx.Tools.ELynx
+import ELynx.Tools.Environment
+import ELynx.Tools.Logger
+import ELynx.Tools.Reproduction
 import SLynx.SubSample.Options
 import SLynx.Tools
 import System.Random.MWC

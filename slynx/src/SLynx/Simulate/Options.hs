@@ -40,11 +40,14 @@ module SLynx.Simulate.Options
   )
 where
 
+import Data.Aeson
 import Data.Maybe
   ( fromMaybe,
     maybeToList,
   )
-import ELynx.Tools
+import ELynx.Tools.Options
+import ELynx.Tools.Reproduction
+import GHC.Generics
 import Options.Applicative
 
 -- | Number of gamma rate categories and alpha parameter.

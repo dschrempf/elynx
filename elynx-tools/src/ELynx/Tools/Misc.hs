@@ -12,14 +12,9 @@
 -- Miscellaneous tools that do not have their own category (yet).
 module ELynx.Tools.Misc
   ( -- * Weird stuff
-    compose,
     allValues,
   )
 where
-
--- | Chain a list of functions together. See https://wiki.haskell.org/Compose.
-compose :: [a -> a] -> a -> a
-compose = foldl (flip (.)) id
 
 -- | Get all values of a bounded enumerated type.
 allValues :: (Bounded a, Enum a) => [a]

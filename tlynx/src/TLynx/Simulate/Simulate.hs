@@ -39,7 +39,12 @@ import Data.Foldable
 import Data.Maybe
 import qualified Data.Sequence as Seq
 import qualified Data.Set as Set
-import ELynx.Tools
+import ELynx.Tools.Concurrent
+import ELynx.Tools.ELynx
+import ELynx.Tools.Environment
+import ELynx.Tools.List
+import ELynx.Tools.Logger
+import ELynx.Tools.Reproduction
 import ELynx.Tree
 import qualified ELynx.Tree.Simulate.Coalescent as CS
 import qualified ELynx.Tree.Simulate.PointProcess as PP

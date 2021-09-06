@@ -22,7 +22,10 @@ module Options
   )
 where
 
-import ELynx.Tools
+import ELynx.Tools.InputOutput
+import ELynx.Tools.Options
+import ELynx.Tools.Reproduction
+import GHC.Generics
 import Options.Applicative
 import qualified SLynx.Options as S
 import qualified TLynx.Options as T

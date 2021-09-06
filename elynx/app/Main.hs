@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wno-deferred-type-errors #-}
 
 -- |
 -- Module      :  Main
@@ -24,7 +25,9 @@ import qualified Data.Aeson.Types as J
 import qualified Data.ByteString.Char8 as BS
 import Data.Maybe
 import Data.Version
-import ELynx.Tools
+import ELynx.Tools.InputOutput
+import ELynx.Tools.Options
+import ELynx.Tools.Reproduction
 import Options
 import Options.Applicative
 import Paths_elynx

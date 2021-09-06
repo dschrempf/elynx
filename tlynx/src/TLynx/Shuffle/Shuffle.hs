@@ -25,7 +25,12 @@ import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
-import ELynx.Tools
+import ELynx.Tools.Definitions
+import ELynx.Tools.ELynx
+import ELynx.Tools.Environment
+import ELynx.Tools.List
+import ELynx.Tools.Logger
+import ELynx.Tools.Reproduction
 import ELynx.Tree
 import ELynx.Tree.Simulate.PointProcess
   ( PointProcess (PointProcess),

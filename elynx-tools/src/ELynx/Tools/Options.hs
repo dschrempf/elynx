@@ -15,7 +15,6 @@
 -- Creation date: Thu Sep  2 19:17:07 2021.
 module ELynx.Tools.Options
   ( -- * Command options
-    SeedOpt (..),
     seedOpt,
     executionModeOpt,
 
@@ -40,6 +39,7 @@ import ELynx.Tools.InputOutput
 import ELynx.Tools.Logger
 import ELynx.Tools.Misc
 import ELynx.Tools.Reproduction
+import GHC.Generics
 import Options.Applicative hiding (empty)
 import Options.Applicative.Help.Pretty
 

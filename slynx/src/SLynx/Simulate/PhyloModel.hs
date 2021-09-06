@@ -33,7 +33,8 @@ import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
 import ELynx.Import.MarkovProcess.EDMModelPhylobayes
   ( EDMComponent,
   )
-import ELynx.Tools
+import ELynx.Tools.Equality
+import ELynx.Tools.InputOutput
 import Numeric.LinearAlgebra
   ( norm_1,
     size,

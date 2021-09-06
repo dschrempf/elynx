@@ -23,8 +23,6 @@ source-repository head
 
 library
   exposed-modules:
-      ELynx.Tools
-  other-modules:
       ELynx.Tools.ByteString
       ELynx.Tools.Concurrent
       ELynx.Tools.Definitions
@@ -39,6 +37,7 @@ library
       ELynx.Tools.Numeric
       ELynx.Tools.Options
       ELynx.Tools.Reproduction
+  other-modules:
       Paths_elynx_tools
   autogen-modules:
       Paths_elynx_tools

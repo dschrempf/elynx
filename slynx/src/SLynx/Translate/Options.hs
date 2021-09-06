@@ -17,10 +17,13 @@ module SLynx.Translate.Options
   )
 where
 
+import Data.Aeson
 import Data.List
 import ELynx.Data.Alphabet.Alphabet
 import ELynx.Data.Character.Codon
-import ELynx.Tools
+import ELynx.Tools.Misc
+import ELynx.Tools.Reproduction
+import GHC.Generics
 import Options.Applicative
 import SLynx.Tools
 

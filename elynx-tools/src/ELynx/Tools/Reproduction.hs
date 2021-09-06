@@ -26,11 +26,6 @@ module ELynx.Tools.Reproduction
     Reproduction (..),
     writeReproduction,
     hashFile,
-
-    -- * Re-exports
-    Generic,
-    FromJSON,
-    ToJSON,
   )
 where
 

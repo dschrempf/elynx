@@ -15,7 +15,8 @@ module TLynx.TLynx
   )
 where
 
-import ELynx.Tools
+import ELynx.Tools.ELynx
+import ELynx.Tools.Options
 import TLynx.Compare.Compare
 import TLynx.Connect.Connect
 import TLynx.Distance.Distance

@@ -19,7 +19,8 @@ module TLynx.Parsers
 where
 
 import Data.List
-import ELynx.Tools
+import ELynx.Tools.InputOutput
+import ELynx.Tools.Misc
 import ELynx.Tree
 import Options.Applicative
 

@@ -33,7 +33,10 @@ import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Data.Vector.Unboxed as V
-import ELynx.Tools
+import ELynx.Tools.ByteString
+import ELynx.Tools.ELynx
+import ELynx.Tools.Environment
+import ELynx.Tools.Logger
 import ELynx.Tree
 import Statistics.Sample
 import System.IO

@@ -22,10 +22,13 @@ module TLynx.Simulate.Options
   )
 where
 
+import Data.Aeson
 import Data.List
 import Data.Maybe
-import ELynx.Tools
+import ELynx.Tools.Options
+import ELynx.Tools.Reproduction
 import ELynx.Tree.Simulate.PointProcess (TimeSpec (..))
+import GHC.Generics
 import Options.Applicative
 
 deriving instance Eq TimeSpec

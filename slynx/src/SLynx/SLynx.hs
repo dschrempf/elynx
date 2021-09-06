@@ -15,7 +15,8 @@ module SLynx.SLynx
   )
 where
 
-import ELynx.Tools
+import ELynx.Tools.ELynx
+import ELynx.Tools.Options
 import SLynx.Concatenate.Concatenate
 import SLynx.Examine.Examine
 import SLynx.Filter.Filter

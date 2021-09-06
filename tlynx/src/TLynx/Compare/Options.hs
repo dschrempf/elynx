@@ -17,7 +17,9 @@ module TLynx.Compare.Options
   )
 where
 
-import ELynx.Tools
+import Data.Aeson
+import GHC.Generics
+import ELynx.Tools.Reproduction
 import Options.Applicative
 import TLynx.Parsers
 

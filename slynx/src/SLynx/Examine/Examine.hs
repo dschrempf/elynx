@@ -27,7 +27,9 @@ import qualified ELynx.Data.Alphabet.Character as C
 import qualified ELynx.Data.Sequence.Alignment as M
 import qualified ELynx.Data.Sequence.Distance as D
 import qualified ELynx.Data.Sequence.Sequence as Seq
-import ELynx.Tools
+import ELynx.Tools.ByteString
+import ELynx.Tools.ELynx
+import ELynx.Tools.Environment
 import SLynx.Examine.Options
 import SLynx.Tools
 import qualified Statistics.Sample as Sm
