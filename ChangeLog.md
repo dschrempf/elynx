@@ -4,6 +4,9 @@
 
 ## Unreleased changes
 
+
+## Version 0.6.1.0
+
 -   Split `ELynx.Tools` into separate modules because the package will be reduced.
 -   Remove the following modules from `ELynx.Tools`: `Concurrent`,
     `LinearAlgebra`, `List`, `Misc`, and `Numeric`.
