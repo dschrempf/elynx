@@ -30,19 +30,19 @@ import qualified Data.Set as Set
 import qualified Data.Vector as V
 import qualified Data.Vector.Storable as VS
 import qualified Data.Vector.Unboxed as U
-import ELynx.Data.Alphabet.Alphabet as A
-import qualified ELynx.Data.MarkovProcess.AminoAcid as MA
-import ELynx.Data.MarkovProcess.GammaRateHeterogeneity
-import qualified ELynx.Data.MarkovProcess.MixtureModel as MM
-import qualified ELynx.Data.MarkovProcess.PhyloModel as MP
-import qualified ELynx.Data.MarkovProcess.RateMatrix as MR
-import qualified ELynx.Data.MarkovProcess.SubstitutionModel as MS
-import qualified ELynx.Data.Sequence.Sequence as Seq hiding
-  ( name,
-  )
-import ELynx.Export.Sequence.Fasta
+import ELynx.Alphabet.Alphabet as A
 import ELynx.Import.MarkovProcess.EDMModelPhylobayes
 import ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
+import qualified ELynx.MarkovProcess.AminoAcid as MA
+import ELynx.MarkovProcess.GammaRateHeterogeneity
+import qualified ELynx.MarkovProcess.MixtureModel as MM
+import qualified ELynx.MarkovProcess.PhyloModel as MP
+import qualified ELynx.MarkovProcess.RateMatrix as MR
+import qualified ELynx.MarkovProcess.SubstitutionModel as MS
+import ELynx.Sequence.Export.Fasta
+import qualified ELynx.Sequence.Sequence as Seq hiding
+  ( name,
+  )
 import ELynx.Simulate.MarkovProcessAlongTree
 import ELynx.Tools.ByteString
 import ELynx.Tools.Definitions

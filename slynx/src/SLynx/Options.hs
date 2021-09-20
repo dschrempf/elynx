@@ -14,7 +14,7 @@
 module SLynx.Options (CommandArguments (..)) where
 
 import Data.Aeson
-import ELynx.Data.Alphabet.Alphabet
+import ELynx.Alphabet.Alphabet
 import ELynx.Tools.Options
 import ELynx.Tools.Reproduction
 import GHC.Generics

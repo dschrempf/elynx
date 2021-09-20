@@ -23,7 +23,7 @@ import qualified Data.Attoparsec.ByteString as AS
 import qualified Data.Attoparsec.ByteString.Char8 as AC
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Vector.Storable as V
-import ELynx.Data.MarkovProcess.MixtureModel
+import ELynx.MarkovProcess.MixtureModel
 
 -- | An empirical mixture model component has a weight and a stationary
 -- distribution.

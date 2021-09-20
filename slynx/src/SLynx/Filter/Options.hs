@@ -21,7 +21,7 @@ where
 
 import Control.Applicative
 import Data.Aeson
-import ELynx.Data.Alphabet.Alphabet
+import ELynx.Alphabet.Alphabet
 import ELynx.Tools.Reproduction
 import GHC.Generics
 import Options.Applicative

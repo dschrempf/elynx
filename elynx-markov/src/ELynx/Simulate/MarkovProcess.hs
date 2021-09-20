@@ -18,7 +18,7 @@ module ELynx.Simulate.MarkovProcess
 where
 
 import Control.Monad.Primitive
-import ELynx.Data.MarkovProcess.RateMatrix
+import ELynx.MarkovProcess.RateMatrix
 import Numeric.LinearAlgebra
 import System.Random.MWC
 import System.Random.MWC.Distributions

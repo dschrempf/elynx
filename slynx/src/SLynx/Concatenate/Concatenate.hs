@@ -18,8 +18,8 @@ module SLynx.Concatenate.Concatenate
 where
 
 import Control.Monad.Trans.Reader
-import qualified ELynx.Data.Sequence.Sequence as S
-import ELynx.Export.Sequence.Fasta
+import ELynx.Sequence.Export.Fasta
+import qualified ELynx.Sequence.Sequence as S
 import ELynx.Tools.ELynx
 import ELynx.Tools.Environment
 import SLynx.Concatenate.Options

@@ -18,10 +18,10 @@ module SLynx.Translate.Translate
 where
 
 import Control.Monad.Trans.Reader
-import ELynx.Data.Character.Codon
-import ELynx.Data.Sequence.Sequence
-import ELynx.Data.Sequence.Translate
-import ELynx.Export.Sequence.Fasta
+import ELynx.Character.Codon
+import ELynx.Sequence.Export.Fasta
+import ELynx.Sequence.Sequence
+import ELynx.Sequence.Translate
 import ELynx.Tools.ELynx
 import ELynx.Tools.Environment
 import ELynx.Tools.Logger

@@ -14,8 +14,8 @@ module ELynx.Simulate.MarkovProcessAlongTreeSpec
 where
 
 import Data.Tree
-import ELynx.Data.MarkovProcess.Nucleotide
-import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
+import ELynx.MarkovProcess.Nucleotide
+import qualified ELynx.MarkovProcess.SubstitutionModel as S
 import ELynx.Simulate.MarkovProcess
 import ELynx.Simulate.MarkovProcessAlongTree
 import System.Random.MWC

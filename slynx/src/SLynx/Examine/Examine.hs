@@ -22,11 +22,11 @@ import Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Set as S
 import qualified Data.Vector.Unboxed as V
-import qualified ELynx.Data.Alphabet.Alphabet as A
-import qualified ELynx.Data.Alphabet.Character as C
-import qualified ELynx.Data.Sequence.Alignment as M
-import qualified ELynx.Data.Sequence.Distance as D
-import qualified ELynx.Data.Sequence.Sequence as Seq
+import qualified ELynx.Alphabet.Alphabet as A
+import qualified ELynx.Alphabet.Character as C
+import qualified ELynx.Sequence.Alignment as M
+import qualified ELynx.Sequence.Distance as D
+import qualified ELynx.Sequence.Sequence as Seq
 import ELynx.Tools.ByteString
 import ELynx.Tools.ELynx
 import ELynx.Tools.Environment

@@ -20,8 +20,8 @@ where
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader (ask)
-import qualified ELynx.Data.Sequence.Alignment as M
-import ELynx.Export.Sequence.Fasta
+import qualified ELynx.Sequence.Alignment as M
+import ELynx.Sequence.Export.Fasta
 import ELynx.Tools.ELynx
 import ELynx.Tools.Environment
 import ELynx.Tools.Logger

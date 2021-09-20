@@ -22,9 +22,9 @@ module SLynx.Tools
 where
 
 import Control.Monad.IO.Class
-import ELynx.Data.Alphabet.Alphabet
-import ELynx.Data.Sequence.Sequence
-import ELynx.Import.Sequence.Fasta
+import ELynx.Alphabet.Alphabet
+import ELynx.Sequence.Import.Fasta
+import ELynx.Sequence.Sequence
 import ELynx.Tools.InputOutput
 import ELynx.Tools.Logger
 import Options.Applicative

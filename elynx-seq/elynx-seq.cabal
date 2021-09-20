@@ -31,25 +31,25 @@ source-repository head
 
 library
   exposed-modules:
-      ELynx.Data.Alphabet.Alphabet
-      ELynx.Data.Alphabet.Character
-      ELynx.Data.Alphabet.DistributionDiversity
-      ELynx.Data.Character.AminoAcid
-      ELynx.Data.Character.AminoAcidI
-      ELynx.Data.Character.AminoAcidS
-      ELynx.Data.Character.AminoAcidX
-      ELynx.Data.Character.Character
-      ELynx.Data.Character.Codon
-      ELynx.Data.Character.Nucleotide
-      ELynx.Data.Character.NucleotideI
-      ELynx.Data.Character.NucleotideX
-      ELynx.Data.Sequence.Alignment
-      ELynx.Data.Sequence.Defaults
-      ELynx.Data.Sequence.Distance
-      ELynx.Data.Sequence.Sequence
-      ELynx.Data.Sequence.Translate
-      ELynx.Export.Sequence.Fasta
-      ELynx.Import.Sequence.Fasta
+      ELynx.Alphabet.Alphabet
+      ELynx.Alphabet.Character
+      ELynx.Alphabet.DistributionDiversity
+      ELynx.Character.AminoAcid
+      ELynx.Character.AminoAcidI
+      ELynx.Character.AminoAcidS
+      ELynx.Character.AminoAcidX
+      ELynx.Character.Character
+      ELynx.Character.Codon
+      ELynx.Character.Nucleotide
+      ELynx.Character.NucleotideI
+      ELynx.Character.NucleotideX
+      ELynx.Sequence.Alignment
+      ELynx.Sequence.Defaults
+      ELynx.Sequence.Distance
+      ELynx.Sequence.Sequence
+      ELynx.Sequence.Translate
+      ELynx.Sequence.Export.Fasta
+      ELynx.Sequence.Import.Fasta
   other-modules:
       Paths_elynx_seq
   autogen-modules:
@@ -75,12 +75,12 @@ test-suite seq-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      ELynx.Data.Alphabet.DistributionDiversitySpec
-      ELynx.Data.Sequence.AlignmentSpec
-      ELynx.Data.Sequence.SequenceSpec
-      ELynx.Data.Sequence.TranslateSpec
-      ELynx.Export.Sequence.FastaSpec
-      ELynx.Import.Sequence.FastaSpec
+      ELynx.Alphabet.DistributionDiversitySpec
+      ELynx.Sequence.AlignmentSpec
+      ELynx.Sequence.SequenceSpec
+      ELynx.Sequence.TranslateSpec
+      ELynx.Sequence.Export.FastaSpec
+      ELynx.Sequence.Import.FastaSpec
       Paths_elynx_seq
   autogen-modules:
       Paths_elynx_seq

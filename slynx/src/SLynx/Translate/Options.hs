@@ -19,8 +19,8 @@ where
 
 import Data.Aeson
 import Data.List
-import ELynx.Data.Alphabet.Alphabet
-import ELynx.Data.Character.Codon
+import ELynx.Alphabet.Alphabet
+import ELynx.Character.Codon
 import ELynx.Tools.Reproduction
 import GHC.Generics
 import Options.Applicative

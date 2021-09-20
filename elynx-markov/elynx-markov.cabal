@@ -27,15 +27,15 @@ source-repository head
 
 library
   exposed-modules:
-      ELynx.Data.MarkovProcess.AminoAcid
-      ELynx.Data.MarkovProcess.CXXModels
-      ELynx.Data.MarkovProcess.CXXModelsData
-      ELynx.Data.MarkovProcess.GammaRateHeterogeneity
-      ELynx.Data.MarkovProcess.MixtureModel
-      ELynx.Data.MarkovProcess.Nucleotide
-      ELynx.Data.MarkovProcess.PhyloModel
-      ELynx.Data.MarkovProcess.RateMatrix
-      ELynx.Data.MarkovProcess.SubstitutionModel
+      ELynx.MarkovProcess.AminoAcid
+      ELynx.MarkovProcess.CXXModels
+      ELynx.MarkovProcess.CXXModelsData
+      ELynx.MarkovProcess.GammaRateHeterogeneity
+      ELynx.MarkovProcess.MixtureModel
+      ELynx.MarkovProcess.Nucleotide
+      ELynx.MarkovProcess.PhyloModel
+      ELynx.MarkovProcess.RateMatrix
+      ELynx.MarkovProcess.SubstitutionModel
       ELynx.Import.MarkovProcess.EDMModelPhylobayes
       ELynx.Import.MarkovProcess.SiteprofilesPhylobayes
       ELynx.Simulate.MarkovProcess
@@ -66,9 +66,9 @@ test-suite markov-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      ELynx.Data.MarkovProcess.AminoAcidSpec
-      ELynx.Data.MarkovProcess.NucleotideSpec
-      ELynx.Data.MarkovProcess.RateMatrixSpec
+      ELynx.MarkovProcess.AminoAcidSpec
+      ELynx.MarkovProcess.NucleotideSpec
+      ELynx.MarkovProcess.RateMatrixSpec
       ELynx.Import.MarkovProcess.EDMModelPhylobayesSpec
       ELynx.Import.MarkovProcess.SiteprofilesPhylobayesSpec
       ELynx.Simulate.MarkovProcessAlongTreeSpec

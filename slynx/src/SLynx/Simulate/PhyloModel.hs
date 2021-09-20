@@ -23,16 +23,16 @@ import qualified Data.ByteString.Char8 as BS
 import Data.Either (rights)
 import Data.Maybe
 import qualified Data.Vector as V
-import ELynx.Data.MarkovProcess.AminoAcid
-import ELynx.Data.MarkovProcess.CXXModels
-import qualified ELynx.Data.MarkovProcess.MixtureModel as M
-import ELynx.Data.MarkovProcess.Nucleotide
-import qualified ELynx.Data.MarkovProcess.PhyloModel as P
-import ELynx.Data.MarkovProcess.RateMatrix
-import qualified ELynx.Data.MarkovProcess.SubstitutionModel as S
 import ELynx.Import.MarkovProcess.EDMModelPhylobayes
   ( EDMComponent,
   )
+import ELynx.MarkovProcess.AminoAcid
+import ELynx.MarkovProcess.CXXModels
+import qualified ELynx.MarkovProcess.MixtureModel as M
+import ELynx.MarkovProcess.Nucleotide
+import qualified ELynx.MarkovProcess.PhyloModel as P
+import ELynx.MarkovProcess.RateMatrix
+import qualified ELynx.MarkovProcess.SubstitutionModel as S
 import ELynx.Tools.Equality
 import ELynx.Tools.InputOutput
 import Numeric.LinearAlgebra

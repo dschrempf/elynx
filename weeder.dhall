@@ -1,8 +1,8 @@
 { roots = [ "^Main.main$"
           , "^Paths_.*"
-          , "^ELynx.Data.MarkovProcess.MixtureModel.*"
-          , "^ELynx.Data.Alphabet.Alphabet.*"
-          , "^ELynx.Data.Alphabet.Character.*"
-          , "^ELynx.Data.Character.Character.*"
+          , "^ELynx.MarkovProcess.MixtureModel.*"
+          , "^ELynx.Alphabet.Alphabet.*"
+          , "^ELynx.Alphabet.Character.*"
+          , "^ELynx.Character.Character.*"
           ], type-class-roots = True }
 

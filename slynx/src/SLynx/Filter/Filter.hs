@@ -22,9 +22,9 @@ import Control.Monad (when)
 import Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Maybe (fromMaybe)
-import qualified ELynx.Data.Sequence.Alignment as M
-import qualified ELynx.Data.Sequence.Sequence as S
-import ELynx.Export.Sequence.Fasta
+import qualified ELynx.Sequence.Alignment as M
+import ELynx.Sequence.Export.Fasta
+import qualified ELynx.Sequence.Sequence as S
 import ELynx.Tools.ELynx
 import ELynx.Tools.Environment
 import ELynx.Tools.Logger

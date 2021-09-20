@@ -34,7 +34,7 @@ import Control.Monad.Primitive
 import Data.Tree
 import qualified Data.Vector as V
 import Data.Word (Word32)
-import ELynx.Data.MarkovProcess.RateMatrix
+import ELynx.MarkovProcess.RateMatrix
 import ELynx.Simulate.MarkovProcess
 import System.Random.MWC
 import System.Random.MWC.Distributions (categorical)
