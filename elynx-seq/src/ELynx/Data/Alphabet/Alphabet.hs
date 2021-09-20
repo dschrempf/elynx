@@ -69,14 +69,11 @@ instance ToJSON Alphabet
 alphabetDescription :: Alphabet -> String
 alphabetDescription DNA = "DNA (nucleotides)"
 alphabetDescription DNAX = "DNAX (nucleotides; including gaps)"
-alphabetDescription DNAI =
-  "DNAI (nucleotides; including gaps, and IUPAC codes)"
+alphabetDescription DNAI = "DNAI (nucleotides; including gaps, and IUPAC codes)"
 alphabetDescription Protein = "Protein (amino acids)"
 alphabetDescription ProteinX = "ProteinX (amino acids; including gaps)"
-alphabetDescription ProteinS =
-  "ProteinS (amino acids; including gaps, and translation stops)"
-alphabetDescription ProteinI =
-  "ProteinI (amino acids; including gaps, translation stops, and IUPAC codes)"
+alphabetDescription ProteinS = "ProteinS (amino acids; including gaps, and translation stops)"
+alphabetDescription ProteinI = "ProteinI (amino acids; including gaps, translation stops, and IUPAC codes)"
 
 -- | Alphabet specification. 'S.Set' is used because it provides fast lookups.
 data AlphabetSpec = AlphabetSpec

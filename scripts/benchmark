@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source ./include
+
 file_benchmark="../slynx/data/BenchmarkEnsemblMouse.fa.gz"
 
 msg "Seq-Ana benchmark."
