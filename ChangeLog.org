@@ -1,5 +1,6 @@
 * Revision history for ELynx
 ** Unreleased changes
+- Refactor; flatten model hierarchy.
 
 ** Version 0.6.1.0
 - Split =ELynx.Tools= into separate modules because the package will be reduced.
