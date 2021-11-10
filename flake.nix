@@ -36,7 +36,9 @@
             );
             overlays = [ elynx-overlay ];
             pkgs = import nixpkgs { inherit system overlays; };
-            elynx-pkgs = lib.genAttrs packageNames (n: pkgs.haskellPackages.${n});
+            # When changing the package set, the override above also has to be amended.
+            hpkgs = pkgs.haskellPackages;
+            elynx-pkgs = lib.genAttrs packageNames (n: hpkgs.${n});
             # Add Bash completion.
             elynx = let
               slynx-completion = pkgs.haskell.lib.generateOptparseApplicativeCompletion
@@ -73,13 +75,13 @@
 
               defaultPackage = elynx-suite;
 
-              devShell = pkgs.haskellPackages.shellFor {
+              devShell = hpkgs.shellFor {
                 packages = _: (builtins.attrValues elynx-dev);
                 buildInputs = with pkgs; [
                   bashInteractive
-                  haskellPackages.cabal-install
-                  haskellPackages.haskell-language-server
-                  haskellPackages.stack
+                  hpkgs.cabal-install
+                  hpkgs.haskell-language-server
+                  hpkgs.stack
                 ];
                 doBenchmark = true;
                 withHoogle = true;
