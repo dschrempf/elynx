@@ -100,7 +100,7 @@ parseIOWith p = parseFileOrIOWith p Nothing
 parseFileOrIOWith :: Parser a -> Maybe FilePath -> IO a
 parseFileOrIOWith p mf = do
   s <- maybe BL.getContents readGZFile mf
-  return $ parseByteStringWith p s
+  return $! parseByteStringWith p s
 
 -- | Parse a 'String' and extract the result.
 parseStringWith :: Parser a -> String -> a
