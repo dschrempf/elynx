@@ -27,7 +27,7 @@
         elynx-create-package = f: name: f name (./. + "/${name}") rec { };
         elynx-overlay = (
           selfn: supern: {
-            haskellPackages = supern.haskellPackages.override {
+            haskellPackages = supern.haskell.packages.ghc921.override {
               overrides = selfh: superh:
                 lib.genAttrs packageNames
                   (elynx-create-package selfh.callCabal2nix);

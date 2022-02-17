@@ -56,7 +56,6 @@ library
     , data-default-class
     , elynx-tools
     , elynx-tree
-    , gnuplot
     , mwc-random
     , optparse-applicative
     , parallel
