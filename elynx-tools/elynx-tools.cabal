@@ -50,7 +50,6 @@ library
     , mwc-random
     , optparse-applicative
     , template-haskell
-    , text
     , time
     , transformers
     , vector

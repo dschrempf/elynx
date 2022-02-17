@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskellQuotes #-}
 
 -- |
 -- Description :  Compute distances between trees
@@ -153,9 +153,9 @@ distance = do
   let distanceMeasure =
         if argsIntersect l
           then
-            ( \t1 t2 ->
-                let [t1', t2'] = either error id $ intersect [t1, t2]
-                 in distanceMeasure' t1' t2'
+            ( \t1 t2 -> case either error id $ intersect [t1, t2] of
+                [t1', t2'] -> distanceMeasure' t1' t2'
+                _ -> error "distance: Could not intersect trees."
             )
           else distanceMeasure'
   -- Possibly normalize trees.

@@ -90,11 +90,13 @@ compareCmd = do
   (t1, t2) <-
     if argsIntersect l
       then do
-        let [x, y] = either error id $ intersect [tr1, tr2]
-        liftIO $ hPutStrLn outH "Intersected trees are:"
-        liftIO $ BL.hPutStrLn outH $ toNewick x
-        liftIO $ BL.hPutStrLn outH $ toNewick y
-        return (x, y)
+        case either error id $ intersect [tr1, tr2] of
+          [x, y] -> do
+            liftIO $ hPutStrLn outH "Intersected trees are:"
+            liftIO $ BL.hPutStrLn outH $ toNewick x
+            liftIO $ BL.hPutStrLn outH $ toNewick y
+            return (x, y)
+          _ -> error "compareCmd: Could not intersect trees."
       else return (tr1, tr2)
 
   -- Distances.
