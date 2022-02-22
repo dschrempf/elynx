@@ -5,6 +5,13 @@
 ## Unreleased changes
 
 
+## Version 0.6.1.1
+
+-   Remove plotting functionality (gnuplot incompatible with ghc921).
+-   Read files strictly.
+-   Refactor; flatten model hierarchy.
+
+
 ## Version 0.6.1.0
 
 -   Split `ELynx.Tools` into separate modules because the package will be reduced.

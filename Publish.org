@@ -35,13 +35,13 @@ Build project, perform tests, build documentation.
 
 #+NAME: Build
 #+BEGIN_SRC sh :exports both :results output verbatim
-nix build
+cabal build all
 #+END_SRC
 
 #+RESULTS: Build
 
 * README and Change Log
-Update help in [[file:README.org][README.org]] (don't forget to update the help text with =, b b=),
+Update help in [[file:README.org][README.org]] (don't forget to update the help text with =\ j b=),
 and [[file:ChangeLog.org][ChangeLog.org]]; export them to Markdown.
 
 * Git

@@ -2,7 +2,7 @@
 
 # The ELynx Suite
 
-Version: 0.6.0.0.
+Version: 0.6.1.1.
 Reproducible evolution made easy.
 
 <p align="center"><img src="https://travis-ci.org/dschrempf/elynx.svg?branch=master"/></p>
@@ -69,15 +69,16 @@ ELynx is written in [Haskell](https://www.haskell.org/) and can be installed wit
 
 # Get help
 
-    cabal exec slynx -- --help
+    cabal run slynx -- --help
     # OR: stack exec slynx -- --help
     # OR: slynx --help
 
-    ELynx Suite version 0.6.0.0.
+    Up to date
+    ELynx Suite version 0.6.1.1.
     Developed by Dominik Schrempf.
-    Compiled on September 4, 2021, at 12:58 pm, UTC.
+    Compiled on February 22, 2022, at 15:10 pm, UTC.
     
-    Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME] 
+    Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME]
                  [-f|--force] [--no-elynx-file] COMMAND
       Analyze, and simulate multi sequence alignments.
     
@@ -138,18 +139,19 @@ ELynx is written in [Haskell](https://www.haskell.org/) and can be installed wit
 
 The documentation of sub commands can be accessed separately:
 
-    cabal exec slynx -- simulate --help
+    cabal run slynx -- simulate --help
     # OR: stack exec slynx -- simulate --help
     # OR: slynx simulate --help
 
-    ELynx Suite version 0.6.0.0.
+    Up to date
+    ELynx Suite version 0.6.1.1.
     Developed by Dominik Schrempf.
-    Compiled on September 4, 2021, at 12:58 pm, UTC.
+    Compiled on February 22, 2022, at 15:10 pm, UTC.
     
-    Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL] 
-                          [-m|--mixture-model MODEL] [-e|--edm-file NAME] 
-                          [-p|--siteprofile-files NAMES] 
-                          [-w|--mixture-model-weights "[DOUBLE,DOUBLE,...]"] 
+    Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL]
+                          [-m|--mixture-model MODEL] [-e|--edm-file NAME]
+                          [-p|--siteprofile-files NAMES]
+                          [-w|--mixture-model-weights "[DOUBLE,DOUBLE,...]"]
                           [-g|--gamma-rate-heterogeneity "(NCAT,SHAPE)"]
                           (-l|--length NUMBER) [-S|--seed [INT]]
       Simulate multi sequence alignments.

@@ -72,13 +72,9 @@
         };
       in
       {
-        packages =
-          let
-          in
-          elynx // {
-            inherit elynx-suite;
-
-          };
+        packages = elynx // {
+          inherit elynx-suite;
+        };
 
         defaultPackage = elynx-suite;
 
