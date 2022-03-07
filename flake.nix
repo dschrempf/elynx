@@ -25,16 +25,12 @@
           "tlynx"
         ];
         elynx-create-package = f: name: f name (./. + "/${name}") rec { };
-        # TODO: No idea why, but the build of the overlayed callCabal2nix fails.
-        pkgs-no-overlay = import nixpkgs { inherit system; };
         elynx-overlay = (
           selfn: supern: {
             haskellPackages = supern.haskell.packages.ghc921.override {
               overrides = selfh: superh:
                 lib.genAttrs packageNames
-                  # TODO: No idea why, but the build of the overlayed callCabal2nix fails.
-                  # (elynx-create-package selfh.callCabal2nix);
-                  (elynx-create-package pkgs-no-overlay.haskell.packages.ghc921.callCabal2nix);
+                  (elynx-create-package selfh.callCabal2nix);
             };
           }
         );
