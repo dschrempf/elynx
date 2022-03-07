@@ -3,7 +3,7 @@
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/haskell-updates";
 
   outputs =
     { self
@@ -25,12 +25,16 @@
           "tlynx"
         ];
         elynx-create-package = f: name: f name (./. + "/${name}") rec { };
+        # TODO: No idea why, but the build of the overlayed callCabal2nix fails.
+        pkgs-no-overlay = import nixpkgs { inherit system; };
         elynx-overlay = (
           selfn: supern: {
             haskellPackages = supern.haskell.packages.ghc921.override {
               overrides = selfh: superh:
                 lib.genAttrs packageNames
-                  (elynx-create-package selfh.callCabal2nix);
+                  # TODO: No idea why, but the build of the overlayed callCabal2nix fails.
+                  # (elynx-create-package selfh.callCabal2nix);
+                  (elynx-create-package pkgs-no-overlay.haskell.packages.ghc921.callCabal2nix);
             };
           }
         );
@@ -42,15 +46,10 @@
         # Add Bash completion.
         elynx =
           let
-            slynx-completion = pkgs.haskell.lib.generateOptparseApplicativeCompletion
-              "slynx"
-              elynx-pkgs.slynx;
-            tlynx-completion = pkgs.haskell.lib.generateOptparseApplicativeCompletion
-              "tlynx"
-              elynx-pkgs.tlynx;
-            elynx-completion = pkgs.haskell.lib.generateOptparseApplicativeCompletion
-              "elynx"
-              elynx-pkgs.elynx;
+            f = pkgs.haskell.lib.generateOptparseApplicativeCompletion;
+            slynx-completion = f "slynx" elynx-pkgs.slynx;
+            tlynx-completion = f "tlynx" elynx-pkgs.tlynx;
+            elynx-completion = f "elynx" elynx-pkgs.elynx;
           in
           elynx-pkgs // {
             slynx = slynx-completion;
@@ -86,7 +85,7 @@
             hpkgs.haskell-language-server
           ];
           doBenchmark = true;
-          withHoogle = true;
+          # withHoogle = true;
         };
       }
     );
