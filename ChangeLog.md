@@ -7,7 +7,7 @@
 
 ## Version 0.6.1.1
 
--   Remove plotting functionality (gnuplot incompatible with ghc921).
+-   Remove plotting functionality (gnuplot incompatible with ghc922).
 -   Read files strictly.
 -   Refactor; flatten model hierarchy.
 
