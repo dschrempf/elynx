@@ -21,6 +21,7 @@
 module ELynx.Tools.Reproduction
   ( -- * Reproduction
     SeedOpt (..),
+    fromSeedOpt,
     Reproducible (..),
     getReproductionHash,
     Reproduction (..),
@@ -49,6 +50,12 @@ data SeedOpt = RandomUnset | RandomSet (VU.Vector Word32) | Fixed (VU.Vector Wor
 instance FromJSON SeedOpt
 
 instance ToJSON SeedOpt
+
+-- | Get the seed, if set.
+fromSeedOpt :: SeedOpt -> Maybe (VU.Vector Word32)
+fromSeedOpt RandomUnset = Nothing
+fromSeedOpt (RandomSet v) = Just v
+fromSeedOpt (Fixed v) = Just v
 
 -- | Reproducible commands have
 --   - a set of input files to be checked for consistency,

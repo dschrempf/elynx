@@ -59,8 +59,8 @@ splitGen :: PrimMonad m => Int -> Gen (PrimState m) -> m [Gen (PrimState m)]
 splitGen n gen
   | n <= 0 = return []
   | otherwise = do
-    seeds :: [VU.Vector Word32] <- replicateM (n -1) $ uniformVector gen 256
-    fmap (gen :) (mapM initialize seeds)
+      seeds :: [VU.Vector Word32] <- replicateM (n - 1) $ uniformVector gen 256
+      fmap (gen :) (mapM initialize seeds)
 
 -- For a given number of capabilities and number of calculations, get chunk
 -- sizes. The chunk sizes will be as evenly distributed as possible and sum up
@@ -75,7 +75,10 @@ getChunks c n = ns
 -- | Simulate phylogenetic trees using birth and death process.
 simulate :: ELynx SimulateArguments ()
 simulate = do
-  l@(SimulateArguments nTrees nLeaves pr subS sumS (Fixed s)) <- localArguments <$> ask
+  l@(SimulateArguments nTrees nLeaves pr subS sumS sOpt) <- localArguments <$> ask
+  let s = case fromSeedOpt sOpt of
+        Nothing -> error "simulate: No seed."
+        Just x -> x
   c <- liftIO getNumCapabilities
   logInfoNewSection "Arguments"
   logInfoS $ reportSimulateArguments l
@@ -219,12 +222,12 @@ nSubSamples ::
   IO [Maybe (Tree e a)]
 nSubSamples m lvs n tree g
   | Seq.length lvs < n =
-    error
-      "Given list of leaves is shorter than requested number of leaves."
+      error
+        "Given list of leaves is shorter than requested number of leaves."
   | otherwise = do
-    lss <- grabble (toList lvs) m n g
-    let lsSets = map Set.fromList lss
-    return [dropLeavesWith (`Set.notMember` ls) tree | ls <- lsSets]
+      lss <- grabble (toList lvs) m n g
+      let lsSets = map Set.fromList lss
+      return [dropLeavesWith (`Set.notMember` ls) tree | ls <- lsSets]
 
 -- Pair of branch length with number of extant children.
 type BrLnNChildren = (Length, Int)

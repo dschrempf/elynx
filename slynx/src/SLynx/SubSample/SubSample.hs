@@ -33,7 +33,10 @@ import System.Random.MWC
 -- | Sub sample sequences.
 subSampleCmd :: ELynx SubSampleArguments ()
 subSampleCmd = do
-  (SubSampleArguments al inFile nSites nAlignments (Fixed s)) <- localArguments <$> ask
+  (SubSampleArguments al inFile nSites nAlignments sOpt) <- localArguments <$> ask
+  let s = case fromSeedOpt sOpt of
+        Nothing -> error "subSampleCmd: No seed."
+        Just x -> x
   logInfoS $ "  Sample " <> show nSites <> " sites."
   logInfoS $ "  Sample " <> show nAlignments <> " multi sequence alignments."
   ss <- readSeqs al inFile
