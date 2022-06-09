@@ -2,7 +2,7 @@
 
 -- |
 -- Description :  Rate matrix helper functions
--- Copyright   :  (c) Dominik Schrempf 2021
+-- Copyright   :  2021 Dominik Schrempf
 -- License     :  GPLv3
 --
 -- Maintainer  :  dominik.schrempf@gmail.com

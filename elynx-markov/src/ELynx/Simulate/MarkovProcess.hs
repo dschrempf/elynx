@@ -1,7 +1,7 @@
 -- |
 -- Module      :  ELynx.Simulate.MarkovProcess
 -- Description :  Markov process helpers
--- Copyright   :  (c) Dominik Schrempf 2021
+-- Copyright   :  2021 Dominik Schrempf
 -- License     :  GPL-3.0-or-later
 --
 -- Maintainer  :  dominik.schrempf@gmail.com

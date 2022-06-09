@@ -1,7 +1,7 @@
 -- |
 -- Module      :  ELynx.Tools.Environment
 -- Description :  Runtime environment
--- Copyright   :  (c) 2021 Dominik Schrempf
+-- Copyright   :  2021 Dominik Schrempf
 -- License     :  GPL-3.0-or-later
 --
 -- Maintainer  :  dominik.schrempf@gmail.com

@@ -2,7 +2,7 @@
 
 -- |
 --   Description :  Work with transition probability matrices on rooted trees
---   Copyright   :  (c) Dominik Schrempf 2021
+--   Copyright   :  2021 Dominik Schrempf
 --   License     :  GPLv3
 --
 --   Maintainer  :  dominik.schrempf@gmail.com

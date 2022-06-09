@@ -4,7 +4,7 @@
 -- |
 -- Module      :  ELynx.Tree.PhylogenySpec
 -- Description :  Unit tests for ELynx.Tree.Phylogeny
--- Copyright   :  (c) Dominik Schrempf, 2021
+-- Copyright   :  2021 Dominik Schrempf
 -- License     :  GPL-3.0-or-later
 --
 -- Maintainer  :  dominik.schrempf@gmail.com

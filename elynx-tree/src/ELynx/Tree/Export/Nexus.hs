@@ -3,7 +3,7 @@
 -- |
 -- Module      :  ELynx.Tree.Export.Nexus
 -- Description :  Export trees to Nexus files
--- Copyright   :  (c) Dominik Schrempf 2021
+-- Copyright   :  2021 Dominik Schrempf
 -- License     :  GPL-3
 --
 -- Maintainer  :  dominik.schrempf@gmail.com
