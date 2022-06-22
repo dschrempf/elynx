@@ -70,11 +70,10 @@
       {
         packages = elynx // {
           inherit elynx-suite;
+          default = elynx-suite;
         };
 
-        defaultPackage = elynx-suite;
-
-        devShell = hpkgs.shellFor {
+        devShells.default = hpkgs.shellFor {
           packages = _: (builtins.attrValues elynx-dev);
           buildInputs = with pkgs; [
             bashInteractive
