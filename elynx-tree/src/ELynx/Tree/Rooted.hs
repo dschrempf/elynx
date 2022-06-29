@@ -77,6 +77,7 @@ module ELynx.Tree.Rooted
     setLabel,
     modifyLabel,
     labels,
+    duplicateLabels,
     setLabels,
     identify,
 
@@ -295,6 +296,10 @@ labels t = squish t []
   where
     squish (Node _ lb ts) xs = lb : foldr squish xs ts
 
+-- | Check if a tree has duplicate labels.
+duplicateLabels :: Ord a => Tree e a -> Bool
+duplicateLabels = duplicates . labels
+
 -- | Set node labels in pre-order.
 --
 -- Return 'Nothing' if the provided list of node labels is too short.
@@ -353,9 +358,9 @@ dropNodesWith :: (a -> Bool) -> Tree e a -> Maybe (Tree e a)
 dropNodesWith p (Node br lb ts)
   | p lb = Nothing
   | otherwise =
-    if null ts'
-      then Nothing
-      else Just $ Node br lb ts'
+      if null ts'
+        then Nothing
+        else Just $ Node br lb ts'
   where
     ts' = mapMaybe (dropNodesWith p) ts
 

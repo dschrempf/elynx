@@ -32,6 +32,9 @@ module ELynx.Tree
     -- * Phylogenies
     module ELynx.Tree.Phylogeny,
 
+    -- * Most recent common ancestors
+    module ELynx.Tree.Mrca,
+
     -- * Partitions and distances
     module ELynx.Tree.Bipartition,
     module ELynx.Tree.Partition,
@@ -52,6 +55,7 @@ import ELynx.Tree.Export.Nexus
 import ELynx.Tree.Import.Newick
 import ELynx.Tree.Import.Nexus
 import ELynx.Tree.Length
+import ELynx.Tree.Mrca
 import ELynx.Tree.Name
 import ELynx.Tree.Parallel
 import ELynx.Tree.Partition
