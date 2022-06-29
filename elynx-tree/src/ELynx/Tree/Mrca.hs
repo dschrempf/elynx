@@ -82,7 +82,8 @@ getTreeAtMrca ss tr
 -- | Find a node on a tree.
 --
 -- If the node is found, the node is specified by the MRCA of the returned set
--- of leaves.
+-- of leaves. The set will contain one element if the node is a leaf, or two
+-- elements, if the node is internal.
 --
 -- Return 'Left' if:
 --
