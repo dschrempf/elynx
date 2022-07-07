@@ -44,30 +44,29 @@ pRow name val = alignLeft 50 n <> alignRight 10 v
 examineAlignment :: Bool -> M.Alignment -> BL.ByteString
 examineAlignment perSiteFlag a =
   BL.unlines
-    [ BL.pack
-        "Sequences have equal length (multi sequence alignment, or single sequence).",
-      BL.pack "Number of columns in alignment:",
+    [ "Sequences have equal length (multi sequence alignment, or single sequence).",
+      "Number of columns in alignment:",
       pRow "  Total:" $ show aL,
       pRow "  Constant:" $ show nConstant,
       pRow "  Constant (including gaps or unknowns):" $ show nConstantSoft,
       pRow "  Without gaps:" $ show (M.length aNoGaps),
       pRow "  With standard characters only:" $
         show (M.length aOnlyStd),
-      BL.empty,
+      "",
       pRow "Total number of characters:" $ show nTot,
       pRow "Standard (i.e., not extended IUPAC) characters:" $
         show (nTot - nIUPAC - nGaps - nUnknowns),
       pRow "Extended IUPAC characters:" $ show nIUPAC,
       pRow "Gaps:" $ show nGaps,
       pRow "Unknowns:" $ show nUnknowns,
-      BL.empty,
+      "",
       pRow "Percentage of standard characters:" $
         printf "%2.2f" (100.0 - percentIUPAC - percentGaps - percentUnknowns),
       pRow "Percentage of extended IUPAC characters:" $
         printf "%2.2f" percentIUPAC,
       pRow "Percentage of gaps:" $ printf "%2.2f" percentGaps,
       pRow "Percentage of unknowns:" $ printf "%2.2f" percentUnknowns,
-      BL.empty,
+      "",
       BL.pack "Distribution of characters:",
       -- Holy crap.
       BL.pack $
@@ -77,24 +76,26 @@ examineAlignment perSiteFlag a =
               A.alphabetSpec $
                 M.alphabet a,
       BL.pack $ unwords $ map (printf "%.3f") charFreqs,
-      BL.empty,
+      "",
       BL.pack "Pairwise hamming distances (per site):",
       pRow "  Mean:" $ printf "%.3f" hMean,
       pRow "  Standard deviation:" $ printf "%.3f" $ sqrt hVar,
       pRow "  Minimum:" $ printf "%.3f" hMin,
       pRow "  Maximum:" $ printf "%.3f" hMax,
-      BL.empty,
-      BL.pack "Mean effective number of states (measured using entropy):",
+      "",
+      "Mean effective number of states (measured using entropy):",
       pRow "Across whole alignment:" $ printf "%.3f" kEffMean,
       pRow "Across columns without gaps:" $ printf "%.3f" kEffMeanNoGaps,
       pRow "Across columns without extended IUPAC characters:" $
         printf "%.3f" kEffMeanOnlyStd,
-      BL.empty,
+      "",
       BL.pack "Mean effective number of states (measured using homoplasy):",
       pRow "Across whole alignment:" $ printf "%.3f" kEffMeanHomo,
       pRow "Across columns without gaps:" $ printf "%.3f" kEffMeanNoGapsHomo,
       pRow "Across columns without extended IUPAC characters:" $
-        printf "%.3f" kEffMeanOnlyStdHomo
+        printf "%.3f" kEffMeanOnlyStdHomo,
+      "",
+      "Divergence matrix:"
     ]
     <> perSiteBS
   where
