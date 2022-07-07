@@ -18,21 +18,28 @@ module SLynx.Examine.Examine
   )
 where
 
+import Control.Monad
+import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader
 import qualified Data.ByteString.Lazy.Char8 as BL
+import qualified Data.Matrix.Unboxed as MU
 import qualified Data.Set as S
 import qualified Data.Vector.Unboxed as V
 import qualified ELynx.Alphabet.Alphabet as A
 import qualified ELynx.Alphabet.Character as C
 import qualified ELynx.Sequence.Alignment as M
 import qualified ELynx.Sequence.Distance as D
+import ELynx.Sequence.Divergence
 import qualified ELynx.Sequence.Sequence as Seq
 import ELynx.Tools.ByteString
 import ELynx.Tools.ELynx
 import ELynx.Tools.Environment
+import ELynx.Tools.Logger
+import qualified Numeric.LinearAlgebra as L
 import SLynx.Examine.Options
 import SLynx.Tools
 import qualified Statistics.Sample as Sm
+import System.IO
 import Text.Printf
 
 pRow :: String -> String -> BL.ByteString
@@ -156,10 +163,34 @@ examine perSiteFlag ss =
     Left _ -> BL.empty
     Right a -> BL.pack "\n" <> examineAlignment perSiteFlag a
 
+-- From https://stackoverflow.com/a/52602906/3536806.
+tuples :: [a] -> [(a, a)]
+tuples [] = []
+tuples (x : xs) = map (\y -> (x, y)) xs ++ tuples xs
+
+-- This is all ugly, but who cares.
+writeDivergenceMatrix :: Handle -> (Seq.Sequence, Seq.Sequence, MU.Matrix Int) -> IO ()
+writeDivergenceMatrix h (x, y, xs) = do
+  BL.hPutStrLn h $ "> " <> Seq.name x <> ", " <> Seq.name y
+  hPutStr h $ L.dispf 0 m
+  where
+    n = MU.rows xs
+    m = L.matrix n $ map fromIntegral $ MU.toList xs
+
+computeDivergenceMatrices :: [Seq.Sequence] -> ELynx ExamineArguments ()
+computeDivergenceMatrices ss = do
+  logInfoS "Compute divergence matrices."
+  let xys = tuples ss
+      ds = map (\(x, y) -> (x, y, either error id $ divergence x y)) xys
+  h <- outHandle "divergence matrices" ".div"
+  sequence_ $ map (liftIO . writeDivergenceMatrix h) ds
+  liftIO $ hClose h
+
 -- | Examine sequences.
 examineCmd :: ELynx ExamineArguments ()
 examineCmd = do
-  (ExamineArguments al inFile perSiteFlag) <- localArguments <$> ask
+  (ExamineArguments al inFile perSiteFlag divergenceFlag) <- localArguments <$> ask
   ss <- readSeqs al inFile
   let result = examine perSiteFlag ss
   out "result of examination" result ".out"
+  when divergenceFlag (computeDivergenceMatrices ss)

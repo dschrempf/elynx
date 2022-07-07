@@ -28,13 +28,14 @@ import SLynx.Tools
 data ExamineArguments = ExamineArguments
   { exAlphabet :: Alphabet,
     exInFile :: FilePath,
-    exPerSite :: Bool
+    exPerSite :: Bool,
+    exDivergence :: Bool
   }
   deriving (Eq, Show, Generic)
 
 instance Reproducible ExamineArguments where
   inFiles = pure . exInFile
-  outSuffixes _ = [".out"]
+  outSuffixes args = if exDivergence args then [".out", ".div"] else [".out"]
   getSeed _ = Nothing
 
   -- XXX: Probably throw error when seed is set.
@@ -52,11 +53,15 @@ instance ToJSON ExamineArguments
 -- | Command line parser.
 examineArguments :: Parser ExamineArguments
 examineArguments =
-  ExamineArguments <$> alphabetOpt <*> filePathArg <*> examinePerSiteOpt
+  ExamineArguments <$> alphabetOpt <*> filePathArg <*> examinePerSiteOpt <*> examineDivergence
 
 examinePerSiteOpt :: Parser Bool
 examinePerSiteOpt =
   switch $ long "per-site" <> help "Report per site summary statistics"
+
+examineDivergence :: Parser Bool
+examineDivergence =
+  switch $ long "divergence" <> help "Compute pairwise divergence matrices"
 
 filePathArg :: Parser FilePath
 filePathArg =
