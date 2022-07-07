@@ -127,6 +127,10 @@ out name res ext = do
       em <- executionMode . globalArguments <$> ask
       liftIO $ writeGZFile em fp res
 
+-- BUG: 'outHandle' is flawed. If '-o BASENAME' is not provided, the output
+-- handle is stdout, but then, when closing the handle, stdout will be closed!
+-- Big Bug.
+
 -- | Get an output handle, does not support compression. The handle has to be
 -- closed after use!
 outHandle :: Reproducible a => String -> String -> ELynx a Handle
