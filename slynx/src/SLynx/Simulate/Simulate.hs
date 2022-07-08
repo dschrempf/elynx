@@ -56,7 +56,7 @@ import ELynx.Tree
 import qualified Numeric.LinearAlgebra as L
 import SLynx.Simulate.Options
 import SLynx.Simulate.PhyloModel
-import System.Random.MWC
+import System.Random.Stateful
 import Text.Printf
 
 -- Display a vector with given precision.
@@ -91,11 +91,11 @@ writeSiteDists componentIs ds = do
 -- Simulate a 'Alignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
 simulateAlignment ::
-  (HasLength e, HasName a) =>
+  (RandomGen g, HasLength e, HasName a) =>
   MP.PhyloModel ->
   Tree e a ->
   Int ->
-  GenIO ->
+  IOGenM g ->
   ELynx SimulateArguments ()
 simulateAlignment pm t' n g = do
   let t = fromLength . getLength <$> toTreeBranchLabels t'
@@ -182,8 +182,8 @@ roundN n v = fromInteger (round $ v * (10 ^ n)) / (10.0 ^^ n)
 summarizeSM :: MS.SubstitutionModel -> [BL.ByteString]
 summarizeSM sm =
   map BL.pack $
-    (show (MS.alphabet sm) ++ " substitution model: " ++ MS.name sm ++ ".") :
-    ["Parameters: " ++ show (MS.params sm) ++ "." | not (null (MS.params sm))]
+    (show (MS.alphabet sm) ++ " substitution model: " ++ MS.name sm ++ ".")
+      : ["Parameters: " ++ show (MS.params sm) ++ "." | not (null (MS.params sm))]
       ++ case MS.alphabet sm of
         DNA ->
           [ "Stationary distribution: "
@@ -208,8 +208,8 @@ summarizeSM sm =
 summarizeMMComponent :: MM.Component -> [BL.ByteString]
 summarizeMMComponent c =
   BL.pack "Weight: "
-    <> (BB.toLazyByteString . BB.doubleDec $ MM.weight c) :
-  summarizeSM (MM.substModel c)
+    <> (BB.toLazyByteString . BB.doubleDec $ MM.weight c)
+    : summarizeSM (MM.substModel c)
 
 -- Summarize a mixture model; lines to be printed to screen or log.
 summarizeMM :: MM.MixtureModel -> [BL.ByteString]
@@ -297,7 +297,8 @@ simulateCmd = do
   logInfoS "Simulate alignment."
   let alignmentLength = argsLength l
   logInfoS $ "Length: " <> show alignmentLength <> "."
-  gen <- liftIO <$> initialize $ case argsSeed l of
+  -- TODO: Seed will be a number, not a vector.
+  gen <- newIOGenM $ mkStdGen $ fromIntegral $ U.head $ case argsSeed l of
     RandomUnset -> error "simulateCmd: seed not available; please contact maintainer."
     RandomSet s -> s
     Fixed s -> s

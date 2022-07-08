@@ -52,7 +52,8 @@ pf = "%.3f"
 
 header :: Int -> Int -> DistanceMeasure -> BL.ByteString
 header n m d =
-  alignLeft (n + 2) "Tree 1" <> alignLeft (n + 2) "Tree 2"
+  alignLeft (n + 2) "Tree 1"
+    <> alignLeft (n + 2) "Tree 2"
     <> alignRight
       (m + 2)
       (BL.pack $ show d)
@@ -166,7 +167,6 @@ distance = do
         Just masterTree -> [(0, i, distanceMeasure masterTree t') | (i, t') <- zip [1 ..] trees]
       ds = map (\(_, _, x) -> x) dsTriplets
       dsVec = V.fromList ds
-  -- TODO: This should never happen (hPutStrLn??).
   liftIO $
     hPutStrLn outH $
       "Summary statistics of "
@@ -187,9 +187,6 @@ distance = do
       T.justifyLeft 10 ' ' "Variance: "
         <> T.pack
           (printf pf (variance dsVec))
-  -- BS.putStrLn $ BS.unlines $ map toNewick ts
-  -- BS.putStrLn $ BS.unlines $ map toNewick tsN
-  -- BS.putStrLn $ BS.unlines $ map toNewick tsC
 
   unless
     (argsSummaryStatistics l)

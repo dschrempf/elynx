@@ -43,6 +43,8 @@ import Options.Applicative
 import Paths_elynx_tools
 import System.Environment
 
+-- TODO: This should be an 'Int' (new interface).
+
 -- | Random or fixed seed.
 data SeedOpt = RandomUnset | RandomSet (VU.Vector Word32) | Fixed (VU.Vector Word32)
   deriving (Eq, Generic, Show)
@@ -84,17 +86,17 @@ getReproductionHash r =
         BS.pack $
           unlines $
             -- Reproduction.
-            progName r :
-            argsStr r
-              <> [showVersion (rVersion r)]
-              <> files r
-              <> checkSums r
-              -- Reproducible.
-              <> inFiles ri
-              <> outSuffixes ri
-              <> [cmdName @a]
-              <> cmdDsc @a
-              <> cmdFtr @a
+            progName r
+              : argsStr r
+                <> [showVersion (rVersion r)]
+                <> files r
+                <> checkSums r
+                -- Reproducible.
+                <> inFiles ri
+                <> outSuffixes ri
+                <> [cmdName @a]
+                <> cmdDsc @a
+                <> cmdFtr @a
   where
     ri = reproducible r
 

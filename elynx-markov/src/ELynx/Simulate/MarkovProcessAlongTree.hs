@@ -30,14 +30,13 @@ where
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Monad
-import Control.Monad.Primitive
+import Control.Monad.IO.Class
 import Data.Tree
 import qualified Data.Vector as V
-import Data.Word (Word32)
 import ELynx.MarkovProcess.RateMatrix
 import ELynx.Simulate.MarkovProcess
-import System.Random.MWC
 import System.Random.MWC.Distributions (categorical)
+import System.Random.Stateful
 
 -- XXX @performace. The horizontal concatenation might be slow. If so,
 -- 'concatenateSeqs' or 'concatenateAlignments' can be used, which directly
@@ -55,10 +54,10 @@ toProbTree :: RateMatrix -> Tree Double -> Tree ProbMatrix
 toProbTree q = fmap (probMatrix q)
 
 getRootStates ::
-  PrimMonad m =>
+  StatefulGen g m =>
   Int ->
   StationaryDistribution ->
-  Gen (PrimState m) ->
+  g ->
   m [State]
 getRootStates n d g = replicateM n $ categorical d g
 
@@ -69,12 +68,12 @@ getRootStates n d g = replicateM n $ categorical d g
 -- XXX: Improve performance. Use vectors, not lists. I am actually not sure if
 -- this improves performance...
 simulateAndFlatten ::
-  PrimMonad m =>
+  StatefulGen g m =>
   Int ->
   StationaryDistribution ->
   ExchangeabilityMatrix ->
   Tree Double ->
-  Gen (PrimState m) ->
+  g ->
   m [[State]]
 simulateAndFlatten n d e t g = do
   let q = fromExchangeabilityMatrix e d
@@ -86,10 +85,10 @@ simulateAndFlatten n d e t g = do
 -- Recursively jump down the branches to the leafs. Forget states at internal
 -- nodes.
 simulateAndFlatten' ::
-  (PrimMonad m) =>
+  StatefulGen g m =>
   [State] ->
   Tree ProbMatrix ->
-  Gen (PrimState m) ->
+  g ->
   m [[State]]
 simulateAndFlatten' is (Node p f) g = do
   is' <- mapM (\i -> jump i p g) is
@@ -99,14 +98,15 @@ simulateAndFlatten' is (Node p f) g = do
 
 -- | See 'simulateAndFlatten', parallel version.
 simulateAndFlattenPar ::
+  RandomGen g =>
   Int ->
   StationaryDistribution ->
   ExchangeabilityMatrix ->
   Tree Double ->
-  GenIO ->
+  IOGenM g ->
   IO [[State]]
 simulateAndFlattenPar n d e t g = do
-  c <- getNumCapabilities
+  c <- liftIO getNumCapabilities
   gs <- splitGen c g
   let chunks = getChunks c n
       q = fromExchangeabilityMatrix e d
@@ -126,12 +126,12 @@ simulateAndFlattenPar n d e t g = do
 -- internal nodes. The result is a tree with the list of simulated states as
 -- node labels.
 simulate ::
-  PrimMonad m =>
+  StatefulGen g m =>
   Int ->
   StationaryDistribution ->
   ExchangeabilityMatrix ->
   Tree Double ->
-  Gen (PrimState m) ->
+  g ->
   m (Tree [State])
 simulate n d e t g = do
   let q = fromExchangeabilityMatrix e d
@@ -142,10 +142,10 @@ simulate n d e t g = do
 -- This is the heart of the simulation. Take a tree and a list of root states.
 -- Recursively jump down the branches to the leafs.
 simulate' ::
-  (PrimMonad m) =>
+  StatefulGen g m =>
   [State] ->
   Tree ProbMatrix ->
-  Gen (PrimState m) ->
+  g ->
   m (Tree [State])
 simulate' is (Node p f) g = do
   is' <- mapM (\i -> jump i p g) is
@@ -159,11 +159,11 @@ toProbTreeMixtureModel qs =
   fmap (\a -> V.map (`probMatrix` a) qs)
 
 getComponentsAndRootStates ::
-  PrimMonad m =>
+  StatefulGen g m =>
   Int ->
   V.Vector Double ->
   V.Vector StationaryDistribution ->
-  Gen (PrimState m) ->
+  g ->
   m ([Int], [State])
 getComponentsAndRootStates n ws ds g = do
   cs <- replicateM n $ categorical ws g
@@ -174,13 +174,13 @@ getComponentsAndRootStates n ws ds g = do
 -- corresponding weights. Forget states at internal nodes. See also
 -- 'simulateAndFlatten'.
 simulateAndFlattenMixtureModel ::
-  PrimMonad m =>
+  StatefulGen g m =>
   Int ->
   V.Vector Double ->
   V.Vector StationaryDistribution ->
   V.Vector ExchangeabilityMatrix ->
   Tree Double ->
-  Gen (PrimState m) ->
+  g ->
   -- | (IndicesOfComponents, [SimulatedSequenceForEachTip])
   m ([Int], [[State]])
 simulateAndFlattenMixtureModel n ws ds es t g = do
@@ -191,11 +191,11 @@ simulateAndFlattenMixtureModel n ws ds es t g = do
   return (cs, ss)
 
 simulateAndFlattenMixtureModel' ::
-  (PrimMonad m) =>
+  StatefulGen g m =>
   [State] ->
   [Int] ->
   Tree (V.Vector ProbMatrix) ->
-  Gen (PrimState m) ->
+  g ->
   m [[State]]
 simulateAndFlattenMixtureModel' is cs (Node ps f) g = do
   is' <- sequence [jump i (ps V.! c) g | (i, c) <- zip is cs]
@@ -205,6 +205,11 @@ simulateAndFlattenMixtureModel' is cs (Node ps f) g = do
       concat
         <$> sequence [simulateAndFlattenMixtureModel' is' cs t g | t <- f]
 
+splitGen :: (RandomGenM g r m, MonadIO m) => Int -> g -> m [IOGenM r]
+splitGen n g = do
+  gs <- replicateM n $ splitGenM g
+  mapM newIOGenM gs
+
 getChunks :: Int -> Int -> [Int]
 getChunks c n = ns
   where
@@ -212,28 +217,22 @@ getChunks c n = ns
     r = n `mod` c
     ns = replicate r (n' + 1) ++ replicate (c - r) n'
 
-splitGen :: PrimMonad m => Int -> Gen (PrimState m) -> m [Gen (PrimState m)]
-splitGen n gen
-  | n <= 0 = return []
-  | otherwise = do
-    seeds :: [V.Vector Word32] <- replicateM (n -1) $ uniformVector gen 256
-    fmap (gen :) (mapM initialize seeds)
-
-parComp :: Int -> (Int -> GenIO -> IO b) -> GenIO -> IO [b]
+parComp :: RandomGen g => Int -> (Int -> IOGenM g -> IO b) -> IOGenM g -> IO [b]
 parComp num fun gen = do
-  ncap <- getNumCapabilities
+  ncap <- liftIO getNumCapabilities
   let chunks = getChunks ncap num
   gs <- splitGen ncap gen
   mapConcurrently (uncurry fun) (zip chunks gs)
 
 -- | See 'simulateAndFlattenMixtureModel', parallel version.
 simulateAndFlattenMixtureModelPar ::
+  RandomGen g =>
   Int ->
   V.Vector Double ->
   V.Vector StationaryDistribution ->
   V.Vector ExchangeabilityMatrix ->
   Tree Double ->
-  GenIO ->
+  IOGenM g ->
   IO ([Int], [[State]])
 simulateAndFlattenMixtureModelPar n ws ds es t g = do
   let qs = V.zipWith fromExchangeabilityMatrix es ds
@@ -256,13 +255,13 @@ simulateAndFlattenMixtureModelPar n ws ds es t g = do
 -- corresponding weights. Keep states at internal nodes. See also
 -- 'simulate'.
 simulateMixtureModel ::
-  PrimMonad m =>
+  StatefulGen g m =>
   Int ->
   V.Vector Double ->
   V.Vector StationaryDistribution ->
   V.Vector ExchangeabilityMatrix ->
   Tree Double ->
-  Gen (PrimState m) ->
+  g ->
   m (Tree [State])
 simulateMixtureModel n ws ds es t g = do
   let qs = V.zipWith fromExchangeabilityMatrix es ds
@@ -273,11 +272,11 @@ simulateMixtureModel n ws ds es t g = do
 -- See 'simulateAlongProbTree', only we have a number of mixture components. The
 -- starting states and the components for each site have to be provided.
 simulateMixtureModel' ::
-  (PrimMonad m) =>
+  StatefulGen g m =>
   [State] ->
   [Int] ->
   Tree (V.Vector ProbMatrix) ->
-  Gen (PrimState m) ->
+  g ->
   m (Tree [State])
 simulateMixtureModel' is cs (Node ps f) g = do
   is' <- sequence [jump i (ps V.! c) g | (i, c) <- zip is cs]

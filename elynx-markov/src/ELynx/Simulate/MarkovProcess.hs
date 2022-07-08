@@ -17,11 +17,10 @@ module ELynx.Simulate.MarkovProcess
   )
 where
 
-import Control.Monad.Primitive
 import ELynx.MarkovProcess.RateMatrix
 import Numeric.LinearAlgebra
-import System.Random.MWC
 import System.Random.MWC.Distributions
+import System.Random.Stateful
 
 -- | A probability matrix, P_ij(t) = Pr (X_t = j | X_0 = i).
 type ProbMatrix = Matrix R
@@ -33,19 +32,20 @@ type State = Int
 -- another in a specific time (branch length).
 probMatrix :: RateMatrix -> Double -> ProbMatrix
 probMatrix q t
-  | t == 0 =
-    if rows q == cols q
-      then ident (rows q)
-      else error "probMatrix: Matrix is not square."
+  | n /= m = error "probMatrix: Matrix is not square."
+  | t == 0 = ident n
   | t < 0 = error "probMatrix: Time is negative."
   | otherwise = expm $ scale t q
+  where
+    n = rows q
+    m = cols q
 
 -- | Move from a given state to a new one according to a transition probability
 -- matrix .
 --
 -- This function is the bottleneck of the simulator and takes up most of the
 -- computation time.
-jump :: (PrimMonad m) => State -> ProbMatrix -> Gen (PrimState m) -> m State
+jump :: StatefulGen g m => State -> ProbMatrix -> g -> m State
 jump i p = categorical (p ! i)
 
 -- XXX: Maybe for later, use condensed tables.

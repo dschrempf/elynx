@@ -59,6 +59,7 @@ library
     , matrices
     , mwc-random
     , optparse-applicative
+    , random
     , statistics
     , text
     , transformers
