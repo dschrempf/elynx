@@ -34,7 +34,7 @@ import Data.Tree
 import qualified Data.Vector as V
 import ELynx.MarkovProcess.RateMatrix
 import ELynx.Simulate.MarkovProcess
-import System.Random.MWC.Distributions (categorical)
+import System.Random.MWC.Distributions
 import System.Random.Stateful
 
 -- XXX @performace. The horizontal concatenation might be slow. If so,

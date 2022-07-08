@@ -80,15 +80,15 @@ density (TONCD n' l m) t
 quantile :: TimeOfOriginNearCriticalDistribution -> Double -> Time
 quantile (TONCD n' l m) p
   | p >= 0 && p <= 1 =
-    t1 + t2nom / t2den
+      t1 + t2nom / t2den
   | otherwise =
-    error $
-      "PointProcess.quantile: p must be in [0,1] range. Got: "
-        ++ show p
-        ++ "."
+      error $
+        "PointProcess.quantile: p must be in [0,1] range. Got: "
+          ++ show p
+          ++ "."
   where
     n = fromIntegral n'
-    t1 = - p ** (1 / n) / ((-1 + p ** (1 / n)) * l)
+    t1 = -p ** (1 / n) / ((-1 + p ** (1 / n)) * l)
     t2nom = p ** (2 / n) * (m - l)
     t2den = 2 * (-1 + p ** (1 / n)) ** 2 * l ** 2
 

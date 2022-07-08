@@ -40,11 +40,11 @@ myParList s xs = do
 parTree :: (NFData e, NFData a) => Int -> Strategy (Tree e a)
 parTree n t@(Node br lb ts)
   | n == 1 = do
-    ts' <- myParList rdeepseq ts
-    return $ Node br lb ts'
+      ts' <- myParList rdeepseq ts
+      return $ Node br lb ts'
   | n >= 2 = do
-    ts' <- myParList (parTree (n -1)) ts
-    return $ Node br lb ts'
+      ts' <- myParList (parTree (n - 1)) ts
+      return $ Node br lb ts'
   | otherwise = rdeepseq t
 
 branchFoldMap :: (e -> f) -> (f -> f -> f) -> Tree e a -> f

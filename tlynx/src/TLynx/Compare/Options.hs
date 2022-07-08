@@ -66,14 +66,16 @@ compareArguments =
 normalize :: Parser Bool
 normalize =
   switch $
-    long "normalize" <> short 'n'
+    long "normalize"
+      <> short 'n'
       <> help
         "Normalize trees before comparison"
 
 bipartitions :: Parser Bool
 bipartitions =
   switch $
-    long "bipartitions" <> short 'b'
+    long "bipartitions"
+      <> short 'b'
       <> help
         "Print and plot common and missing bipartitions"
 

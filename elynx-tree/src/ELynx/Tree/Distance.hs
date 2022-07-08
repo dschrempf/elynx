@@ -55,11 +55,11 @@ symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
 symmetric :: Ord a => Tree e1 a -> Tree e2 a -> Either String Int
 symmetric t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) =
-    Left "symmetric: Trees contain different leaves."
+      Left "symmetric: Trees contain different leaves."
   | otherwise = do
-    bps1 <- bipartitions t1
-    bps2 <- bipartitions t2
-    return $ length $ symmetricDifference bps1 bps2
+      bps1 <- bipartitions t1
+      bps2 <- bipartitions t2
+      return $ length $ symmetricDifference bps1 bps2
 
 countIncompatibilities :: (Show a, Ord a) => Set (Bipartition a) -> Set (Partition a) -> Int
 countIncompatibilities bs ms =
@@ -102,22 +102,22 @@ countIncompatibilities bs ms =
 incompatibleSplits :: (Show a, Ord a) => Tree e1 a -> Tree e2 a -> Either String Int
 incompatibleSplits t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) =
-    Left "incompatibleSplits: Trees contain different leaves."
+      Left "incompatibleSplits: Trees contain different leaves."
   | otherwise = do
-    -- Bipartitions.
-    bs1 <- bipartitions t1
-    bs2 <- bipartitions t2
-    -- traceShowM $ "bs1" ++ show (S.map bpHuman bs1)
-    -- traceShowM $ "bs2" ++ show (S.map bpHuman bs2)
-    let -- Putative incompatible bipartitions of trees one and two, respectively.
-        putIncBs1 = bs1 S.\\ bs2
-        putIncBs2 = bs2 S.\\ bs1
-    -- Partitions.
-    ms1 <- partitions t1
-    ms2 <- partitions t2
-    -- traceShowM $ "putIncBs1 " ++ show (S.map bpHuman putIncBs1)
-    -- traceShowM $ "putIncBs2 " ++ show (S.map bpHuman putIncBs2)
-    return $ countIncompatibilities putIncBs1 ms2 + countIncompatibilities putIncBs2 ms1
+      -- Bipartitions.
+      bs1 <- bipartitions t1
+      bs2 <- bipartitions t2
+      -- traceShowM $ "bs1" ++ show (S.map bpHuman bs1)
+      -- traceShowM $ "bs2" ++ show (S.map bpHuman bs2)
+      let -- Putative incompatible bipartitions of trees one and two, respectively.
+          putIncBs1 = bs1 S.\\ bs2
+          putIncBs2 = bs2 S.\\ bs1
+      -- Partitions.
+      ms1 <- partitions t1
+      ms2 <- partitions t2
+      -- traceShowM $ "putIncBs1 " ++ show (S.map bpHuman putIncBs1)
+      -- traceShowM $ "putIncBs2 " ++ show (S.map bpHuman putIncBs2)
+      return $ countIncompatibilities putIncBs1 ms2 + countIncompatibilities putIncBs2 ms1
 
 -- | Compute branch score distance between two trees.
 --
@@ -128,10 +128,10 @@ incompatibleSplits t1 t2
 branchScore :: (HasLength e1, HasLength e2, Ord a) => Tree e1 a -> Tree e2 a -> Either String Double
 branchScore t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) =
-    Left "branchScoreWith: Trees contain different leaves."
+      Left "branchScoreWith: Trees contain different leaves."
   | otherwise = do
-    bpToBr1 <- bipartitionToBranch $ first (Sum . getLength) t1
-    bpToBr2 <- bipartitionToBranch $ first (Sum . getLength) t2
-    let dBs = M.unionWith (-) bpToBr1 bpToBr2
-        dsSquared = foldl' (\acc e -> acc + e * e) 0 dBs
-    return $ sqrt $ fromLength $ getSum dsSquared
+      bpToBr1 <- bipartitionToBranch $ first (Sum . getLength) t1
+      bpToBr2 <- bipartitionToBranch $ first (Sum . getLength) t2
+      let dBs = M.unionWith (-) bpToBr1 bpToBr2
+          dsSquared = foldl' (\acc e -> acc + e * e) 0 dBs
+      return $ sqrt $ fromLength $ getSum dsSquared

@@ -83,7 +83,9 @@ subSampleArguments =
 subSampleNSitesOpt :: Parser Int
 subSampleNSitesOpt =
   option auto $
-    long "number-of-sites" <> short 'n' <> metavar "INT"
+    long "number-of-sites"
+      <> short 'n'
+      <> metavar "INT"
       <> help
         "Number of sites randomly drawn with replacement"
 

@@ -55,7 +55,7 @@ jump i p = categorical (p ! i)
 --
 -- Do not generate table for each jump.
 --
--- jump :: (PrimMonad m) => State -> ProbMatrix -> Gen (PrimState m) -> m State
+-- jump :: StatefulGen g m => State -> ProbMatrix -> g -> m State
 -- jump i p = genFromTable table
 --   where
 --     ws = toList $ p ! i

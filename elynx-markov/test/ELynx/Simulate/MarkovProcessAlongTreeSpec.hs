@@ -18,7 +18,7 @@ import ELynx.MarkovProcess.Nucleotide
 import qualified ELynx.MarkovProcess.SubstitutionModel as S
 import ELynx.Simulate.MarkovProcess
 import ELynx.Simulate.MarkovProcessAlongTree
-import System.Random.MWC
+import System.Random.Stateful
 import Test.Hspec
 
 -- sampleNewickText :: T.Text
@@ -42,11 +42,11 @@ nullStateTree = fmap (const 2) nullTree
 spec :: Spec
 spec = describe "simulateNSitesAlongTree" $ do
   it "simulates one site along an easy tree" $ do
-    gen <- create
+    gen <- newIOGenM $ mkStdGen 0
     tr <- simulate 1 d e nullTree gen
     fmap head tr `shouldBe` nullStateTree
   it "simulates some sites along a harder tree" $ do
-    gen <- create
+    gen <- newIOGenM $ mkStdGen 0
     tr <- simulate 10 d e testTree gen
     (length . rootLabel $ tr) `shouldBe` 10
   where

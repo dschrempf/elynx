@@ -109,8 +109,8 @@ partitions' :: Ord a => Set a -> Tree e (Set a) -> Set (Partition a)
 partitions' _ (Node _ _ []) = S.empty
 partitions' p t@(Node _ _ ts) =
   S.unions $
-    either (const S.empty) S.singleton (pt (p : map label ts)) :
-    zipWith partitions' cs ts
+    either (const S.empty) S.singleton (pt (p : map label ts))
+      : zipWith partitions' cs ts
   where
     cs = getComplementaryLeaves p t
 

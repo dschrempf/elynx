@@ -66,8 +66,8 @@ intersect ::
 intersect ts
   | S.null lvsCommon = Left "intersect: Intersection of leaves is empty."
   | otherwise = case sequence [dropLeavesWith (predicate ls) t | (ls, t) <- zip leavesToDrop ts] of
-    Nothing -> Left "intersect: A topology is empty."
-    Just ts' -> Right ts'
+      Nothing -> Left "intersect: A topology is empty."
+      Just ts' -> Right ts'
   where
     -- Leaf sets.
     lvss = map (S.fromList . leaves) ts

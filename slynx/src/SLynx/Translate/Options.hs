@@ -60,14 +60,18 @@ translateArguments =
 readingFrameOpt :: Parser Int
 readingFrameOpt =
   option auto $
-    long "reading-frame" <> short 'r' <> metavar "INT"
+    long "reading-frame"
+      <> short 'r'
+      <> metavar "INT"
       <> help
         "Reading frame [0|1|2]."
 
 universalCodeOpt :: Parser UniversalCode
 universalCodeOpt =
   option auto $
-    long "universal-code" <> short 'u' <> metavar "CODE"
+    long "universal-code"
+      <> short 'u'
+      <> metavar "CODE"
       <> help
         ("universal code; one of: " ++ codeStr ++ ".")
   where

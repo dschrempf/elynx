@@ -198,28 +198,28 @@ trim n (Sequence nm d a cs) = Sequence nm d a (V.take (fromIntegral n) cs)
 concat :: Sequence -> Sequence -> Sequence
 concat (Sequence i d c cs) (Sequence j f k ks)
   | i /= j =
-    error $
-      "concatenate: Sequences do not have equal names: "
-        ++ BL.unpack i
-        ++ ", "
-        ++ BL.unpack j
-        ++ "."
+      error $
+        "concatenate: Sequences do not have equal names: "
+          ++ BL.unpack i
+          ++ ", "
+          ++ BL.unpack j
+          ++ "."
   | d /= f =
-    error $
-      "concatenate: Sequences do not have equal descriptions: "
-        ++ BL.unpack d
-        ++ ", "
-        ++ BL.unpack f
-        ++ "."
+      error $
+        "concatenate: Sequences do not have equal descriptions: "
+          ++ BL.unpack d
+          ++ ", "
+          ++ BL.unpack f
+          ++ "."
   | c /= k =
-    error $
-      "concatenate: Sequences do not have equal alphabets: "
-        ++ show c
-        ++ ", "
-        ++ show k
-        ++ "."
+      error $
+        "concatenate: Sequences do not have equal alphabets: "
+          ++ show c
+          ++ ", "
+          ++ show k
+          ++ "."
   | otherwise =
-    Sequence i d c (cs <> ks)
+      Sequence i d c (cs <> ks)
 
 -- | Concatenate a list of sequences, see 'concat'.
 concatSequences :: [[Sequence]] -> [Sequence]

@@ -40,19 +40,19 @@ import GHC.Generics
 import Options.Applicative hiding (empty)
 import Options.Applicative.Help.Pretty
 
--- | Seed option for MWC. Defaults to Random.
+-- | Seed option. Defaults to random.
 seedOpt :: Parser SeedOpt
 seedOpt = toSeedOpt <$> seedParser
 
 seedParser :: Parser (Maybe Int)
 seedParser =
-  optional $
-    option
-      auto $
-        long "seed"
-         <> short 'S'
-         <> metavar "INT"
-         <> help ("Seed for random number generator (default: random)")
+  optional
+    $ option
+      auto
+    $ long "seed"
+      <> short 'S'
+      <> metavar "INT"
+      <> help ("Seed for random number generator (default: random)")
 
 toSeedOpt :: Maybe Int -> SeedOpt
 toSeedOpt Nothing = RandomUnset
@@ -65,7 +65,8 @@ executionModeOpt =
     Fail
     Overwrite
     -- DO NOT CHANGE. This option is used by 'elynx redo'.
-    ( long "force" <> short 'f'
+    ( long "force"
+        <> short 'f'
         <> help
           "Ignore previous analysis and overwrite existing output files."
     )
@@ -88,7 +89,10 @@ instance ToJSON GlobalArguments
 globalArguments :: Parser GlobalArguments
 globalArguments =
   GlobalArguments
-    <$> verbosityOpt <*> optional outFileBaseNameOpt <*> executionModeOpt <*> writeELynxOpt
+    <$> verbosityOpt
+    <*> optional outFileBaseNameOpt
+    <*> executionModeOpt
+    <*> writeELynxOpt
 
 -- Boolean option; be verbose; default NO.
 verbosityOpt :: Parser Verbosity
@@ -109,7 +113,9 @@ verbosityOpt =
 outFileBaseNameOpt :: Parser FilePath
 outFileBaseNameOpt =
   strOption
-    ( long "output-file-basename" <> short 'o' <> metavar "NAME"
+    ( long "output-file-basename"
+        <> short 'o'
+        <> metavar "NAME"
         <> help
           "Specify base name of output file"
     )

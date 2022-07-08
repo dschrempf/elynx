@@ -60,7 +60,7 @@ cumulative (BDNCD t l m) s
   | otherwise = o0 + o1
   where
     o0 = s * (1.0 + t * l) / t / (1.0 + s * l)
-    o1 = (- s * s + s * t) * (m - l) / (2.0 * t * (1.0 + s * l) ** 2)
+    o1 = (-s * s + s * t) * (m - l) / (2.0 * t * (1.0 + s * l) ** 2)
 
 instance D.ContDistr BirthDeathNearlyCriticalDistribution where
   density = density
@@ -81,27 +81,27 @@ density (BDNCD t l m) s
 quantile :: BirthDeathNearlyCriticalDistribution -> Double -> Time
 quantile (BDNCD t l m) p
   | p >= 0 && p <= 1 =
-    res
+      res
   | otherwise =
-    error $
-      "PointProcess.quantile: p must be in [0,1] range. Got: "
-        ++ show p
-        ++ "."
+      error $
+        "PointProcess.quantile: p must be in [0,1] range. Got: "
+          ++ show p
+          ++ "."
   where
     den = l * (-3.0 + 2.0 * t * (-1.0 + p) * l) + m
     t1 = (2.0 + t * (l - 4.0 * p * l + m)) / den
     t2Nom =
       4.0
         + t
-        * ( l
-              * (4.0 + t * l + 8.0 * p * (1.0 + t * l))
-              + 2.0
-              * (2.0 + t * l - 4.0 * p * (1.0 + t * l))
-              * m
-              + t
-              * m
-              * m
-          )
+          * ( l
+                * (4.0 + t * l + 8.0 * p * (1.0 + t * l))
+                + 2.0
+                  * (2.0 + t * l - 4.0 * p * (1.0 + t * l))
+                  * m
+                + t
+                  * m
+                  * m
+            )
     t2 = t2Nom / (den ** 2)
     res = 0.5 * (t1 + sqrt t2)
 

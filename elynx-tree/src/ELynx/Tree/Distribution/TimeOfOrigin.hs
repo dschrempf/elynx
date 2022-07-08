@@ -56,7 +56,7 @@ cumulative (TOD n l m) x
   | otherwise = te ** fromIntegral n
   where
     d = l - m
-    te = l * (1.0 - exp (- d * x)) / (l - m * exp (- d * x))
+    te = l * (1.0 - exp (-d * x)) / (l - m * exp (-d * x))
 
 instance D.ContDistr TimeOfOriginDistribution where
   density = density
@@ -70,7 +70,7 @@ density (TOD nn l m) x
   where
     d = l - m
     n = fromIntegral nn
-    ex = exp (- d * x)
+    ex = exp (-d * x)
     t1 = 1.0 - ex
     t2 = l - m * ex
 
@@ -79,12 +79,12 @@ density (TOD nn l m) x
 quantile :: TimeOfOriginDistribution -> Double -> Time
 quantile (TOD n' l m) p
   | p >= 0 && p <= 1 =
-    -1.0 / d * log (t1 / t2)
+      -1.0 / d * log (t1 / t2)
   | otherwise =
-    error $
-      "PointProcess.quantile: p must be in [0,1] range. Got: "
-        ++ show p
-        ++ "."
+      error $
+        "PointProcess.quantile: p must be in [0,1] range. Got: "
+          ++ show p
+          ++ "."
   where
     d = l - m
     n = fromIntegral n'

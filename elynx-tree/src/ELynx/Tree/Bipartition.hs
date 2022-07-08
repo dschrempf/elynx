@@ -146,7 +146,7 @@ getComplementaryLeaves ::
   [Set a]
 getComplementaryLeaves p (Node _ _ ts) =
   [ S.unions $ p : take i lvsChildren ++ drop (i + 1) lvsChildren
-    | i <- [0 .. (n -1)]
+    | i <- [0 .. (n - 1)]
   ]
   where
     n = length ts
@@ -158,8 +158,8 @@ bipartitions' :: Ord a => Set a -> Tree e (Set a) -> Set (Bipartition a)
 bipartitions' p (Node _ p' []) = either (const S.empty) S.singleton $ bp p p'
 bipartitions' p t@(Node _ p' ts) =
   S.unions $
-    either (const S.empty) S.singleton (bp p p') :
-      [bipartitions' c s | (c, s) <- zip cs ts]
+    either (const S.empty) S.singleton (bp p p')
+      : [bipartitions' c s | (c, s) <- zip cs ts]
   where
     cs = getComplementaryLeaves p t
 
@@ -200,7 +200,7 @@ bipartitionToBranch' ::
   Map (Bipartition a) e
 bipartitionToBranch' p t@(Node b p' ts) =
   M.unionsWith (<>) $
-    either (const M.empty) (`M.singleton` b) (bp p p') :
-      [bipartitionToBranch' c s | (c, s) <- zip cs ts]
+    either (const M.empty) (`M.singleton` b) (bp p p')
+      : [bipartitionToBranch' c s | (c, s) <- zip cs ts]
   where
     cs = getComplementaryLeaves p t

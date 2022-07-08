@@ -64,7 +64,6 @@ library
     , bytestring
     , containers
     , matrices
-    , mwc-random
     , parallel
     , primitive
     , random

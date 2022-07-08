@@ -42,9 +42,6 @@ import ELynx.Tree.Distribution.Types
 import ELynx.Tree.Length
 import ELynx.Tree.Rooted
 import qualified Statistics.Distribution as D
-  ( genContVar,
-  )
-import System.Random.MWC
 import System.Random.Stateful
 
 -- Require near critical process if birth and death rates are closer than this value.

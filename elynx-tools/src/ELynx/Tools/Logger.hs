@@ -194,9 +194,9 @@ logInfoHeader cmdName cmdDsc = do
   as <- liftIO getArgs
   logInfoS $
     intercalate "\n" $
-      hline :
-      ("Command name: " ++ cmdName) :
-      cmdDsc
+      hline
+        : ("Command name: " ++ cmdName)
+        : cmdDsc
         ++ ["Starting time: " ++ t, "Command line: " ++ p ++ " " ++ unwords as]
   logInfoS hline
   where

@@ -69,8 +69,8 @@ data SimulateArguments = SimulateArguments
 
 instance Reproducible SimulateArguments where
   inFiles a =
-    argsTreeFile a :
-    (maybeToList (argsEDMFile a) ++ fromMaybe [] (argsSiteprofilesFiles a))
+    argsTreeFile a
+      : (maybeToList (argsEDMFile a) ++ fromMaybe [] (argsSiteprofilesFiles a))
   outSuffixes _ = [".model.gz", ".fasta"]
   getSeed = Just . argsSeed
   setSeed a s = a {argsSeed = s}
@@ -100,7 +100,9 @@ simulateArguments =
 treeFileOpt :: Parser FilePath
 treeFileOpt =
   strOption $
-    long "tree-file" <> short 't' <> metavar "Name"
+    long "tree-file"
+      <> short 't'
+      <> metavar "Name"
       <> help
         "Read tree from Newick file NAME"
 
@@ -129,7 +131,9 @@ maybeEDMFileOpt :: Parser (Maybe FilePath)
 maybeEDMFileOpt =
   optional $
     strOption
-      ( long "edm-file" <> short 'e' <> metavar "NAME"
+      ( long "edm-file"
+          <> short 'e'
+          <> metavar "NAME"
           <> help
             "Empirical distribution model file NAME in Phylobayes format"
       )
@@ -139,7 +143,9 @@ maybeSiteprofilesFilesOpt =
   optional $
     words
       <$> strOption
-        ( long "siteprofile-files" <> short 'p' <> metavar "NAMES"
+        ( long "siteprofile-files"
+            <> short 'p'
+            <> metavar "NAMES"
             <> help
               "File names of site profiles in Phylobayes format"
         )
@@ -170,7 +176,9 @@ lengthOpt :: Parser Int
 lengthOpt =
   option
     auto
-    ( long "length" <> short 'l' <> metavar "NUMBER"
+    ( long "length"
+        <> short 'l'
+        <> metavar "NUMBER"
         <> help
           "Set alignment length to NUMBER"
     )

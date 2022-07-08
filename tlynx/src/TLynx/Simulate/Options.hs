@@ -234,7 +234,9 @@ subSampleOpt =
 sumStatOpt :: Parser Bool
 sumStatOpt =
   switch $
-    long "summary-statistics" <> short 's' <> showDefault
+    long "summary-statistics"
+      <> short 's'
+      <> showDefault
       <> help
         "For each branch, print length and number of children"
 

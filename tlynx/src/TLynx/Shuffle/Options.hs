@@ -55,7 +55,10 @@ shuffleArguments = ShuffleArguments <$> newickFormat <*> n <*> file <*> seedOpt
 n :: Parser Int
 n =
   option auto $
-    long "replicates" <> short 'n' <> metavar "N" <> value 1
+    long "replicates"
+      <> short 'n'
+      <> metavar "N"
+      <> value 1
       <> help
         "Number of trees to generate"
 

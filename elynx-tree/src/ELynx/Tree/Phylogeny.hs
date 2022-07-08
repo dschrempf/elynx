@@ -120,8 +120,8 @@ intersect ::
 intersect ts
   | S.null lvsCommon = Left "intersect: Intersection of leaves is empty."
   | otherwise = case sequence [dropLeavesWith (predicate ls) t | (ls, t) <- zip leavesToDrop ts] of
-    Nothing -> Left "intersect: A tree is empty."
-    Just ts' -> Right ts'
+      Nothing -> Left "intersect: A tree is empty."
+      Just ts' -> Right ts'
   where
     -- Leaf sets.
     lvss = map (S.fromList . leaves) ts
@@ -186,10 +186,10 @@ rootAt b t
   | length lvLst /= S.size lvSet = Left "rootAt: Tree has duplicate leaves."
   | toSet b /= lvSet = Left "rootAt: Bipartition does not match leaves of tree."
   | otherwise = do
-    ts <- roots t
-    case find (\x -> bipartition x == Right b) ts of
-      Nothing -> Left "rootAt': Bipartition not found on tree."
-      Just t' -> Right t'
+      ts <- roots t
+      case find (\x -> bipartition x == Right b) ts of
+        Nothing -> Left "rootAt': Bipartition not found on tree."
+        Just t' -> Right t'
   where
     lvLst = leaves t
     lvSet = S.fromList $ leaves t
@@ -289,7 +289,7 @@ roots (Node b c ts) = roots $ Node b def [tL, tR]
     tR = Node bL' c $ tail ts
 
 complementaryForests :: Tree e a -> Forest e a -> [Forest e a]
-complementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n -1)]]
+complementaryForests t ts = [t : take i ts ++ drop (i + 1) ts | i <- [0 .. (n - 1)]]
   where
     n = length ts
 

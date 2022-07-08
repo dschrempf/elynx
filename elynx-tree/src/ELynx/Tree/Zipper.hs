@@ -133,13 +133,13 @@ goChild n pos = case current pos of
     | null ts -> Nothing
     | length ts <= n -> Nothing
     | otherwise ->
-      Just $
-        Pos
-          { current = head rs',
-            before = reverse ls',
-            after = tail rs',
-            parents = (before pos, br, lb, after pos) : parents pos
-          }
+        Just $
+          Pos
+            { current = head rs',
+              before = reverse ls',
+              after = tail rs',
+              parents = (before pos, br, lb, after pos) : parents pos
+            }
     where
       (ls', rs') = splitAt n ts
 
@@ -151,12 +151,12 @@ goChildUnsafe n pos = case current pos of
     | null ts -> error "goChildUnsafe: Forest is empty."
     | length ts <= n -> error "goChildUnsafe: Forest is too short."
     | otherwise ->
-      Pos
-        { current = head rs',
-          before = reverse ls',
-          after = tail rs',
-          parents = (before pos, br, lb, after pos) : parents pos
-        }
+        Pos
+          { current = head rs',
+            before = reverse ls',
+            after = tail rs',
+            parents = (before pos, br, lb, after pos) : parents pos
+          }
     where
       (ls', rs') = splitAt n ts
 

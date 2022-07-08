@@ -87,7 +87,6 @@ library
     , double-conversion
     , elynx-nexus
     , math-functions
-    , mwc-random
     , parallel
     , random
     , statistics
@@ -153,7 +152,7 @@ benchmark tree-bench
     , elynx-tools
     , elynx-tree
     , microlens
-    , mwc-random
     , parallel
+    , random
 
   default-language: Haskell2010

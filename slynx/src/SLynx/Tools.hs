@@ -48,6 +48,8 @@ readSeqs a fp = do
 alphabetOpt :: Parser Alphabet
 alphabetOpt =
   option auto $
-    long "alphabet" <> short 'a' <> metavar "NAME"
+    long "alphabet"
+      <> short 'a'
+      <> metavar "NAME"
       <> help
         "Specify alphabet type NAME"

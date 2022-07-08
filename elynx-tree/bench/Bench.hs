@@ -22,7 +22,7 @@ import ELynx.Tree
 import ELynx.Tree.Simulate.PointProcess
 import Length
 import Lens
-import System.Random.MWC
+import System.Random.Stateful
 import Tree
 
 treeFileMany :: FilePath
@@ -32,7 +32,7 @@ getManyTrees :: IO (Forest Phylo Name)
 getManyTrees = parseFileWith (someNewick Standard) treeFileMany
 
 hugeTree :: IO (Tree Length Int)
-hugeTree = create >>= simulateReconstructedTree 50000 Random 1.0 0.9
+hugeTree = newIOGenM (mkStdGen 0) >>= simulateReconstructedTree 50000 Random 1.0 0.9
 
 sinN :: Int -> Length -> Length
 sinN n x = iterate sin x !! n

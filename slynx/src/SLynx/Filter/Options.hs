@@ -85,7 +85,8 @@ filterLongerThanOpt :: Parser (Maybe Int)
 filterLongerThanOpt =
   optional $
     option auto $
-      long "longer-than" <> metavar "LENGTH"
+      long "longer-than"
+        <> metavar "LENGTH"
         <> help
           "Only keep sequences longer than LENGTH"
 
@@ -93,7 +94,8 @@ filterShorterThanOpt :: Parser (Maybe Int)
 filterShorterThanOpt =
   optional $
     option auto $
-      long "shorter-than" <> metavar "LENGTH"
+      long "shorter-than"
+        <> metavar "LENGTH"
         <> help
           "Only keep sequences shorter than LENGTH"
 

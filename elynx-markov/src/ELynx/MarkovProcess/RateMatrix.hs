@@ -179,8 +179,8 @@ fromListBuilderLower es i j
   | i == j = 0.0
   | i < j = es !! ijToKLower jI iI
   | otherwise =
-    error
-      "Float indices could not be compared during matrix creation."
+      error
+        "Float indices could not be compared during matrix creation."
   where
     iI = round i :: Int
     jI = round j :: Int
@@ -193,8 +193,8 @@ fromListBuilderUpper n es i j
   | i == j = 0.0
   | i > j = es !! ijToKUpper n jI iI
   | otherwise =
-    error
-      "Float indices could not be compared during matrix creation."
+      error
+        "Float indices could not be compared during matrix creation."
   where
     iI = round i :: Int
     jI = round j :: Int

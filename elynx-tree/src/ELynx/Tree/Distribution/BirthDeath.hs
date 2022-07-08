@@ -57,8 +57,8 @@ cumulative (BDD t l m) x
   | otherwise = t1 * t2
   where
     d = l - m
-    t1 = (1.0 - exp (- d * x)) / (l - m * exp (- d * x))
-    t2 = (l - m * exp (- d * t)) / (1.0 - exp (- d * t))
+    t1 = (1.0 - exp (-d * x)) / (l - m * exp (-d * x))
+    t2 = (l - m * exp (-d * t)) / (1.0 - exp (-d * t))
 
 instance D.ContDistr BirthDeathDistribution where
   density = density
@@ -72,23 +72,23 @@ density (BDD t l m) x
   | otherwise = d ** 2 * t1 * t2
   where
     d = l - m
-    t1 = exp (- d * x) / ((l - m * exp (- d * x)) ** 2)
-    t2 = (l - m * exp (- d * t)) / (1.0 - exp (- d * t))
+    t1 = exp (-d * x) / ((l - m * exp (-d * x)) ** 2)
+    t2 = (l - m * exp (-d * t)) / (1.0 - exp (-d * t))
 
 -- | Inverted cumulative probability distribution 'cumulative'. See also
 -- 'D.ContDistr'.
 quantile :: BirthDeathDistribution -> Double -> Time
 quantile (BDD t l m) p
   | p >= 0 && p <= 1 =
-    res
+      res
   | otherwise =
-    error $
-      "BirthDeath.quantile: p must be in range [0,1] but got "
-        ++ show p
-        ++ "."
+      error $
+        "BirthDeath.quantile: p must be in range [0,1] but got "
+          ++ show p
+          ++ "."
   where
     d = l - m
-    t2 = (l - m * exp (- d * t)) / (1.0 - exp (- d * t))
+    t2 = (l - m * exp (-d * t)) / (1.0 - exp (-d * t))
     res = (-1.0 / d) * log ((1.0 - p * l / t2) / (1.0 - p * m / t2))
 
 instance D.ContGen BirthDeathDistribution where

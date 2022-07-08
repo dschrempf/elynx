@@ -150,7 +150,8 @@ distanceOpt =
 summaryStatisticsSwitch :: Parser Bool
 summaryStatisticsSwitch =
   switch $
-    long "summary-statistics" <> short 's'
+    long "summary-statistics"
+      <> short 's'
       <> help
         "Report summary statistics only"
 

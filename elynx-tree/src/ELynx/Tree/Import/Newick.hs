@@ -225,7 +225,8 @@ newickRevBayes =
     *> optional brackets
     *> treeRevBayes
     <* char ';'
-    <* skipWhile isSpace <?> "newickRevBayes"
+    <* skipWhile isSpace
+    <?> "newickRevBayes"
 
 treeRevBayes :: Parser (Tree Phylo Name)
 treeRevBayes = branchedRevBayes <|> leafRevBayes <?> "treeRevBayes"

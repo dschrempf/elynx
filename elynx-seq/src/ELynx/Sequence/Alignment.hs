@@ -58,7 +58,6 @@ import ELynx.Alphabet.Character
 import qualified ELynx.Alphabet.DistributionDiversity as D
 import ELynx.Sequence.Defaults
 import qualified ELynx.Sequence.Sequence as S
-import System.Random.MWC
 import System.Random.Stateful
 import Prelude hiding
   ( concat,
