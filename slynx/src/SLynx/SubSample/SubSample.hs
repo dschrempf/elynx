@@ -28,7 +28,7 @@ import ELynx.Tools.Logger
 import ELynx.Tools.Reproduction
 import SLynx.SubSample.Options
 import SLynx.Tools
-import System.Random.MWC
+import System.Random.Stateful
 
 -- | Sub sample sequences.
 subSampleCmd :: ELynx SubSampleArguments ()
@@ -40,7 +40,7 @@ subSampleCmd = do
   logInfoS $ "  Sample " <> show nSites <> " sites."
   logInfoS $ "  Sample " <> show nAlignments <> " multi sequence alignments."
   ss <- readSeqs al inFile
-  gen <- liftIO $ initialize s
+  gen <- newIOGenM $ mkStdGen s
   let a = either error id (M.fromSequences ss)
   samples <- liftIO $ replicateM nAlignments $ M.randomSubSample nSites a gen
   let results = map (sequencesToFasta . M.toSequences) samples

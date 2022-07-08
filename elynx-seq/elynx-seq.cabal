@@ -67,6 +67,7 @@ library
     , mwc-random
     , parallel
     , primitive
+    , random
     , vector
     , vector-th-unbox
     , word8

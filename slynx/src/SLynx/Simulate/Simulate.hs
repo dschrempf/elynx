@@ -297,8 +297,7 @@ simulateCmd = do
   logInfoS "Simulate alignment."
   let alignmentLength = argsLength l
   logInfoS $ "Length: " <> show alignmentLength <> "."
-  -- TODO: Seed will be a number, not a vector.
-  gen <- newIOGenM $ mkStdGen $ fromIntegral $ U.head $ case argsSeed l of
+  gen <- newIOGenM $ mkStdGen $ case argsSeed l of
     RandomUnset -> error "simulateCmd: seed not available; please contact maintainer."
     RandomSet s -> s
     Fixed s -> s

@@ -45,7 +45,6 @@ module ELynx.Sequence.Alignment
 where
 
 import Control.Monad hiding (join)
-import Control.Monad.Primitive
 import Control.Parallel.Strategies
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List hiding
@@ -60,6 +59,7 @@ import qualified ELynx.Alphabet.DistributionDiversity as D
 import ELynx.Sequence.Defaults
 import qualified ELynx.Sequence.Sequence as S
 import System.Random.MWC
+import System.Random.Stateful
 import Prelude hiding
   ( concat,
     length,
@@ -86,8 +86,8 @@ nSequences = M.rows . matrix
 fromSequences :: [S.Sequence] -> Either String Alignment
 fromSequences ss
   | S.equalLength ss && allEqual (map S.alphabet ss) =
-    Right $
-      Alignment ns ds a d
+      Right $
+        Alignment ns ds a d
   | S.equalLength ss = Left "Sequences do not have equal codes."
   | otherwise = Left "Sequences do not have equal lengths."
   where
@@ -160,11 +160,11 @@ join :: Alignment -> Alignment -> Alignment
 -- top bottom.
 join t b
   | length t /= length b =
-    error
-      "join: Multi sequence alignments do not have equal lengths."
+      error
+        "join: Multi sequence alignments do not have equal lengths."
   | alphabet t /= alphabet b =
-    error
-      "join: Multi sequence alignments do not have equal alphabets."
+      error
+        "join: Multi sequence alignments do not have equal alphabets."
   | otherwise = Alignment ns ds al (tD === bD)
   where
     ns = names t ++ names b
@@ -179,16 +179,16 @@ concat :: Alignment -> Alignment -> Alignment
 -- left right.
 concat l r
   | nSequences l /= nSequences r =
-    error
-      "concat: Multi sequence alignments do not have an equal number of sequences."
+      error
+        "concat: Multi sequence alignments do not have an equal number of sequences."
   | alphabet l /= alphabet r =
-    error "concat: Multi sequence alignments do not have an equal alphabets."
+      error "concat: Multi sequence alignments do not have an equal alphabets."
   | names l /= names r =
-    error "concat: Multi sequence alignments do not have an equal names."
+      error "concat: Multi sequence alignments do not have an equal names."
   | descriptions l /= descriptions r =
-    error "concat: Multi sequence alignments do not have an equal descriptions."
+      error "concat: Multi sequence alignments do not have an equal descriptions."
   | otherwise =
-    Alignment (names l) (descriptions l) (alphabet l) (lD ||| rD)
+      Alignment (names l) (descriptions l) (alphabet l) (lD ||| rD)
   where
     lD = matrix l
     rD = matrix r
@@ -315,9 +315,8 @@ subSample :: [Int] -> Alignment -> Alignment
 subSample is a = a {matrix = m'} where m' = subSampleMatrix is $ matrix a
 
 -- | Randomly sample a given number of sites of the multi sequence alignment.
-randomSubSample ::
-  PrimMonad m => Int -> Alignment -> Gen (PrimState m) -> m Alignment
+randomSubSample :: StatefulGen g m => Int -> Alignment -> g -> m Alignment
 randomSubSample n a g = do
   let l = length a
-  is <- replicateM n $ uniformR (0, l - 1) g
+  is <- replicateM n $ uniformRM (0, l - 1) g
   return $ subSample is a
