@@ -106,7 +106,7 @@ simulateAndFlattenPar ::
   IO [[State]]
 simulateAndFlattenPar n d e t g = do
   c <- getNumCapabilities
-  rs <- splitGen c g
+  rs <- replicateM c $ splitGenM g
   gs <- mapM newIOGenM rs
   let chunks = getChunks c n
       q = fromExchangeabilityMatrix e d
@@ -205,9 +205,6 @@ simulateAndFlattenMixtureModel' is cs (Node ps f) g = do
       concat
         <$> sequence [simulateAndFlattenMixtureModel' is' cs t g | t <- f]
 
-splitGen :: RandomGenM g r m => Int -> g -> m [r]
-splitGen n = replicateM n . splitGenM
-
 getChunks :: Int -> Int -> [Int]
 getChunks c n = ns
   where
@@ -219,7 +216,7 @@ parComp :: RandomGen g => Int -> (Int -> IOGenM g -> IO b) -> IOGenM g -> IO [b]
 parComp num fun gen = do
   ncap <- getNumCapabilities
   let chunks = getChunks ncap num
-  rs <- splitGen ncap gen
+  rs <- replicateM ncap $ splitGenM gen
   gs <- mapM newIOGenM rs
   mapConcurrently (uncurry fun) (zip chunks gs)
 
