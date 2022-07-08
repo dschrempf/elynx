@@ -56,10 +56,8 @@ library
     , data-default-class
     , elynx-tools
     , elynx-tree
-    , mwc-random
     , optparse-applicative
     , parallel
-    , primitive
     , random
     , statistics
     , text

@@ -47,13 +47,11 @@ library
     , cryptohash-sha256
     , directory
     , hmatrix
-    , mwc-random
     , optparse-applicative
     , random
     , template-haskell
     , time
     , transformers
-    , vector
     , zlib
 
   default-language: Haskell2010
