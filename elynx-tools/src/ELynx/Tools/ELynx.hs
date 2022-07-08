@@ -30,7 +30,7 @@ import ELynx.Tools.Logger
 import ELynx.Tools.Options
 import ELynx.Tools.Reproduction
 import System.IO
-import System.Random.MWC
+import System.Random
 
 -- | ELynx transformer to be used with all executables.
 type ELynx a = ReaderT (Environment a) IO
@@ -38,8 +38,7 @@ type ELynx a = ReaderT (Environment a) IO
 fixSeed :: Reproducible a => a -> IO a
 fixSeed x = case getSeed x of
   (Just RandomUnset) -> do
-    g <- createSystemRandom
-    s <- fromSeed <$> save g
+    s <- randomIO :: IO Int
     return $ setSeed x (RandomSet s)
   _ -> return x
 

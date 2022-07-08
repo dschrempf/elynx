@@ -28,7 +28,6 @@ module ELynx.Tree.Simulate.PointProcess
 where
 
 import Control.Monad
-import Control.Monad.Primitive
 import Data.Function
 import Data.List
 import Data.Sequence (Seq)
@@ -46,6 +45,7 @@ import qualified Statistics.Distribution as D
   ( genContVar,
   )
 import System.Random.MWC
+import System.Random.Stateful
 
 -- Require near critical process if birth and death rates are closer than this value.
 epsNearCriticalPointProcess :: Double
@@ -67,10 +67,10 @@ sortListWithIndices :: Ord a => [a] -> [(a, Int)]
 sortListWithIndices xs = sortBy (compare `on` fst) $ zip xs ([0 ..] :: [Int])
 
 -- Insert element into random position of list.
-randomInsertList :: PrimMonad m => a -> [a] -> Gen (PrimState m) -> m [a]
+randomInsertList :: StatefulGen g m => a -> [a] -> g -> m [a]
 randomInsertList e v g = do
   let l = length v
-  i <- uniformR (0, l) g
+  i <- uniformRM (0, l) g
   return $ take i v ++ [e] ++ drop i v
 
 -- | A __point process__ for \(n\) points and of age \(t_{or}\) is defined as
@@ -98,7 +98,7 @@ data TimeSpec
 -- | Sample a point process using the 'BirthDeathDistribution'. The names of the
 -- points will be integers.
 simulate ::
-  (PrimMonad m) =>
+  StatefulGen g m =>
   -- | Number of points (samples).
   Int ->
   -- | Time of origin or MRCA.
@@ -107,58 +107,57 @@ simulate ::
   Rate ->
   -- | Death rate.
   Rate ->
-  -- | Generator.
-  Gen (PrimState m) ->
+  g ->
   m (PointProcess Int Double)
 simulate n ts l m g
   | n < 1 = error "Number of samples needs to be one or larger."
   | l < 0.0 = error "Birth rate needs to be positive."
   | otherwise = case ts of
-    Random -> simulateRandom n l m g
-    Origin t -> simulateOrigin n t l m g
-    Mrca t -> simulateMrca n t l m g
+      Random -> simulateRandom n l m g
+      Origin t -> simulateOrigin n t l m g
+      Mrca t -> simulateMrca n t l m g
 
 -- No time of origin given. We also don't need to take care of the conditioning
 -- (origin or MRCA).
 simulateRandom ::
-  PrimMonad m =>
+  StatefulGen g m =>
   Int ->
   Double ->
   Double ->
-  Gen (PrimState m) ->
+  g ->
   m (PointProcess Int Double)
 simulateRandom n l m g
   | -- There is no formula for the over-critical process.
     m > l =
-    error
-      "simulateRandom: Please specify height if mu > lambda."
+      error
+        "simulateRandom: Please specify height if mu > lambda."
   | -- For the critical process, we have no idea about the time of origin, but can
     -- use a specially derived distribution.
     m =~= l =
-    do
-      !vs <- replicateM (n - 1) (D.genContVar (BDCNTD l) g)
-      -- The length of the root branch will be 0.
-      let t = maximum vs
-      return $ PointProcess [0 .. (n - 1)] vs t
+      do
+        !vs <- replicateM (n - 1) (D.genContVar (BDCNTD l) g)
+        -- The length of the root branch will be 0.
+        let t = maximum vs
+        return $ PointProcess [0 .. (n - 1)] vs t
   | -- For the near critical process, we use a special distribution.
     abs (m - l) <= epsNearCriticalTimeOfOrigin =
-    do
-      t <- D.genContVar (TONCD n l m) g
-      simulateOrigin n t l m g
+      do
+        t <- D.genContVar (TONCD n l m) g
+        simulateOrigin n t l m g
   | -- For a sub-critical branching process, we can use the formula from Tanja Stadler.
     otherwise =
-    do
-      t <- D.genContVar (TOD n l m) g
-      simulateOrigin n t l m g
+      do
+        t <- D.genContVar (TOD n l m) g
+        simulateOrigin n t l m g
 
 -- Time of origin is given.
 simulateOrigin ::
-  PrimMonad m =>
+  StatefulGen g m =>
   Int ->
   Time ->
   Double ->
   Double ->
-  Gen (PrimState m) ->
+  g ->
   m (PointProcess Int Double)
 simulateOrigin n t l m g
   | t < 0.0 = error "simulateOrigin: Time of origin needs to be positive."
@@ -171,38 +170,38 @@ simulateOrigin n t l m g
     -- 2. The near critical branching process.
     -- 3. Normal values :).
     m =~= l = do
-    !vs <- replicateM (n - 1) (D.genContVar (BDCD t l) g)
-    return $ PointProcess [0 .. (n - 1)] vs t
+      !vs <- replicateM (n - 1) (D.genContVar (BDCD t l) g)
+      return $ PointProcess [0 .. (n - 1)] vs t
   | abs (m - l) <= epsNearCriticalPointProcess = do
-    !vs <- replicateM (n - 1) (D.genContVar (BDNCD t l m) g)
-    return $ PointProcess [0 .. (n - 1)] vs t
+      !vs <- replicateM (n - 1) (D.genContVar (BDNCD t l m) g)
+      return $ PointProcess [0 .. (n - 1)] vs t
   | otherwise = do
-    !vs <- replicateM (n - 1) (D.genContVar (BDD t l m) g)
-    return $ PointProcess [0 .. (n - 1)] vs t
+      !vs <- replicateM (n - 1) (D.genContVar (BDD t l m) g)
+      return $ PointProcess [0 .. (n - 1)] vs t
 
 -- Time of Mrca is given.
 simulateMrca ::
-  PrimMonad m =>
+  StatefulGen g m =>
   Int ->
   Time ->
   Double ->
   Double ->
-  Gen (PrimState m) ->
+  g ->
   m (PointProcess Int Double)
 simulateMrca n t l m g
   | t < 0.0 = error "simulateMrca: Time of MRCA needs to be positive."
   | m =~= l = do
-    !vs <- replicateM (n - 2) (D.genContVar (BDCD t l) g)
-    vs' <- randomInsertList t vs g
-    return $ PointProcess [0 .. (n - 1)] vs' t
+      !vs <- replicateM (n - 2) (D.genContVar (BDCD t l) g)
+      vs' <- randomInsertList t vs g
+      return $ PointProcess [0 .. (n - 1)] vs' t
   | abs (m - l) <= epsNearCriticalPointProcess = do
-    !vs <- replicateM (n - 2) (D.genContVar (BDNCD t l m) g)
-    vs' <- randomInsertList t vs g
-    return $ PointProcess [0 .. (n - 1)] vs' t
+      !vs <- replicateM (n - 2) (D.genContVar (BDNCD t l m) g)
+      vs' <- randomInsertList t vs g
+      return $ PointProcess [0 .. (n - 1)] vs' t
   | otherwise = do
-    !vs <- replicateM (n - 2) (D.genContVar (BDD t l m) g)
-    vs' <- randomInsertList t vs g
-    return $ PointProcess [0 .. (n - 1)] vs' t
+      !vs <- replicateM (n - 2) (D.genContVar (BDD t l m) g)
+      vs' <- randomInsertList t vs g
+      return $ PointProcess [0 .. (n - 1)] vs' t
 
 -- Sort the values of a point process and their indices to be (the indices
 -- that they will have while creating the tree).
@@ -226,7 +225,7 @@ fAcc is i = (i : is, i') where i' = i - length (filter (< i) is)
 
 -- | See 'simulateReconstructedTree', but n times.
 simulateNReconstructedTrees ::
-  (PrimMonad m) =>
+  (StatefulGen g m) =>
   -- | Number of trees
   Int ->
   -- | Number of points (samples)
@@ -237,8 +236,7 @@ simulateNReconstructedTrees ::
   Rate ->
   -- | Death rate
   Rate ->
-  -- | Generator (see 'System.Random.MWC')
-  Gen (PrimState m) ->
+  g ->
   m (Forest Length Int)
 simulateNReconstructedTrees nT nP t l m g
   | nT <= 0 = return []
@@ -248,7 +246,7 @@ simulateNReconstructedTrees nT nP t l m g
 -- 'toReconstructedTree') possibly with specific height and a fixed number of
 -- leaves according to the birth and death process.
 simulateReconstructedTree ::
-  (PrimMonad m) =>
+  StatefulGen g m =>
   -- | Number of points (samples)
   Int ->
   -- | Time of origin or MRCA
@@ -257,8 +255,7 @@ simulateReconstructedTree ::
   Rate ->
   -- | Death rate
   Rate ->
-  -- | Generator (see 'System.Random.MWC')
-  Gen (PrimState m) ->
+  g ->
   m (Tree Length Int)
 simulateReconstructedTree n t l m g = do
   PointProcess ns vs o <- simulate n t l m g
@@ -284,7 +281,7 @@ toReconstructedTree l pp@(PointProcess ps vs o)
   | -- -- Test is deactivated.
     -- -- | otherwise = if isReconstructed treeOrigin then treeOrigin else error "Error in algorithm."
     otherwise =
-    treeOrigin
+      treeOrigin
   where
     (vsSorted, isSorted) = sortPP pp
     !lvs = S.fromList [Node 0 p [] | p <- ps]

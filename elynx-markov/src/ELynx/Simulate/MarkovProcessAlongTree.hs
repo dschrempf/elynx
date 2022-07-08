@@ -30,7 +30,6 @@ where
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Monad
-import Control.Monad.IO.Class
 import Data.Tree
 import qualified Data.Vector as V
 import ELynx.MarkovProcess.RateMatrix
@@ -106,8 +105,9 @@ simulateAndFlattenPar ::
   IOGenM g ->
   IO [[State]]
 simulateAndFlattenPar n d e t g = do
-  c <- liftIO getNumCapabilities
-  gs <- splitGen c g
+  c <- getNumCapabilities
+  rs <- splitGen c g
+  gs <- mapM newIOGenM rs
   let chunks = getChunks c n
       q = fromExchangeabilityMatrix e d
       pt = toProbTree q t
@@ -205,10 +205,8 @@ simulateAndFlattenMixtureModel' is cs (Node ps f) g = do
       concat
         <$> sequence [simulateAndFlattenMixtureModel' is' cs t g | t <- f]
 
-splitGen :: (RandomGenM g r m, MonadIO m) => Int -> g -> m [IOGenM r]
-splitGen n g = do
-  gs <- replicateM n $ splitGenM g
-  mapM newIOGenM gs
+splitGen :: RandomGenM g r m => Int -> g -> m [r]
+splitGen n = replicateM n . splitGenM
 
 getChunks :: Int -> Int -> [Int]
 getChunks c n = ns
@@ -219,9 +217,10 @@ getChunks c n = ns
 
 parComp :: RandomGen g => Int -> (Int -> IOGenM g -> IO b) -> IOGenM g -> IO [b]
 parComp num fun gen = do
-  ncap <- liftIO getNumCapabilities
+  ncap <- getNumCapabilities
   let chunks = getChunks ncap num
-  gs <- splitGen ncap gen
+  rs <- splitGen ncap gen
+  gs <- mapM newIOGenM rs
   mapConcurrently (uncurry fun) (zip chunks gs)
 
 -- | See 'simulateAndFlattenMixtureModel', parallel version.

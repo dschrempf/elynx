@@ -32,7 +32,6 @@ import Control.Concurrent.Async
   )
 import Control.Monad
 import Control.Monad.IO.Class
-import Control.Monad.Primitive
 import Control.Monad.Trans.Reader hiding (local)
 import Control.Parallel.Strategies
 import qualified Data.ByteString.Builder as BB
@@ -41,8 +40,6 @@ import Data.Foldable
 import Data.Maybe
 import qualified Data.Sequence as Seq
 import qualified Data.Set as Set
-import qualified Data.Vector.Unboxed as VU
-import Data.Word
 import ELynx.Tools.ELynx
 import ELynx.Tools.Environment
 import ELynx.Tools.Logger
@@ -50,17 +47,9 @@ import ELynx.Tools.Reproduction
 import ELynx.Tree
 import qualified ELynx.Tree.Simulate.Coalescent as CS
 import qualified ELynx.Tree.Simulate.PointProcess as PP
-import System.Random.MWC
+import System.Random.Stateful
 import TLynx.Grabble
 import TLynx.Simulate.Options
-
--- Split a generator.
-splitGen :: PrimMonad m => Int -> Gen (PrimState m) -> m [Gen (PrimState m)]
-splitGen n gen
-  | n <= 0 = return []
-  | otherwise = do
-      seeds :: [VU.Vector Word32] <- replicateM (n - 1) $ uniformVector gen 256
-      fmap (gen :) (mapM initialize seeds)
 
 -- For a given number of capabilities and number of calculations, get chunk
 -- sizes. The chunk sizes will be as evenly distributed as possible and sum up
@@ -84,7 +73,9 @@ simulate = do
   logInfoS $ reportSimulateArguments l
   logInfoNewSection "Simulation"
   logInfoS $ "Number of used cores: " <> show c
-  gs <- liftIO $ initialize s >>= \gen -> splitGen c gen
+  gen <- newIOGenM $ mkStdGen s
+  rs <- replicateM c $ splitGenM gen
+  gs <- mapM newIOGenM rs
   let chunks = getChunks c nTrees
   trs <- case pr of
     (BirthDeath lambda mu mRho timeSpec) -> do
@@ -112,13 +103,14 @@ simulate = do
   out "simulated trees" res ".tree"
 
 bdSimulateNTreesConcurrently ::
+  RandomGen g =>
   Int ->
   Double ->
   Double ->
   Double ->
   PP.TimeSpec ->
   [Int] ->
-  [GenIO] ->
+  [IOGenM g] ->
   IO (Forest Length Int)
 bdSimulateNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
   let l' = l * r
@@ -130,9 +122,10 @@ bdSimulateNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
   return $ concat trss
 
 coalSimulateNTreesConcurrently ::
+  RandomGen g =>
   Int ->
   [Int] ->
-  [GenIO] ->
+  [IOGenM g] ->
   IO (Forest Length Int)
 coalSimulateNTreesConcurrently nL chunks gs = do
   trss <-
@@ -142,6 +135,7 @@ coalSimulateNTreesConcurrently nL chunks gs = do
   return $ concat trss
 
 bdSimulateAndSubSampleNTreesConcurrently ::
+  RandomGen g =>
   Int ->
   Double ->
   Double ->
@@ -149,7 +143,7 @@ bdSimulateAndSubSampleNTreesConcurrently ::
   Double ->
   PP.TimeSpec ->
   [Int] ->
-  [GenIO] ->
+  [IOGenM g] ->
   ELynx SimulateArguments (Forest Length Int)
 bdSimulateAndSubSampleNTreesConcurrently nLeaves l m r p timeSpec chunks gs = do
   let nLeavesBigTree = (round $ fromIntegral nLeaves / p) :: Int
@@ -178,10 +172,11 @@ bdSimulateAndSubSampleNTreesConcurrently nLeaves l m r p timeSpec chunks gs = do
   return $ map prune trs
 
 coalSimulateAndSubSampleNTreesConcurrently ::
+  RandomGen g =>
   Int ->
   Double ->
   [Int] ->
-  [GenIO] ->
+  [IOGenM g] ->
   ELynx SimulateArguments (Forest Length Int)
 coalSimulateAndSubSampleNTreesConcurrently nL p chunks gs = do
   let nLeavesBigTree = (round $ fromIntegral nL / p) :: Int
@@ -213,13 +208,13 @@ coalSimulateAndSubSampleNTreesConcurrently nL p chunks gs = do
 -- sub-sampling as well as lookup are fast and so that these data structures do
 -- not have to be recomputed when many sub-samples are requested.
 nSubSamples ::
-  Ord a =>
+  (Ord a, StatefulGen g m) =>
   Int ->
   Seq.Seq a ->
   Int ->
   Tree e a ->
-  GenIO ->
-  IO [Maybe (Tree e a)]
+  g ->
+  m [Maybe (Tree e a)]
 nSubSamples m lvs n tree g
   | Seq.length lvs < n =
       error

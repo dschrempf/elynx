@@ -36,7 +36,7 @@ import ELynx.Tree.Simulate.PointProcess
     toReconstructedTree,
   )
 import System.IO (hClose)
-import System.Random.MWC (GenIO, initialize)
+import System.Random.Stateful
 import TLynx.Grabble
 import TLynx.Parsers
 import TLynx.Shuffle.Options
@@ -68,22 +68,22 @@ shuffleCmd = do
   logDebugS $ "Number of leaves: " <> show (length ls)
   logDebugS "The coalescent times are: "
   logDebugS $ show cs
-  gen <- liftIO $
-    initialize $ case argsSeed l of
-      RandomUnset -> error "Seed not available; please contact maintainer."
-      RandomSet s -> s
-      Fixed s -> s
+  gen <- newIOGenM $ mkStdGen $ case argsSeed l of
+    RandomUnset -> error "Seed not available; please contact maintainer."
+    RandomSet s -> s
+    Fixed s -> s
   ts <- liftIO $ shuffleT (nReplicates l) (height t) cs ls gen
   liftIO $ BL.hPutStr h $ BL.unlines $ map (toNewick . lengthToPhyloTree) ts
   liftIO $ hClose h
 
 shuffleT ::
+  StatefulGen g m =>
   Int -> -- How many?
   Length -> -- Stem length.
   [Length] -> -- Coalescent times.
   [Name] -> -- Leave names.
-  GenIO ->
-  IO (Forest Length Name)
+  g ->
+  m (Forest Length Name)
 shuffleT n o cs ls gen = do
   css <- grabble cs n (length cs) gen
   lss <- grabble ls n (length ls) gen

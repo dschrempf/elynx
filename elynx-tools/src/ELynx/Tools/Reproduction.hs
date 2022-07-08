@@ -35,9 +35,7 @@ import Crypto.Hash.SHA256
 import Data.Aeson hiding (encode)
 import Data.ByteString.Base16
 import qualified Data.ByteString.Char8 as BS
-import qualified Data.Vector.Unboxed as VU
 import Data.Version
-import Data.Word
 import GHC.Generics
 import Options.Applicative
 import Paths_elynx_tools
@@ -46,7 +44,7 @@ import System.Environment
 -- TODO: This should be an 'Int' (new interface).
 
 -- | Random or fixed seed.
-data SeedOpt = RandomUnset | RandomSet (VU.Vector Word32) | Fixed (VU.Vector Word32)
+data SeedOpt = RandomUnset | RandomSet Int | Fixed Int
   deriving (Eq, Generic, Show)
 
 instance FromJSON SeedOpt
@@ -54,7 +52,7 @@ instance FromJSON SeedOpt
 instance ToJSON SeedOpt
 
 -- | Get the seed, if set.
-fromSeedOpt :: SeedOpt -> Maybe (VU.Vector Word32)
+fromSeedOpt :: SeedOpt -> Maybe Int
 fromSeedOpt RandomUnset = Nothing
 fromSeedOpt (RandomSet v) = Just v
 fromSeedOpt (Fixed v) = Just v

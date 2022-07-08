@@ -89,7 +89,7 @@ library
     , math-functions
     , mwc-random
     , parallel
-    , primitive
+    , random
     , statistics
 
   default-language: Haskell2010

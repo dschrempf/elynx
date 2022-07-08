@@ -33,8 +33,6 @@ where
 
 import Data.Aeson
 import Data.List
-import qualified Data.Vector.Unboxed as VU
-import Data.Word
 import ELynx.Tools.InputOutput
 import ELynx.Tools.Logger
 import ELynx.Tools.Reproduction
@@ -46,19 +44,17 @@ import Options.Applicative.Help.Pretty
 seedOpt :: Parser SeedOpt
 seedOpt = toSeedOpt <$> seedParser
 
-seedParser :: Parser (Maybe (VU.Vector Word32))
+seedParser :: Parser (Maybe Int)
 seedParser =
   optional $
     option
-      auto
-      ( long "seed" <> short 'S' <> metavar "[INT]"
-          <> help
-            ( "Seed for random number generator; "
-                ++ "list of 32 bit integers with up to 256 elements (default: random)"
-            )
-      )
+      auto $
+        long "seed"
+         <> short 'S'
+         <> metavar "INT"
+         <> help ("Seed for random number generator (default: random)")
 
-toSeedOpt :: Maybe (VU.Vector Word32) -> SeedOpt
+toSeedOpt :: Maybe Int -> SeedOpt
 toSeedOpt Nothing = RandomUnset
 toSeedOpt (Just w) = Fixed w
 
