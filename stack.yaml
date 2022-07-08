@@ -1,4 +1,4 @@
-resolver: nightly-2022-03-21
+resolver: nightly-2022-05-12
 
 packages:
   - elynx
@@ -9,7 +9,6 @@ packages:
   - elynx-tree
   - slynx
   - tlynx
-
 # ghc-options:
 #   # Optimizations.
 #   "$everything": -fllvm -O2
