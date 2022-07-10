@@ -2,7 +2,7 @@
 
 # The ELynx Suite
 
-Version: 0.6.1.1.
+Version: 0.7.0.0.
 Reproducible evolution made easy.
 
 <p align="center"><img src="https://travis-ci.org/dschrempf/elynx.svg?branch=master"/></p>
@@ -74,9 +74,9 @@ ELynx is written in [Haskell](https://www.haskell.org/) and can be installed wit
     # OR: slynx --help
 
     Up to date
-    ELynx Suite version 0.6.1.1.
+    ELynx Suite version 0.7.0.0.
     Developed by Dominik Schrempf.
-    Compiled on February 22, 2022, at 15:10 pm, UTC.
+    Compiled on July 10, 2022, at 08:48 am, UTC.
     
     Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME]
                  [-f|--force] [--no-elynx-file] COMMAND
@@ -144,16 +144,16 @@ The documentation of sub commands can be accessed separately:
     # OR: slynx simulate --help
 
     Up to date
-    ELynx Suite version 0.6.1.1.
+    ELynx Suite version 0.7.0.0.
     Developed by Dominik Schrempf.
-    Compiled on February 22, 2022, at 15:10 pm, UTC.
+    Compiled on July 10, 2022, at 08:48 am, UTC.
     
     Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL]
                           [-m|--mixture-model MODEL] [-e|--edm-file NAME]
                           [-p|--siteprofile-files NAMES]
                           [-w|--mixture-model-weights "[DOUBLE,DOUBLE,...]"]
                           [-g|--gamma-rate-heterogeneity "(NCAT,SHAPE)"]
-                          (-l|--length NUMBER) [-S|--seed [INT]]
+                          (-l|--length NUMBER) [-S|--seed INT]
       Simulate multi sequence alignments.
     
     Available options:
@@ -175,8 +175,7 @@ The documentation of sub commands can be accessed separately:
       -g,--gamma-rate-heterogeneity "(NCAT,SHAPE)"
                                Number of gamma rate categories and shape parameter
       -l,--length NUMBER       Set alignment length to NUMBER
-      -S,--seed [INT]          Seed for random number generator; list of 32 bit
-                               integers with up to 256 elements (default: random)
+      -S,--seed INT            Seed for random number generator (default: random)
       -h,--help                Show this help text
     
     Substitution models:
