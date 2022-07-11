@@ -15,7 +15,7 @@
 # SHOW UP UGLY ON HACKAGE.
 
 * The ELynx Suite
-Version: 0.7.0.0.
+Version: 0.7.0.1.
 Reproducible evolution made easy.
 
 #+html: <p align="center"><img src="https://travis-ci.org/dschrempf/elynx.svg?branch=master"/></p>

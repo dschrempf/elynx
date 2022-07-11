@@ -5,7 +5,7 @@
 ## Unreleased changes
 
 
-## Version 0.7.0.0
+## Version 0.7.0.1
 
 -   Random 1.2: Parallel functions now require an \`IOGenM\` random number
     generator.
