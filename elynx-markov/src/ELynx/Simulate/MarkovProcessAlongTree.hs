@@ -212,6 +212,10 @@ getChunks c n = ns
     r = n `mod` c
     ns = replicate r (n' + 1) ++ replicate (c - r) n'
 
+-- NOTE: We could move away from IO here, but moving away from 'mapConcurrently'
+-- requires benchmarks. I am just not sure if it makes sense to spend more time
+-- on this since the parallelization itself is a bit weird. Like so, we walk
+-- along separate trees in each process.
 parComp :: RandomGen g => Int -> (Int -> IOGenM g -> IO b) -> IOGenM g -> IO [b]
 parComp num fun gen = do
   ncap <- getNumCapabilities
