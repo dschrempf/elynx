@@ -16,12 +16,14 @@ module TLynx.Examine.Examine
   )
 where
 
+import Control.Comonad
 import Control.Monad (unless)
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader (ask)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Containers.ListUtils (nubOrd)
-import Data.List ((\\))
+import Data.List (foldl', (\\))
+import qualified Data.Map as M
 import ELynx.Tools.ByteString
 import ELynx.Tools.ELynx
 import ELynx.Tools.Environment
@@ -65,9 +67,27 @@ readTrees fp = do
   nf <- argsNewickFormat . localArguments <$> ask
   liftIO $ parseTrees nf fp
 
+countElements :: (Ord a, Foldable f) => f a -> M.Map a Int
+countElements xs = foldl' f M.empty xs
+  where
+    f m x = M.alter g x m
+    g Nothing = Just 1
+    g (Just x) = Just $ x + 1
+
 examineTree :: HasName a => Handle -> Tree Phylo a -> IO ()
 examineTree h t = do
   hPutStrLn h $ "Number of leaves: " ++ show (length lvs)
+  hPutStrLn h $ "Degree of root node: " ++ show (degree t)
+  if bifurcating t
+    then hPutStrLn h "Tree is bifurcating."
+    else
+      let degrees = extend degree t
+          degreeMax = maximum degrees
+       in do
+            if degreeMax > 2
+              then hPutStrLn h $ "Tree is multifurcating."
+              else hPutStrLn h $ "Tree is bifurcating but has degree two nodes."
+            hPutStrLn h $ "List of degrees with counts: " <> (show $ M.toList $ countElements degrees)
   let l = toLengthTree t
   case l of
     Left _ -> hPutStrLn h "Branch lengths not available."
