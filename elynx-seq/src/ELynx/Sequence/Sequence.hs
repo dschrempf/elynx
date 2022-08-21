@@ -64,7 +64,7 @@ import qualified Prelude as Pr
   ( length,
   )
 
--- | For now, 'Name's are just 'BL.ByteString's.
+-- | 'Name's are just 'BL.ByteString's.
 type Name = BL.ByteString
 
 -- | The description of a sequence.
