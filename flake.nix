@@ -25,60 +25,61 @@
           "slynx"
           "tlynx"
         ];
-        elynx-create-package = f: name: f name (./. + "/${name}") rec { };
-        elynx-overlay = (
+        ghcVersion = "ghc924";
+        haskellMkPackage = f: name: f name (./. + "/${name}") rec { };
+        haskellOverlay = (
           selfn: supern: {
-            haskellPackages = supern.haskell.packages.ghc924.override {
+            haskellPackages = supern.haskell.packages.${ghcVersion}.override {
               overrides = selfh: superh:
-                lib.genAttrs packageNames
-                  (elynx-create-package selfh.callCabal2nix);
+                lib.genAttrs packageNames (haskellMkPackage selfh.callCabal2nix);
             };
           }
         );
-        overlays = [ elynx-overlay ];
+        overlays = [ haskellOverlay ];
         pkgs = import nixpkgs { inherit system overlays; };
         # When changing the package set, the override above also has to be amended.
         hpkgs = pkgs.haskellPackages;
-        elynx-pkgs = lib.genAttrs packageNames (n: hpkgs.${n});
+        elynxPkgsNoCompletion = lib.genAttrs packageNames (n: hpkgs.${n});
         # Add Bash completion.
-        elynx =
+        elynxPkgs =
           let
             f = pkgs.haskell.lib.generateOptparseApplicativeCompletion;
-            slynx-completion = f "slynx" elynx-pkgs.slynx;
-            tlynx-completion = f "tlynx" elynx-pkgs.tlynx;
-            elynx-completion = f "elynx" elynx-pkgs.elynx;
+            slynxCompletion = f "slynx" elynxPkgsNoCompletion.slynx;
+            tlynxCompletion = f "tlynx" elynxPkgsNoCompletion.tlynx;
+            elynxCompletion = f "elynx" elynxPkgsNoCompletion.elynx;
           in
-          elynx-pkgs // {
-            slynx = slynx-completion;
-            tlynx = tlynx-completion;
-            elynx = elynx-completion;
+          elynxPkgsNoCompletion // {
+            slynx = slynxCompletion;
+            tlynx = tlynxCompletion;
+            elynx = elynxCompletion;
           };
         # Development environment with benchmarks.
-        elynx-dev = builtins.mapAttrs
+        elynxPkgsDev = builtins.mapAttrs
           (
             _: x: pkgs.haskell.lib.overrideCabal x (
               _: { doBenchmark = true; }
             )
           )
-          elynx;
+          elynxPkgs;
         # Environment including all packages.
-        elynx-suite = pkgs.buildEnv {
+        elynxSuite = pkgs.buildEnv {
           name = "ELynx suite";
-          paths = builtins.attrValues elynx;
+          paths = builtins.attrValues elynxPkgs;
         };
       in
       {
-        packages = elynx // {
-          inherit elynx-suite;
-          default = elynx-suite;
+        packages = elynxPkgs // {
+          inherit elynxSuite;
+          default = elynxSuite;
         };
 
         devShells.default = hpkgs.shellFor {
-          packages = _: (builtins.attrValues elynx-dev);
+          packages = _: (builtins.attrValues elynxPkgsDev);
           buildInputs = with pkgs; [
             bashInteractive
 
-            haskellPackages.cabal-fmt # Build fails for newer hpkgs.
+            # TODO: `cabal-fmt` fails to build when using a newer package set.
+            haskell.packages.ghc902.cabal-fmt
 
             hpkgs.cabal-install
             hpkgs.haskell-language-server
