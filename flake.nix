@@ -77,6 +77,9 @@
           packages = _: (builtins.attrValues elynx-dev);
           buildInputs = with pkgs; [
             bashInteractive
+
+            haskellPackages.cabal-fmt # Build fails for newer hpkgs.
+
             hpkgs.cabal-install
             hpkgs.haskell-language-server
           ];
