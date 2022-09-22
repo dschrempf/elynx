@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TupleSections #-}
 
 -- |
 --
@@ -166,7 +166,7 @@ examine perSiteFlag ss =
 -- From https://stackoverflow.com/a/52602906/3536806.
 tuples :: [a] -> [(a, a)]
 tuples [] = []
-tuples (x : xs) = map (\y -> (x, y)) xs ++ tuples xs
+tuples (x : xs) = map (x,) xs ++ tuples xs
 
 -- This is all ugly, but who cares.
 writeDivergenceMatrix :: Handle -> (Seq.Sequence, Seq.Sequence, MU.Matrix Int) -> IO ()
@@ -183,7 +183,7 @@ computeDivergenceMatrices ss = do
   let xys = tuples ss
       ds = map (\(x, y) -> (x, y, either error id $ divergence x y)) xys
   h <- outHandle "divergence matrices" ".div"
-  sequence_ $ map (liftIO . writeDivergenceMatrix h) ds
+  mapM_ (liftIO . writeDivergenceMatrix h) ds
   liftIO $ hClose h
 
 -- | Examine sequences.

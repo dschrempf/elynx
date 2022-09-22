@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskellQuotes #-}
 
 -- |
 -- Description :  Compute distances between trees

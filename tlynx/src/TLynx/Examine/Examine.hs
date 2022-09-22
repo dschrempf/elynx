@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 -- |
 -- Description :  Analyze trees
@@ -68,7 +67,7 @@ readTrees fp = do
   liftIO $ parseTrees nf fp
 
 countElements :: (Ord a, Foldable f) => f a -> M.Map a Int
-countElements xs = foldl' f M.empty xs
+countElements = foldl' f M.empty
   where
     f m x = M.alter g x m
     g Nothing = Just 1
@@ -85,9 +84,9 @@ examineTree h t = do
           degreeMax = maximum degrees
        in do
             if degreeMax > 2
-              then hPutStrLn h $ "Tree is multifurcating."
-              else hPutStrLn h $ "Tree is bifurcating but has degree two nodes."
-            hPutStrLn h $ "List of degrees with counts: " <> (show $ M.toList $ countElements degrees)
+              then hPutStrLn h "Tree is multifurcating."
+              else hPutStrLn h "Tree is bifurcating but has degree two nodes."
+            hPutStrLn h $ "List of degrees with counts: " <> show (M.toList $ countElements degrees)
   let l = toLengthTree t
   case l of
     Left _ -> hPutStrLn h "Branch lengths not available."

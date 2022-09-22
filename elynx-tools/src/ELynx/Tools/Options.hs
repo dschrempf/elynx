@@ -52,7 +52,7 @@ seedParser =
     $ long "seed"
       <> short 'S'
       <> metavar "INT"
-      <> help ("Seed for random number generator (default: random)")
+      <> help "Seed for random number generator (default: random)"
 
 toSeedOpt :: Maybe Int -> SeedOpt
 toSeedOpt Nothing = RandomUnset

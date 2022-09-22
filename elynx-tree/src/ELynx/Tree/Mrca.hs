@@ -104,7 +104,7 @@ findNode n t
           [] -> Just $ Right $ S.singleton x
           (l : r : _) -> Just $ Right $ S.fromList [head $ leaves l, head $ leaves r]
           _ -> Just $ Left $ "findNode: degree two node found" <> show n
-      | otherwise = case catMaybes $ map (go x) ts of
+      | otherwise = case mapMaybe (go x) ts of
           [] -> Nothing
           [z] -> Just z
           -- Use 'error' because this should never happen since we check for

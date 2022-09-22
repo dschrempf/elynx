@@ -37,7 +37,7 @@ modify m ij f = do
 
 divergence :: Sequence -> Sequence -> Either String (MU.Matrix Int)
 divergence s1 s2
-  | not (alphabet s1 == alphabet s2) = err "sequences have different alphabets"
+  | alphabet s1 /= alphabet s2 = err "sequences have different alphabets"
   | not (equalLength [s1, s2]) = err "sequences have different lengths"
   | otherwise = Right $ MU.create $ do
       m <- MU.new (n, n)
