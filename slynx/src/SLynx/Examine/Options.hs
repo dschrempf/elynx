@@ -65,4 +65,4 @@ examineDivergence =
 
 filePathArg :: Parser FilePath
 filePathArg =
-  strArgument $ metavar "INPUT-FILE" <> help "Read sequences from INPUT-FILE"
+  strArgument $ metavar "INPUT-FILE" <> help "Read sequences from INPUT-FILE" <> action "file"

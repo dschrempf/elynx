@@ -49,4 +49,4 @@ examineArguments = ExamineArguments <$> inFile <*> newickFormat
 
 inFile :: Parser FilePath
 inFile =
-  strArgument $ metavar "INPUT-FILE" <> help "Read trees from INPUT-FILE"
+  strArgument $ metavar "INPUT-FILE" <> help "Read trees from INPUT-FILE" <> action "file"
