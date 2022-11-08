@@ -98,6 +98,7 @@ masterTreeFile =
         <> short 'm'
         <> metavar "MASTER-TREE-File"
         <> help "Compare all trees to the tree in the master tree file."
+        <> action "file"
 
 inFilesArg :: Parser FilePath
 inFilesArg =
@@ -105,6 +106,7 @@ inFilesArg =
     metavar "INPUT-FILES"
       <> help
         "Read tree(s) from INPUT-FILES; if more files are given, one tree is expected per file"
+      <> action "file"
 
 symmetric :: AC.Parser DistanceMeasure
 symmetric = do

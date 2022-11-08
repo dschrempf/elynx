@@ -88,4 +88,4 @@ intersect =
         "Compare intersections; i.e., before comparison, drop leaves that are not present in the other tree"
 
 file :: Parser [FilePath]
-file = some $ strArgument $ metavar "NAMES" <> help "Tree files"
+file = some $ strArgument $ metavar "NAMES" <> help "Tree files" <> action "file"
