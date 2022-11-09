@@ -31,7 +31,7 @@ import ELynx.Alphabet.Character
 import ELynx.Sequence.Sequence
 
 isSpecial :: Char -> Bool
-isSpecial w = w `elem` ['_', '|', '.', '-']
+isSpecial w = w `elem` ['_', '|', '.', '-', '/', '@']
 
 isHeader :: Char -> Bool
 isHeader w = AC.isAlpha_ascii w || AC.isDigit w || isSpecial w
