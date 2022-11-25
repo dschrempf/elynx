@@ -158,7 +158,7 @@ nameQuotes = (<?> "nameQuotes") $ do
 -- A name can be any string of printable characters except blanks, colons,
 -- semicolons, parentheses, and square brackets (and commas).
 name :: Parser Name
-name = nameQuotes <|> nameNoQuotes
+name = nameQuotes <|> nameNoQuotes <?> "name"
 
 phylo :: Parser Phylo
 phylo = Phylo <$> optional branchLengthStandard <*> optional branchSupportStandard <?> "phylo"
