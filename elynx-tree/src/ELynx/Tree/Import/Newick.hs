@@ -145,8 +145,20 @@ nameChar c = c `notElem` " :;()[],"
 
 -- A name can be any string of printable characters except blanks, colons,
 -- semicolons, parentheses, and square brackets (and commas).
+nameNoQuotes :: Parser Name
+nameNoQuotes = Name . BL.fromStrict <$> takeWhile nameChar <?> "nameNoQuotes"
+
+nameQuotes :: Parser Name
+nameQuotes = (<?> "nameQuotes") $ do
+  _ <- char '\''
+  n <- nameNoQuotes
+  _ <- char '\''
+  pure n
+
+-- A name can be any string of printable characters except blanks, colons,
+-- semicolons, parentheses, and square brackets (and commas).
 name :: Parser Name
-name = Name . BL.fromStrict <$> takeWhile nameChar <?> "name"
+name = nameQuotes <|> nameNoQuotes
 
 phylo :: Parser Phylo
 phylo = Phylo <$> optional branchLengthStandard <*> optional branchSupportStandard <?> "phylo"
