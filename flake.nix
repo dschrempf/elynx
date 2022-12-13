@@ -11,80 +11,82 @@
     , flake-utils
     , nixpkgs
     }:
-    flake-utils.lib.eachDefaultSystem (
-      system:
-      let
-        lib = nixpkgs.lib;
-        packageNames = [
-          "elynx"
-          "elynx-markov"
-          "elynx-nexus"
-          "elynx-seq"
-          "elynx-tools"
-          "elynx-tree"
-          "slynx"
-          "tlynx"
-        ];
-        ghcVersion = "ghc924";
-        haskellMkPackage = f: name: f name (./. + "/${name}") rec { };
-        haskellOverlay = (
-          selfn: supern: {
-            haskellPackages = supern.haskell.packages.${ghcVersion}.override {
-              overrides = selfh: superh:
-                lib.genAttrs packageNames (haskellMkPackage selfh.callCabal2nix);
-            };
-          }
-        );
-        overlays = [ haskellOverlay ];
-        pkgs = import nixpkgs { inherit system overlays; };
-        # When changing the package set, the override above also has to be amended.
-        hpkgs = pkgs.haskellPackages;
-        elynxPkgsNoCompletion = lib.genAttrs packageNames (n: hpkgs.${n});
-        # Add Bash completion.
-        elynxPkgs =
-          let
-            f = pkgs.haskell.lib.generateOptparseApplicativeCompletion;
-            slynxCompletion = f "slynx" elynxPkgsNoCompletion.slynx;
-            tlynxCompletion = f "tlynx" elynxPkgsNoCompletion.tlynx;
-            elynxCompletion = f "elynx" elynxPkgsNoCompletion.elynx;
-          in
-          elynxPkgsNoCompletion // {
-            slynx = slynxCompletion;
-            tlynx = tlynxCompletion;
-            elynx = elynxCompletion;
+    let
+      theseHpkgNames = [
+        "elynx"
+        "elynx-markov"
+        "elynx-nexus"
+        "elynx-seq"
+        "elynx-tools"
+        "elynx-tree"
+        "slynx"
+        "tlynx"
+      ];
+      thisGhcVersion = "ghc943";
+      hMkPackage = h: n: h.callCabal2nix n (./. + "/${n}") { };
+      hOverlay = selfn: supern: {
+        haskell = supern.haskell // {
+          packageOverrides = selfh: superh:
+            supern.haskell.packageOverrides selfh superh //
+              nixpkgs.lib.genAttrs theseHpkgNames (hMkPackage selfh);
+        };
+      };
+      perSystem = system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ hOverlay ];
           };
-        # Development environment with benchmarks.
-        elynxPkgsDev = builtins.mapAttrs
-          (
-            _: x: pkgs.haskell.lib.overrideCabal x (
-              _: { doBenchmark = true; }
-            )
-          )
-          elynxPkgs;
-        # Environment including all packages.
-        elynxSuite = pkgs.buildEnv {
-          name = "ELynx suite";
-          paths = builtins.attrValues elynxPkgs;
-        };
-      in
-      {
-        packages = elynxPkgs // {
-          inherit elynxSuite;
-          default = elynxSuite;
-        };
+          hpkgs = pkgs.haskell.packages.${thisGhcVersion};
+          hlib = pkgs.haskell.lib;
+          theseHpkgsNoCompletion = nixpkgs.lib.genAttrs theseHpkgNames (n: hpkgs.${n});
+          # Add Bash completion.
+          theseHpkgs =
+            let
+              f = pkgs.haskell.lib.generateOptparseApplicativeCompletion;
+              slynxCompletion = f "slynx" theseHpkgsNoCompletion.slynx;
+              tlynxCompletion = f "tlynx" theseHpkgsNoCompletion.tlynx;
+              elynxCompletion = f "elynx" theseHpkgsNoCompletion.elynx;
+            in
+            theseHpkgsNoCompletion // {
+              slynx = slynxCompletion;
+              tlynx = tlynxCompletion;
+              elynx = elynxCompletion;
+            };
+          theseHpkgsDev = builtins.mapAttrs (_: x: hlib.doBenchmark x) theseHpkgs;
+          # Environment including all packages.
+          elynxSuite = pkgs.buildEnv {
+            name = "ELynx suite";
+            paths = builtins.attrValues theseHpkgs;
+          };
+        in
+        {
+          packages = theseHpkgs // { inherit elynxSuite; default = elynxSuite; };
 
-        devShells.default = hpkgs.shellFor {
-          packages = _: (builtins.attrValues elynxPkgsDev);
-          buildInputs = with pkgs; [
-            bashInteractive
+          devShells.default = hpkgs.shellFor {
+            # shellHook =
+            #   let
+            #     scripts = ./scripts;
+            #   in
+            #   ''
+            #     export PATH="${scripts}:$PATH"
+            #   '';
+            packages = _: (builtins.attrValues theseHpkgsDev);
+            nativeBuildInputs = with pkgs; [
+              # See https://github.com/NixOS/nixpkgs/issues/59209.
+              bashInteractive
 
-            hpkgs.cabal-fmt
-            hpkgs.cabal-install
-            hpkgs.haskell-language-server
-          ];
-          doBenchmark = true;
-          # withHoogle = true;
+              # Haskell toolchain.
+              hpkgs.cabal-fmt
+              hpkgs.cabal-install
+              hpkgs.haskell-language-server
+            ];
+            buildInputs = with pkgs; [
+            ];
+            doBenchmark = true;
+            # withHoogle = true;
+          };
         };
-      }
-    );
+    in
+    { overlays.default = hOverlay; } // flake-utils.lib.eachDefaultSystem perSystem;
 }
