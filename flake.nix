@@ -64,13 +64,6 @@
           packages = theseHpkgs // { inherit elynxSuite; default = elynxSuite; };
 
           devShells.default = hpkgs.shellFor {
-            # shellHook =
-            #   let
-            #     scripts = ./scripts;
-            #   in
-            #   ''
-            #     export PATH="${scripts}:$PATH"
-            #   '';
             packages = _: (builtins.attrValues theseHpkgsDev);
             nativeBuildInputs = with pkgs; [
               # See https://github.com/NixOS/nixpkgs/issues/59209.
