@@ -55,6 +55,8 @@ Upload the source distribution tarballs to Hackage.
 Somehow this doesn't work on a project basis, so we have to do it separately for
 each package.
 
+** Package candidates only
+
 #+NAME: HackageUploadTarballCandidates
 #+BEGIN_SRC sh :exports both :results output verbatim
 for p in elynx-markov elynx-nexus elynx-seq elynx-tools elynx-tree slynx tlynx elynx
@@ -101,6 +103,7 @@ Package successfully published. You can now view it at
 'https://hackage.haskell.org/package/elynx-0.6.1.1'.
 #+end_example
 
+** Publich packages
 #+NAME: HackagePublishTarballs
 #+BEGIN_SRC sh :exports both :results output verbatim
 for p in elynx-markov elynx-nexus elynx-seq elynx-tools elynx-tree slynx tlynx elynx
