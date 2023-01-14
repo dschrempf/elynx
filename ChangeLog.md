@@ -4,6 +4,9 @@
 
 ## Unreleased changes
 
+
+## Version 0.7.1.0
+
 -   Be less strict with quoted identifiers/names in phylogenetic trees.
 -   Be less strict with FASTA identifiers.
 -   Update tooling (GHC 9.2.4).
