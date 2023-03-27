@@ -22,7 +22,7 @@
         "slynx"
         "tlynx"
       ];
-      thisGhcVersion = "ghc943";
+      thisGhcVersion = "ghc944";
       hMkPackage = h: n: h.callCabal2nix n (./. + "/${n}") { };
       hOverlay = selfn: supern: {
         haskell = supern.haskell // {
@@ -43,10 +43,10 @@
           # Add Bash completion.
           theseHpkgs =
             let
-              f = pkgs.haskell.lib.generateOptparseApplicativeCompletion;
-              slynxCompletion = f "slynx" theseHpkgsNoCompletion.slynx;
-              tlynxCompletion = f "tlynx" theseHpkgsNoCompletion.tlynx;
-              elynxCompletion = f "elynx" theseHpkgsNoCompletion.elynx;
+              f = hpkgs.generateOptparseApplicativeCompletions;
+              slynxCompletion = f [ "slynx" ] theseHpkgsNoCompletion.slynx;
+              tlynxCompletion = f [ "tlynx" ] theseHpkgsNoCompletion.tlynx;
+              elynxCompletion = f [ "elynx" ] theseHpkgsNoCompletion.elynx;
             in
             theseHpkgsNoCompletion // {
               slynx = slynxCompletion;
