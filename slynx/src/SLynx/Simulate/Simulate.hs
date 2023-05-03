@@ -211,9 +211,10 @@ summarizeMMComponent c =
     : summarizeSM (MM.substModel c)
 
 -- Summarize a mixture model; lines to be printed to screen or log.
-summarizeMM :: MM.MixtureModel -> [BL.ByteString]
-summarizeMM m =
+summarizeMM :: MixtureModelGlobalNormalization -> MM.MixtureModel -> [BL.ByteString]
+summarizeMM nz m =
   [ BL.pack $ "Mixture model: " ++ MM.name m ++ ".",
+    BL.pack $ "Mixture model normalization: " ++ show nz ++ ".",
     BL.pack $ "Number of components: " ++ show n ++ "."
   ]
     ++ detail
@@ -229,9 +230,9 @@ summarizeMM m =
         else []
 
 -- Summarize a phylogenetic model; lines to be printed to screen or log.
-summarizePM :: MP.PhyloModel -> [BL.ByteString]
-summarizePM (MP.MixtureModel mm) = summarizeMM mm
-summarizePM (MP.SubstitutionModel sm) = summarizeSM sm
+summarizePM :: MixtureModelGlobalNormalization -> MP.PhyloModel -> [BL.ByteString]
+summarizePM nz (MP.MixtureModel mm) = summarizeMM nz mm
+summarizePM _ (MP.SubstitutionModel sm) = summarizeSM sm
 
 -- | Simulate sequences.
 simulateCmd :: ELynx SimulateArguments ()
@@ -286,10 +287,10 @@ simulateCmd = do
   let maybeGammaParams = argsGammaParams l
   phyloModel <- case maybeGammaParams of
     Nothing -> do
-      logInfoB $ BL.unlines $ summarizePM phyloModel'
+      logInfoB $ BL.unlines $ summarizePM nz phyloModel'
       return phyloModel'
     Just (n, alpha) -> do
-      logInfoB $ BL.intercalate "\n" $ summarizePM phyloModel'
+      logInfoB $ BL.intercalate "\n" $ summarizePM nz phyloModel'
       logInfoS ""
       logInfoB $ BL.intercalate "\n" $ summarizeGammaRateHeterogeneity n alpha
       return $ expand n alpha phyloModel'
