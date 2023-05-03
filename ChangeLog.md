@@ -5,6 +5,11 @@
 ## Unreleased changes
 
 
+## Version 0.7.2.0
+
+-   `slynx`: Allow global normalization of mixture models.
+
+
 ## Version 0.7.1.0
 
 -   Be less strict with quoted identifiers/names in phylogenetic trees.

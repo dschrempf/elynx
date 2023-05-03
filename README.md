@@ -2,7 +2,7 @@
 
 # The ELynx Suite
 
-Version: 0.7.0.0.
+Version: 0.7.2.0.
 Reproducible evolution made easy.
 
 <p align="center"><img src="https://travis-ci.org/dschrempf/elynx.svg?branch=master"/></p>
@@ -73,13 +73,13 @@ ELynx is written in [Haskell](https://www.haskell.org/) and can be installed wit
     # OR: stack exec slynx -- --help
     # OR: slynx --help
 
-    Up to date
-    ELynx Suite version 0.7.0.0.
+    ELynx Suite version 0.7.2.0.
     Developed by Dominik Schrempf.
-    Compiled on July 10, 2022, at 08:48 am, UTC.
+    Compiled on May 3, 2023, at 13:18 pm, UTC.
     
     Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME]
                  [-f|--force] [--no-elynx-file] COMMAND
+    
       Analyze, and simulate multi sequence alignments.
     
     Available options:
