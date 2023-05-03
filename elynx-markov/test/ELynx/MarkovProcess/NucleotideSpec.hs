@@ -24,7 +24,7 @@ stationaryDist :: StationaryDistribution
 stationaryDist = fromList [0.2, 0.3, 0.3, 0.2]
 
 hkyModel :: SubstitutionModel
-hkyModel = hky 6.0 stationaryDist
+hkyModel = hky DoNormalize 6.0 stationaryDist
 
 spec :: Spec
 spec =

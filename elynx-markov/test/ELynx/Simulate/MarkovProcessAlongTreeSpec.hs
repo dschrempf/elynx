@@ -15,6 +15,7 @@ where
 
 import Data.Tree
 import ELynx.MarkovProcess.Nucleotide
+import ELynx.MarkovProcess.SubstitutionModel (Normalize (DoNormalize))
 import qualified ELynx.MarkovProcess.SubstitutionModel as S
 import ELynx.Simulate.MarkovProcess
 import ELynx.Simulate.MarkovProcessAlongTree
@@ -50,5 +51,5 @@ spec = describe "simulateNSitesAlongTree" $ do
     tr <- simulate 10 d e testTree gen
     (length . rootLabel $ tr) `shouldBe` 10
   where
-    d = S.stationaryDistribution jc
-    e = S.exchangeabilityMatrix jc
+    d = S.stationaryDistribution $ jc DoNormalize
+    e = S.exchangeabilityMatrix $ jc DoNormalize

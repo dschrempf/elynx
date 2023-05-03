@@ -16,6 +16,7 @@ where
 import qualified Data.Vector.Storable as V
 import ELynx.MarkovProcess.AminoAcid
 import qualified ELynx.MarkovProcess.RateMatrix as R
+import ELynx.MarkovProcess.SubstitutionModel (Normalize (DoNormalize))
 import qualified ELynx.MarkovProcess.SubstitutionModel as S
 import ELynx.Tools.Equality
 import Numeric.LinearAlgebra
@@ -482,13 +483,13 @@ statDistUniform :: R.StationaryDistribution
 statDistUniform = vector $ replicate 20 0.05
 
 statDistLG :: R.StationaryDistribution
-statDistLG = S.stationaryDistribution lg
+statDistLG = S.stationaryDistribution $ lg DoNormalize
 
 exchLG :: R.ExchangeabilityMatrix
-exchLG = S.exchangeabilityMatrix lg
+exchLG = S.exchangeabilityMatrix $ lg DoNormalize
 
 rmLG :: R.RateMatrix
-rmLG = S.rateMatrix lg
+rmLG = S.rateMatrix $ lg DoNormalize
 
 spec :: Spec
 spec = do
@@ -513,11 +514,12 @@ spec = do
               S.rateMatrix $
                 lgCustom
                   Nothing
+                  DoNormalize
                   statDistUniform
       f `nearlyEqVec` statDistUniform `shouldBe` True
   describe "poisson" $
     it "stationary distribution is uniform 1/20" $
-      R.getStationaryDistribution (S.rateMatrix poisson)
+      R.getStationaryDistribution (S.rateMatrix $ poisson DoNormalize)
         `nearlyEqVec` statDistUniform
         `shouldBe` True
   describe "poissonCustom" $
@@ -527,5 +529,6 @@ spec = do
               S.rateMatrix $
                 poissonCustom
                   Nothing
+                  DoNormalize
                   statDistLGPython
       f `nearlyEqVec` statDistLGPython `shouldBe` True
