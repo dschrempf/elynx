@@ -92,17 +92,25 @@ normalizeSumVec v = V.map (/ s) v
     s = V.sum v
 {-# INLINE normalizeSumVec #-}
 
+-- | Should the substitution model be normalized?
+data Normalize = DoNormalize | DoNotNormalize
+
 -- | Create normalized 'SubstitutionModel'. See 'normalize'.
 substitutionModel ::
   Alphabet ->
   Name ->
   Params ->
+  Normalize ->
   R.StationaryDistribution ->
   R.ExchangeabilityMatrix ->
   SubstitutionModel
-substitutionModel c n ps d e =
+substitutionModel c n ps nz d e =
   if R.isValid d
-    then normalize $ SubstitutionModel c n ps (normalizeSumVec d) e
+    then
+      let sm = SubstitutionModel c n ps (normalizeSumVec d) e
+       in case nz of
+            DoNormalize -> normalize sm
+            DoNotNormalize -> sm
     else
       error $
         "substitionModel: Stationary distribution does not sum to 1.0: "
