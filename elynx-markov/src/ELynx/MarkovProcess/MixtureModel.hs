@@ -68,7 +68,8 @@ normalizeGlobally :: V.Vector Weight -> V.Vector S.SubstitutionModel -> V.Vector
 normalizeGlobally ws ss = V.map (S.scale $ recip c) ss
   where
     cks = V.map S.totalRate ss
-    c = V.sum $ V.zipWith (*) ws cks
+    cNoWeights = V.sum $ V.zipWith (*) ws cks
+    c = cNoWeights / V.sum ws
 
 -- | Create a mixture model from a list of substitution models.
 --
