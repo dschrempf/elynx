@@ -278,7 +278,8 @@ simulateCmd = do
   let ms = argsSubstitutionModelString l
       mm = argsMixtureModelString l
       mws = argsMixtureWeights l
-      eitherPhyloModel' = getPhyloModel ms mm mws edmCsOrSiteprofiles
+      nz = argsMixtureModelGlobalNormalization l
+      eitherPhyloModel' = getPhyloModel ms mm nz mws edmCsOrSiteprofiles
   phyloModel' <- case eitherPhyloModel' of
     Left err -> lift $ error err
     Right pm -> return pm

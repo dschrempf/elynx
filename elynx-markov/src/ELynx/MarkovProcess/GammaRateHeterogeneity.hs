@@ -58,8 +58,7 @@ getName n alpha =
     ++ "shape parameter "
     ++ show alpha
 
-splitSubstitutionModel ::
-  Int -> Double -> S.SubstitutionModel -> V.Vector S.SubstitutionModel
+splitSubstitutionModel :: Int -> Double -> S.SubstitutionModel -> V.Vector S.SubstitutionModel
 splitSubstitutionModel n alpha sm = renamedSMs
   where
     means = getMeans n alpha
@@ -67,9 +66,8 @@ splitSubstitutionModel n alpha sm = renamedSMs
     names = V.fromList $ map (("; gamma rate category " ++) . show) [1 :: Int ..]
     renamedSMs = V.zipWith S.appendName names scaledSMs
 
-expandSubstitutionModel ::
-  Int -> Double -> S.SubstitutionModel -> M.MixtureModel
-expandSubstitutionModel n alpha sm = M.fromSubstitutionModels name ws sms
+expandSubstitutionModel :: Int -> Double -> S.SubstitutionModel -> M.MixtureModel
+expandSubstitutionModel n alpha sm = M.fromSubstitutionModels name S.DoNotNormalize ws sms
   where
     name = S.name sm <> getName n alpha
     ws = V.replicate n 1.0

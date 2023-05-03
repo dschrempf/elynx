@@ -117,6 +117,7 @@ cxxSubstitutionModelFromStatDist ::
 cxxSubstitutionModelFromStatDist nComps comp d =
   poissonCustom
     (Just name)
+    S.DoNotNormalize
     (normalizeSD d)
   where
     name = componentName nComps comp
@@ -139,6 +140,7 @@ cxxFromStatDistsAndWeights ::
 cxxFromStatDistsAndWeights ws ds =
   M.fromSubstitutionModels
     (cxxName n)
+    S.DoNormalize
     (V.fromList ws)
     sms
   where

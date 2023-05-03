@@ -34,6 +34,7 @@
 --   -o,--output-file NAME    Specify output file NAME
 module SLynx.Simulate.Options
   ( GammaRateHeterogeneityParams,
+    MixtureModelGlobalNormalization (..),
     SimulateArguments (..),
     simulateArguments,
     simulateFooter,
@@ -53,11 +54,19 @@ import Options.Applicative
 -- | Number of gamma rate categories and alpha parameter.
 type GammaRateHeterogeneityParams = (Int, Double)
 
+data MixtureModelGlobalNormalization = GlobalNormalization | LocalNormalization
+  deriving (Show, Read, Eq, Generic)
+
+instance FromJSON MixtureModelGlobalNormalization
+
+instance ToJSON MixtureModelGlobalNormalization
+
 -- | Arguments needed to simulate sequences.
 data SimulateArguments = SimulateArguments
   { argsTreeFile :: FilePath,
     argsSubstitutionModelString :: Maybe String,
     argsMixtureModelString :: Maybe String,
+    argsMixtureModelGlobalNormalization :: MixtureModelGlobalNormalization,
     argsEDMFile :: Maybe FilePath,
     argsSiteprofilesFiles :: Maybe [FilePath],
     argsMixtureWeights :: Maybe [Double],
@@ -90,6 +99,7 @@ simulateArguments =
     <$> treeFileOpt
     <*> phyloSubstitutionModelOpt
     <*> phyloMixtureModelOpt
+    <*> globalNormalizationFlag
     <*> maybeEDMFileOpt
     <*> maybeSiteprofilesFilesOpt
     <*> maybeMixtureWeights
@@ -126,6 +136,16 @@ phyloMixtureModelOpt =
           <> help
             "Set the phylogenetic mixture model; available models are shown below (mutually exclusive with -s option)"
       )
+
+globalNormalizationFlag :: Parser MixtureModelGlobalNormalization
+globalNormalizationFlag =
+  flag
+    LocalNormalization
+    GlobalNormalization
+    ( long "global-normalization"
+        <> short 'n'
+        <> help "Normalize mixture model globally (one normalization constant for all components)"
+    )
 
 maybeEDMFileOpt :: Parser (Maybe FilePath)
 maybeEDMFileOpt =

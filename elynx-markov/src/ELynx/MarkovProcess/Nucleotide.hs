@@ -81,12 +81,12 @@ uniformVec :: Vector Double
 uniformVec = V.replicate n (1 / fromIntegral n)
 
 -- | JC substitution model.
-jc :: SubstitutionModel
-jc = substitutionModel DNA "JC" [] uniformVec jcExch
+jc :: Normalize -> SubstitutionModel
+jc nz = substitutionModel DNA "JC" [] nz uniformVec jcExch
 
 -- | F81 substitution model.
-f81 :: StationaryDistribution -> SubstitutionModel
-f81 d = substitutionModel DNA "F81" [] d jcExch
+f81 :: Normalize -> StationaryDistribution -> SubstitutionModel
+f81 nz d = substitutionModel DNA "F81" [] nz d jcExch
 
 hkyExch :: Double -> ExchangeabilityMatrix
 hkyExch k =
@@ -94,11 +94,11 @@ hkyExch k =
     [0.0, 1.0, k, 1.0, 1.0, 0.0, 1.0, k, k, 1.0, 0.0, 1.0, 1.0, k, 1.0, 0.0]
 
 -- | HKY substitution model.
-hky :: Double -> StationaryDistribution -> SubstitutionModel
-hky k d = substitutionModel DNA "HKY" [k] d e where e = hkyExch k
+hky :: Normalize -> Double -> StationaryDistribution -> SubstitutionModel
+hky nz k d = substitutionModel DNA "HKY" [k] nz d e where e = hkyExch k
 
 -- | HKY substitution model.
-gtr4 :: [Double] -> StationaryDistribution -> SubstitutionModel
-gtr4 es d = substitutionModel DNA "GTR" es d e
+gtr4 :: Normalize -> [Double] -> StationaryDistribution -> SubstitutionModel
+gtr4 nz es d = substitutionModel DNA "GTR" es nz d e
   where
     e = exchFromListUpper n es

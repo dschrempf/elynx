@@ -27,6 +27,7 @@ module ELynx.MarkovProcess.SubstitutionModel
     totalRate,
 
     -- * Building substitution models
+    Normalize (..),
     substitutionModel,
 
     -- * Transformations
@@ -94,6 +95,7 @@ normalizeSumVec v = V.map (/ s) v
 
 -- | Should the substitution model be normalized?
 data Normalize = DoNormalize | DoNotNormalize
+  deriving (Show, Read, Eq)
 
 -- | Create normalized 'SubstitutionModel'. See 'normalize'.
 substitutionModel ::

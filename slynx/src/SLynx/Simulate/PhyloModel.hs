@@ -35,11 +35,8 @@ import ELynx.MarkovProcess.RateMatrix
 import qualified ELynx.MarkovProcess.SubstitutionModel as S
 import ELynx.Tools.Equality
 import ELynx.Tools.InputOutput
-import Numeric.LinearAlgebra
-  ( norm_1,
-    size,
-    vector,
-  )
+import Numeric.LinearAlgebra (norm_1, size, vector)
+import SLynx.Simulate.Options (MixtureModelGlobalNormalization (..))
 
 nNuc :: Int
 -- nNuc = length (alphabet :: [Nucleotide])
@@ -109,59 +106,61 @@ assertLength d n r =
 -- This is the main function that connects the model string, the parameters and
 -- the stationary distribution. It should check that the model is valid.
 assembleSubstitutionModel ::
+  S.Normalize ->
   String ->
   Maybe S.Params ->
   Maybe StationaryDistribution ->
   Either String S.SubstitutionModel
 -- DNA models.
-assembleSubstitutionModel "JC" Nothing Nothing = Right jc
-assembleSubstitutionModel "F81" Nothing (Just d) =
-  Right $ assertLength d nNuc $ f81 d
-assembleSubstitutionModel "HKY" (Just [k]) (Just d) =
-  Right $ assertLength d nNuc $ hky k d
-assembleSubstitutionModel "GTR4" (Just es) (Just d) =
-  Right $ assertLength d nNuc $ gtr4 es d
+assembleSubstitutionModel nz "JC" Nothing Nothing = Right $ jc nz
+assembleSubstitutionModel nz "F81" Nothing (Just d) =
+  Right $ assertLength d nNuc $ f81 nz d
+assembleSubstitutionModel nz "HKY" (Just [k]) (Just d) =
+  Right $ assertLength d nNuc $ hky nz k d
+assembleSubstitutionModel nz "GTR4" (Just es) (Just d) =
+  Right $ assertLength d nNuc $ gtr4 nz es d
 -- Protein models.
-assembleSubstitutionModel "Poisson" Nothing Nothing = Right poisson
-assembleSubstitutionModel "Poisson-Custom" Nothing (Just d) =
-  Right $ assertLength d nAA $ poissonCustom Nothing d
-assembleSubstitutionModel "LG" Nothing Nothing = Right lg
-assembleSubstitutionModel "LG-Custom" Nothing (Just d) =
-  Right $ assertLength d nAA $ lgCustom Nothing d
-assembleSubstitutionModel "WAG" Nothing Nothing = Right wag
-assembleSubstitutionModel "WAG-Custom" Nothing (Just d) =
-  Right $ assertLength d nAA $ wagCustom Nothing d
-assembleSubstitutionModel "GTR20" (Just es) (Just d) =
-  Right $ assertLength d nAA $ gtr20 es d
+assembleSubstitutionModel nz "Poisson" Nothing Nothing = Right $ poisson nz
+assembleSubstitutionModel nz "Poisson-Custom" Nothing (Just d) =
+  Right $ assertLength d nAA $ poissonCustom Nothing nz d
+assembleSubstitutionModel nz "LG" Nothing Nothing = Right $ lg nz
+assembleSubstitutionModel nz "LG-Custom" Nothing (Just d) =
+  Right $ assertLength d nAA $ lgCustom Nothing nz d
+assembleSubstitutionModel nz "WAG" Nothing Nothing = Right $ wag nz
+assembleSubstitutionModel nz "WAG-Custom" Nothing (Just d) =
+  Right $ assertLength d nAA $ wagCustom Nothing nz d
+assembleSubstitutionModel nz "GTR20" (Just es) (Just d) =
+  Right $ assertLength d nAA $ gtr20 nz es d
 -- Ohterwisse, we cannot assemble the model.
-assembleSubstitutionModel n mps mf =
+assembleSubstitutionModel nz n mps mf =
   Left $
     unlines
       [ "Cannot assemble substitution model.",
+        "Normalize: " ++ show nz,
         "Name: " ++ show n,
         "Parameters: " ++ show mps,
         "Stationary distribution: " ++ show mf
       ]
 
-parseSubstitutionModel :: Parser S.SubstitutionModel
-parseSubstitutionModel = do
+parseSubstitutionModel :: S.Normalize -> Parser S.SubstitutionModel
+parseSubstitutionModel nz = do
   n <- name
   mps <- optional params
   mf <- optional stationaryDistribution
-  let esm = assembleSubstitutionModel n mps mf
+  let esm = assembleSubstitutionModel nz n mps mf
   case esm of
     Left err -> fail err
     Right sm -> return sm
 
-edmModel :: [EDMComponent] -> Maybe [M.Weight] -> Parser M.MixtureModel
-edmModel cs mws = do
+edmModel :: MixtureModelGlobalNormalization -> [EDMComponent] -> Maybe [M.Weight] -> Parser M.MixtureModel
+edmModel nz cs mws = do
   _ <- string "EDM"
   _ <- char mmStart
   n <- name
   mps <- optional params
   _ <- char mmEnd
   when (null cs) $ error "edmModel: no EDM components given."
-  let sms = map (\c -> assembleSubstitutionModel n mps (Just $ snd c)) cs
+  let sms = map (\c -> assembleSubstitutionModel subNz n mps (Just $ snd c)) cs
       edmName = "EDM" ++ show (length cs)
       ws = fromMaybe (map fst cs) mws
       errs = [e | (Left e) <- sms]
@@ -171,30 +170,36 @@ edmModel cs mws = do
     then fail $ head errs
     else
       return $
-        M.fromSubstitutionModels edmName (V.fromList ws) (V.fromList $ rights sms)
+        M.fromSubstitutionModels edmName mmNz (V.fromList ws) (V.fromList $ rights sms)
+  where
+    (subNz, mmNz) = case nz of
+      GlobalNormalization -> (S.DoNotNormalize, S.DoNormalize)
+      LocalNormalization -> (S.DoNormalize, S.DoNotNormalize)
 
-cxxModel :: Maybe [M.Weight] -> Parser M.MixtureModel
-cxxModel mws = do
+cxxModel :: MixtureModelGlobalNormalization -> Maybe [M.Weight] -> Parser M.MixtureModel
+cxxModel LocalNormalization _ = fail "Local normalization impossible with CXX models."
+cxxModel _ mws = do
   _ <- char 'C'
   n <- decimal :: Parser Int
   return $ cxx n mws
 
-standardMixtureModel :: [M.Weight] -> Parser M.MixtureModel
-standardMixtureModel ws = do
+standardMixtureModel :: MixtureModelGlobalNormalization -> [M.Weight] -> Parser M.MixtureModel
+standardMixtureModel nz ws = do
   _ <- string "MIXTURE"
   _ <- char mmStart
-  sms <- parseSubstitutionModel `sepBy1` char separator
+  sms <- parseSubstitutionModel subNz `sepBy1` char separator
   _ <- char mmEnd
   -- XXX: The use of `Data.List.NonEmpty.fromList` leads to uninformative error messages.
-  return $ M.fromSubstitutionModels "MIXTURE" (V.fromList ws) (V.fromList sms)
+  return $ M.fromSubstitutionModels "MIXTURE" mmNz (V.fromList ws) (V.fromList sms)
+  where
+    (subNz, mmNz) = case nz of
+      GlobalNormalization -> (S.DoNotNormalize, S.DoNormalize)
+      LocalNormalization -> (S.DoNormalize, S.DoNotNormalize)
 
-mixtureModel ::
-  Maybe [EDMComponent] -> Maybe [M.Weight] -> Parser M.MixtureModel
-mixtureModel Nothing Nothing =
-  try (cxxModel Nothing) <|> fail "No weights provided."
-mixtureModel Nothing mws@(Just ws) =
-  try (cxxModel mws) <|> standardMixtureModel ws
-mixtureModel (Just cs) mws = edmModel cs mws
+mixtureModel :: MixtureModelGlobalNormalization -> Maybe [EDMComponent] -> Maybe [M.Weight] -> Parser M.MixtureModel
+mixtureModel nz Nothing Nothing = try (cxxModel nz Nothing) <|> fail "No weights provided."
+mixtureModel nz Nothing mws@(Just ws) = try (cxxModel nz mws) <|> standardMixtureModel nz ws
+mixtureModel nz (Just cs) mws = edmModel nz cs mws
 
 -- | Parse the phylogenetic model string. The argument list is somewhat long,
 -- but models can have many parameters and we have to check for redundant
@@ -206,26 +211,21 @@ mixtureModel (Just cs) mws = edmModel cs mws
 getPhyloModel ::
   Maybe String ->
   Maybe String ->
+  MixtureModelGlobalNormalization ->
   Maybe [M.Weight] ->
   Maybe [EDMComponent] ->
   Either String P.PhyloModel
-getPhyloModel Nothing Nothing _ _ = Left "No model was given. See help."
-getPhyloModel (Just _) (Just _) _ _ =
+getPhyloModel Nothing Nothing _ _ _ = Left "No model was given. See help."
+getPhyloModel (Just _) (Just _) _ _ _ =
   Left "Both, substitution and mixture model string given; use only one."
-getPhyloModel (Just s) Nothing Nothing Nothing =
-  Right $
-    P.SubstitutionModel $
-      parseStringWith
-        parseSubstitutionModel
-        s
-getPhyloModel (Just _) Nothing (Just _) _ =
+getPhyloModel (Just s) Nothing nz Nothing Nothing
+  | nz == GlobalNormalization = Left "Global normalization not possible for substitution models."
+  | otherwise = Right $ P.SubstitutionModel $ parseStringWith (parseSubstitutionModel S.DoNormalize) s
+getPhyloModel (Just _) Nothing _ (Just _) _ =
   Left "Weights given; but cannot be used with substitution model."
-getPhyloModel (Just _) Nothing _ (Just _) =
-  Left
-    "Empirical distribution mixture model components given; but cannot be used with substitution model."
-getPhyloModel Nothing (Just m) mws mcs =
-  Right $
-    P.MixtureModel $
-      parseStringWith
-        (mixtureModel mcs mws)
-        m
+getPhyloModel (Just _) Nothing _ _ (Just _) =
+  let msg1 = "Empirical distribution mixture model components given;"
+      msg2 = " but cannot be used with substitution model."
+   in Left $ msg1 <> msg2
+getPhyloModel Nothing (Just m) nz mws mcs =
+  Right $ P.MixtureModel $ parseStringWith (mixtureModel nz mcs mws) m

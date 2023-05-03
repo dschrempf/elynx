@@ -69,8 +69,7 @@ matrixSetDiagToZero m = m - diag (takeDiag m)
 totalRateWith :: StationaryDistribution -> RateMatrix -> Double
 totalRateWith d m = norm_1 $ d <# matrixSetDiagToZero m
 
--- | Get average number of substitutions per unit time (reciprocal value of
--- normalization constant).
+-- | Get average number of substitutions per unit time.
 totalRate :: RateMatrix -> Double
 totalRate m = totalRateWith (getStationaryDistribution m) m
 

@@ -368,12 +368,12 @@ lgStatDist :: StationaryDistribution
 lgStatDist = pamlToAlphaVec lgStatDistPaml
 
 -- | LG substitution model.
-lg :: SubstitutionModel
-lg = substitutionModel Protein "LG" [] lgStatDist lgExch
+lg :: Normalize -> SubstitutionModel
+lg nz = substitutionModel Protein "LG" [] nz lgStatDist lgExch
 
 -- | LG substitution model with maybe a name and a custom stationary distribution.
-lgCustom :: Maybe String -> StationaryDistribution -> SubstitutionModel
-lgCustom mnm d = substitutionModel Protein nm [] d lgExch
+lgCustom :: Maybe String -> Normalize -> StationaryDistribution -> SubstitutionModel
+lgCustom mnm nz d = substitutionModel Protein nm [] nz d lgExch
   where
     nm = fromMaybe "LG-Custom" mnm
 
@@ -608,12 +608,12 @@ wagStatDist :: StationaryDistribution
 wagStatDist = pamlToAlphaVec wagStatDistPaml
 
 -- | LG substitution model.
-wag :: SubstitutionModel
-wag = substitutionModel Protein "WAG" [] wagStatDist wagExch
+wag :: Normalize -> SubstitutionModel
+wag nz = substitutionModel Protein "WAG" [] nz wagStatDist wagExch
 
 -- | LG substitution model with maybe a name and a custom stationary distribution.
-wagCustom :: Maybe String -> StationaryDistribution -> SubstitutionModel
-wagCustom mnm d = substitutionModel Protein nm [] d wagExch
+wagCustom :: Maybe String -> Normalize -> StationaryDistribution -> SubstitutionModel
+wagCustom mnm nz d = substitutionModel Protein nm [] nz d wagExch
   where
     nm = fromMaybe "WAG-Custom" mnm
 
@@ -631,17 +631,17 @@ uniformVec :: Vector Double
 uniformVec = V.replicate n (1 / fromIntegral n)
 
 -- | Poisson substitution model.
-poisson :: SubstitutionModel
-poisson = substitutionModel Protein "Poisson" [] uniformVec poissonExch
+poisson :: Normalize -> SubstitutionModel
+poisson nz = substitutionModel Protein "Poisson" [] nz uniformVec poissonExch
 
 -- | Poisson substitution model with maybe a name and a custom stationary distribution.
-poissonCustom :: Maybe String -> StationaryDistribution -> SubstitutionModel
-poissonCustom mnm d = substitutionModel Protein nm [] d poissonExch
+poissonCustom :: Maybe String -> Normalize -> StationaryDistribution -> SubstitutionModel
+poissonCustom mnm nz d = substitutionModel Protein nm [] nz d poissonExch
   where
     nm = fromMaybe "Poisson-Custom" mnm
 
 -- | General time reversible (GTR) substitution model for amino acids.
-gtr20 :: [Double] -> StationaryDistribution -> SubstitutionModel
-gtr20 es d = substitutionModel Protein "GTR" es d e
+gtr20 :: Normalize -> [Double] -> StationaryDistribution -> SubstitutionModel
+gtr20 nz es d = substitutionModel Protein "GTR" es nz d e
   where
     e = exchFromListUpper n es

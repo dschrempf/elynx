@@ -64,15 +64,32 @@ getWeights = V.map weight . components
 getSubstitutionModels :: MixtureModel -> V.Vector S.SubstitutionModel
 getSubstitutionModels = V.map substModel . components
 
+normalizeGlobally :: V.Vector Weight -> V.Vector S.SubstitutionModel -> V.Vector S.SubstitutionModel
+normalizeGlobally ws ss = V.map (S.scale $ recip c) ss
+  where
+    cks = V.map S.totalRate ss
+    c = V.sum $ V.zipWith (*) ws cks
+
 -- | Create a mixture model from a list of substitution models.
-fromSubstitutionModels :: S.Name -> V.Vector Weight -> V.Vector S.SubstitutionModel -> MixtureModel
-fromSubstitutionModels n ws sms
+--
+-- If 'S.Normalize' is 'S.DoNormalize', globally normalize the mixture model.
+-- Global normalization has no effect if all components are already normalized.
+fromSubstitutionModels ::
+  S.Name ->
+  S.Normalize ->
+  V.Vector Weight ->
+  V.Vector S.SubstitutionModel ->
+  MixtureModel
+fromSubstitutionModels n nz ws sms
   | null ws = error "fromSubstitutionModels: No weights given."
   | length ws /= length sms = error "fromSubstitutionModels: Number of weights and substitution models does not match."
   | not $ allEqual alphs = error "fromSubstitutionModels: alphabets of substitution models are not equal."
   | otherwise = MixtureModel n (V.head alphs) comps
   where
-    comps = V.zipWith Component ws sms
+    smsNormalized = case nz of
+      S.DoNormalize -> normalizeGlobally ws sms
+      S.DoNotNormalize -> sms
+    comps = V.zipWith Component ws smsNormalized
     alphs = V.map S.alphabet sms
     allEqual xs
       | V.null xs = True
@@ -80,7 +97,7 @@ fromSubstitutionModels n ws sms
 
 -- | Concatenate mixture models.
 concatenate :: S.Name -> V.Vector MixtureModel -> MixtureModel
-concatenate n mms = fromSubstitutionModels n ws sms
+concatenate n mms = fromSubstitutionModels n S.DoNotNormalize ws sms
   where
     comps = V.concatMap components mms
     ws = V.map weight comps
