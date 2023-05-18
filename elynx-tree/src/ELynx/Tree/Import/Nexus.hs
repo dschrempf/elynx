@@ -36,7 +36,7 @@ trees f = Block "TREES" (some $ namedNewick f)
 namedNewick :: NewickFormat -> Parser (BS.ByteString, Tree Phylo Name)
 namedNewick f = do
   _ <- skipWhile isSpace
-  _ <- stringCI "TREE" <?> "namedNewickTreeStart"
+  _ <- (stringCI "TREE" <|> stringCI "UTREE") <?> "namedNewickTreeStart"
   _ <- skipWhile isSpace
   n <- takeWhile1 (\x -> isAlpha_ascii x || isDigit x) <?> "namedNewickTreeName"
   _ <- skipWhile isSpace
