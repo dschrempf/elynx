@@ -129,9 +129,12 @@ branched = (<?> "branched") $ do
   p <- phylo
   return $ Node p n f
 
+forestSep :: Parser ()
+forestSep = char ',' *> skipWhile isSpace
+
 -- A 'forest' is a set of trees separated by @,@ and enclosed by parentheses.
 forest :: Parser (Forest Phylo Name)
-forest = char '(' *> (tree `sepBy1` char ',') <* char ')' <?> "forest"
+forest = char '(' *> (tree `sepBy1` forestSep) <* char ')' <?> "forest"
 
 -- A 'leaf' has a 'name' and a 'phylo' branch.
 leaf :: Parser (Tree Phylo Name)
@@ -161,7 +164,7 @@ nameQuoted = (<?> "nameQuotes") $ do
 -- A name can be any string of printable characters except blanks, colons,
 -- semicolons, parentheses, and square brackets (and commas).
 name :: Parser Name
-name = nameQuoted <|> nameNotQuoted <?> "name"
+name = skipWhile isSpace *> (nameQuoted <|> nameNotQuoted) <?> "name"
 
 phylo :: Parser Phylo
 phylo = Phylo <$> optional branchLengthStandard <*> optional branchSupportStandard <?> "phylo"
@@ -177,7 +180,9 @@ branchLengthSimple = (<?> "branchLengthSimple") $ do
 -- Branch length.
 branchLengthStandard :: Parser Length
 branchLengthStandard = do
+  _ <- skipWhile isSpace
   _ <- char ':' <?> "branchLengthDelimiter"
+  _ <- skipWhile isSpace
   branchLengthSimple
 
 branchSupportSimple :: Parser Support
@@ -218,7 +223,7 @@ branchedIqTree = (<?> "branchedIqTree") $ do
 forestIqTree :: Parser (Forest Phylo Name)
 forestIqTree = (<?> "forestIqTree") $ do
   _ <- char '('
-  f <- treeIqTree `sepBy1` char ','
+  f <- treeIqTree `sepBy1` forestSep
   _ <- char ')'
   return f
 
@@ -256,7 +261,7 @@ branchedRevBayes = (<?> "branchedRevgBayes") $ do
 forestRevBayes :: Parser (Forest Phylo Name)
 forestRevBayes = (<?> "forestRevBayes") $ do
   _ <- char '('
-  f <- treeRevBayes `sepBy1` char ','
+  f <- treeRevBayes `sepBy1` forestSep
   _ <- char ')'
   return f
 
