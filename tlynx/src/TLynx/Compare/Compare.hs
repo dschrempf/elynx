@@ -30,6 +30,7 @@ import ELynx.Tools.Environment
 import ELynx.Tools.Logger
 import ELynx.Tools.Options
 import ELynx.Tree
+import Graphics.Gnuplot.Simple
 import System.IO
 import TLynx.Compare.Options
 import TLynx.Parsers
@@ -230,16 +231,14 @@ analyzeBipartitions outH t1 t2 =
           case bn of
             Nothing ->
               logInfoS "No output file name provided. Do not generate plots."
-            -- Just fn -> do
-            --   let compareCommonBps =
-            --         [ (bpToBrLen1 M.! b, bpToBrLen2 M.! b)
-            --           | b <- S.toList bpCommon
-            --         ]
-            --   liftIO $ epspdfPlot fn (plotBps compareCommonBps)
-            --   logInfoS
-            --     "Comparison of branch lengths plot generated (EPS and PDF)"
-            Just _ -> do
-              logInfoS "No plot generated (no Gnuplot with GHC 9.2.1)"
+            Just fn -> do
+              let compareCommonBps =
+                    [ (bpToBrLen1 M.! b, bpToBrLen2 M.! b)
+                      | b <- S.toList bpCommon
+                    ]
+              liftIO $ epspdfPlot fn (plotBps compareCommonBps)
+              logInfoS
+                "Comparison of branch lengths plot generated (EPS and PDF)"
     _ -> logWarnS "Not all branches have a length! Can not analyze bipartitions."
 
 header :: String
@@ -272,22 +271,19 @@ getCommonBpStr m1 m2 p =
     rd = 2 * d / (l1 + l2)
     s = bpHuman p
 
--- -- NOTE: I removed the plotting functionality because Gnuplot does not
--- -- support GHC 9.2.1.
---
--- plotBps :: [(Double, Double)] -> [Attribute] -> IO ()
--- plotBps xs as = plotPathsStyle as' [(ps1, xs), (ps2, line)]
---   where
---     as' =
---       as
---         ++ [ Title "Comparison of branch lengths of common branches",
---              XLabel "Branch lengths, tree 1",
---              YLabel "Branch lengths, tree 2"
---            ]
---     ps1 = PlotStyle Points (DefaultStyle 1)
---     -- m = minimum $ map fst xs ++ map snd xs
---     mx = maximum $ map fst xs
---     my = maximum $ map snd xs
---     m = min mx my
---     line = [(0, 0), (m, m)]
---     ps2 = PlotStyle Lines (DefaultStyle 1)
+plotBps :: [(Double, Double)] -> [Attribute] -> IO ()
+plotBps xs as = plotPathsStyle as' [(ps1, xs), (ps2, line)]
+  where
+    as' =
+      as
+        ++ [ Title "Comparison of branch lengths of common branches",
+             XLabel "Branch lengths, tree 1",
+             YLabel "Branch lengths, tree 2"
+           ]
+    ps1 = PlotStyle Points (DefaultStyle 1)
+    -- m = minimum $ map fst xs ++ map snd xs
+    mx = maximum $ map fst xs
+    my = maximum $ map snd xs
+    m = min mx my
+    line = [(0, 0), (m, m)]
+    ps2 = PlotStyle Lines (DefaultStyle 1)

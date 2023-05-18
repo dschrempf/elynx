@@ -56,6 +56,7 @@ library
     , data-default-class
     , elynx-tools
     , elynx-tree
+    , gnuplot
     , optparse-applicative
     , parallel
     , random

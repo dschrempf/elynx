@@ -70,6 +70,8 @@
               hpkgs.cabal-fmt
               hpkgs.cabal-install
               hpkgs.haskell-language-server
+
+              gnuplot
             ];
             buildInputs = with pkgs; [
             ];
