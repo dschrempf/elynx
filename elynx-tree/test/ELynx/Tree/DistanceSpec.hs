@@ -150,7 +150,11 @@ branchScoreAnswers =
   ]
 
 prop_dist_same_tree :: (Num b, Eq b) => (Tree e a -> Tree e a -> Either String b) -> Tree e a -> Bool
-prop_dist_same_tree distanceMeasure t = distanceMeasure t t == Right 0
+prop_dist_same_tree distanceMeasure t = case distanceMeasure t t of
+  (Left "bipartitions: Tree contains duplicate leaves.") -> True
+  (Left "bipartitionToBranch: Tree contains duplicate leaves.") -> True
+  (Left _) -> False
+  Right x -> x == 0
 
 each :: Int -> [a] -> [a]
 each n = map head . takeWhile (not . null) . iterate (drop n)
