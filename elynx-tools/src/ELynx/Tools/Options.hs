@@ -224,26 +224,26 @@ createCommand nm dsc ftr p f = command nm $ f <$> parserInfo dsc' ftr' p
 -- Fill a string so that it becomes a paragraph with line breaks. Useful for
 -- descriptions, headers and footers.
 fillParagraph :: String -> Doc
-fillParagraph = fillSep . map text . words
+fillParagraph = fillSep . map pretty . words
 
 -- | Global ELynx footer.
 elynxFooter :: [Doc]
 elynxFooter =
-  [ empty,
-    text "ELynx",
-    text "-----",
+  [ mempty,
+    pretty "ELynx",
+    pretty "-----",
     fillParagraph
       "A Haskell library and tool set for computational biology. The goal of ELynx is reproducible research. Evolutionary sequences and phylogenetic trees can be read, viewed, modified and simulated. The command line with all arguments is logged consistently, and automatically. Data integrity is verified using SHA256 sums so that validation of past analyses is possible without the need to recompute the result.",
-    empty,
-    fill 9 (text "slynx")
-      <+> text "Analyze, modify, and simulate evolutionary sequences.",
-    fill 9 (text "tlynx")
-      <+> text "Analyze, modify, and simulate phylogenetic trees.",
-    fill 9 (text "elynx") <+> text "Validate and redo past analyses.",
-    empty,
-    text "Get help for commands:",
-    text "  slynx --help",
-    empty,
-    text "Get help for sub commands:",
-    text "  slynx examine --help"
+    mempty,
+    fill 9 (pretty "slynx")
+      <+> pretty "Analyze, modify, and simulate evolutionary sequences.",
+    fill 9 (pretty "tlynx")
+      <+> pretty "Analyze, modify, and simulate phylogenetic trees.",
+    fill 9 (pretty "elynx") <+> pretty "Validate and redo past analyses.",
+    mempty,
+    pretty "Get help for commands:",
+    pretty "  slynx --help",
+    mempty,
+    pretty "Get help for sub commands:",
+    pretty "  slynx examine --help"
   ]
