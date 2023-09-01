@@ -41,13 +41,13 @@ library
   build-depends:
     , aeson
     , attoparsec
-    , base                  >=4.7      && <5
+    , base                  >=4.7 && <5
     , base16-bytestring
     , bytestring
     , cryptohash-sha256
     , directory
     , hmatrix
-    , optparse-applicative  >=0.18.1.0 && <1.0
+    , optparse-applicative
     , random
     , template-haskell
     , time
