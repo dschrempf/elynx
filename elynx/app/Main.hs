@@ -56,7 +56,7 @@ parseAllR p _ =
           ]
    in error err
 
-parse :: Show a => [String] -> Parser a -> a
+parse :: (Show a) => [String] -> Parser a -> a
 parse s p =
   fromMaybe
     (error $ "parse: could not parse command line arguments: " ++ show s)
@@ -110,7 +110,7 @@ checkVersion v =
             "Version of current executable: " ++ show version
           ]
 
-checkHash :: Reproducible a => Reproduction a -> Either String ()
+checkHash :: (Reproducible a) => Reproduction a -> Either String ()
 checkHash r =
   if h == h'
     then Right ()
