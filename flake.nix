@@ -23,7 +23,7 @@
         "slynx"
         "tlynx"
       ];
-      thisGhcVersion = "ghc92";
+      thisGhcVersion = "ghc94";
       hMkPackage = h: n: h.callCabal2nix n (./. + "/${n}") { };
       hOverlay = selfn: supern: {
         haskell = supern.haskell // {
