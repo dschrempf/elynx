@@ -75,6 +75,7 @@
               gnuplot
             ];
             buildInputs = with pkgs; [
+              ormolu
             ];
             doBenchmark = true;
             # withHoogle = true;
