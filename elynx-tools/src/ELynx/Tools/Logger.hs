@@ -82,7 +82,7 @@ msgPrepare :: BL.ByteString -> BL.ByteString -> BL.ByteString
 msgPrepare pref msg = BL.intercalate "\n" $ map (BL.append pref) $ BL.lines msg
 
 -- Make sure that concurrent output is not scrambled.
-atomicAction :: HasLock e => IO () -> Logger e ()
+atomicAction :: (HasLock e) => IO () -> Logger e ()
 atomicAction a = do
   l <- reader getLock
   liftIO $ withMVar l (const a)
@@ -181,7 +181,7 @@ renderDuration dt = hTxt <> mTxt <> sTxt
     renderDecimal n = alignRightWithNoTrim '0' 2 $ BB.toLazyByteString $ BB.intDec n
 
 -- Render a time stamp.
-renderTime :: FormatTime t => t -> String
+renderTime :: (FormatTime t) => t -> String
 renderTime = formatTime defaultTimeLocale "%B %-e, %Y, at %H:%M %P, %Z."
 
 -- | Log header.

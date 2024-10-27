@@ -46,7 +46,7 @@ prettyRow name val = alignLeft 33 n <> alignRight 8 v
     v = BL.pack val
 
 -- | Examine branches of a tree.
-summarizeLengths :: HasLength e => Tree e a -> BL.ByteString
+summarizeLengths :: (HasLength e) => Tree e a -> BL.ByteString
 summarizeLengths t =
   BL.intercalate
     "\n"
@@ -73,7 +73,7 @@ countElements = foldl' f M.empty
     g Nothing = Just 1
     g (Just x) = Just $ x + 1
 
-examineTree :: HasName a => Handle -> Tree Phylo a -> IO ()
+examineTree :: (HasName a) => Handle -> Tree Phylo a -> IO ()
 examineTree h t = do
   hPutStrLn h $ "Number of leaves: " ++ show (length lvs)
   hPutStrLn h $ "Degree of root node: " ++ show (degree t)

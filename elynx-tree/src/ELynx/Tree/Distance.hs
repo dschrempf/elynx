@@ -41,7 +41,7 @@ import ELynx.Tree.Partition
 import ELynx.Tree.Rooted
 
 -- Symmetric difference between two 'Set's.
-symmetricDifference :: Ord a => Set a -> Set a -> Set a
+symmetricDifference :: (Ord a) => Set a -> Set a -> Set a
 symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
 
 -- | Symmetric (Robinson-Foulds) distance between two trees.
@@ -52,7 +52,7 @@ symmetricDifference xs ys = S.difference xs ys `S.union` S.difference ys xs
 -- Return 'Nothing' if the trees contain different leaves.
 --
 -- XXX: Comparing a list of trees recomputes bipartitions.
-symmetric :: Ord a => Tree e1 a -> Tree e2 a -> Either String Int
+symmetric :: (Ord a) => Tree e1 a -> Tree e2 a -> Either String Int
 symmetric t1 t2
   | S.fromList (leaves t1) /= S.fromList (leaves t2) =
       Left "symmetric: Trees contain different leaves."

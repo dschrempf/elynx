@@ -59,7 +59,7 @@ branchFoldMap f op (Node br _ ts) = foldl' op (f br) $ map (branchFoldMap f op) 
 -- @
 
 -- | Map and fold over branches. Evaluate the sub trees up to given layer in parallel.
-parBranchFoldMap :: NFData f => Int -> (e -> f) -> (f -> f -> f) -> Tree e a -> f
+parBranchFoldMap :: (NFData f) => Int -> (e -> f) -> (f -> f -> f) -> Tree e a -> f
 parBranchFoldMap n f op t@(Node br _ ts)
   | n >= 1 = foldl' op (f br) (map (parBranchFoldMap (n - 1) f op) ts `using` myParList rdeepseq)
   | otherwise = branchFoldMap f op t
@@ -68,7 +68,7 @@ nodeFoldMap :: (a -> b) -> (b -> b -> b) -> Tree e a -> b
 nodeFoldMap f op (Node _ lb ts) = foldl' op (f lb) $ map (nodeFoldMap f op) ts
 
 -- | Map and fold over labels. Evaluate the sub trees up to given layer in parallel.
-parLabelFoldMap :: NFData b => Int -> (a -> b) -> (b -> b -> b) -> Tree e a -> b
+parLabelFoldMap :: (NFData b) => Int -> (a -> b) -> (b -> b -> b) -> Tree e a -> b
 parLabelFoldMap n f op t@(Node _ lb ts)
   | n >= 1 = foldl' op (f lb) (map (parLabelFoldMap (n - 1) f op) ts `using` myParList rdeepseq)
   | otherwise = nodeFoldMap f op t

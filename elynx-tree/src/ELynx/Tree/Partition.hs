@@ -56,17 +56,17 @@ newtype Partition a = Partition
   deriving (Eq, Ord, Show, Read)
 
 -- | Create a partition.
-pt :: Ord a => [Set a] -> Either String (Partition a)
+pt :: (Ord a) => [Set a] -> Either String (Partition a)
 pt xs = case filter (not . S.null) xs of
   [] -> Left "pt: Empty list."
   xs' -> Right $ ptUnsafe xs'
 
 -- | Create a partition.
-ptUnsafe :: Ord a => [Set a] -> Partition a
+ptUnsafe :: (Ord a) => [Set a] -> Partition a
 ptUnsafe xs = Partition (S.fromList xs)
 
 -- | Convert a bipartition to a partition.
-bpToPt :: Ord a => Bipartition a -> Partition a
+bpToPt :: (Ord a) => Bipartition a -> Partition a
 bpToPt = ptUnsafe . tupleToList . fromBipartition
   where
     -- Be careful with tuples, because 'toList' does something very weird. It only
@@ -77,12 +77,12 @@ bpToPt = ptUnsafe . tupleToList . fromBipartition
 
 -- | Show a partition in a human readable form. Use a provided function to
 -- extract the valuable information.
-ptHuman :: Show a => Partition a -> String
+ptHuman :: (Show a) => Partition a -> String
 ptHuman (Partition xs) =
   "(" ++ intercalate "|" (map setShow (S.toList xs)) ++ ")"
 
 -- Show the elements of a set in a human readable format.
-setShow :: Show a => Set a -> String
+setShow :: (Show a) => Set a -> String
 setShow = intercalate "," . map show . S.toList
 
 -- | Get partition defined by the root of the tree.
@@ -90,7 +90,7 @@ setShow = intercalate "," . map show . S.toList
 -- Return 'Left' if:
 -- - the tree is a leaf;
 -- - the tree contains duplicate leaves.
-partition :: Ord a => Tree e a -> Either String (Partition a)
+partition :: (Ord a) => Tree e a -> Either String (Partition a)
 partition (Node _ _ []) = Left "partition: Encountered a leaf."
 partition t@(Node _ _ ts)
   | duplicateLeaves t = Left "partition: Tree contains duplicate leaves."
@@ -99,13 +99,13 @@ partition t@(Node _ _ ts)
 -- | Get all 'Partition's of a tree.
 --
 -- Return 'Left' if tree contains duplicate leaves.
-partitions :: Ord a => Tree e a -> Either String (Set (Partition a))
+partitions :: (Ord a) => Tree e a -> Either String (Set (Partition a))
 partitions t
   | duplicateLeaves t = Left "partitions: Tree contains duplicate leaves."
   | otherwise = Right $ partitions' S.empty $ S.fromList <$> groups t
 
 -- See 'partitions', but do not check if leaves are unique.
-partitions' :: Ord a => Set a -> Tree e (Set a) -> Set (Partition a)
+partitions' :: (Ord a) => Set a -> Tree e (Set a) -> Set (Partition a)
 partitions' _ (Node _ _ []) = S.empty
 partitions' p t@(Node _ _ ts) =
   S.unions $
@@ -134,5 +134,5 @@ compatible l r = S.null (S.filter (`remove` rs) ls) || S.null (S.filter (`remove
     ls = fromPartition l
     rs = fromPartition r
 
-remove :: Ord a => Set a -> Set (Set a) -> Bool
+remove :: (Ord a) => Set a -> Set (Set a) -> Bool
 remove s = not . any (s `S.isSubsetOf`)

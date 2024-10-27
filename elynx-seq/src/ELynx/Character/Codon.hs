@@ -50,7 +50,7 @@ convert (Codon (x, y, z)) = Codon (C.convert x, C.convert y, C.convert z)
 
 -- | Unsafe conversion from vector with at least three elements; only the first
 -- three elements are used, the rest is discarded.
-fromVecUnsafe :: V.Vector v a => v a -> Codon a
+fromVecUnsafe :: (V.Vector v a) => v a -> Codon a
 fromVecUnsafe xs =
   Codon (V.head xs, V.head . V.tail $ xs, V.head . V.tail . V.tail $ xs)
 
@@ -63,16 +63,16 @@ instance FromJSON UniversalCode
 instance ToJSON UniversalCode
 
 -- It is important that the map is lazy, because some keys have errors as values.
-mapFromLists :: Ord a => [a] -> [a] -> [a] -> [b] -> M.Map (Codon a) b
+mapFromLists :: (Ord a) => [a] -> [a] -> [a] -> [b] -> M.Map (Codon a) b
 mapFromLists xs ys zs as =
   M.fromList $ zipWith4 (\f s t a -> (Codon (f, s, t), a)) xs ys zs as
 
-nucs :: Enum a => [a]
+nucs :: (Enum a) => [a]
 nucs = map toEnum [3, 1, 0, 2] -- Order T, C, A , G.
 
 -- Permutation of the triplets PLUS GAPS! I avoid 'Z' because I do not want to
 -- translate DNAI.
-base1, base2, base3 :: Enum a => [a]
+base1, base2, base3 :: (Enum a) => [a]
 base1 = [n | n <- nucs, _ <- [0 .. 3 :: Int], _ <- [0 .. 3 :: Int]]
 -- base1 = "TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG" ++ "-."
 base2 = [n | _ <- [0 .. 3 :: Int], n <- nucs, _ <- [0 .. 3 :: Int]]

@@ -59,7 +59,7 @@ prop_BranchTree_fmap f t = first f t == getBranchTree (f <$> BranchTree t)
 -- Check that the Traversable instances of Tree and BranchTree work the same. I
 -- am pretty confident that the Traversable instance of Tree is correct, so this
 -- should be enough.
-prop_BranchTree_traversable :: Eq e => Tree e a -> Bool
+prop_BranchTree_traversable :: (Eq e) => Tree e a -> Bool
 prop_BranchTree_traversable t = identify t == bt
   where
     bt = flipLabels $ getBranchTree $ identify $ BranchTree $ flipLabels t
@@ -76,7 +76,7 @@ prop_zip t = flipLabels (getZipBranchTree zbt') == getZipTree znt'
     znt' = (,) <$> znt <*> znt
 
 -- Same as above but for zip trees.
-prop_ZipTrees_traversable :: Eq e => Tree e a -> Bool
+prop_ZipTrees_traversable :: (Eq e) => Tree e a -> Bool
 prop_ZipTrees_traversable t = (t' == zbt) && (t' == znt)
   where
     t' = identify t

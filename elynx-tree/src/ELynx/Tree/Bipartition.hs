@@ -85,7 +85,7 @@ newtype Bipartition a = Bipartition
 -- Ensure that the larger set comes first.
 --
 -- Return 'Left' if one set is empty.
-bp :: Ord a => Set a -> Set a -> Either String (Bipartition a)
+bp :: (Ord a) => Set a -> Set a -> Either String (Bipartition a)
 bp xs ys
   | S.null xs = Left "bp: Left set empty."
   | S.null ys = Left "bp: Right set empty."
@@ -94,11 +94,11 @@ bp xs ys
 -- | Create a bipartition from two sets.
 --
 -- Ensure that the larger set comes first.
-bpUnsafe :: Ord a => Set a -> Set a -> Bipartition a
+bpUnsafe :: (Ord a) => Set a -> Set a -> Bipartition a
 bpUnsafe xs ys = if xs >= ys then Bipartition (xs, ys) else Bipartition (ys, xs)
 
 -- | Conversion to a set containing both partitions.
-toSet :: Ord a => Bipartition a -> Set a
+toSet :: (Ord a) => Bipartition a -> Set a
 toSet (Bipartition (x, y)) = S.union x y
 
 -- I decided not to provide a human readable show instance because I need the
@@ -112,11 +112,11 @@ toSet (Bipartition (x, y)) = S.union x y
 
 -- | Show a bipartition in a human readable format. Use a provided function to
 -- extract information of interest.
-bpHuman :: Show a => Bipartition a -> String
+bpHuman :: (Show a) => Bipartition a -> String
 bpHuman (Bipartition (x, y)) = "(" ++ setShow x ++ "|" ++ setShow y ++ ")"
 
 -- Show the elements of a set in a human readable format.
-setShow :: Show a => Set a -> String
+setShow :: (Show a) => Set a -> String
 setShow = intercalate "," . map show . S.toList
 
 -- | For a bifurcating root, get the bipartition induced by the root node.
@@ -124,14 +124,14 @@ setShow = intercalate "," . map show . S.toList
 -- Return 'Left' if
 -- - the root node is not bifurcating;
 -- - a leave set is empty.
-bipartition :: Ord a => Tree e a -> Either String (Bipartition a)
+bipartition :: (Ord a) => Tree e a -> Either String (Bipartition a)
 bipartition (Node _ _ [x, y]) = bp (S.fromList $ leaves x) (S.fromList $ leaves y)
 bipartition _ = Left "bipartition: Root node is not bifurcating."
 
 -- | Get all bipartitions of the tree.
 --
 -- Return 'Left' if the tree contains duplicate leaves.
-bipartitions :: Ord a => Tree e a -> Either String (Set (Bipartition a))
+bipartitions :: (Ord a) => Tree e a -> Either String (Set (Bipartition a))
 bipartitions t
   | duplicateLeaves t = Left "bipartitions: Tree contains duplicate leaves."
   | otherwise = Right $ bipartitions' S.empty $ S.fromList <$> groups t
@@ -154,7 +154,7 @@ getComplementaryLeaves p (Node _ _ ts) =
 
 -- See 'bipartitions', but do not check if leaves are unique, nor if
 -- bipartitions are valid.
-bipartitions' :: Ord a => Set a -> Tree e (Set a) -> Set (Bipartition a)
+bipartitions' :: (Ord a) => Set a -> Tree e (Set a) -> Set (Bipartition a)
 bipartitions' p (Node _ p' []) = either (const S.empty) S.singleton $ bp p p'
 bipartitions' p t@(Node _ p' ts) =
   S.unions $

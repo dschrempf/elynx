@@ -140,14 +140,14 @@ summarize :: Alignment -> BL.ByteString
 summarize a = header a <> S.body (toSequences a)
 
 -- Vertical concatenation.
-(===) :: V.Unbox a => M.Matrix a -> M.Matrix a -> M.Matrix a
+(===) :: (V.Unbox a) => M.Matrix a -> M.Matrix a -> M.Matrix a
 (===) l r = M.fromRows $ lRs ++ rRs
   where
     lRs = M.toRows l
     rRs = M.toRows r
 
 -- Horizontal concatenation.
-(|||) :: V.Unbox a => M.Matrix a -> M.Matrix a -> M.Matrix a
+(|||) :: (V.Unbox a) => M.Matrix a -> M.Matrix a -> M.Matrix a
 (|||) l r = M.fromColumns $ lCs ++ rCs
   where
     lCs = M.toColumns l
@@ -305,7 +305,7 @@ countUnknowns a = V.length . V.filter (A.isUnknown (alphabet a)) $ allChars
     allChars = M.flatten $ matrix a
 
 -- Sample the given sites from a matrix.
-subSampleMatrix :: V.Unbox a => [Int] -> M.Matrix a -> M.Matrix a
+subSampleMatrix :: (V.Unbox a) => [Int] -> M.Matrix a -> M.Matrix a
 subSampleMatrix is m =
   M.fromColumns $ foldl' (\a i -> M.takeColumn m i : a) [] (reverse is)
 
@@ -314,7 +314,7 @@ subSample :: [Int] -> Alignment -> Alignment
 subSample is a = a {matrix = m'} where m' = subSampleMatrix is $ matrix a
 
 -- | Randomly sample a given number of sites of the multi sequence alignment.
-randomSubSample :: StatefulGen g m => Int -> Alignment -> g -> m Alignment
+randomSubSample :: (StatefulGen g m) => Int -> Alignment -> g -> m Alignment
 randomSubSample n a g = do
   let l = length a
   is <- replicateM n $ uniformRM (0, l - 1) g

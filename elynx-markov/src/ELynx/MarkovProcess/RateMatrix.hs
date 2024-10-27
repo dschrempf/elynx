@@ -173,7 +173,7 @@ ijToKUpper n i j
 
 -- The function is a little weird because HMatrix uses Double indices for Matrix
 -- Double builders.
-fromListBuilderLower :: RealFrac a => [a] -> a -> a -> a
+fromListBuilderLower :: (RealFrac a) => [a] -> a -> a -> a
 fromListBuilderLower es i j
   | i > j = es !! ijToKLower iI jI
   | i == j = 0.0
@@ -187,7 +187,7 @@ fromListBuilderLower es i j
 
 -- The function is a little weird because HMatrix uses Double indices for Matrix
 -- Double builders.
-fromListBuilderUpper :: RealFrac a => Int -> [a] -> a -> a -> a
+fromListBuilderUpper :: (RealFrac a) => Int -> [a] -> a -> a -> a
 fromListBuilderUpper n es i j
   | i < j = es !! ijToKUpper n iI jI
   | i == j = 0.0
@@ -199,7 +199,7 @@ fromListBuilderUpper n es i j
     iI = round i :: Int
     jI = round j :: Int
 
-checkEs :: RealFrac a => Int -> [a] -> [a]
+checkEs :: (RealFrac a) => Int -> [a] -> [a]
 checkEs n es
   | length es == nExp = es
   | otherwise = error eStr

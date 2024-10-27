@@ -51,17 +51,17 @@ doubleSumFoldl' = foldl' (+) 0
 doubleSum :: [Double] -> Double
 doubleSum = foldl' (+) 0
 
-fmapNormalFunctor :: HasLength a => Tree e a -> Tree e a
+fmapNormalFunctor :: (HasLength a) => Tree e a -> Tree e a
 fmapNormalFunctor = fmap (modifyLength cos)
 
-fmapFunctor :: HasLength e => Tree e a -> Tree e a
+fmapFunctor :: (HasLength e) => Tree e a -> Tree e a
 fmapFunctor = getZipBranchTree . fmap (modifyLength cos) . ZipBranchTree
 
-fmapBifunctor :: HasLength e => Tree e a -> Tree e a
+fmapBifunctor :: (HasLength e) => Tree e a -> Tree e a
 fmapBifunctor = first (modifyLength cos)
 
-totalBranchLengthFoldable :: HasLength e => Tree e a -> Length
+totalBranchLengthFoldable :: (HasLength e) => Tree e a -> Length
 totalBranchLengthFoldable = totalBranchLength
 
-totalBranchLengthBifoldable :: HasLength e => Tree e a -> Length
+totalBranchLengthBifoldable :: (HasLength e) => Tree e a -> Length
 totalBranchLengthBifoldable = bifoldl' (+) const 0 . first getLength

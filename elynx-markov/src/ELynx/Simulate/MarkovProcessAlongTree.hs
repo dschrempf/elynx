@@ -53,7 +53,7 @@ toProbTree :: RateMatrix -> Tree Double -> Tree ProbMatrix
 toProbTree q = fmap (probMatrix q)
 
 getRootStates ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   Int ->
   StationaryDistribution ->
   g ->
@@ -67,7 +67,7 @@ getRootStates n d g = replicateM n $ categorical d g
 -- XXX: Improve performance. Use vectors, not lists. I am actually not sure if
 -- this improves performance...
 simulateAndFlatten ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   Int ->
   StationaryDistribution ->
   ExchangeabilityMatrix ->
@@ -84,7 +84,7 @@ simulateAndFlatten n d e t g = do
 -- Recursively jump down the branches to the leafs. Forget states at internal
 -- nodes.
 simulateAndFlatten' ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   [State] ->
   Tree ProbMatrix ->
   g ->
@@ -97,7 +97,7 @@ simulateAndFlatten' is (Node p f) g = do
 
 -- | See 'simulateAndFlatten', parallel version.
 simulateAndFlattenPar ::
-  RandomGen g =>
+  (RandomGen g) =>
   Int ->
   StationaryDistribution ->
   ExchangeabilityMatrix ->
@@ -126,7 +126,7 @@ simulateAndFlattenPar n d e t g = do
 -- internal nodes. The result is a tree with the list of simulated states as
 -- node labels.
 simulate ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   Int ->
   StationaryDistribution ->
   ExchangeabilityMatrix ->
@@ -142,7 +142,7 @@ simulate n d e t g = do
 -- This is the heart of the simulation. Take a tree and a list of root states.
 -- Recursively jump down the branches to the leafs.
 simulate' ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   [State] ->
   Tree ProbMatrix ->
   g ->
@@ -159,7 +159,7 @@ toProbTreeMixtureModel qs =
   fmap (\a -> V.map (`probMatrix` a) qs)
 
 getComponentsAndRootStates ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   Int ->
   V.Vector Double ->
   V.Vector StationaryDistribution ->
@@ -174,7 +174,7 @@ getComponentsAndRootStates n ws ds g = do
 -- corresponding weights. Forget states at internal nodes. See also
 -- 'simulateAndFlatten'.
 simulateAndFlattenMixtureModel ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   Int ->
   V.Vector Double ->
   V.Vector StationaryDistribution ->
@@ -191,7 +191,7 @@ simulateAndFlattenMixtureModel n ws ds es t g = do
   return (cs, ss)
 
 simulateAndFlattenMixtureModel' ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   [State] ->
   [Int] ->
   Tree (V.Vector ProbMatrix) ->
@@ -216,7 +216,7 @@ getChunks c n = ns
 -- requires benchmarks. I am just not sure if it makes sense to spend more time
 -- on this since the parallelization itself is a bit weird. Like so, we walk
 -- along separate trees in each process.
-parComp :: RandomGen g => Int -> (Int -> IOGenM g -> IO b) -> IOGenM g -> IO [b]
+parComp :: (RandomGen g) => Int -> (Int -> IOGenM g -> IO b) -> IOGenM g -> IO [b]
 parComp num fun gen = do
   ncap <- getNumCapabilities
   let chunks = getChunks ncap num
@@ -226,7 +226,7 @@ parComp num fun gen = do
 
 -- | See 'simulateAndFlattenMixtureModel', parallel version.
 simulateAndFlattenMixtureModelPar ::
-  RandomGen g =>
+  (RandomGen g) =>
   Int ->
   V.Vector Double ->
   V.Vector StationaryDistribution ->
@@ -255,7 +255,7 @@ simulateAndFlattenMixtureModelPar n ws ds es t g = do
 -- corresponding weights. Keep states at internal nodes. See also
 -- 'simulate'.
 simulateMixtureModel ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   Int ->
   V.Vector Double ->
   V.Vector StationaryDistribution ->
@@ -272,7 +272,7 @@ simulateMixtureModel n ws ds es t g = do
 -- See 'simulateAlongProbTree', only we have a number of mixture components. The
 -- starting states and the components for each site have to be provided.
 simulateMixtureModel' ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   [State] ->
   [Int] ->
   Tree (V.Vector ProbMatrix) ->

@@ -137,11 +137,11 @@ data Arguments a = Arguments
   }
   deriving (Eq, Show, Generic)
 
-instance FromJSON a => FromJSON (Arguments a)
+instance (FromJSON a) => FromJSON (Arguments a)
 
-instance ToJSON a => ToJSON (Arguments a)
+instance (ToJSON a) => ToJSON (Arguments a)
 
-instance Reproducible a => Reproducible (Arguments a) where
+instance (Reproducible a) => Reproducible (Arguments a) where
   inFiles = inFiles . local
   outSuffixes = outSuffixes . local
   getSeed = getSeed . local
@@ -171,7 +171,7 @@ elynxParser p = helper <*> versionOpt <*> p
 -- | Parse arguments. Provide a global description, header, footer, and so on.
 -- Custom additional description (first argument) and footer (second argument)
 -- can be provided. print help if needed.
-parseArguments :: forall a. Reproducible a => IO (Arguments a)
+parseArguments :: forall a. (Reproducible a) => IO (Arguments a)
 parseArguments =
   execParser $
     elynxParserInfo (cmdDsc @a) (cmdFtr @a) (argumentsParser $ parser @a)
@@ -194,7 +194,7 @@ parserInfo dsc ftr p =
 
 -- | Create a command; convenience function.
 createCommandReproducible ::
-  forall a b. Reproducible a => (a -> b) -> Mod CommandFields b
+  forall a b. (Reproducible a) => (a -> b) -> Mod CommandFields b
 createCommandReproducible f =
   command (cmdName @a) $
     f

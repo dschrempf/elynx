@@ -40,7 +40,7 @@ instance Arbitrary1 Topology where
           rest <- arbPartition $ k - first
           return $ first : rest
 
-instance Arbitrary a => Arbitrary (Topology a) where
+instance (Arbitrary a) => Arbitrary (Topology a) where
   arbitrary = arbitrary1
 
 instance (CoArbitrary a) => CoArbitrary (Topology a) where

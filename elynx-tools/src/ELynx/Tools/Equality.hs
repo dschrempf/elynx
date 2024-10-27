@@ -32,7 +32,7 @@ import ELynx.Tools.Definitions
 import Numeric.LinearAlgebra
 
 -- | Test if all elements of a list are equal; returns True for empty list.
-allEqual :: Eq a => [a] -> Bool
+allEqual :: (Eq a) => [a] -> Bool
 -- Well, maybe it should be False, but then, it is True that all elements are
 -- equal :).
 allEqual [] = True

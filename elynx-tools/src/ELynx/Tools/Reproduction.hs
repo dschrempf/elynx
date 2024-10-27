@@ -75,7 +75,7 @@ class Reproducible a where
   cmdFtr = []
 
 -- | A unique hash of the reproduction data type.
-getReproductionHash :: forall a. Reproducible a => Reproduction a -> String
+getReproductionHash :: forall a. (Reproducible a) => Reproduction a -> String
 getReproductionHash r =
   BS.unpack $
     encode $
@@ -97,7 +97,7 @@ getReproductionHash r =
   where
     ri = reproducible r
 
-setHash :: Reproducible a => Reproduction a -> Reproduction a
+setHash :: (Reproducible a) => Reproduction a -> Reproduction a
 setHash r = r {rHash = Just h} where h = getReproductionHash r
 
 -- | Necessary information for a reproducible run. Notably, the input files are
@@ -119,9 +119,9 @@ data Reproduction a = Reproduction
   }
   deriving (Generic)
 
-instance FromJSON a => FromJSON (Reproduction a)
+instance (FromJSON a) => FromJSON (Reproduction a)
 
-instance ToJSON a => ToJSON (Reproduction a)
+instance (ToJSON a) => ToJSON (Reproduction a)
 
 -- | Helper function.
 hashFile :: FilePath -> IO BS.ByteString

@@ -60,11 +60,11 @@ eps = 1e-12
 x =~= y = eps > abs (x - y)
 
 -- Sort a list and also return original indices.
-sortListWithIndices :: Ord a => [a] -> [(a, Int)]
+sortListWithIndices :: (Ord a) => [a] -> [(a, Int)]
 sortListWithIndices xs = sortBy (compare `on` fst) $ zip xs ([0 ..] :: [Int])
 
 -- Insert element into random position of list.
-randomInsertList :: StatefulGen g m => a -> [a] -> g -> m [a]
+randomInsertList :: (StatefulGen g m) => a -> [a] -> g -> m [a]
 randomInsertList e v g = do
   let l = length v
   i <- uniformRM (0, l) g
@@ -95,7 +95,7 @@ data TimeSpec
 -- | Sample a point process using the 'BirthDeathDistribution'. The names of the
 -- points will be integers.
 simulate ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   -- | Number of points (samples).
   Int ->
   -- | Time of origin or MRCA.
@@ -117,7 +117,7 @@ simulate n ts l m g
 -- No time of origin given. We also don't need to take care of the conditioning
 -- (origin or MRCA).
 simulateRandom ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   Int ->
   Double ->
   Double ->
@@ -149,7 +149,7 @@ simulateRandom n l m g
 
 -- Time of origin is given.
 simulateOrigin ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   Int ->
   Time ->
   Double ->
@@ -178,7 +178,7 @@ simulateOrigin n t l m g
 
 -- Time of Mrca is given.
 simulateMrca ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   Int ->
   Time ->
   Double ->
@@ -243,7 +243,7 @@ simulateNReconstructedTrees nT nP t l m g
 -- 'toReconstructedTree') possibly with specific height and a fixed number of
 -- leaves according to the birth and death process.
 simulateReconstructedTree ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   -- | Number of points (samples)
   Int ->
   -- | Time of origin or MRCA

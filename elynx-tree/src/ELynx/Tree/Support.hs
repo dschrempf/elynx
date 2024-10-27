@@ -80,14 +80,14 @@ class HasMaybeSupport e where
   getMaybeSupport :: e -> Maybe Support
 
 -- | Class of data types with measurable and modifiable support values.
-class HasMaybeSupport e => HasSupport e where
+class (HasMaybeSupport e) => HasSupport e where
   getSupport :: e -> Support
   setSupport :: Support -> e -> e
   modifySupport :: (Support -> Support) -> e -> e
 
 -- | Normalize branch support values. The maximum branch support value will be
 -- set to 1.0.
-normalizeBranchSupport :: HasSupport e => Tree e a -> Tree e a
+normalizeBranchSupport :: (HasSupport e) => Tree e a -> Tree e a
 normalizeBranchSupport t = first (modifySupport (/ m)) t
   where
     m = maximum $ getSupport <$> ZipBranchTree t
@@ -101,12 +101,12 @@ collapse th tr =
    in if tr == tr' then tr else collapse th tr'
 
 -- A leaf has full support.
-highP :: HasSupport e => Support -> Tree e a -> Bool
+highP :: (HasSupport e) => Support -> Tree e a -> Bool
 highP _ (Node _ _ []) = True
 highP th (Node br _ _) = getSupport br >= th
 
 -- See 'collapse'.
-collapse' :: HasSupport e => Support -> Tree e a -> Tree e a
+collapse' :: (HasSupport e) => Support -> Tree e a -> Tree e a
 collapse' th (Node br lb ts) = Node br lb $ map (collapse' th) (highSupport ++ lowSupportForest)
   where
     (highSupport, lowSupport) = partition (highP th) ts

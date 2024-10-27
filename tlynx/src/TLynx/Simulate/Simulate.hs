@@ -101,7 +101,7 @@ simulate = do
   out "simulated trees" res ".tree"
 
 bdSimulateNTreesConcurrently ::
-  RandomGen g =>
+  (RandomGen g) =>
   Int ->
   Double ->
   Double ->
@@ -120,7 +120,7 @@ bdSimulateNTreesConcurrently nLeaves l m r timeSpec chunks gs = do
   return $ concat trss
 
 coalSimulateNTreesConcurrently ::
-  RandomGen g =>
+  (RandomGen g) =>
   Int ->
   [Int] ->
   [IOGenM g] ->
@@ -133,7 +133,7 @@ coalSimulateNTreesConcurrently nL chunks gs = do
   return $ concat trss
 
 bdSimulateAndSubSampleNTreesConcurrently ::
-  RandomGen g =>
+  (RandomGen g) =>
   Int ->
   Double ->
   Double ->
@@ -170,7 +170,7 @@ bdSimulateAndSubSampleNTreesConcurrently nLeaves l m r p timeSpec chunks gs = do
   return $ map prune trs
 
 coalSimulateAndSubSampleNTreesConcurrently ::
-  RandomGen g =>
+  (RandomGen g) =>
   Int ->
   Double ->
   [Int] ->
@@ -245,7 +245,7 @@ formatNChildSumStatLine (l, n) =
   BB.intDec n <> BB.char8 ' ' <> BB.doubleDec (fromLength l) <> BB.char8 '\n'
 
 -- Compute NChilSumStat for a phylogenetic tree.
-toNChildSumStat :: HasLength e => Tree e a -> NChildSumStat
+toNChildSumStat :: (HasLength e) => Tree e a -> NChildSumStat
 toNChildSumStat (Node br _ []) = [(getLength br, 1)]
 toNChildSumStat (Node br _ ts) = (getLength br, sumCh) : concat nChSS
   where

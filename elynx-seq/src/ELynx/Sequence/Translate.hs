@@ -22,7 +22,7 @@ import ELynx.Sequence.Sequence
 
 -- Chop list into chunks of given length. If the last chop is shorter than
 -- length, it is dropped.
-chopVec :: V.Unbox a => Int -> V.Vector a -> [V.Vector a]
+chopVec :: (V.Unbox a) => Int -> V.Vector a -> [V.Vector a]
 chopVec n xs
   | V.length xs < n = []
   | otherwise = V.take n xs : chopVec n (V.drop n xs)

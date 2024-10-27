@@ -23,7 +23,7 @@ import System.Random.Stateful
 -- | Simulate a coalescent tree with @n@ leaves. The branch lengths are in units
 -- of effective population size.
 simulate ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   -- | Number of leaves.
   Int ->
   g ->
@@ -33,7 +33,7 @@ simulate n = simulate' n 0 trs
     trs = [Node 0 i [] | i <- [0 .. n - 1]]
 
 simulate' ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   Int ->
   Int ->
   Forest Length Int ->

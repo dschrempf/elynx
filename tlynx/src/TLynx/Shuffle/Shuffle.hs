@@ -76,7 +76,7 @@ shuffleCmd = do
   liftIO $ hClose h
 
 shuffleT ::
-  StatefulGen g m =>
+  (StatefulGen g m) =>
   Int -> -- How many?
   Length -> -- Stem length.
   [Length] -> -- Coalescent times.

@@ -43,7 +43,7 @@ import TLynx.Distance.Options
 import TLynx.Parsers
 import Text.Printf
 
-median :: Ord a => [a] -> a
+median :: (Ord a) => [a] -> a
 median xs = sort xs !! l2 where l2 = length xs `div` 2
 
 pf :: String

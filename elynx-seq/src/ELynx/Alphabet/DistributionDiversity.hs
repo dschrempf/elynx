@@ -57,29 +57,29 @@ entropy v =
 
 -- | Effective number of used characters measured using 'entropy'. The result
 -- only makes sense when the sum of the array is 1.0.
-kEffEntropy :: Vector v Double => v Double -> Double
+kEffEntropy :: (Vector v Double) => v Double -> Double
 kEffEntropy v = if e < eps then 1.0 else exp e where e = entropy v
 
 -- | Probability of homoplasy of vector. The result is the probability of
 -- binomially sampling the same character twice and only makes sense when the
 -- sum of the array is 1.0.
-homoplasy :: Vector v Double => v Double -> Double
+homoplasy :: (Vector v Double) => v Double -> Double
 homoplasy v = V.sum $ V.map (\x -> x * x) v
 
 -- | Effective number of used characters measured using 'homoplasy'. The result
 -- only makes sense when the sum of the array is 1.0.
-kEffHomoplasy :: Vector v Double => v Double -> Double
+kEffHomoplasy :: (Vector v Double) => v Double -> Double
 kEffHomoplasy v = 1.0 / homoplasy v
 
 -- XXX: Use mutable vector; then V.// is much faster.
 -- Increment element at index in vector by one.
-incrementElemIndexByOne :: Vector v Int => [Int] -> v Int -> v Int
+incrementElemIndexByOne :: (Vector v Int) => [Int] -> v Int -> v Int
 incrementElemIndexByOne is v = v V.// zip is es'
   where
     es' = [v V.! i + 1 | i <- is]
 
 -- For a given code and counts vector, increment the count of the given character.
-acc :: Vector v Int => AlphabetSpec -> v Int -> Character -> v Int
+acc :: (Vector v Int) => AlphabetSpec -> v Int -> Character -> v Int
 acc alph vec char = incrementElemIndexByOne is vec
   where
     is = [S.findIndex c (std alph) | c <- toStd alph char]

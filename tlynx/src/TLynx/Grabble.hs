@@ -23,7 +23,7 @@ import System.Random.Stateful
 
 -- | @grabble xs m n@ is /O(m*n')/, where @n' = min n (length xs)@. Choose @n'@
 -- elements from @xs@, without replacement, and that @m@ times.
-grabble :: StatefulGen g m => [a] -> Int -> Int -> g -> m [[a]]
+grabble :: (StatefulGen g m) => [a] -> Int -> Int -> g -> m [[a]]
 grabble xs m n gen = do
   swapss <- replicateM m $
     forM [0 .. min (l - 1) n] $ \i -> do

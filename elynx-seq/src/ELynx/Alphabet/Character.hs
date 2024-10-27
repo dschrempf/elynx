@@ -68,9 +68,9 @@ fromString :: String -> [Character]
 fromString = map fromChar
 
 -- | Conversion of 'Character's.
-toCVec :: C.Character a => V.Vector Character -> V.Vector a
+toCVec :: (C.Character a) => V.Vector Character -> V.Vector a
 toCVec = V.map (C.fromWord . toWord)
 
 -- | Conversion of 'Character's.
-fromCVec :: C.Character a => V.Vector a -> V.Vector Character
+fromCVec :: (C.Character a) => V.Vector a -> V.Vector Character
 fromCVec = V.map (fromWord . C.toWord)

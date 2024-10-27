@@ -45,48 +45,48 @@ class (Show a, Read a, Eq a, Ord a, Enum a, Bounded a, Unbox a) => Character a w
   fromWord :: Word8 -> a
 
 -- | Conversion to 'Char'.
-toChar :: Character a => a -> Char
+toChar :: (Character a) => a -> Char
 toChar = w2c . toWord
 
 -- | Conversion from 'Char'.
-fromChar :: Character a => Char -> a
+fromChar :: (Character a) => Char -> a
 fromChar = fromWord . c2w
 
 -- | Conversion to 'String'.
-toString :: Character a => [a] -> String
+toString :: (Character a) => [a] -> String
 toString = map toChar
 
 -- | Conversion from 'String'.
-fromString :: Character a => String -> [a]
+fromString :: (Character a) => String -> [a]
 fromString = map fromChar
 
 -- | An extended character type with gaps and unknowns.
-class Character a => CharacterX a where
+class (Character a) => CharacterX a where
   gap :: a
 
 -- | Is the character a gap or unknown?
-isGap :: CharacterX a => a -> Bool
+isGap :: (CharacterX a) => a -> Bool
 isGap c = c == gap
 
 -- | IUPAC characters with a mapping to extended characters.
-class CharacterX a => CharacterI a where
+class (CharacterX a) => CharacterI a where
   unknown :: a
   iupac :: [a]
   toStandard :: a -> [a]
 
 -- | Check if a IUPAC 'CharacterI' is unknown (e.g., N for nucleotides).
-isUnknown :: CharacterI a => a -> Bool
+isUnknown :: (CharacterI a) => a -> Bool
 isUnknown c = c == unknown
 
-iupacLookup :: CharacterI a => S.Set a
+iupacLookup :: (CharacterI a) => S.Set a
 iupacLookup = S.fromList iupac
 
 -- | Is the given character a IUPAC character?
-isIUPAC :: CharacterI a => a -> Bool
+isIUPAC :: (CharacterI a) => a -> Bool
 isIUPAC c = c `S.member` iupacLookup
 
 -- | Is the given character a standard character?
-isStandard :: CharacterI a => a -> Bool
+isStandard :: (CharacterI a) => a -> Bool
 isStandard c = not $ isIUPAC c
 
 -- | Convert between character classes. May throw error.

@@ -28,7 +28,7 @@ import ELynx.Tree.Rooted
 import ELynx.Tree.Zipper
 
 -- | Test if the root node of the given tree is an ancestor of the given leaves.
-isAncestor :: Ord a => S.Set a -> Tree e a -> Bool
+isAncestor :: (Ord a) => S.Set a -> Tree e a -> Bool
 --                      True if an x of xs is not in the collection of leaves.
 --                False      if an x of xs is not in the collection of leaves. -> OK.
 isAncestor xs t = not $ any (`S.notMember` lvs) xs
@@ -36,7 +36,7 @@ isAncestor xs t = not $ any (`S.notMember` lvs) xs
     lvs = S.fromList $ leaves t
 
 -- | Test if the root node of the given tree is the MRCA of the given leaves.
-isMrca :: Ord a => S.Set a -> Tree e a -> Bool
+isMrca :: (Ord a) => S.Set a -> Tree e a -> Bool
 --                                    True if any daughter forest is an ancestor.
 --                               False     if any daughter forest is an ancestor. -> OK.
 isMrca xs t = isAncestor xs t && not (any (isAncestor xs) (forest t))

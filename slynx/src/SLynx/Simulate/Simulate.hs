@@ -159,7 +159,7 @@ prettyRow name val = alignLeft 33 n <> alignRight 8 v
     v = BL.pack val
 
 -- | Examine branches of a tree.
-summarizeLengths :: HasLength e => Tree e a -> BL.ByteString
+summarizeLengths :: (HasLength e) => Tree e a -> BL.ByteString
 summarizeLengths t =
   BL.intercalate
     "\n"

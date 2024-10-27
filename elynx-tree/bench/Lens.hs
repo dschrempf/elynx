@@ -21,17 +21,17 @@ import Data.Foldable
 import ELynx.Tree.Length
 import Lens.Micro
 
-len :: HasLength a => Lens' a Length
+len :: (HasLength a) => Lens' a Length
 len = lens getLength (flip setLength)
 
-sumWithGetter :: HasLength a => [a] -> Length
+sumWithGetter :: (HasLength a) => [a] -> Length
 sumWithGetter = foldl' (\x y -> x ^. len + y ^. len) 0
 
-sumWithSetter :: HasLength a => [a] -> Length
+sumWithSetter :: (HasLength a) => [a] -> Length
 sumWithSetter = sumWithGetter . map (\x -> x & len %~ (+ 10))
 
-sumWithAccessorFunction :: HasLength a => [a] -> Length
+sumWithAccessorFunction :: (HasLength a) => [a] -> Length
 sumWithAccessorFunction = foldl' (\x y -> getLength x + getLength y) 0
 
-sumWithModifyFunction :: HasLength a => [a] -> Length
+sumWithModifyFunction :: (HasLength a) => [a] -> Length
 sumWithModifyFunction = sumWithAccessorFunction . map (modifyLength (+ 10))

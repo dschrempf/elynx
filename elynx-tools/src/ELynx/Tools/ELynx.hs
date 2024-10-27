@@ -35,7 +35,7 @@ import System.Random.Stateful
 -- | ELynx transformer to be used with all executables.
 type ELynx a = ReaderT (Environment a) IO
 
-fixSeed :: Reproducible a => a -> IO a
+fixSeed :: (Reproducible a) => a -> IO a
 fixSeed x = case getSeed x of
   (Just RandomUnset) -> do
     s <- uniformM globalStdGen :: IO Int
@@ -101,7 +101,7 @@ eLynxWrapper gArgs lArgs f worker = do
 
 -- Get out file path with extension.
 getOutFilePath ::
-  forall a. Reproducible a => String -> ELynx a (Maybe FilePath)
+  forall a. (Reproducible a) => String -> ELynx a (Maybe FilePath)
 getOutFilePath ext = do
   a <- ask
   let bn = outFileBaseName . globalArguments $ a
@@ -114,7 +114,7 @@ getOutFilePath ext = do
 
 -- | Write a result with a given name to file with given extension or standard
 -- output. Supports compression.
-out :: Reproducible a => String -> BL.ByteString -> String -> ELynx a ()
+out :: (Reproducible a) => String -> BL.ByteString -> String -> ELynx a ()
 out name res ext = do
   mfp <- getOutFilePath ext
   case mfp of
@@ -132,7 +132,7 @@ out name res ext = do
 
 -- | Get an output handle, does not support compression. The handle has to be
 -- closed after use!
-outHandle :: Reproducible a => String -> String -> ELynx a Handle
+outHandle :: (Reproducible a) => String -> String -> ELynx a Handle
 outHandle name ext = do
   mfp <- getOutFilePath ext
   case mfp of

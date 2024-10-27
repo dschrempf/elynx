@@ -51,13 +51,13 @@ simpleSol =
     Node () "i" [Node () "j" [Node () "z" [], Node () "x" []], Node () "y" []]
   ]
 
-prop_roots :: Default a => Tree () a -> Bool
+prop_roots :: (Default a) => Tree () a -> Bool
 prop_roots t@(Node _ _ []) = isLeft $ roots t
 prop_roots t@(Node _ _ [_]) = isLeft $ roots t
 prop_roots t@(Node _ _ [_, _]) = (length <$> roots t) == Right (length (labels t) - 2)
 prop_roots t = (length <$> roots t) == Right (length (labels t) - 1)
 
-prop_roots_total_length :: Default a => Tree Length a -> Bool
+prop_roots_total_length :: (Default a) => Tree Length a -> Bool
 prop_roots_total_length t@(Node _ _ [_, _]) =
   all (\x -> abs (totalBranchLength x - l) < 1e-8) $
     either error id $

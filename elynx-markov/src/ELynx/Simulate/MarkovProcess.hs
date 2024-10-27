@@ -45,7 +45,7 @@ probMatrix q t
 --
 -- This function is the bottleneck of the simulator and takes up most of the
 -- computation time.
-jump :: StatefulGen g m => State -> ProbMatrix -> g -> m State
+jump :: (StatefulGen g m) => State -> ProbMatrix -> g -> m State
 jump i p = categorical (p ! i)
 
 -- XXX: Maybe for later, use condensed tables.

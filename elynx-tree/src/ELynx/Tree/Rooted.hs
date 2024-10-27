@@ -248,14 +248,14 @@ leaves t = squish t []
     squish (Node _ lb []) xs = lb : xs
     squish (Node _ _ ts) xs = foldr squish xs ts
 
-duplicates :: Ord a => [a] -> Bool
+duplicates :: (Ord a) => [a] -> Bool
 duplicates = go S.empty
   where
     go _ [] = False
     go seen (x : xs) = x `S.member` seen || go (S.insert x seen) xs
 
 -- | Check if a tree has duplicate leaves.
-duplicateLeaves :: Ord a => Tree e a -> Bool
+duplicateLeaves :: (Ord a) => Tree e a -> Bool
 duplicateLeaves = duplicates . leaves
 
 -- | Set the stem to a given value.
@@ -275,7 +275,7 @@ branches t = squish t []
 -- | Set branch labels in pre-order.
 --
 -- Return 'Nothing' if the provided list of branch labels is too short.
-setBranches :: Bitraversable t => [f] -> t e a -> Maybe (t f a)
+setBranches :: (Bitraversable t) => [f] -> t e a -> Maybe (t f a)
 setBranches xs = bisequenceA . snd . bimapAccumL setBranch noChange xs
   where
     setBranch [] _ = ([], Nothing)
@@ -297,20 +297,20 @@ labels t = squish t []
     squish (Node _ lb ts) xs = lb : foldr squish xs ts
 
 -- | Check if a tree has duplicate labels.
-duplicateLabels :: Ord a => Tree e a -> Bool
+duplicateLabels :: (Ord a) => Tree e a -> Bool
 duplicateLabels = duplicates . labels
 
 -- | Set node labels in pre-order.
 --
 -- Return 'Nothing' if the provided list of node labels is too short.
-setLabels :: Traversable t => [b] -> t a -> Maybe (t b)
+setLabels :: (Traversable t) => [b] -> t a -> Maybe (t b)
 setLabels xs = sequenceA . snd . mapAccumL setLabelM xs
   where
     setLabelM [] _ = ([], Nothing)
     setLabelM (y : ys) _ = (ys, Just y)
 
 -- | Label the nodes in pre-order with unique indices starting at 0.
-identify :: Traversable t => t a -> t Int
+identify :: (Traversable t) => t a -> t Int
 identify = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
 
 -- | Degree of the root node.
@@ -338,7 +338,7 @@ depth = maximum . go 1
 -- their 'Semigroup' instance of the form
 --
 -- @\daughterBranch parentBranch -> combinedBranch@.
-prune :: Semigroup e => Tree e a -> Tree e a
+prune :: (Semigroup e) => Tree e a -> Tree e a
 prune t@(Node _ _ []) = t
 prune (Node paBr _ [Node daBr daLb daTs]) = Node (daBr <> paBr) daLb daTs
 prune (Node paBr paLb paTs) = Node paBr paLb $ map prune paTs
@@ -445,7 +445,7 @@ instance Comonad (BranchTree a) where
         map (getBranchTree . duplicate . BranchTree) ts
   extract = branch . getBranchTree
 
-instance Monoid a => Applicative (BranchTree a) where
+instance (Monoid a) => Applicative (BranchTree a) where
   -- Infinite layers with infinite subtrees.
   pure br = BranchTree $ Node br mempty []
   (BranchTree ~(Node brF lbF tsF)) <*> tx@(BranchTree ~(Node brX lbX tsX)) =
@@ -512,7 +512,7 @@ instance Comonad (ZipTree e) where
 -- >>> f <*> t
 --
 -- ZipTree {getZipTree = Node {branch = "+3", label = 3, forest = [Node {branch = "*5", label = 5, forest = []},Node {branch = "+10", label = 12, forest = []}]}}
-instance Monoid e => Applicative (ZipTree e) where
+instance (Monoid e) => Applicative (ZipTree e) where
   -- Infinite layers with infinite subtrees.
   pure lb = ZipTree $ Node mempty lb $ repeat (getZipTree $ pure lb)
   (ZipTree ~(Node brF lbF tsF)) <*> (ZipTree ~(Node brX lbX tsX)) =
@@ -574,7 +574,7 @@ instance Comonad (ZipBranchTree a) where
   extract = branch . getZipBranchTree
 
 -- | See the 'Applicative' instance of 'ZipTree'.
-instance Monoid a => Applicative (ZipBranchTree a) where
+instance (Monoid a) => Applicative (ZipBranchTree a) where
   -- Infinite layers with infinite subtrees.
   pure br = ZipBranchTree $ Node br mempty $ repeat (getZipBranchTree $ pure br)
   (ZipBranchTree ~(Node brF lbF tsF)) <*> (ZipBranchTree ~(Node brX lbX tsX)) =

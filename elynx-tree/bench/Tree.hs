@@ -29,7 +29,7 @@ toLengthTreeTraversable = either error id . toLengthTree
 fromMaybeWithError :: String -> Maybe a -> Either String a
 fromMaybeWithError s = maybe (Left s) Right
 
-toLengthTreeBitraversable :: HasMaybeLength e => Tree e a -> Either String (Tree Length a)
+toLengthTreeBitraversable :: (HasMaybeLength e) => Tree e a -> Either String (Tree Length a)
 toLengthTreeBitraversable t =
   fromMaybeWithError "toLengthTree: Length unavailable for some branches." $ bisequenceA t'
   where
