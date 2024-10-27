@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               elynx-tools
-version:            0.7.2.2
+version:            0.8.0.0
 synopsis:           Tools for ELynx
 description:
   Please see the README on GitHub at <https://github.com/dschrempf/elynx>.
