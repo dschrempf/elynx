@@ -98,7 +98,6 @@ module ELynx.Tree.Rooted
   )
 where
 
-import Control.Applicative
 import Control.Comonad
 import Control.DeepSeq
 import Control.Monad
