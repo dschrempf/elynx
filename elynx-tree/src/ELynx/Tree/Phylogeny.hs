@@ -72,7 +72,7 @@ where
 import Control.DeepSeq
 import Data.Aeson
 import Data.Bifunctor
-import Data.Default.Class
+import Data.Default
 import Data.List hiding (intersect)
 import Data.Maybe
 import Data.Monoid
@@ -218,7 +218,7 @@ midpoint (Node _ _ [_]) = Left "midpoint: Root node has degree two."
 midpoint t = roots t >>= getMidpoint
 
 -- Find the index of the smallest element.
-findMinIndex :: Ord a => [a] -> Either String Int
+findMinIndex :: (Ord a) => [a] -> Either String Int
 findMinIndex (x : xs) = go (0, x) 1 xs
   where
     go (i, _) _ [] = Right i
@@ -226,7 +226,7 @@ findMinIndex (x : xs) = go (0, x) 1 xs
     go (i, z) j (y : ys) = if z < y then go (i, z) (j + 1) ys else go (j, y) (j + 1) ys
 findMinIndex [] = Left "findMinIndex: Empty list."
 
-getMidpoint :: HasLength e => [Tree e a] -> Either String (Tree e a)
+getMidpoint :: (HasLength e) => [Tree e a] -> Either String (Tree e a)
 getMidpoint ts = case t of
   Right (Node br lb [l, r]) ->
     let hl = height l
@@ -255,7 +255,7 @@ getMidpoint ts = case t of
             _ -> x'
 
 -- Get delta height of left and right sub tree.
-getDeltaHeight :: HasLength e => Tree e a -> Length
+getDeltaHeight :: (HasLength e) => Tree e a -> Length
 getDeltaHeight (Node _ _ [l, r]) = abs $ height l - height r
 getDeltaHeight _ = error "getDeltaHeight: Root node is not bifurcating?"
 
@@ -350,19 +350,19 @@ toPhyloTree :: (HasMaybeLength e, HasMaybeSupport e) => Tree e a -> Tree Phylo a
 toPhyloTree = first toPhyloLabel
 
 -- | Set branch length. Do not set support value.
-lengthToPhyloLabel :: HasMaybeLength e => e -> Phylo
+lengthToPhyloLabel :: (HasMaybeLength e) => e -> Phylo
 lengthToPhyloLabel x = Phylo (getMaybeLength x) Nothing
 
 -- | See 'lengthToPhyloLabel'.
-lengthToPhyloTree :: HasMaybeLength e => Tree e a -> Tree Phylo a
+lengthToPhyloTree :: (HasMaybeLength e) => Tree e a -> Tree Phylo a
 lengthToPhyloTree = first lengthToPhyloLabel
 
 -- | Set support value. Do not set branch length.
-supportToPhyloLabel :: HasMaybeSupport e => e -> Phylo
+supportToPhyloLabel :: (HasMaybeSupport e) => e -> Phylo
 supportToPhyloLabel x = Phylo Nothing (getMaybeSupport x)
 
 -- | See 'supportToPhyloLabel'.
-supportToPhyloTree :: HasMaybeSupport e => Tree e a -> Tree Phylo a
+supportToPhyloTree :: (HasMaybeSupport e) => Tree e a -> Tree Phylo a
 supportToPhyloTree = first supportToPhyloLabel
 
 fromMaybeWithError :: String -> Maybe a -> Either String a
@@ -371,7 +371,7 @@ fromMaybeWithError s = maybe (Left s) Right
 -- | If root branch length is not available, set it to 0.
 --
 -- Return 'Left' if any other branch length is unavailable.
-toLengthTree :: HasMaybeLength e => Tree e a -> Either String (Tree Length a)
+toLengthTree :: (HasMaybeLength e) => Tree e a -> Either String (Tree Length a)
 toLengthTree (Node br lb ts) =
   case traverse go ts of
     Nothing -> Left "toLengthTree: Length unavailable for some branches."
@@ -384,7 +384,7 @@ toLengthTree (Node br lb ts) =
 -- branch to maximum support.
 --
 -- Return 'Left' if any other branch has no available support value.
-toSupportTree :: HasMaybeSupport e => Tree e a -> Either String (Tree Support a)
+toSupportTree :: (HasMaybeSupport e) => Tree e a -> Either String (Tree Support a)
 toSupportTree t@(Node br lb ts) =
   fromMaybeWithError "toSupportTree: Support value unavailable for some branches." $
     getBranchTree <$> sequenceA (BranchTree (Node br' lb $ map go ts))
@@ -395,10 +395,10 @@ toSupportTree t@(Node br lb ts) =
     go (Node b l xs) = Node (getMaybeSupport b) l (map go xs)
 
 -- If all branch support values are below 1.0, set the max support to 1.0.
-getMaxSupport :: HasMaybeSupport e => Tree e a -> Support
+getMaxSupport :: (HasMaybeSupport e) => Tree e a -> Support
 getMaxSupport = fromJust . max (Just 1.0) . maximum . fmap getMaybeSupport . ZipBranchTree
 
-cleanSupportWith :: HasMaybeSupport e => Support -> e -> Maybe Support
+cleanSupportWith :: (HasMaybeSupport e) => Support -> e -> Maybe Support
 cleanSupportWith m x = case getMaybeSupport x of
   Nothing -> Just m
   Just y -> Just y

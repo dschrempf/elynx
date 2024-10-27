@@ -39,7 +39,7 @@ where
 import Control.DeepSeq
 import Data.Aeson
 import Data.Bifunctor
-import Data.Default.Class
+import Data.Default
 import Data.Foldable
 import Data.Semigroup
 import ELynx.Tree.Rooted
@@ -122,7 +122,7 @@ instance HasMaybeLength () where
   getMaybeLength = const Nothing
 
 -- | Class of data types with measurable and modifiable length.
-class HasMaybeLength e => HasLength e where
+class (HasMaybeLength e) => HasLength e where
   getLength :: e -> Length
   setLength :: Length -> e -> e
   modifyLength :: (Length -> Length) -> e -> e
@@ -130,33 +130,33 @@ class HasMaybeLength e => HasLength e where
 -- | The maximum distance between origin and leaves.
 --
 -- The height includes the branch length of the stem.
-height :: HasLength e => Tree e a -> Length
+height :: (HasLength e) => Tree e a -> Length
 height = maximum . distancesOriginLeaves
 
 -- | The maximum distance between root node and leaves.
-rootHeight :: HasLength e => Tree e a -> Length
+rootHeight :: (HasLength e) => Tree e a -> Length
 rootHeight (Node _ _ []) = 0
 rootHeight t = maximum $ concatMap distancesOriginLeaves (forest t)
 
 -- | Distances from the origin of a tree to the leaves.
 --
 -- The distances include the branch length of the stem.
-distancesOriginLeaves :: HasLength e => Tree e a -> [Length]
+distancesOriginLeaves :: (HasLength e) => Tree e a -> [Length]
 distancesOriginLeaves (Node br _ []) = [getLength br]
 distancesOriginLeaves (Node br _ ts) = map (getLength br +) (concatMap distancesOriginLeaves ts)
 
 -- | Total branch length of a tree.
-totalBranchLength :: HasLength e => Tree e a -> Length
+totalBranchLength :: (HasLength e) => Tree e a -> Length
 totalBranchLength = foldl' (+) 0 . fmap getLength . ZipBranchTree
 
 -- | Normalize branch lengths so that the sum is 1.0.
-normalizeBranchLengths :: HasLength e => Tree e a -> Tree e a
+normalizeBranchLengths :: (HasLength e) => Tree e a -> Tree e a
 normalizeBranchLengths t = first (modifyLength (/ s)) t
   where
     s = totalBranchLength t
 
 -- | Normalize height of tree to 1.0.
-normalizeHeight :: HasLength e => Tree e a -> Tree e a
+normalizeHeight :: (HasLength e) => Tree e a -> Tree e a
 normalizeHeight t = first (modifyLength (/ h)) t
   where
     h = height t
@@ -171,14 +171,14 @@ allNearlyEqual xs = all (\y -> eps > abs (fromLength $ x - y)) (tail xs)
     x = head xs
 
 -- | Check if a tree is ultrametric.
-ultrametric :: HasLength e => Tree e a -> Bool
+ultrametric :: (HasLength e) => Tree e a -> Bool
 ultrametric = allNearlyEqual . distancesOriginLeaves
 
 -- | Elongate terminal branches such that the tree becomes ultrametric.
-makeUltrametric :: HasLength e => Tree e a -> Tree e a
+makeUltrametric :: (HasLength e) => Tree e a -> Tree e a
 makeUltrametric t = go 0 t
   where
     h = height t
-    go :: HasLength e => Length -> Tree e a -> Tree e a
+    go :: (HasLength e) => Length -> Tree e a -> Tree e a
     go h' (Node br lb []) = let dh = h - h' - getLength br in Node (modifyLength (+ dh) br) lb []
     go h' (Node br lb ts) = let h'' = h' + getLength br in Node br lb $ map (go h'') ts

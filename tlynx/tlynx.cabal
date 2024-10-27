@@ -53,7 +53,7 @@ library
     , bytestring
     , comonad
     , containers
-    , data-default-class
+    , data-default
     , elynx-tools
     , elynx-tree
     , gnuplot

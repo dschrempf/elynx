@@ -28,7 +28,7 @@ module ELynx.Topology.Phylogeny
   )
 where
 
-import Data.Default.Class
+import Data.Default
 import Data.List hiding (intersect)
 import Data.Maybe
 import qualified Data.Set as S
@@ -48,7 +48,7 @@ equal tL tR
   | otherwise = Right $ equal' tL tR
 
 -- | Same as 'equal', but assume that leaves are unique.
-equal' :: Eq a => Topology a -> Topology a -> Bool
+equal' :: (Eq a) => Topology a -> Topology a -> Bool
 equal' (Leaf lbL) (Leaf lbR) =
   lbL == lbR
 equal' (Node tsL) (Node tsR) =
@@ -111,14 +111,14 @@ outgroup xs = overTree (T.outgroup xs)
 -- If the midpoint is ambiguous because the sum of the left and right depths is
 -- odd, the depth of the left sub-topology will be set to be one node greater
 -- than the one of the right sub-topology.
-midpoint :: Default a => Topology a -> Either String (Topology a)
+midpoint :: (Default a) => Topology a -> Either String (Topology a)
 midpoint = overTree T.midpoint
 
 -- | For a rooted tree with a bifurcating root node, get all possible rooted
 -- trees.
 --
 -- See 'ELynx.Tree.Phylogeny.roots'.
-roots :: Default a => Topology a -> Either String [Topology a]
+roots :: (Default a) => Topology a -> Either String [Topology a]
 roots = goBack . T.roots . goThere
   where
     -- We have to use a special 'overTree' function here, since a list of

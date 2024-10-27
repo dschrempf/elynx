@@ -82,7 +82,7 @@ library
     , bytestring
     , comonad
     , containers
-    , data-default-class
+    , data-default
     , deepseq
     , elynx-nexus
     , math-functions

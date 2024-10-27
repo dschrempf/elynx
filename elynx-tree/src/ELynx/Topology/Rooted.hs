@@ -41,7 +41,6 @@ module ELynx.Topology.Rooted
   )
 where
 
-import Control.Applicative
 import Control.DeepSeq
 import Control.Monad
 import Data.Aeson
@@ -108,13 +107,13 @@ instance Monad Topology where
   (Node ts) >>= f = Node $ fmap (>>= f) ts
   (Leaf lb) >>= f = f lb
 
-instance NFData a => NFData (Topology a) where
+instance (NFData a) => NFData (Topology a) where
   rnf (Node ts) = rnf ts
   rnf (Leaf lb) = rnf lb
 
-instance ToJSON a => ToJSON (Topology a)
+instance (ToJSON a) => ToJSON (Topology a)
 
-instance FromJSON a => FromJSON (Topology a)
+instance (FromJSON a) => FromJSON (Topology a)
 
 -- | Convert a rooted rose tree to a rooted topology. Internal node labels are lost.
 fromRoseTree :: T.Tree a -> Topology a
@@ -146,27 +145,27 @@ leaves (Node ts) = concatMap leaves ts
 --     squish (Node ts) xs = foldr squish xs ts
 --     squish (Leaf lb) xs = lb : xs
 
-duplicates :: Ord a => [a] -> Bool
+duplicates :: (Ord a) => [a] -> Bool
 duplicates = go S.empty
   where
     go _ [] = False
     go seen (x : xs) = x `S.member` seen || go (S.insert x seen) xs
 
 -- | Check if a topology has duplicate leaves.
-duplicateLeaves :: Ord a => Topology a -> Bool
+duplicateLeaves :: (Ord a) => Topology a -> Bool
 duplicateLeaves = duplicates . leaves
 
 -- | Set leaf labels in pre-order.
 --
 -- Return 'Nothing' if the provided list of leaf labels is too short.
-setLeaves :: Traversable t => [b] -> t a -> Maybe (t b)
+setLeaves :: (Traversable t) => [b] -> t a -> Maybe (t b)
 setLeaves xs = sequenceA . snd . mapAccumL setLeafM xs
   where
     setLeafM [] _ = ([], Nothing)
     setLeafM (y : ys) _ = (ys, Just y)
 
 -- | Label the leaves in pre-order with unique indices starting at 0.
-identify :: Traversable t => t a -> t Int
+identify :: (Traversable t) => t a -> t Int
 identify = snd . mapAccumL (\i _ -> (i + 1, i)) (0 :: Int)
 
 -- | The degree of the root node.

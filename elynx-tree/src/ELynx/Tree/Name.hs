@@ -24,7 +24,7 @@ import Data.Aeson
 import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
-import Data.Default.Class
+import Data.Default
 import Data.String
 
 -- | Node name.
