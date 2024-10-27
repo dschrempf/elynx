@@ -5,6 +5,11 @@
 ## Unreleased changes
 
 
+## Version 0.8.0.0
+
+-   Adapt to breaking changes in upstream libraries (`data-default`).
+
+
 ## Version 0.7.2.0
 
 -   `slynx`: Allow global normalization of mixture models.

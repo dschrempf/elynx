@@ -41,7 +41,7 @@ cabal build all
 #+RESULTS: Build
 
 * README and Change Log
-Update help in [[file:README.org][README.org]] (don't forget to update the help text with =\ j b=),
+Update help in [[file:README.org][README.org]] (don't forget to update the help text with =\ b b=),
 and [[file:ChangeLog.org][ChangeLog.org]]; export them to Markdown.
 
 * Git

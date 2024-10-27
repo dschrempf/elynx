@@ -94,9 +94,9 @@ cabal run slynx -- --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.7.2.1.
+ELynx Suite version 0.8.0.0.
 Developed by Dominik Schrempf.
-Compiled on June 15, 2023, at 19:54 pm, UTC.
+Compiled on October 27, 2024, at 07:14 am, UTC.
 
 Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME]
              [-f|--force] [--no-elynx-file] COMMAND
@@ -166,9 +166,9 @@ cabal run slynx -- simulate --help
 
 #+RESULTS:
 #+begin_example
-ELynx Suite version 0.7.2.1.
+ELynx Suite version 0.8.0.0.
 Developed by Dominik Schrempf.
-Compiled on June 15, 2023, at 19:54 pm, UTC.
+Compiled on October 27, 2024, at 07:14 am, UTC.
 
 Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL]
                       [-m|--mixture-model MODEL] [-n|--global-normalization]
