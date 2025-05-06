@@ -3,14 +3,15 @@
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
-  # inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/haskell-updates";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  # inputs.nixpkgs.url = "github:NixOS/nixpkgs/haskell-updates";
   # inputs.nixpkgs.url = "path:/home/dominik/Nix/Nixpkgs";
 
   outputs =
-    { self
-    , flake-utils
-    , nixpkgs
+    {
+      self,
+      flake-utils,
+      nixpkgs,
     }:
     let
       theseHpkgNames = [
@@ -23,16 +24,18 @@
         "slynx"
         "tlynx"
       ];
-      thisGhcVersion = "ghc96";
+      thisGhcVersion = "ghc98";
       hMkPackage = h: n: h.callCabal2nix n (./. + "/${n}") { };
       hOverlay = selfn: supern: {
         haskell = supern.haskell // {
-          packageOverrides = selfh: superh:
-            supern.haskell.packageOverrides selfh superh //
-              nixpkgs.lib.genAttrs theseHpkgNames (hMkPackage selfh);
+          packageOverrides =
+            selfh: superh:
+            supern.haskell.packageOverrides selfh superh
+            // nixpkgs.lib.genAttrs theseHpkgNames (hMkPackage selfh);
         };
       };
-      perSystem = system:
+      perSystem =
+        system:
         let
           pkgs = import nixpkgs {
             inherit system;
@@ -49,7 +52,8 @@
               tlynxCompletion = f [ "tlynx" ] theseHpkgsNoCompletion.tlynx;
               elynxCompletion = f [ "elynx" ] theseHpkgsNoCompletion.elynx;
             in
-            theseHpkgsNoCompletion // {
+            theseHpkgsNoCompletion
+            // {
               slynx = slynxCompletion;
               tlynx = tlynxCompletion;
               elynx = elynxCompletion;
@@ -62,7 +66,10 @@
           };
         in
         {
-          packages = theseHpkgs // { inherit elynxSuite; default = elynxSuite; };
+          packages = theseHpkgs // {
+            inherit elynxSuite;
+            default = elynxSuite;
+          };
 
           devShells.default = hpkgs.shellFor {
             packages = _: (builtins.attrValues theseHpkgsDev);
