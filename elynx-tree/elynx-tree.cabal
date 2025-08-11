@@ -78,7 +78,7 @@ library
   build-depends:
     , aeson
     , attoparsec
-    , base
+    , base            < 5
     , bytestring
     , comonad
     , containers

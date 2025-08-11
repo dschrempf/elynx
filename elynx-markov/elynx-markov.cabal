@@ -99,5 +99,5 @@ benchmark markov-bench
   -- ghc-options:
   hs-source-dirs:   bench
   ghc-options:      -Wall -Wunused-packages
-  build-depends:    base
+  build-depends:    base < 5
   default-language: Haskell2010
