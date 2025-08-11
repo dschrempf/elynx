@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
@@ -90,7 +91,7 @@ writeSiteDists componentIs ds = do
 -- Simulate a 'Alignment' for a given phylogenetic model,
 -- phylogenetic tree, and alignment length.
 simulateAlignment ::
-  (RandomGen g, HasLength e, HasName a) =>
+  (SplitGen g, HasLength e, HasName a) =>
   MP.PhyloModel ->
   Tree e a ->
   Int ->
@@ -119,7 +120,7 @@ simulateAlignment pm t' n g = do
       alph = A.all $ alphabetSpec code
       sequences =
         [ Seq.Sequence (fromName sName) "" code (U.fromList $ map (`Set.elemAt` alph) ss)
-          | (sName, ss) <- zip leafNames leafStates
+        | (sName, ss) <- zip leafNames leafStates
         ]
       output = sequencesToFasta sequences
   logInfoS ""
@@ -225,7 +226,7 @@ summarizeMM nz m =
         then
           concat
             [ BL.pack ("Component " ++ show i ++ ":") : summarizeMMComponent c
-              | (i, c) <- zip [1 :: Int ..] (V.toList $ MM.components m)
+            | (i, c) <- zip [1 :: Int ..] (V.toList $ MM.components m)
             ]
         else []
 

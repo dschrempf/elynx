@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- |
@@ -30,6 +31,7 @@ where
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Monad
+import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.Tree
 import qualified Data.Vector as V
 import ELynx.MarkovProcess.RateMatrix
@@ -97,7 +99,7 @@ simulateAndFlatten' is (Node p f) g = do
 
 -- | See 'simulateAndFlatten', parallel version.
 simulateAndFlattenPar ::
-  (RandomGen g) =>
+  (SplitGen g) =>
   Int ->
   StationaryDistribution ->
   ExchangeabilityMatrix ->
@@ -216,17 +218,25 @@ getChunks c n = ns
 -- requires benchmarks. I am just not sure if it makes sense to spend more time
 -- on this since the parallelization itself is a bit weird. Like so, we walk
 -- along separate trees in each process.
-parComp :: (RandomGen g) => Int -> (Int -> IOGenM g -> IO b) -> IOGenM g -> IO [b]
+parComp ::
+  (FrozenGen g IO, SplitGen g, ThawedGen g IO) =>
+  Int -> (Int -> MutableGen g IO -> IO b) -> MutableGen g IO -> IO [b]
 parComp num fun gen = do
-  ncap <- getNumCapabilities
+  ncap <- liftIO getNumCapabilities
+  genF <- freezeGen gen
   let chunks = getChunks ncap num
-  rs <- replicateM ncap $ splitGenM gen
-  gs <- mapM newIOGenM rs
+      rs = splitGenN ncap genF
+  gs <- mapM thawGen rs
   mapConcurrently (uncurry fun) (zip chunks gs)
+  where
+    splitGenN :: (SplitGen g) => Int -> g -> [g]
+    splitGenN n g
+      | n < 1 = []
+      | otherwise = let (g1, g2) = splitGen g in g1 : splitGenN (n - 1) g2
 
 -- | See 'simulateAndFlattenMixtureModel', parallel version.
 simulateAndFlattenMixtureModelPar ::
-  (RandomGen g) =>
+  (SplitGen g) =>
   Int ->
   V.Vector Double ->
   V.Vector StationaryDistribution ->
