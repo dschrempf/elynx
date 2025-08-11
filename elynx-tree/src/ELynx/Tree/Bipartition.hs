@@ -146,7 +146,7 @@ getComplementaryLeaves ::
   [Set a]
 getComplementaryLeaves p (Node _ _ ts) =
   [ S.unions $ p : take i lvsChildren ++ drop (i + 1) lvsChildren
-    | i <- [0 .. (n - 1)]
+  | i <- [0 .. (n - 1)]
   ]
   where
     n = length ts

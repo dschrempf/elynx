@@ -124,7 +124,7 @@ header a =
           "For each sequence, the "
             ++ show summaryLength
             ++ " first bases are shown."
-        | length a > summaryLength
+      | length a > summaryLength
       ]
     reportNumberSummary =
       [ BL.pack $
@@ -132,7 +132,7 @@ header a =
             ++ " out of "
             ++ show (nSequences a)
             ++ " sequences are shown."
-        | nSequences a > summaryNSequences
+      | nSequences a > summaryNSequences
       ]
 
 -- | Similar to 'S.summarizeSequenceList' but with different Header.

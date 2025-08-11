@@ -2,7 +2,7 @@
 
 # The ELynx Suite
 
-Version: 0.8.0.0.
+Version: 0.9.0.0.
 Reproducible evolution made easy.
 
 <p align="center"><img src="https://travis-ci.org/dschrempf/elynx.svg?branch=master"/></p>
@@ -73,9 +73,9 @@ ELynx is written in [Haskell](https://www.haskell.org/) and can be installed wit
     # OR: stack exec slynx -- --help
     # OR: slynx --help
 
-    ELynx Suite version 0.8.0.0.
+    ELynx Suite version 0.9.0.0.
     Developed by Dominik Schrempf.
-    Compiled on October 27, 2024, at 07:14 am, UTC.
+    Compiled on August 11, 2025, at 07:19 am, UTC.
     
     Usage: slynx [-v|--verbosity VALUE] [-o|--output-file-basename NAME]
                  [-f|--force] [--no-elynx-file] COMMAND
@@ -143,9 +143,9 @@ The documentation of sub commands can be accessed separately:
     # OR: stack exec slynx -- simulate --help
     # OR: slynx simulate --help
 
-    ELynx Suite version 0.8.0.0.
+    ELynx Suite version 0.9.0.0.
     Developed by Dominik Schrempf.
-    Compiled on October 27, 2024, at 07:14 am, UTC.
+    Compiled on August 11, 2025, at 07:19 am, UTC.
     
     Usage: slynx simulate (-t|--tree-file Name) [-s|--substitution-model MODEL]
                           [-m|--mixture-model MODEL] [-n|--global-normalization]

@@ -302,11 +302,11 @@ descend :: (Semigroup e, Splittable e) => e -> a -> Tree e a -> Tree e a -> Fore
 descend _ _ _ (Node _ _ []) = []
 descend brR lbR tC (Node brD lbD tsD) =
   [ Node brR lbR [Node (split brDd) lbD f, Node (split brDd) lbDd tsDd]
-    | (Node brDd lbDd tsDd, f) <- zip tsD cfs
+  | (Node brDd lbDd tsDd, f) <- zip tsD cfs
   ]
     ++ concat
       [ descend brR lbR (Node (split brDd) lbD f) (Node (split brDd) lbDd tsDd)
-        | (Node brDd lbDd tsDd, f) <- zip tsD cfs
+      | (Node brDd lbDd tsDd, f) <- zip tsD cfs
       ]
   where
     brC' = branch tC <> brD

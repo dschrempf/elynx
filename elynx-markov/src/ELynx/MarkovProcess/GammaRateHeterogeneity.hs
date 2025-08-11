@@ -101,7 +101,7 @@ getMeans n alpha
     means =
       V.fromList
         [ integralAToB meanFunc (quantiles !! i) (quantiles !! (i + 1))
-          | i <- [0 .. n - 2]
+        | i <- [0 .. n - 2]
         ]
     -- The last category has to be calculated with an improper integration.
     lastMean = integralAToInf meanFunc (quantiles !! (n - 1))

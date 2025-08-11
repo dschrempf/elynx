@@ -77,8 +77,8 @@ pairwise ::
   [(Int, Int, b)]
 pairwise dist trs =
   [ (i, j, dist x y)
-    | (i : is, x : xs) <- zip (tails [0 ..]) (tails trs),
-      (j, y) <- zip is xs
+  | (i : is, x : xs) <- zip (tails [0 ..]) (tails trs),
+    (j, y) <- zip is xs
   ]
 
 -- | Compute distance functions between phylogenetic trees.

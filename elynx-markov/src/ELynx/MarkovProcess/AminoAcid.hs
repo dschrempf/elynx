@@ -127,8 +127,7 @@ pamlToAlphaMat :: Matrix R -> Matrix R
 pamlToAlphaMat m =
   build
     (n, n)
-    ( \i j -> m ! alphaIndexToPamlIndex (round i) ! alphaIndexToPamlIndex (round j)
-    )
+    (\i j -> m ! alphaIndexToPamlIndex (round i) ! alphaIndexToPamlIndex (round j))
 
 -- Lower triangular matrix of LG exchangeabilities in PAML order and in form of
 -- a list.

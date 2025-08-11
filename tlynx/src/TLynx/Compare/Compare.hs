@@ -234,7 +234,7 @@ analyzeBipartitions outH t1 t2 =
             Just fn -> do
               let compareCommonBps =
                     [ (bpToBrLen1 M.! b, bpToBrLen2 M.! b)
-                      | b <- S.toList bpCommon
+                    | b <- S.toList bpCommon
                     ]
               liftIO $ epspdfPlot fn (plotBps compareCommonBps)
               logInfoS

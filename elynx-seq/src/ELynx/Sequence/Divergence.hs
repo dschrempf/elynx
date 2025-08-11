@@ -51,9 +51,9 @@ divergence s1 s2
               i <- mi
               j <- mj
               Just $ modify m (i, j) (+ 1)
-            | (x, y) <- zip (VU.toList cs1) (VU.toList cs2),
-              let mi = S.lookupIndex x a,
-              let mj = S.lookupIndex y a
+          | (x, y) <- zip (VU.toList cs1) (VU.toList cs2),
+            let mi = S.lookupIndex x a,
+            let mj = S.lookupIndex y a
           ]
       return m
   where

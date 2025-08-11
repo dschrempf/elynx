@@ -4,7 +4,11 @@
 
 ## Unreleased changes
 
--   GHC 9.8
+
+## Version 0.9.0.0
+
+-   Toolchain update
+-   Update to random version 1.3
 
 
 ## Version 0.8.0.0

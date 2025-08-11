@@ -88,5 +88,5 @@ shuffleT n o cs ls gen = do
   lss <- grabble ls n (length ls) gen
   return
     [ toReconstructedTree "" (PointProcess names times o)
-      | (times, names) <- zip css lss
+    | (times, names) <- zip css lss
     ]

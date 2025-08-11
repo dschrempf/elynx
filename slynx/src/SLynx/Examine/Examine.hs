@@ -127,9 +127,9 @@ examineAlignment perSiteFlag a =
     pairwiseHamming =
       V.fromList
         [ either error normlz $ D.hamming x y
-          | x <- seqs,
-            y <- seqs,
-            x /= y
+        | x <- seqs,
+          y <- seqs,
+          x /= y
         ]
     (hMean, hVar) = Sm.meanVariance pairwiseHamming
     hMin = V.minimum pairwiseHamming
